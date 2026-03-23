@@ -50,6 +50,9 @@ CREATE TABLE IF NOT EXISTS Productos (
     tipo_producto TEXT,
     precio REAL,
     cantidad INTEGER DEFAULT 0,
+    stock_minimo INTEGER DEFAULT 5,
+    stock_seguridad INTEGER DEFAULT 0,
+    lead_time INTEGER DEFAULT 3,
     fecha_entrada TEXT DEFAULT (DATE('now')),
     fecha_salida TEXT,
     estado TEXT DEFAULT 'Disponible',
@@ -63,11 +66,15 @@ CREATE TABLE IF NOT EXISTS Productos (
 CREATE TABLE IF NOT EXISTS MovimientosStock (
     id_movimiento INTEGER PRIMARY KEY AUTOINCREMENT,
     id_producto INTEGER NOT NULL,
-    tipo_movimiento TEXT NOT NULL,
+    tipo_movimiento TEXT NOT NULL, -- 'Entrada', 'Salida', 'Ajuste'
     cantidad INTEGER NOT NULL,
     fecha_movimiento TEXT DEFAULT (DATETIME('now')),
     observacion TEXT,
-    FOREIGN KEY (id_producto) REFERENCES Productos(id_producto)
+    id_usuario INTEGER,
+    id_tienda INTEGER,
+    FOREIGN KEY (id_producto) REFERENCES Productos(id_producto),
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario),
+    FOREIGN KEY (id_tienda) REFERENCES Tienda(id_tienda)
 );
 
 -- ==========================================
@@ -110,6 +117,38 @@ CREATE TABLE IF NOT EXISTS reportes (
     fecha_fin TEXT,
     creado_en TEXT DEFAULT (DATETIME('now')),
     FOREIGN KEY (id_tienda) REFERENCES Tienda(id_tienda)
+);
+
+
+-- ==========================================
+-- 8. TABLA AUDITORIA IA
+-- ==========================================
+CREATE TABLE IF NOT EXISTS Auditoria_IA (
+    id_auditoria INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha_auditoria TEXT DEFAULT (DATETIME('now')),
+    id_tienda INTEGER,
+    id_orden INTEGER,
+    motor_ia TEXT DEFAULT 'gpt-4o-mini',
+    prompt_utilizado TEXT,
+    datos_base_json TEXT, -- Snapshots del inventario al momento
+    sugerencia_ia_json TEXT, -- Lo que propuso la IA
+    impacto_decision TEXT,
+    razon_ia TEXT,
+    FOREIGN KEY (id_tienda) REFERENCES Tienda(id_tienda)
+);
+
+-- ==========================================
+-- 9. TABLA FEEDBACK IA (Aprendizaje)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS Feedback_IA (
+    id_feedback INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_orden INTEGER NOT NULL,
+    id_producto INTEGER NOT NULL,
+    cantidad_sugerida INTEGER,
+    ventas_reales_periodo INTEGER,
+    factor_precision REAL,
+    fecha_evaluacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(id_producto) REFERENCES Productos(id_producto)
 );
 
 

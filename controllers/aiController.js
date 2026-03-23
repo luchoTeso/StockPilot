@@ -12,12 +12,9 @@ const openai = new OpenAI({
 // Registro de Auditoría (Audit Trail)
 const AUDIT_LOG_PATH = path.join(__dirname, '..', 'ai_audit.log');
 
-// Caché avanzada v3 (Basada en Hash)
-let aiCache_v3 = {
-  dataHash: null,
-  recommendations: null,
-  timestamp: null
-};
+// Caché avanzada v3 (Independizado por Tienda)
+let aiCache_v3 = {}; 
+// Estructura: { [tiendaId]: { dataHash, recommendations, timestamp } }
 
 /**
  * AI Controller
@@ -29,11 +26,14 @@ const aiController = {
    */
   getDashboardRecommendations: async (req, res) => {
     try {
+      const tiendaId = req.session.tiendaId;
+      if (!tiendaId) {
+        return res.status(401).json({ error: "Sesión inválida o expirada. Por favor, inicie sesión nuevamente." });
+      }
+
       if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.includes('tuLlaveSecreta')) {
         return res.status(500).json({ error: "La API Key de OpenAI no está configurada correctamente en el archivo .env." });
       }
-
-      const tiendaId = req.session.tiendaId || 6;
 
       // 1. Obtener datos crudos para Hash y Análisis
       const snapshotQuery = `
@@ -50,9 +50,11 @@ const aiController = {
       const dataString = JSON.stringify(rows);
       const currentHash = crypto.createHash('md5').update(dataString).digest('hex');
 
-      if (aiCache_v3.dataHash === currentHash) {
-        console.log('--- AUDITOR: DATOS SIN CAMBIOS SIGNIFICATIVOS. SIRVIENDO CACHÉ V3 ---');
-        return res.json({ cached: true, recommendations: aiCache_v3.recommendations });
+      // Verificar caché específico de la tienda
+      const tiendaCache = aiCache_v3[tiendaId];
+      if (tiendaCache && tiendaCache.dataHash === currentHash) {
+        console.log(`--- AUDITOR [Tienda ${tiendaId}]: DATOS SIN CAMBIOS. SIRVIENDO CACHÉ ---`);
+        return res.json({ cached: true, recommendations: tiendaCache.recommendations });
       }
 
       console.log('--- AUDITOR: DETECTADO CAMBIO EN INVENTARIO. RECALCULANDO IA ---');
@@ -162,8 +164,12 @@ const aiController = {
         console.error('⚠️ Error guardando auditoría (no crítico):', auditErr.message);
       }
 
-      // 6. Actualizar Caché v3
-      aiCache_v3 = { dataHash: currentHash, recommendations: finalRecommendations, timestamp: new Date() };
+      // 6. Actualizar Caché por tienda
+      aiCache_v3[tiendaId] = { 
+        dataHash: currentHash, 
+        recommendations: finalRecommendations, 
+        timestamp: new Date() 
+      };
 
       res.json({ cached: false, recommendations: finalRecommendations });
 
@@ -184,7 +190,8 @@ const aiController = {
    */
   getAnalyticalSnapshot: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
+      if (!tiendaId) return res.status(401).json({ error: "No autorizado" });
       const getSnapshot = () => new Promise((resolve, reject) => {
         const query = `
           SELECT 
