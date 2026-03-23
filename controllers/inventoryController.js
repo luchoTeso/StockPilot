@@ -1,0 +1,151 @@
+// controllers/inventoryController.js
+const InventoryMovement = require('../models/InventoryMovement');
+const Product = require('../models/Product');
+
+class InventoryController {
+    /**
+     * Registrar entrada de mercancía
+     */
+    static async registerEntry(req, res) {
+        try {
+            const { id_producto, cantidad, observacion } = req.body;
+
+            if (!id_producto || !cantidad || cantidad <= 0) {
+                return res.status(400).json({ success: false, error: 'Producto y cantidad (positiva) son requeridos' });
+            }
+
+            const result = await InventoryMovement.create({
+                id_producto,
+                tipo_movimiento: 'Entrada',
+                cantidad: parseInt(cantidad),
+                observacion: observacion || 'Entrada de mercancía',
+                id_usuario: req.session.userId,
+                id_tienda: req.session.tiendaId,
+            });
+
+            res.json({ success: true, message: 'Entrada registrada', data: result });
+        } catch (error) {
+            console.error('Error registrando entrada:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    }
+
+    /**
+     * Registrar salida manual (fuera del módulo de ventas)
+     */
+    static async registerExit(req, res) {
+        try {
+            const { id_producto, cantidad, observacion } = req.body;
+
+            if (!id_producto || !cantidad || cantidad <= 0) {
+                return res.status(400).json({ success: false, error: 'Producto y cantidad (positiva) son requeridos' });
+            }
+
+            const result = await InventoryMovement.create({
+                id_producto,
+                tipo_movimiento: 'Salida',
+                cantidad: parseInt(cantidad),
+                observacion: observacion || 'Salida manual',
+                id_usuario: req.session.userId,
+                id_tienda: req.session.tiendaId,
+            });
+
+            res.json({ success: true, message: 'Salida registrada', data: result });
+        } catch (error) {
+            console.error('Error registrando salida:', error);
+            res.status(400).json({ success: false, error: error.message });
+        }
+    }
+
+    /**
+     * Registrar ajuste de inventario (conteo físico)
+     */
+    static async registerAdjustment(req, res) {
+        try {
+            const { id_producto, cantidad, observacion } = req.body;
+
+            if (!id_producto || cantidad === undefined || cantidad === null) {
+                return res.status(400).json({ success: false, error: 'Producto y cantidad son requeridos' });
+            }
+
+            const result = await InventoryMovement.create({
+                id_producto,
+                tipo_movimiento: 'Ajuste',
+                cantidad: parseInt(cantidad),
+                observacion: observacion || 'Ajuste por conteo físico',
+                id_usuario: req.session.userId,
+                id_tienda: req.session.tiendaId,
+            });
+
+            res.json({ success: true, message: 'Ajuste registrado', data: result });
+        } catch (error) {
+            console.error('Error registrando ajuste:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    }
+
+    /**
+     * Obtener historial de movimientos de la tienda
+     */
+    static async getMovements(req, res) {
+        try {
+            const tiendaId = req.session.tiendaId;
+            const filters = {
+                tipo: req.query.tipo || null,
+                fechaDesde: req.query.fechaDesde || null,
+                fechaHasta: req.query.fechaHasta || null,
+                productoId: req.query.productoId || null,
+            };
+
+            const movimientos = await InventoryMovement.findByStore(tiendaId, filters);
+            res.json({ success: true, data: movimientos });
+        } catch (error) {
+            console.error('Error obteniendo movimientos:', error);
+            res.status(500).json({ success: false, error: 'Error obteniendo movimientos' });
+        }
+    }
+
+    /**
+     * Obtener historial de un producto específico
+     */
+    static async getProductHistory(req, res) {
+        try {
+            const productId = req.params.id;
+            const movimientos = await InventoryMovement.findByProduct(productId);
+            res.json({ success: true, data: movimientos });
+        } catch (error) {
+            console.error('Error obteniendo historial:', error);
+            res.status(500).json({ success: false, error: 'Error obteniendo historial del producto' });
+        }
+    }
+
+    /**
+     * Obtener resumen de movimientos de la tienda
+     */
+    static async getSummary(req, res) {
+        try {
+            const tiendaId = req.session.tiendaId;
+            const resumen = await InventoryMovement.getStoreSummary(tiendaId);
+            res.json({ success: true, data: resumen });
+        } catch (error) {
+            console.error('Error obteniendo resumen:', error);
+            res.status(500).json({ success: false, error: 'Error obteniendo resumen' });
+        }
+    }
+
+    /**
+     * Obtener lista de productos para el selector del formulario
+     */
+    static async getProductList(req, res) {
+        try {
+            const tiendaId = req.session.tiendaId;
+            const productos = await Product.findByStore(tiendaId);
+            res.json({ success: true, data: productos });
+        } catch (error) {
+            console.error('Error obteniendo productos:', error);
+            res.status(500).json({ success: false, error: 'Error obteniendo productos' });
+        }
+    }
+}
+
+module.exports = InventoryController;

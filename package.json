@@ -1,0 +1,26 @@
+{
+  "name": "inventario-node",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "npx nodemon app.js",
+    "seed": "node database/seed_test_data.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.1",
+    "express-session": "^1.18.2",
+    "openai": "^6.32.0",
+    "sqlite3": "^5.1.7"
+  },
+  "description": "",
+  "type": "commonjs"
+}

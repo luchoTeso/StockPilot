@@ -1,0 +1,17 @@
+{
+  "ignore": [
+    "frontend/*",
+    "frontend_backup_v1/*",
+    "node_modules/*",
+    "*.db",
+    "*.db-journal",
+    "*.db-shm",
+    "*.db-wal",
+    "*.sqlite",
+    "*.sqlite3",
+    "*.log"
+  ],
+  "ext": "js,json",
+  "delay": "2500",
+  "verbose": true
+}

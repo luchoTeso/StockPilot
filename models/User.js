@@ -1,0 +1,133 @@
+// models/User.js
+const db = require('../config/database');
+const bcrypt = require('bcrypt');
+
+const SALT_ROUNDS = 10;
+
+class User {
+    static async findByCredentials(login, password, rol) {
+        // Buscar usuario sin comparar contraseña en SQL
+        const query = `
+            SELECT * FROM Usuarios 
+            WHERE (usuario = ? OR correo = ?) 
+            AND rol = ?
+        `;
+        const user = await db.getAsync(query, [login, login, rol]);
+
+        if (!user) return null;
+
+        // Comparar contraseña con bcrypt
+        const match = await bcrypt.compare(password, user.contrasena);
+        return match ? user : null;
+    }
+
+    static async create(userData) {
+        // Hashear la contraseña antes de guardar
+        const hashedPassword = await bcrypt.hash(userData.contrasena, SALT_ROUNDS);
+
+        const query = `
+            INSERT INTO Usuarios (
+                nombres, genero, correo, celular, 
+                usuario, contrasena, rol, id_tienda
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const result = await db.runAsync(query, [
+            userData.nombres,
+            userData.genero,
+            userData.correo,
+            userData.celular,
+            userData.usuario,
+            hashedPassword,
+            userData.rol,
+            userData.id_tienda
+        ]);
+        return result.lastID;
+    }
+
+    static async findById(userId) {
+        const query = `
+            SELECT id_usuario, nombres, genero, correo, celular, usuario, rol, id_tienda, foto_url
+            FROM Usuarios WHERE id_usuario = ?
+        `;
+        return await db.getAsync(query, [userId]);
+    }
+
+    static async findByStore(storeId) {
+        const query = `
+            SELECT id_usuario, nombres, genero, correo, celular, usuario, rol
+            FROM Usuarios 
+            WHERE id_tienda = ?
+            ORDER BY id_usuario
+        `;
+        return await db.allAsync(query, [storeId]);
+    }
+
+    static async findTendederosByStore(storeId) {
+        const query = `
+            SELECT id_usuario, nombres, genero, correo, celular, usuario
+            FROM Usuarios
+            WHERE rol = 'Tendedero' AND id_tienda = ?
+            ORDER BY id_usuario
+        `;
+        return await db.allAsync(query, [storeId]);
+    }
+
+    static async update(userId, userData) {
+        const query = `
+            UPDATE Usuarios SET
+            nombres = ?, genero = ?, correo = ?, celular = ?, usuario = ?, foto_url = ?
+            WHERE id_usuario = ?
+        `;
+        const result = await db.runAsync(query, [
+            userData.nombres,
+            userData.genero,
+            userData.correo,
+            userData.celular,
+            userData.usuario,
+            userData.foto_url || null,
+            userId
+        ]);
+        return result.changes > 0;
+    }
+
+    static async updatePassword(userId, newPassword) {
+        const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+        const query = `UPDATE Usuarios SET contrasena = ? WHERE id_usuario = ?`;
+        const result = await db.runAsync(query, [hashedPassword, userId]);
+        return result.changes > 0;
+    }
+
+    static async delete(userId, storeId) {
+        const query = `
+            DELETE FROM Usuarios 
+            WHERE id_usuario = ? AND id_tienda = ? AND rol = 'Tendedero'
+        `;
+        const result = await db.runAsync(query, [userId, storeId]);
+        return result.changes > 0;
+    }
+
+    static async findByEmail(email) {
+        const query = `SELECT id_usuario, nombres, correo FROM Usuarios WHERE correo = ?`;
+        return await db.getAsync(query, [email]);
+    }
+
+    static async setResetToken(userId, token, expires) {
+        const query = `UPDATE Usuarios SET reset_token = ?, reset_expires = ? WHERE id_usuario = ?`;
+        await db.runAsync(query, [token, expires.toISOString(), userId]);
+    }
+
+    static async verifyResetToken(email, token) {
+        const query = `
+            SELECT id_usuario FROM Usuarios 
+            WHERE correo = ? AND reset_token = ? AND reset_expires > datetime('now')
+        `;
+        return await db.getAsync(query, [email, token]);
+    }
+
+    static async clearResetToken(userId) {
+        const query = `UPDATE Usuarios SET reset_token = NULL, reset_expires = NULL WHERE id_usuario = ?`;
+        await db.runAsync(query, [userId]);
+    }
+}
+
+module.exports = User;

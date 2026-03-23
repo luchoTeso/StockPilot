@@ -1,0 +1,18 @@
+# Dependencias
+node_modules/
+
+# Archivos de entorno (¡Muy importante por seguridad!)
+.env
+
+# Logs
+npm-debug.log*
+*.log
+
+# Bases de datos locales (si usas SQLite, por ejemplo)
+*.sqlite
+*.sqlite3
+*.db
+
+# Carpetas del sistema operativo
+.DS_Store
+Thumbs.db
