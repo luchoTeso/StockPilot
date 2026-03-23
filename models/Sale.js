@@ -6,8 +6,8 @@ class Sale {
         const { id_vendedor, id_tienda, precio_total } = saleData;
         
         const query = `
-            INSERT INTO Ventas (id_vendedor, id_tienda, precio_total)
-            VALUES (?, ?, ?)
+            INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida)
+            VALUES (?, ?, ?, DATETIME('now', 'localtime'))
         `;
         const result = await db.runAsync(query, [id_vendedor, id_tienda, precio_total]);
         return result.lastID;

@@ -256,10 +256,12 @@ const VentasPage = () => {
                   const precioUnitario = v.precio_unitario || (v.precio_total / v.cantidad);
                   return (
                     <tr key={v.id_venta ? `${v.id_venta}-${idx}` : idx} className="group transition-all hover:bg-slate-50">
-                      <td className="p-6">
+                       <td className="p-6">
                          <p className="font-black text-slate-800 text-sm">{v.nombre_producto}</p>
-                         <p className="text-[9px] font-bold text-slate-400 mt-1 tracking-widest uppercase">ID VENTA: {v.id_venta || '---'}</p>
-                      </td>
+                         <p className="text-[9px] font-bold text-slate-400 mt-1 tracking-widest uppercase">
+                           {v.id_venta ? `VENTA #${String(v.id_venta).padStart(6, '0')}` : 'ID VENTA: ---'}
+                         </p>
+                       </td>
                       <td className="p-6">
                          <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[9px] font-black uppercase tracking-widest">{v.categoria || 'Sin Info'}</span>
                       </td>

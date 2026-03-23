@@ -85,8 +85,8 @@ class Alert {
               const quedaranSinVender = prod.cantidad - ventasEstimadasHastaVencimiento;
               
               if (diasParaVencer <= 7 && quedaranSinVender > 0) {
-                  // Vencimiento inminente y pèrdida matemática segura
-                  await logAlert('vencimiento_critico', 'critico', `Vence en ${diasParaVencer} días. Al ritmo actual (Velocity_7d: ${v7.toFixed(1)}/día), te sobrarán ~${quedaranSinVender} unidades invendibles.`);
+                  // Vencimiento inminente y pérdida matemática segura
+                  await logAlert('vencimiento_critico', 'critico', `Vence en ${diasParaVencer} días. Al ritmo actual, te sobrarán ~${quedaranSinVender} unidades invendibles.`);
               } else if (diasParaVencer <= 15 && quedaranSinVender > 0) {
                   // Vencimiento próximo
                   await logAlert('vencimiento_proximo', 'advertencia', `Vence en ${diasParaVencer} días. Podrían sobrarte ~${quedaranSinVender} unidades. Sugerencia: Aplicar promoción hoy.`);

@@ -80,8 +80,8 @@ const AnalisisDetalladoPage = () => {
                        <p className="text-[9px] text-slate-400 uppercase font-black tracking-tighter mt-1">Sugerido: {item.stock_seguridad}u</p>
                     </td>
                     <td className="p-6 text-center">
-                       <span className={`text-base font-black tracking-tighter ${item.days_to_exhaust < 5 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                          {item.days_to_exhaust === Infinity ? '∞' : `${item.days_to_exhaust}d`}
+                       <span className={`text-base font-black tracking-tighter ${item.days_to_exhaust === null || item.days_to_exhaust === Infinity || item.days_to_exhaust > 90 ? 'text-emerald-600' : (item.days_to_exhaust < 5 ? 'text-rose-600' : 'text-amber-600')}`}>
+                          {item.days_to_exhaust === null || item.days_to_exhaust === Infinity ? '∞' : `${item.days_to_exhaust}d`}
                        </span>
                     </td>
                     <td className="p-6 text-right px-10 font-black text-slate-800 text-base tracking-tighter italic">${item.revenue.toLocaleString()}</td>

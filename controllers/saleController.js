@@ -123,18 +123,10 @@ class SaleController {
 
                 // 4. Descontar stock Y registrar movimiento (Trazabilidad completa)
                 // Usamos SQL directo aquí para mantener la misma transacción abierta
-                const now = new Date();
-                const ahora = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-                
-                await db.runAsync(
-                    'UPDATE Productos SET cantidad = cantidad - ? WHERE id_producto = ?',
-                    [cantidad, id_producto]
-                );
-
                 await db.runAsync(
                     `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, fecha_movimiento, observacion, id_usuario, id_tienda)
-                     VALUES (?, 'Salida', ?, ?, 'Venta registrada (ID: ' || ?, ?, ?)`,
-                    [id_producto, cantidad, ahora, id_venta, id_vendedor, id_tienda]
+                     VALUES (?, 'Salida', ?, DATETIME('now', 'localtime'), 'Venta #' || printf('%06d', ?), ?, ?)`,
+                    [id_producto, cantidad, id_venta, id_vendedor, id_tienda]
                 );
 
                 await db.runAsync('COMMIT');
