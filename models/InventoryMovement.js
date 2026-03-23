@@ -1,10 +1,35 @@
-// models/InventoryMovement.js
+/**
+ * @file InventoryMovement.js
+ * @description Modelo para la gestión y registro histórico de movimientos de inventario.
+ * Centraliza la lógica de actualización de stock y mantiene la trazabilidad de cada 
+ * entrada, salida y ajuste manual en la base de datos.
+ * 
+ * @module models/InventoryMovement
+ */
+
 const db = require('../config/database');
 
+/**
+ * Clase InventoryMovement
+ * Provee métodos estáticos para interactuar con la tabla MovimientosStock.
+ */
 class InventoryMovement {
     /**
-     * Registrar un movimiento de inventario (Entrada, Salida, Ajuste)
-     * Actualiza automáticamente el stock del producto
+     * Registra un nuevo movimiento de inventario (Entrada, Salida o Ajuste).
+     * Este método es transaccional en su lógica: valida existencias, calcula el nuevo saldo
+     * y actualiza la tabla de Productos sincronizadamente.
+     * 
+     * @async
+     * @function create
+     * @param {Object} data - Datos del movimiento.
+     * @param {number} data.id_producto - ID del producto afectado.
+     * @param {('Entrada'|'Salida'|'Ajuste')} data.tipo_movimiento - Tipo de alteración de stock.
+     * @param {number} data.cantidad - Unidades a mover (debe ser positiva, el tipo define el signo).
+     * @param {string} [data.observacion] - Nota aclaratoria sobre el movimiento.
+     * @param {number} data.id_usuario - ID del usuario responsable.
+     * @param {number} data.id_tienda - ID de la tienda donde ocurre el movimiento.
+     * @returns {Promise<Object>} Resultado de la operación con stock anterior y nuevo saldo.
+     * @throws {Error} Si el stock es insuficiente o el tipo de movimiento no es válido.
      */
     static async create(data) {
         const { id_producto, tipo_movimiento, cantidad, observacion, id_usuario, id_tienda } = data;
@@ -62,7 +87,15 @@ class InventoryMovement {
     }
 
     /**
-     * Historial de movimientos de un producto
+
+     * Obtiene el historial de movimientos detallado para un producto específico.
+     * Incluye información del usuario que realizó cada acción.
+     * 
+     * @async
+     * @function findByProduct
+     * @param {number} productId - Identificador del producto.
+     * @param {number} [limit=50] - Cantidad máxima de registros a retornar.
+     * @returns {Promise<Array<Object>>} Lista de movimientos ordenados por fecha descendente.
      */
     static async findByProduct(productId, limit = 50) {
         const query = `
@@ -78,7 +111,19 @@ class InventoryMovement {
     }
 
     /**
-     * Historial de movimientos de una tienda con filtros
+
+     * Consulta movimientos de inventario a nivel de tienda con capacidades de filtrado avanzado.
+     * Permite auditorías por tipo de movimiento, fechas y producto específico.
+     * 
+     * @async
+     * @function findByStore
+     * @param {number} storeId - ID de la tienda.
+     * @param {Object} [filters={}] - Criterios de filtrado.
+     * @param {string} [filters.tipo] - Filtrar por 'Entrada', 'Salida' o 'Ajuste'.
+     * @param {string} [filters.fechaDesde] - Fecha inicial en formato YYYY-MM-DD.
+     * @param {string} [filters.fechaHasta] - Fecha final en formato YYYY-MM-DD.
+     * @param {number} [filters.productoId] - Filtrar por un solo producto.
+     * @returns {Promise<Array<Object>>} Lista de movimientos que cumplen los criterios.
      */
     static async findByStore(storeId, filters = {}) {
         let query = `
@@ -116,7 +161,13 @@ class InventoryMovement {
     }
 
     /**
-     * Resumen de movimientos por producto
+     * Obtiene un resumen estadístico de los movimientos de un producto.
+     * Útil para análisis de rotación y auditoría de ajustes.
+     * 
+     * @async
+     * @function getSummaryByProduct
+     * @param {number} productId - ID del producto.
+     * @returns {Promise<Array<Object>>} Resumen con totales por tipo de movimiento.
      */
     static async getSummaryByProduct(productId) {
         const query = `
@@ -132,7 +183,13 @@ class InventoryMovement {
     }
 
     /**
-     * Resumen general de movimientos de la tienda
+     * Genera un resumen global de todos los movimientos registrados en la tienda.
+     * Provee una visión macro del flujo de mercancía (Entradas vs Salidas).
+     * 
+     * @async
+     * @function getStoreSummary
+     * @param {number} storeId - ID de la tienda.
+     * @returns {Promise<Array<Object>>} Totales agregados por tipo de movimiento.
      */
     static async getStoreSummary(storeId) {
         const query = `

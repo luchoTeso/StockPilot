@@ -234,12 +234,18 @@ class AuthController {
 
             await User.setResetToken(user.id_usuario, code, expires);
 
-            // NOTA: Aquí se enviaría el correo. Para efectos de esta demo y facilidad del usuario, 
-            // vamos a devolver el código en la respuesta para que pueda probarlo sin configurar SMTP.
+            // SIMULACIÓN DE ENVÍO (MOCK)
+            console.log("\n" + "=".repeat(50));
+            console.log("📩 [SERVICIO DE RECUPERACIÓN] - CORREO ENVIADO");
+            console.log(`Para: ${user.correo} (${user.nombres})`);
+            console.log(`Código de seguridad: ${code}`);
+            console.log("Vence en: 15 minutos");
+            console.log("=".repeat(50) + "\n");
+
+            // Respuesta segura (sin filtrar el código al cliente)
             res.json({ 
                 success: true, 
-                message: 'Código de recuperación generado',
-                demo_code: code // ESTO SOLO PARA LA ETAPA DE DESARROLLO/DUDAS DEL USUARIO
+                message: 'Se ha enviado un código de seguridad a su correo/consola.' 
             });
         } catch (error) {
             console.error('Error en forgotPassword:', error);

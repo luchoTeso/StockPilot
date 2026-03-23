@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS Usuarios (
     contrasena TEXT NOT NULL,
     fecha_registro TEXT DEFAULT (DATE('now')),
     id_tienda INTEGER NOT NULL,
+    reset_token TEXT,
+    reset_expires TEXT,
     FOREIGN KEY (id_tienda) REFERENCES Tienda(id_tienda)
 );
 

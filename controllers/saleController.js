@@ -1,10 +1,30 @@
-// controllers/saleController.js
+/**
+ * @file saleController.js
+ * @description Controlador para la gestión de ventas y movimientos de inventario.
+ * Implementa lógica de transacciones atómicas para garantizar la integridad del stock
+ * y la trazabilidad completa mediante MovimientosStock.
+ * 
+ * @module controllers/saleController
+ */
+
 const Sale = require('../models/Sale');
 const Product = require('../models/Product');
 const db = require('../config/database');
 
+/**
+ * Sale Controller
+ * Gestiona el ciclo de vida de una venta: validación, registro y actualización de inventario.
+ */
 class SaleController {
-    static async getSales(req, res) {
+  /**
+   * Obtiene la lista de ventas de una tienda con paginación.
+   * 
+   * @async
+   * @function getSales
+   * @param {import('express').Request} req - Objeto de petición Express.
+   * @param {import('express').Response} res - Objeto de respuesta Express.
+   */
+  static async getSales(req, res) {
         try {
             const id_tienda = req.session.tiendaId;
             const limit = parseInt(req.query.limit) || 100;
@@ -28,6 +48,14 @@ class SaleController {
         }
     }
 
+    /**
+     * Obtiene estadísticas agregadas de ventas para la tienda actual.
+     * 
+     * @async
+     * @function getSalesStats
+     * @param {import('express').Request} req - Objeto de petición Express.
+     * @param {import('express').Response} res - Objeto de respuesta Express.
+     */
     static async getSalesStats(req, res) {
         try {
             const id_tienda = req.session.tiendaId;
@@ -39,6 +67,17 @@ class SaleController {
         }
     }
 
+    /**
+     * Registra una nueva venta de forma atómica.
+     * Realiza validación de stock, creación de registro de venta, detalle de productos
+     * y actualización de inventario dentro de una sola transacción de base de datos.
+     * 
+     * @async
+     * @function registerSale
+     * @param {import('express').Request} req - Objeto de petición Express. Debe contener id_producto y cantidad.
+     * @param {import('express').Response} res - Objeto de respuesta Express.
+     * @returns {Promise<void>}
+     */
     static async registerSale(req, res) {
         try {
             const { id_producto, cantidad } = req.body;

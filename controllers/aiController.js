@@ -1,28 +1,52 @@
+/**
+ * @file aiController.js
+ * @description Controlador central para el motor de inteligencia de negocios (MBI).
+ * Gestiona la integración con OpenAI, el procesamiento analítico de inventarios,
+ * el sistema de caché segregado por tienda y la auditoría de decisiones.
+ * 
+ * @module controllers/aiController
+ */
+
 const db = require('../config/database');
 const { OpenAI } = require('openai');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-// Inicializar cliente OpenAI
+// Inicializar cliente OpenAI con la clave del entorno
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Registro de Auditoría (Audit Trail)
+// Ruta legada para auditoría de archivos (se mantiene por compatibilidad)
 const AUDIT_LOG_PATH = path.join(__dirname, '..', 'ai_audit.log');
 
-// Caché avanzada v3 (Independizado por Tienda)
+/**
+ * @typedef {Object} AICacheEntry
+ * @property {string} dataHash - Hash MD5 de los datos de inventario consultados.
+ * @property {Array} recommendations - Lista de recomendaciones generadas por la IA.
+ * @property {Date} timestamp - Fecha y hora de la última actualización del caché.
+ */
+
+// Caché avanzada v3 (Independizado por Tienda para evitar fugas de datos)
+/** @type {Object.<number, AICacheEntry>} */
 let aiCache_v3 = {}; 
-// Estructura: { [tiendaId]: { dataHash, recommendations, timestamp } }
 
 /**
  * AI Controller
- * Maneja la lógica analítica y la integración con OpenAI
+ * Encapsula la lógica analítica y las interacciones con modelos de lenguaje.
  */
 const aiController = {
   /**
-   * Obtiene la analítica y genera recomendaciones de IA (Caché activo)
+   * Genera recomendaciones de reabastecimiento utilizando IA de OpenAI.
+   * Utiliza un sistema de caché basado en hash para optimizar costos de API.
+   * 
+   * @async
+   * @function getDashboardRecommendations
+   * @param {import('express').Request} req - Objeto de petición Express.
+   * @param {import('express').Response} res - Objeto de respuesta Express.
+   * @returns {Promise<void>} Responde con un objeto JSON que contiene las recomendaciones.
+   * @throws {Error} Si la API de OpenAI falla o hay errores de base de datos.
    */
   getDashboardRecommendations: async (req, res) => {
     try {
@@ -40,7 +64,9 @@ const aiController = {
         SELECT 
           p.id_producto as id, p.nombre_producto as nombre, p.cantidad as stock_actual, p.precio, p.categoria, p.stock_seguridad, p.lead_time,
           IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-30 days')), 0) / 30.0 as velocity_30d,
-          IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-7 days')), 0) / 7.0 as velocity_7d
+          IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-7 days')), 0) / 7.0 as velocity_7d,
+          IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-60 days')), 0) / 60.0 as velocity_60d,
+          IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-90 days')), 0) / 90.0 as velocity_90d
         FROM Productos p
         WHERE p.id_tienda = ? AND p.estado = 'Disponible'
       `;
@@ -85,6 +111,7 @@ const aiController = {
           abc: category,
           trend_val: item.trend,
           trend_label: item.trend > 1.2 ? 'alcista' : (item.trend < 0.8 ? 'bajista' : 'estable'),
+          velocity_long: { d60: parseFloat(item.velocity_60d.toFixed(2)), d90: parseFloat(item.velocity_90d.toFixed(2)) },
           risk: item.stock_actual <= item.stock_seguridad ? 'CRÍTICO' : (item.stock_actual <= rop ? 'MEDIO' : 'BAJO')
         };
       });
@@ -98,14 +125,15 @@ const aiController = {
           { 
             role: "system", 
             content: `Eres un Auditor Estratégico MBI (Micro-Business Intelligence) especializado en tiendas de barrio. Se te dará un JSON de inventario.
-            Propondrás un AJUSTE porcentual (ej: "+20%", "-10%", "0%") sobre la 'base_load' (cantidad sugerida por la matemática ROP).
-            Límites Dinámicos: Clase A (alta rotación: max +100%), Clase B (media: max +50%), Clase C (baja rotación: max +20%).
+            Propondrás un AJUSTE porcentual sobre la 'base_load' (ROP matemático).
+            Contexto Extendido: Se te dan velocidades de 60 y 90 días para detectar estacionalidad o cambios bruscos de largo plazo.
+            Límites Dinámicos: Clase A (max +100%), Clase B (max +50%), Clase C (max +20%).
             Responde ÚNICAMENTE con JSON: { "adjustments": [ { "id": ID, "adjustment": "+20%", "reason": "..." } ] }
-            REGLA CRÍTICA PARA 'reason': Escribe una justificación incisiva, analítica y sin rodeos (20-35 palabras). NO uses texto genérico. Relaciona la agresividad del ajuste con el nivel de riesgo de quiebre (CRÍTICO/MEDIO) contra su tendencia de ventas. Piensa y habla como un gerente logístico cuidando el capital.` 
+            REGLA CRÍTICA PARA 'reason': Justificación incisiva (20-35 palabras). Menciona si el ajuste se debe a la tendencia corta (7d/30d) o a la coherencia con los últimos 60-90 días.` 
           },
           { 
             role: "user", 
-            content: `Analiza y ajusta estos ítems críticos: ${JSON.stringify(contextItemsForAI.slice(0, 5))}` 
+            content: `Analiza y ajusta estos ítems críticos: ${JSON.stringify(contextItemsForAI.slice(0, 8))}` 
           }
         ],
         response_format: { type: "json_object" }
@@ -151,17 +179,17 @@ const aiController = {
         throw new Error("No se generaron recomendaciones válidas");
       }
 
-      // Auditoría en BD (reemplaza ai_audit.log)
+      // 6. Auditoría en BD (Audit Trail)
       try {
-        const tiendaId = req.session.tiendaId;
         const datos_base = JSON.stringify(finalRecommendations.map(r => ({ product: r.product, base: r.base })));
         const sugerencia_json = JSON.stringify(finalRecommendations.map(r => ({ product: r.product, adjustment: r.adjustment, final: r.final, reason: r.reason })));
+        
         await db.runAsync(
           'INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia) VALUES (?, NULL, ?, ?, ?, ?, ?)',
           [tiendaId, 'Dashboard Auditor MBI v2.4', datos_base, sugerencia_json, 'Recomendaciones Dashboard', 'Análisis proactivo de inventario']
         );
       } catch (auditErr) {
-        console.error('⚠️ Error guardando auditoría (no crítico):', auditErr.message);
+        console.error('⚠️ Auditoría IA omitida:', auditErr.message);
       }
 
       // 6. Actualizar Caché por tienda
@@ -186,7 +214,14 @@ const aiController = {
   },
 
   /**
-   * Endpoint original de matemáticas puras (Snapshot)
+   * Genera un snapshot analítico del inventario basado en fórmulas matemáticas puras (ROP, ABC, Velocidad).
+   * Este método no utiliza IA y sirve como base de datos para el motor predictivo.
+   * 
+   * @async
+   * @function getAnalyticalSnapshot
+   * @param {import('express').Request} req - Objeto de petición Express.
+   * @param {import('express').Response} res - Objeto de respuesta Express.
+   * @returns {Promise<void>} Responde con un JSON que contiene el análisis ABC y ROP.
    */
   getAnalyticalSnapshot: async (req, res) => {
     try {
@@ -263,7 +298,13 @@ const aiController = {
   },
 
   /**
-   * Obtiene las alertas profesionales basadas en reglas duras (ROP)
+   * Obtiene alertas críticas basadas en reglas de negocio estrictas (Punto de Reorden).
+   * Cruza datos de stock actual contra el modelo de predicción de demanda.
+   * 
+   * @async
+   * @function getProAlerts
+   * @param {import('express').Request} req - Objeto de petición Express.
+   * @param {import('express').Response} res - Objeto de respuesta Express.
    */
   getProAlerts: async (req, res) => {
     try {
