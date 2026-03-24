@@ -44,13 +44,13 @@ class Product {
             productData.precio,
             productData.cantidad,
             productData.id_tienda,
-            productData.stock_minimo || 5,
+            productData.stock_minimo,
             productData.stock_maximo || 200,
             productData.fecha_vencimiento || null,
-            productData.frecuencia_compra_dias || 7,
+            productData.frecuencia_compra_dias,
             productData.costo_compra || 0,
-            productData.stock_seguridad || 0,
-            productData.lead_time || 3
+            productData.stock_seguridad,
+            productData.lead_time
         ]);
         return result.lastID;
     }

@@ -1,5 +1,5 @@
-// controllers/productController.js
 const Product = require('../models/Product');
+const ProductFactory = require('../models/products/ProductFactory');
 
 class ProductController {
     static async getProducts(req, res) {
@@ -31,36 +31,24 @@ class ProductController {
 
     static async createProduct(req, res) {
         try {
-            const {
-                codigo,
-                nombre_producto,
-                categoria,
-                subcategoria,
-                tipo_producto,
-                precio,
-                cantidad,
-                stock_minimo,
-                stock_seguridad,
-                lead_time
-            } = req.body;
-
             const tiendaId = req.session.tiendaId;
+            
+            // Usamos la fábrica para crear la instancia correcta del producto
+            // Esto cumple con el patrón Factory Method y permite extensibilidad lógica
+            const productInstance = ProductFactory.create({
+                ...req.body,
+                id_tienda: tiendaId
+            });
 
-            const productData = {
-                codigo,
-                nombre_producto,
-                categoria,
-                subcategoria,
-                tipo_producto,
-                precio: parseFloat(precio),
-                cantidad: parseInt(cantidad),
-                id_tienda: tiendaId,
-                stock_minimo: parseInt(stock_minimo || 5),
-                stock_seguridad: parseInt(stock_seguridad || 0),
-                lead_time: parseInt(lead_time || 3)
-            };
+            // Validación específica según el tipo de producto
+            const validation = productInstance.validate();
+            if (!validation.valid) {
+                return res.status(400).json({ success: false, error: validation.error });
+            }
 
-            await Product.create(productData);
+            // Guardamos el registro limpio en la base de datos
+            await Product.create(productInstance.toDBRecord());
+            
             res.json({ success: true, message: "Producto registrado correctamente" });
         } catch (error) {
             console.error('Error creando producto:', error);
@@ -71,9 +59,16 @@ class ProductController {
     static async updateProduct(req, res) {
         try {
             const productId = req.params.id;
-            const productData = req.body;
+            
+            // Incluso al actualizar, usamos la fábrica para validar las reglas del tipo de producto
+            const productInstance = ProductFactory.create(req.body);
+            const validation = productInstance.validate();
+            
+            if (!validation.valid) {
+                return res.status(400).json({ success: false, error: validation.error });
+            }
 
-            const success = await Product.update(productId, productData);
+            const success = await Product.update(productId, productInstance.toDBRecord());
             
             if (!success) {
                 return res.status(404).json({ success: false, error: 'Producto no encontrado' });
