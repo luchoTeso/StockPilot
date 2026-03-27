@@ -16,8 +16,10 @@ import RegisterPage from './pages/RegisterPage';
 import ProveedoresPage from './pages/ProveedoresPage';
 import AlertasPage from './pages/AlertasPage';
 import AuditoriaPage from './pages/AuditoriaPage';
+import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { SidebarProvider } from './context/SidebarContext';
 
 // Rutas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -41,6 +43,7 @@ function App() {
   return (
     <ToastProvider>
     <AuthProvider>
+      <SidebarProvider>
       <BrowserRouter>
         <Routes>
           {/* Rutas Públicas */}
@@ -72,6 +75,7 @@ function App() {
           {/* Rutas Privadas con Layout del Dashboard */}
           <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/analitica-visual" element={<AnalyticsDashboardPage />} />
             <Route path="/analisis-detallado" element={<AnalisisDetalladoPage />} />
             <Route path="/ventas" element={<VentasPage />} />
             <Route path="/movimientos" element={<MovimientosPage />} />
@@ -86,6 +90,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </SidebarProvider>
     </AuthProvider>
     </ToastProvider>
   );

@@ -9,7 +9,9 @@ const DashboardPage = () => {
     totalArticulos: 0,
     valorInventario: 0,
     alertasStock: 0,
-    ventasMes: 0
+    ventasMes: 0,
+    alertasCriticas: 0,
+    alertasAdvertencia: 0
   });
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,10 +41,10 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="animate-fade-in p-2 md:p-6 space-y-6 bg-[#f9fafc] font-outfit">
-      <header className="mb-8">
+    <div className="animate-fade-in space-y-6">
+      <header className="mb-0">
         <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Panel de Control</h1>
-        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1">Gestión Estratégica StockPilot</p>
+        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1 decoration-indigo-200 underline underline-offset-8">Gestión Estratégica StockPilot</p>
       </header>
 
       {/* Métricas Principales */}
@@ -186,46 +188,23 @@ const DashboardPage = () => {
                 </div>
               </div>
 
-              <div className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-200">
-                <p className="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">ROI Proyectado (Simulación)</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-black text-slate-800 tracking-tighter italic">${(stats.valorInventario * 0.25).toLocaleString()}</span>
-                  <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded font-black uppercase tracking-tighter">+24.5%</span>
-                </div>
-                <div className="w-full bg-slate-200 h-1 rounded-full mt-4 overflow-hidden">
-                  <div className="bg-indigo-600 h-full shadow-[0_0_10px_#4f46e5]" style={{ width: '65%' }}></div>
+              <div 
+                onClick={() => navigate('/analitica-visual')}
+                className="group bg-indigo-600 p-5 rounded-[1.5rem] border border-indigo-400 shadow-xl shadow-indigo-100/30 cursor-pointer overflow-hidden relative transition-all hover:scale-[1.02] active:scale-95"
+              >
+                <div className="absolute -top-1 -right-1 p-2 opacity-10 text-4xl group-hover:scale-125 transition-transform">📈</div>
+                <h4 className="text-base font-black text-white italic tracking-tighter uppercase mb-2 leading-tight">Acceder al Centro<br/>Analítico Visual</h4>
+                <div className="flex items-center gap-2">
+                   <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] text-white group-hover:translate-x-1 transition-transform">→</span>
+                   <span className="text-[8px] font-black text-white/70 uppercase tracking-widest">Ver Pareto y Tendencias</span>
                 </div>
               </div>
 
-              {/* Mini Gráfica de Barras (Ritmo de Caja Semanal) */}
-              {stats.ventasSemanales && (
-                <div className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-200">
-                  <p className="text-[10px] font-black text-slate-600 uppercase mb-4 tracking-widest">Ritmo de Caja (Últimos 7 Días)</p>
-                  <div className="flex items-end justify-between h-20 gap-2">
-                    {stats.ventasSemanales.map((dia, idx) => {
-                      const maximo = Math.max(...stats.ventasSemanales.map(d => d.total), 1);
-                      const pct = (dia.total / maximo) * 100;
-                      return (
-                        <div key={idx} className="flex flex-col items-center flex-1 gap-2 h-full justify-end">
-                          <div className="w-full bg-slate-200 rounded-t flex items-end justify-center h-full group relative">
-                            <div className="w-full bg-indigo-500 rounded-t transition-all duration-1000 group-hover:bg-indigo-400" style={{ height: `${pct}%` }}></div>
-                            <div className="absolute -top-8 bg-slate-800 text-white text-[9px] px-2 py-1 rounded font-black tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap shadow-xl">
-                              ${dia.total.toLocaleString()}
-                            </div>
-                          </div>
-                          <span className="text-[9px] font-black text-slate-700 uppercase">{dia.dia}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-slate-50">
-              <p className={`text-[8px] font-bold uppercase text-center tracking-[0.3em] ${stats.alertasCriticas > 0 ? 'text-rose-500' : 'text-slate-400'}`}>
-                {stats.alertasCriticas > 0 ? '⚠️ El sistema requiere intervención' : 'Operación Estable MBI'}
-              </p>
+              <div className="mt-auto pt-6 border-t border-slate-50">
+                <p className={`text-[8px] font-bold uppercase text-center tracking-[0.3em] ${stats.alertasCriticas > 0 ? 'text-rose-500' : 'text-slate-400'}`}>
+                  {stats.alertasCriticas > 0 ? '⚠️ El sistema requiere intervención' : 'Operación Estable MBI'}
+                </p>
+              </div>
             </div>
           </div>
         </section>
