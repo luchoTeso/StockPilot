@@ -6,7 +6,7 @@ class Alert {
    */
   static async generate(tiendaId) {
     // 1. Marcar como resueltas TODAS las alertas actuales (se regeneran si aún aplican)
-    await db.runAsync(`UPDATE Alertas SET resuelta = 1, fecha_resolucion = DATETIME('now','localtime') WHERE resuelta = 0 AND id_tienda = ?`, [tiendaId]);
+    await db.runAsync(`UPDATE Alertas SET resuelta = 1, fecha_resolucion = CURRENT_TIMESTAMP WHERE resuelta = 0 AND id_tienda = ?`, [tiendaId]);
 
     // 2. Extraer todos los productos con sus métricas de 30 y 7 días
     // Similar a suppliersController pero para TODOS los proveedores y productos
@@ -134,7 +134,7 @@ class Alert {
    * Resuelve (oculta) una alerta manualmente
    */
   static async resolve(idAlerta, tiendaId) {
-    return await db.runAsync(`UPDATE Alertas SET resuelta = 1, fecha_resolucion = DATETIME('now','localtime') WHERE id_alerta = ? AND id_tienda = ?`, [idAlerta, tiendaId]);
+    return await db.runAsync(`UPDATE Alertas SET resuelta = 1, fecha_resolucion = CURRENT_TIMESTAMP WHERE id_alerta = ? AND id_tienda = ?`, [idAlerta, tiendaId]);
   }
 
   /**

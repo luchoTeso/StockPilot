@@ -7,20 +7,20 @@ class Sale {
         
         const query = `
             INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida)
-            VALUES (?, ?, ?, DATETIME('now', 'localtime'))
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
         `;
         const result = await db.runAsync(query, [id_vendedor, id_tienda, precio_total]);
         return result.lastID;
     }
 
     static async createSaleProduct(saleProductData) {
-        const { id_venta, id_producto, cantidad } = saleProductData;
+        const { id_venta, id_producto, cantidad, precio_unitario } = saleProductData;
         
         const query = `
-            INSERT INTO VentasProductos (id_venta, id_producto, cantidad)
-            VALUES (?, ?, ?)
+            INSERT INTO VentasProductos (id_venta, id_producto, cantidad, precio_unitario)
+            VALUES (?, ?, ?, ?)
         `;
-        await db.runAsync(query, [id_venta, id_producto, cantidad]);
+        await db.runAsync(query, [id_venta, id_producto, cantidad, precio_unitario]);
     }
 
     /**

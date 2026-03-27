@@ -177,11 +177,15 @@ class ReportController {
                     { header: 'Categoría', key: 'categoria', width: 20 },
                     { header: 'Costo Compra', key: 'costo_compra', width: 15 },
                     { header: 'Precio Venta', key: 'precio', width: 15 },
+                    { header: 'Márgen ($)', key: 'margen', width: 15 },
                     { header: 'Stock Actual', key: 'cantidad', width: 15 },
+                    { header: 'Stock Mínimo', key: 'stock_minimo', width: 15 },
+                    { header: 'Stock Máximo', key: 'stock_maximo', width: 15 },
+                    { header: 'Lead Time (Días)', key: 'lead_time', width: 15 },
                     { header: 'F. Vencimiento', key: 'fecha_vencimiento', width: 20 },
                     { header: 'Estado', key: 'estado', width: 15 }
                 ];
-                query = `SELECT * FROM Productos WHERE id_tienda = ?`;
+                query = `SELECT *, (precio - costo_compra) as margen FROM Productos WHERE id_tienda = ?`;
                 
                 if (hasDates) {
                     query += ` AND DATE(fecha_entrada) BETWEEN ? AND ?`;
@@ -193,14 +197,16 @@ class ReportController {
                     { header: 'F. Transacción', key: 'fecha_salida', width: 25 },
                     { header: 'Producto Vendido', key: 'producto', width: 35 },
                     { header: 'Cant. Items', key: 'cantidad_items', width: 15 },
-                    { header: 'Precio Ud. ($)', key: 'precio_unitario', width: 15 },
+                    { header: 'Precio Ud. Pago ($)', key: 'precio_unitario', width: 20 },
                     { header: 'Subtotal Producto ($)', key: 'subtotal', width: 20 },
                     { header: 'Gran Total Recibo ($)', key: 'precio_total', width: 20 },
                     { header: 'Vendedor Responsable', key: 'nombres', width: 25 }
                 ];
                 query = `
                     SELECT v.id_venta, v.fecha_salida, p.nombre_producto as producto, vp.cantidad as cantidad_items, 
-                           p.precio as precio_unitario, (vp.cantidad * p.precio) as subtotal, v.precio_total, u.nombres
+                           COALESCE(vp.precio_unitario, p.precio) as precio_unitario, 
+                           (vp.cantidad * COALESCE(vp.precio_unitario, p.precio)) as subtotal, 
+                           v.precio_total, u.nombres
                     FROM Ventas v
                     JOIN VentasProductos vp ON v.id_venta = vp.id_venta
                     JOIN Productos p ON vp.id_producto = p.id_producto
@@ -214,18 +220,25 @@ class ReportController {
                 }
                 query += ` ORDER BY v.fecha_salida DESC`;
             } else if (reporte.tipo === 'Operativo' || reporte.tipo === 'Financiero') {
+                const isFinanciero = reporte.tipo === 'Financiero';
                 sheet.columns = [
-                    { header: 'ID Mov.', key: 'id_movimiento', width: 12 },
+                    { header: 'ID' + (isFinanciero ? ' Op.' : ' Mov.'), key: 'id_movimiento', width: 12 },
                     { header: 'Producto Modificado', key: 'producto', width: 35 },
                     { header: 'Fluctuación', key: 'tipo_movimiento', width: 20 },
                     { header: 'Cant. Alterada', key: 'cantidad', width: 15 },
-                    { header: 'Balance Stock Final', key: 'stock_despues', width: 20 },
+                    { header: 'Bal. Stock Final', key: 'stock_final', width: 20 },
                     { header: 'Fecha de Registro', key: 'fecha_movimiento', width: 25 },
-                    { header: 'Motivo Técnico', key: 'motivo', width: 30 },
-                    { header: 'Operario', key: 'nombres', width: 25 }
+                    ...(isFinanciero ? [
+                        { header: 'Costo Unit. ($)', key: 'costo_compra', width: 15 },
+                        { header: 'Valor Movimiento ($)', key: 'valor_total', width: 20 }
+                    ] : [
+                        { header: 'Motivo Técnico', key: 'observacion', width: 30 }
+                    ]),
+                    { header: 'Responsable', key: 'nombres', width: 25 }
                 ];
                 query = `
-                    SELECT m.*, p.nombre_producto as producto, u.nombres 
+                    SELECT m.*, p.nombre_producto as producto, u.nombres, p.costo_compra,
+                           (ABS(m.cantidad) * p.costo_compra) as valor_total
                     FROM MovimientosStock m
                     JOIN Productos p ON m.id_producto = p.id_producto
                     LEFT JOIN Usuarios u ON m.id_usuario = u.id_usuario

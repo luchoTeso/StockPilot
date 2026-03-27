@@ -261,11 +261,19 @@ const AuditoriaPage = () => {
                               <td className="px-4 py-3 font-bold text-slate-800">{s.product || s.id || `Producto ${i+1}`}</td>
                               <td className="px-4 py-3 text-center font-black text-slate-600">{baseVal}</td>
                               <td className="px-4 py-3 text-center">
-                                <span className={`font-black ${(s.adjustment || s.ajuste || '').includes('+') ? 'text-emerald-600' : s.adjustment === '0%' ? 'text-slate-400' : 'text-rose-600'}`}>
+                                <span className={`font-black ${(s.adjustment || s.ajuste || '').includes('+') ? 'text-emerald-600' : (s.adjustment === '0%' || s.ajuste === '0%') ? 'text-slate-400' : 'text-rose-600'}`}>
                                   {s.adjustment || s.ajuste || '---'}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-center font-black text-indigo-600">{s.final || '---'}</td>
+                              <td className="px-4 py-3 text-center font-black text-indigo-600">
+                                {s.final || (() => {
+                                  if (typeof baseVal === 'number' && (s.adjustment || s.ajuste)) {
+                                    const proc = parseInt((s.adjustment || s.ajuste).replace(/[^0-9-]/g, '')) || 0;
+                                    return Math.ceil(baseVal * (1 + proc/100));
+                                  }
+                                  return '---';
+                                })()}
+                              </td>
                               <td className="px-4 py-3 text-xs text-slate-500 italic leading-snug">{s.reason || s.razon || '---'}</td>
                             </tr>
                           );

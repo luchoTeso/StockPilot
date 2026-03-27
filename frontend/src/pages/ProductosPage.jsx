@@ -3,40 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-
-const CustomSelect = ({ value, onChange, options, placeholder, className }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const selectedLabel = options.find(o => o.value === value)?.label || placeholder;
-
-  return (
-    <div className={`relative ${className}`}>
-      <div 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="w-full h-full flex items-center justify-between cursor-pointer outline-none select-none"
-      >
-        <span className="truncate pr-4">{selectedLabel}</span>
-        <span className={`transition-transform duration-300 text-xs opacity-50 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
-      </div>
-      
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-[60]" onClick={() => setIsOpen(false)}></div>
-          <div className="absolute top-[calc(100%+8px)] left-0 w-full min-w-full bg-white border border-slate-100 rounded-2xl shadow-2xl z-[70] overflow-hidden animate-scale-in py-2 max-h-60 overflow-y-auto">
-            {options.map((opt, idx) => (
-              <div 
-                key={idx}
-                onClick={() => { onChange({ target: { value: opt.value } }); setIsOpen(false); }}
-                className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-600 ${value === opt.value ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700'}`}
-              >
-                {opt.label}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
+import CustomSelect from '../components/CustomSelect';
 
 const ProductosPage = () => {
   const { user } = useAuth();
@@ -71,7 +38,8 @@ const ProductosPage = () => {
     cantidad: '',
     stock_minimo: '5',
     stock_seguridad: '0',
-    lead_time: '3'
+    lead_time: '3',
+    fecha_vencimiento: ''
   });
 
   // Modal Venta
@@ -204,14 +172,16 @@ const ProductosPage = () => {
         cantidad: producto.cantidad || '',
         stock_minimo: producto.stock_minimo ?? '5',
         stock_seguridad: producto.stock_seguridad ?? '0',
-        lead_time: producto.lead_time ?? '3'
+        lead_time: producto.lead_time ?? '3',
+        fecha_vencimiento: producto.fecha_vencimiento ? producto.fecha_vencimiento.split('T')[0] : ''
       });
     } else {
       setEditMode(false);
       setFormData({
         id_producto: '', codigo: '', nombre_producto: '', categoria: '',
         subcategoria: '', tipo_producto: '', precio_unitario: '', cantidad: '',
-        stock_minimo: '5', stock_seguridad: '0', lead_time: '3'
+        stock_minimo: '5', stock_seguridad: '0', lead_time: '3',
+        fecha_vencimiento: ''
       });
     }
     setModalOpen(true);
@@ -403,7 +373,7 @@ const ProductosPage = () => {
           <input type="text" placeholder="Buscar código o nombre..." value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} className="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none w-full md:w-auto" />
           <CustomSelect 
             value={filtroCategoria} 
-            onChange={e => setFiltroCategoria(e.target.value)}
+            onChange={val => setFiltroCategoria(val)}
             placeholder="Todas las categorías"
             options={[
               { value: '', label: 'Todas las categorías' },
@@ -557,9 +527,40 @@ const ProductosPage = () => {
                 </div>
               </div>
 
-              <div className="mb-6 space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Detalle del Formato <span className="text-slate-400">(Opc)</span></label>
-                <input type="text" value={formData.tipo_producto} onChange={e => setFormData({...formData, tipo_producto: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-all" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tipo de Producto <span className="text-slate-400">(Fábrica)</span></label>
+                  <CustomSelect 
+                    value={formData.tipo_producto} 
+                    onChange={val => setFormData({...formData, tipo_producto: val})}
+                    placeholder="Seleccione tipo..."
+                    options={[
+                      { value: '', label: 'Seleccione tipo...' },
+                      { value: 'Perecedero', label: '🍎 Perecedero' },
+                      { value: 'No Perecedero', label: '📦 No Perecedero' },
+                      { value: 'Digital', label: '💻 Digital' }
+                    ]}
+                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus-within:border-indigo-500 transition-all"
+                  />
+                </div>
+                {formData.tipo_producto === 'Perecedero' && (
+                  <div className="space-y-2 animate-bounce-in">
+                    <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Fecha de Vencimiento 📅</label>
+                    <input 
+                      required 
+                      type="date" 
+                      value={formData.fecha_vencimiento} 
+                      onChange={e => setFormData({...formData, fecha_vencimiento: e.target.value})} 
+                      className="w-full p-4 bg-rose-50 border border-rose-200 rounded-2xl text-sm font-bold text-rose-800 focus:border-rose-500 outline-none transition-all" 
+                    />
+                  </div>
+                )}
+                {formData.tipo_producto !== 'Perecedero' && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Observación Formato <span className="text-slate-400">(Opc)</span></label>
+                    <input type="text" value={formData.subcategoria} onChange={e => setFormData({...formData, subcategoria: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-all" placeholder="Ej: Pack x6, 500ml..." />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">

@@ -33,7 +33,7 @@ class Product {
                 precio, cantidad, fecha_entrada, estado, id_tienda,
                 stock_minimo, stock_maximo, fecha_vencimiento, frecuencia_compra_dias, costo_compra,
                 stock_seguridad, lead_time
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, DATE('now','localtime'), 'Disponible', ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_DATE, 'Disponible', ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const result = await db.runAsync(query, [
             productData.codigo,
@@ -87,7 +87,7 @@ class Product {
 
     static async addStock(productId, cantidad) {
         const query = `
-            UPDATE Productos SET cantidad = cantidad + ?, fecha_entrada = DATE('now','localtime')
+            UPDATE Productos SET cantidad = cantidad + ?, fecha_entrada = CURRENT_DATE
             WHERE id_producto = ?
         `;
         const result = await db.runAsync(query, [cantidad, productId]);

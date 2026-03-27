@@ -114,19 +114,25 @@ class SaleController {
                     precio_total: total
                 });
 
-                // 3. Registrar detalle de venta
+                // 3. Registrar detalle de venta (con precio histórico)
                 await Sale.createSaleProduct({
                     id_venta,
                     id_producto,
-                    cantidad
+                    cantidad,
+                    precio_unitario: producto.precio
                 });
 
                 // 4. Descontar stock Y registrar movimiento (Trazabilidad completa)
-                // Usamos SQL directo aquí para mantener la misma transacción abierta
+                const stockFinalResult = producto.cantidad - cantidad;
+
+                // Descontar del producto
+                await db.runAsync('UPDATE Productos SET cantidad = ? WHERE id_producto = ?', [stockFinalResult, id_producto]);
+
+                // Registrar movimiento con saldo final
                 await db.runAsync(
-                    `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, fecha_movimiento, observacion, id_usuario, id_tienda)
-                     VALUES (?, 'Salida', ?, DATETIME('now', 'localtime'), 'Venta #' || printf('%06d', ?), ?, ?)`,
-                    [id_producto, cantidad, id_venta, id_vendedor, id_tienda]
+                    `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, stock_final, fecha_movimiento, observacion, id_usuario, id_tienda)
+                     VALUES (?, 'Salida', ?, ?, CURRENT_TIMESTAMP, 'Venta #' || printf('%06d', ?), ?, ?)`,
+                    [id_producto, cantidad, stockFinalResult, id_venta, id_vendedor, id_tienda]
                 );
 
                 await db.runAsync('COMMIT');

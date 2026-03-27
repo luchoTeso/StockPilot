@@ -278,8 +278,17 @@ const suppliersController = {
       const insertAuditQuery = "INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
       await new Promise((resolve, reject) => {
-        const datos_base = JSON.stringify(carrito_final.map(i => ({ id: i.id_producto, calculo_base: i.calculo_base })));
-        const ajuste_crudo = JSON.stringify(carrito_final.map(i => ({ id: i.id_producto, ajuste: i.ajuste_ia, razon: i.razon_ia })));
+        const datos_base = JSON.stringify(carrito_final.map(i => ({ 
+            product: i.nombre, 
+            base: i.calculo_base 
+        })));
+        
+        const ajuste_crudo = JSON.stringify(carrito_final.map(i => ({ 
+            product: i.nombre,
+            adjustment: i.ajuste_ia, 
+            final: i.sugerencia_final,
+            reason: i.razon_ia 
+        })));
         
         db.run(insertAuditQuery, [
           tiendaId, ordenId, 

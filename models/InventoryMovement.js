@@ -61,13 +61,10 @@ class InventoryMovement {
             if (nuevoStock < 0) nuevoStock = 0;
         }
 
-        // Insertar movimiento con fecha/hora local del servidor
-        const now = new Date();
-        const ahora = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
         const result = await db.runAsync(
-            `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, fecha_movimiento, observacion, id_usuario, id_tienda)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [id_producto, tipo_movimiento, cantidad, ahora, observacion || '', id_usuario, id_tienda]
+            `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, stock_final, fecha_movimiento, observacion, id_usuario, id_tienda)
+             VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)`,
+            [id_producto, tipo_movimiento, cantidad, nuevoStock, observacion || '', id_usuario, id_tienda]
         );
 
         // Actualizar stock del producto

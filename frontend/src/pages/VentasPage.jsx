@@ -2,40 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import Tooltip from '../components/Tooltip';
-
-const CustomSelect = ({ value, onChange, options, placeholder, className }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const selectedLabel = options.find(o => o.value === value)?.label || placeholder;
-
-  return (
-    <div className={`relative ${className}`}>
-      <div 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="w-full h-full flex items-center justify-between cursor-pointer outline-none select-none"
-      >
-        <span className="truncate pr-4">{selectedLabel}</span>
-        <span className={`transition-transform duration-300 text-xs opacity-50 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
-      </div>
-      
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-[60]" onClick={() => setIsOpen(false)}></div>
-          <div className="absolute top-[calc(100%+8px)] left-0 w-full min-w-full bg-white border border-slate-100 rounded-2xl shadow-2xl z-[70] overflow-hidden animate-scale-in py-2 max-h-60 overflow-y-auto">
-            {options.map((opt, idx) => (
-              <div 
-                key={idx}
-                onClick={() => { onChange({ target: { value: opt.value } }); setIsOpen(false); }}
-                className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-600 ${value === opt.value ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700'}`}
-              >
-                {opt.label}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
+import CustomSelect from '../components/CustomSelect';
 
 const VentasPage = () => {
   const toast = useToast();
@@ -129,7 +96,9 @@ const VentasPage = () => {
 
   const formatearFecha = (fechaString) => {
     if (!fechaString) return '---';
-    const fecha = new Date(fechaString);
+    // Normalizar a ISO UTC para evitar desvíos de zona horaria en el navegador
+    const isoStr = fechaString.includes('T') ? fechaString : fechaString.replace(' ', 'T') + 'Z';
+    const fecha = new Date(isoStr);
     return fecha.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
   };
 
@@ -222,7 +191,7 @@ const VentasPage = () => {
         />
         <CustomSelect 
           value={filtroCategoria} 
-          onChange={e => setFiltroCategoria(e.target.value)}
+          onChange={val => setFiltroCategoria(val)}
           placeholder="Todas las categorías"
           options={[
             { value: '', label: 'Todas las categorías' },

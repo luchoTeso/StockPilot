@@ -83,7 +83,9 @@ const MovimientosPage = () => {
 
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return '---';
-    return new Date(fechaStr).toLocaleString('es-CO', {
+    // Normalizar a ISO UTC para evitar desvíos de zona horaria en el navegador
+    const isoStr = fechaStr.includes('T') ? fechaStr : fechaStr.replace(' ', 'T') + 'Z';
+    return new Date(isoStr).toLocaleString('es-CO', {
       year: 'numeric', month: '2-digit', day: '2-digit',
       hour: '2-digit', minute: '2-digit'
     });
