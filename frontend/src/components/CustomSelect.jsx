@@ -58,7 +58,7 @@ const CustomSelect = ({ value, onChange, options, placeholder, className }) => {
         left: `${coords.left}px`,
         width: `${coords.width}px`
       }}
-      className="fixed z-[9999] bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-scale-in py-2 max-h-60 overflow-y-auto font-outfit"
+      className="fixed z-[9999] bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-scale-in py-2 max-h-60 overflow-y-auto scrollbar-premium font-outfit"
     >
       {options.map((opt, idx) => (
         <div 

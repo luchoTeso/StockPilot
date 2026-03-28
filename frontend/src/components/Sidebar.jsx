@@ -26,6 +26,7 @@ const Sidebar = () => {
   const links = [
     { to: "/dashboard", text: "Panel de Control", icon: "📊" },
     { to: "/analitica-visual", text: "Analítica Visual", icon: "📈", id: "nav-analitica-visual" },
+    { to: "/simulador", text: "Simulador", icon: "🧪", id: "nav-simulador" },
     { to: "/alertas", text: "Alertas", icon: "🚨" },
     { to: "/ventas", text: "Ventas", icon: "💰" },
     { to: "/movimientos", text: "Movimientos", icon: "🔄" },
@@ -59,7 +60,7 @@ const Sidebar = () => {
 
       {/* Sidebar Principal (FIJO) */}
       <div className={`
-        fixed left-0 top-0 h-screen z-[101] 
+        fixed left-0 top-0 h-screen z-30 
         bg-[#1e2235] text-white py-6 flex flex-col justify-between 
         shadow-2xl transition-all duration-300 ease-in-out font-outfit
         ${sidebarWidth} 

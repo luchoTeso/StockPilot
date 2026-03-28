@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
+import { useSidebar } from '../context/SidebarContext';
 
 const ProveedoresPage = () => {
   const [proveedores, setProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { isCollapsed: isSidebarCollapsed } = useSidebar();
   
   // Modals state
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -231,9 +234,9 @@ const ProveedoresPage = () => {
       )}
 
       {/* SMART ORDER MODAL */}
-      {showOrderModal && selectedSupplier && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowOrderModal(false)}></div>
+      {showOrderModal && selectedSupplier && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowOrderModal(false)}></div>
           
           <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-[2rem] shadow-2xl relative z-10 flex flex-col overflow-hidden animate-scale-in border border-slate-100">
             {/* Modal Header */}
@@ -248,7 +251,7 @@ const ProveedoresPage = () => {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-slate-50/50">
+            <div className="p-6 overflow-y-auto scrollbar-premium flex-1 space-y-6 bg-slate-50/50">
               
               {/* STATUS CARD (RISK ENGINE) */}
               {riskEval && (
@@ -365,7 +368,8 @@ const ProveedoresPage = () => {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       {/* HISTORY PANEL */}
       <div className="relative z-10 pt-10 border-t border-slate-100">
@@ -425,8 +429,8 @@ const ProveedoresPage = () => {
       </div>
 
       {/* DETAIL MODAL */}
-      {showHistoryDetail && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      {showHistoryDetail && createPortal(
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setShowHistoryDetail(null)}></div>
           <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl relative z-10 overflow-hidden animate-scale-in">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -454,7 +458,7 @@ const ProveedoresPage = () => {
               </div>
             </div>
 
-            <div className="px-6 pb-6 max-h-[40vh] overflow-y-auto">
+            <div className="px-6 pb-6 max-h-[40vh] overflow-y-auto scrollbar-premium">
               <div className="space-y-3">
                 {ordenDetail.map(det => (
                   <div key={det.id_detalle} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -522,7 +526,8 @@ const ProveedoresPage = () => {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -17,6 +17,7 @@ import ProveedoresPage from './pages/ProveedoresPage';
 import AlertasPage from './pages/AlertasPage';
 import AuditoriaPage from './pages/AuditoriaPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
+import SimuladorPage from './pages/SimuladorPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { SidebarProvider } from './context/SidebarContext';
@@ -87,6 +88,7 @@ function App() {
             <Route path="/perfil" element={<ProfilePage />} />
             <Route path="/registro-tendedero" element={<RegistroTendederoPage />} />
             <Route path="/auditoria" element={<AuditoriaPage />} />
+            <Route path="/simulador" element={<SimuladorPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -234,6 +234,7 @@ const aiController = {
             p.nombre_producto,
             p.cantidad as stock_actual,
             p.precio,
+            p.id_proveedor,
             p.categoria,
             p.stock_seguridad,
             p.lead_time,
@@ -279,9 +280,11 @@ const aiController = {
 
         return { 
           id_producto: item.id_producto,
+          id_proveedor: item.id_proveedor,
           nombre: item.nombre_producto,
           category, 
           risk, 
+          precio: item.precio,
           velocity: item.velocidad_venta,
           stock_actual: item.stock_actual,
           stock_seguridad: item.stock_seguridad,

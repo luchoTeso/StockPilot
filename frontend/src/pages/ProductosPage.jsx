@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { createPortal } from 'react-dom';
 import CustomSelect from '../components/CustomSelect';
 
 const ProductosPage = () => {
@@ -480,9 +481,10 @@ const ProductosPage = () => {
       </div>
 
       {/* Modal Agregar/Editar */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
+      {modalOpen && createPortal(
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={handleCloseModal}></div>
+          <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-premium shadow-2xl animate-scale-in relative z-10 transition-all">
             <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-slate-50">
               <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">{editMode ? 'Ficha de Edición' : 'Alta de Catálogo'}</h3>
               <button onClick={handleCloseModal} className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-rose-100 flex items-center justify-center text-xl transition-all shadow-sm">&times;</button>
@@ -626,7 +628,8 @@ const ProductosPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Modal Registrar Venta Directa */}

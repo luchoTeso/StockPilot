@@ -45,3 +45,25 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+/* === Scrollbar Premium Global === */
+.scrollbar-premium::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollbar-premium::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-premium::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* slate-300 */
+    border-radius: 99px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+}
+
+.scrollbar-premium::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* slate-400 */
+    background-clip: content-box;
+}
