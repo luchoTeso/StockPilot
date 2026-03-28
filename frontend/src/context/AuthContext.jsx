@@ -12,6 +12,30 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // INTERCEPTOR GLOBAL DE SEGURIDAD
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          const isConcurrent = error.response.data?.code === 'CONCURRENT_SESSION';
+          
+          if (isConcurrent) {
+             // Expulsión forzosa por seguridad concurrente
+             setUser(null);
+             window.location.href = '/login?reason=concurrent';
+          } else if (user) {
+             // Sesión expirada normal
+             setUser(null);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => axios.interceptors.response.eject(interceptor);
+  }, [user]);
+
   useEffect(() => {
     checkSession();
   }, []);
@@ -33,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (identificador, password, rol) => {
     try {
-      const res = await axios.post('/login', { login: identificador, password, rol });
+      const res = await axios.post('/api/login', { login: identificador, password, rol });
       if (res.data.success) {
         await checkSession();
       } else {
@@ -46,7 +70,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.get('/logout');
+      await axios.get('/api/logout');
       setUser(null);
     } catch (err) {
       console.error('Error al cerrar sesión', err);

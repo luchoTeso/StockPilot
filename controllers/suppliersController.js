@@ -48,6 +48,42 @@ const suppliersController = {
     }
   },
 
+  // Actualizar un proveedor
+  update: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const tiendaId = req.session.tiendaId || 6;
+      const { nombre_empresa, contacto_principal, email, telefono, direccion } = req.body;
+      
+      const query = `
+        UPDATE Proveedores 
+        SET nombre_empresa = ?, contacto_principal = ?, email = ?, telefono = ?, direccion = ?
+        WHERE id_proveedor = ? AND id_tienda = ?
+      `;
+      
+      await db.runAsync(query, [nombre_empresa, contacto_principal, email, telefono, direccion, id, tiendaId]);
+      res.json({ success: true, message: 'Proveedor actualizado' });
+    } catch (e) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  },
+
+  // Borrado lógico de un proveedor
+  delete: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const tiendaId = req.session.tiendaId || 6;
+      
+      // Borrado lógico por seguridad y trazabilidad
+      const query = `UPDATE Proveedores SET estado = 'Inactivo' WHERE id_proveedor = ? AND id_tienda = ?`;
+      
+      await db.runAsync(query, [id, tiendaId]);
+      res.json({ success: true, message: 'Proveedor eliminado del sistema' });
+    } catch (e) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  },
+
   // Obtener el Forecast Matemático (Sin IA) agrupado por Proveedor
   getSupplierForecast: async (req, res) => {
     try {

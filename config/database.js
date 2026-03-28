@@ -26,6 +26,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
         db.run("ALTER TABLE Usuarios ADD COLUMN reset_expires INTEGER", (e) => {
             if (!e) console.log('🔧 Mantenimiento: Columna reset_expires inyectada.');
         });
+        db.run("ALTER TABLE Usuarios ADD COLUMN session_id TEXT", (e) => {
+            if (!e) console.log('🛡️ Seguridad: Candado de sesión (session_id) inyectado en BD.');
+        });
+        db.run("ALTER TABLE Productos ADD COLUMN id_proveedor INTEGER", (e) => {
+            if (!e) console.log('📦 Inventario: Columna id_proveedor vinculada exitosamente.');
+        });
     }
 });
 

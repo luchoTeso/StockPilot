@@ -33,8 +33,8 @@ const RegisterPage = () => {
 
     setIsLoading(true);
     try {
-      // Usando el endpoint real del backend existente (mapeado en la raíz por app.js y Vite Proxy)
-      await axios.post('/registro', {
+      // Usando el endpoint real del backend con prefijo /api
+      await axios.post('/api/registro', {
         name: formData.nombres,
         username: formData.usuario,
         email: formData.correo,

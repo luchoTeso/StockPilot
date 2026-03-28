@@ -4,10 +4,10 @@ const AuthController = require('../controllers/authController');
 const { sanitizeBody, validateLogin, validateRegister } = require('../middleware/validation');
 const router = express.Router();
 
-router.post('/login', sanitizeBody, validateLogin, AuthController.login);
-router.post('/registro', sanitizeBody, validateRegister, AuthController.register);
+router.post('/api/login', sanitizeBody, validateLogin, AuthController.login);
+router.post('/api/registro', sanitizeBody, validateRegister, AuthController.register);
 router.get('/api/session-info', AuthController.getSessionInfo);
-router.get('/logout', AuthController.logout);
+router.get('/api/logout', AuthController.logout);
 
 // Rutas de Perfil
 router.get('/api/perfil', AuthController.getProfile);

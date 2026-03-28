@@ -5,6 +5,9 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const cors = require('cors');
+const helmet = require('helmet');
+const { createBackup } = require('./utils/backup');
+const { globalLimiter, authLimiter } = require('./middleware/rateLimiter');
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
@@ -22,9 +25,19 @@ const supplierRoutes = require('./routes/supplierRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const scheduler = require('./services/schedulerService');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// 🛡️ SEGURIDAD: Configuración de Helmet (Cabeceras de respuesta seguras)
+app.use(helmet({
+    contentSecurityPolicy: false, // Se desactiva para compatibilidad con CDN de frontend durante dev
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// 🛡️ SEGURIDAD: Límite de peticiones global (DDoS Protection)
+app.use('/api/', globalLimiter);
 
 // Configuración del servidor
 app.use(cors({
@@ -33,13 +46,25 @@ app.use(cors({
 }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
-// La carpeta public ha sido removida en favor del frontend React
+
+// 🛡️ SEGURIDAD: Configuración de Sesión Hardened
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'fallback-dev-secret', // Fix #2
+    secret: process.env.SESSION_SECRET || 'fallback-dev-secret',
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }
+    saveUninitialized: false, // No guardar sesiones vacías (Mejor cumplimiento GDPR)
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
+        httpOnly: true, // No accesible por scripts (Previene XSS)
+        maxAge: 1000 * 60 * 60 * 24, // 24 horas de vigencia
+        sameSite: 'lax' // Protección básica CSRF
+    }
 }));
+
+// 🛡️ SEGURIDAD: Límite drástico en endpoints críticos (Fuerza Bruta)
+app.use('/api/login', authLimiter);
+app.use('/api/registro', authLimiter);
+app.use('/api/forgot-password', authLimiter);
+app.use('/api/reset-password', authLimiter);
 
 // Usar rutas
 app.use('/api/dashboard', dashboardRoutes);
@@ -58,7 +83,18 @@ app.use('/api/alertas', alertRoutes);
 app.use('/api/auditoria', auditRoutes);
 app.use('/api/feedback', feedbackRoutes);
 
-// La ruta principal '/' ahora la maneja Vite en React y el backend solo provee la API.
+// 🛡️ SEGURIDAD: Servir el Frontend en PRODUCCIÓN
+if (process.env.NODE_ENV === 'production') {
+    const frontendDistPath = path.join(__dirname, 'frontend', 'dist');
+    app.use(express.static(frontendDistPath));
+
+    // Si no es una ruta de API, devuelve el index.html de React (Manejador SPA)
+    app.get('*', (req, res) => {
+        if (!req.path.startsWith('/api')) {
+            res.sendFile(path.join(frontendDistPath, 'index.html'));
+        }
+    });
+}
 
 // Manejo de errores 404
 app.use((req, res) => {
@@ -67,8 +103,18 @@ app.use((req, res) => {
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
-    console.error('Error global:', err);
-    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    // Solo logueamos el error completo en el servidor
+    console.error('❌ ERROR GLOBAL:', err);
+
+    // En producción, silenciamos detalles técnicos peligrosos
+    const isProd = process.env.NODE_ENV === 'production';
+    
+    res.status(500).json({ 
+        success: false, 
+        error: isProd 
+            ? 'Lo sentimos, ha ocurrido un error interno. Intenta de nuevo más tarde.' 
+            : `Error interno: ${err.message}` 
+    });
 });
 
 // Manejo de rechazos no controlados
@@ -86,6 +132,10 @@ function startServer(port) {
     server.on('listening', () => {
         retries = 0; // Reset en caso de éxito
         console.log('✅ Servidor MVC corriendo en http://localhost:' + port);
+        
+        // 📦 RESPALDO: Crear backup de la BD al iniciar el sistema
+        createBackup();
+
         console.log('📁 Arquitectura MVC completada exitosamente');
         console.log('📍 Origin permitido: http://localhost:5173');
 
@@ -112,5 +162,7 @@ function startServer(port) {
         }
     });
 }
+// Iniciar planeador de tareas automáticas (Cron Jobs)
+scheduler.startScheduler();
 
 startServer(PORT);

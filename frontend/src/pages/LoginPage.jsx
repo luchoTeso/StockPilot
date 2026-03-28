@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import CustomSelect from '../components/CustomSelect';
 
@@ -10,6 +10,9 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isConcurrent = new URLSearchParams(location.search).get('reason') === 'concurrent';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,6 +41,12 @@ const LoginPage = () => {
             <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">StockPilot</h1>
             <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2 font-outfit">Gestión Inteligente de Inventario</p>
           </div>
+
+          {isConcurrent && !error && (
+            <div className="bg-amber-50 border border-amber-100 text-amber-600 p-4 rounded-xl mb-8 text-[10px] font-black uppercase tracking-widest text-center animate-pulse">
+              🛡️ Sesión cerrada: Se ha iniciado sesión en otro dispositivo.
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl mb-8 text-[10px] font-black uppercase tracking-widest text-center">

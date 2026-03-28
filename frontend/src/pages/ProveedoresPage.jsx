@@ -24,6 +24,20 @@ const ProveedoresPage = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showHistoryDetail, setShowHistoryDetail] = useState(null);
   const [ordenDetail, setOrdenDetail] = useState([]);
+  
+  // Supplier CRUD state
+  const [showSupplierModal, setShowSupplierModal] = useState(false);
+  const [supplierFormData, setSupplierFormData] = useState({
+    id_proveedor: '',
+    nombre_empresa: '',
+    contacto_principal: '',
+    email: '',
+    telefono: '',
+    direccion: ''
+  });
+  const [isEditingSupplier, setIsEditingSupplier] = useState(false);
+  const [supplierLoading, setSupplierLoading] = useState(false);
+  const [supplierToDelete, setSupplierToDelete] = useState(null);
 
   const toast = useToast();
 
@@ -178,6 +192,65 @@ const ProveedoresPage = () => {
     }
   };
 
+  const handleOpenSupplierModal = (supplier = null) => {
+    if (supplier) {
+      setIsEditingSupplier(true);
+      setSupplierFormData({
+        id_proveedor: supplier.id_proveedor,
+        nombre_empresa: supplier.nombre_empresa || '',
+        contacto_principal: supplier.contacto_principal || '',
+        email: supplier.email || '',
+        telefono: supplier.telefono || '',
+        direccion: supplier.direccion || ''
+      });
+    } else {
+      setIsEditingSupplier(false);
+      setSupplierFormData({
+        id_proveedor: '',
+        nombre_empresa: '',
+        contacto_principal: '',
+        email: '',
+        telefono: '',
+        direccion: ''
+      });
+    }
+    setShowSupplierModal(true);
+  };
+
+  const handleSaveSupplier = async (e) => {
+    e.preventDefault();
+    setSupplierLoading(true);
+    try {
+      if (isEditingSupplier) {
+        await axios.put(`/api/proveedores/${supplierFormData.id_proveedor}`, supplierFormData);
+        toast.success('Proveedor actualizado exitosamente');
+      } else {
+        await axios.post('/api/proveedores', supplierFormData);
+        toast.success('Nuevo proveedor registrado');
+      }
+      setShowSupplierModal(false);
+      fetchProveedores();
+    } catch (error) {
+      toast.error('Error al guardar el proveedor');
+    } finally {
+      setSupplierLoading(false);
+    }
+  };
+
+  const handleDeleteSupplier = async (id) => {
+    setSupplierLoading(true);
+    try {
+      await axios.delete(`/api/proveedores/${id}`);
+      toast.success('Proveedor inhabilitado');
+      setSupplierToDelete(null);
+      fetchProveedores();
+    } catch (error) {
+      toast.error('No se pudo inhabilitar el proveedor');
+    } finally {
+      setSupplierLoading(false);
+    }
+  };
+
   return (
     <div className="p-8 pb-32 max-w-7xl mx-auto space-y-8 animate-fade-in font-outfit">
       
@@ -195,6 +268,13 @@ const ProveedoresPage = () => {
             Gestiona tus compras apoyado en el Copiloto IA. Revisa qué productos necesitas pedir y genera tus órdenes de abastecimiento al instante.
           </p>
         </div>
+        
+        <button 
+          onClick={() => handleOpenSupplierModal()}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95 z-20"
+        >
+          <span>➕</span> Registrar Proveedor
+        </button>
       </div>
 
       {/* SUPPLIERS GRID */}
@@ -207,7 +287,22 @@ const ProveedoresPage = () => {
               <div>
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase leading-none">{p.nombre_empresa}</h3>
-                  <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full">Activo</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => handleOpenSupplierModal(p)} 
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 hover:shadow-sm hover:shadow-indigo-100 transition-all active:scale-90" 
+                      title="Editar Proveedor"
+                    >
+                        ✏️
+                    </button>
+                    <button 
+                      onClick={() => setSupplierToDelete(p)} 
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:shadow-sm hover:shadow-rose-100 transition-all active:scale-90" 
+                      title="Eliminar Proveedor"
+                    >
+                        🗑️
+                    </button>
+                  </div>
                 </div>
                 <p className="text-sm font-bold text-slate-500 flex items-center gap-2 mt-1">
                   👤 {p.contacto_principal || 'Sin Contacto'}
@@ -525,6 +620,89 @@ const ProveedoresPage = () => {
                 <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">✕ Orden rechazada</span>
               </div>
             )}
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* SUPPLIER CRUD MODAL */}
+      {showSupplierModal && createPortal(
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setShowSupplierModal(false)}></div>
+          <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl relative z-20 animate-scale-in border border-slate-100 overflow-hidden">
+             <div className="p-8 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight uppercase italic">
+                  {isEditingSupplier ? 'Editar Proveedor' : 'Nuevo Proveedor'}
+                </h3>
+                <button onClick={() => setShowSupplierModal(false)} className="text-2xl text-slate-400 hover:text-rose-500 transition-colors">&times;</button>
+             </div>
+             
+             <form onSubmit={handleSaveSupplier} className="p-8 space-y-5">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Comercial</label>
+                  <input required type="text" value={supplierFormData.nombre_empresa} onChange={e => setSupplierFormData({...supplierFormData, nombre_empresa: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contacto Principal</label>
+                        <input required type="text" value={supplierFormData.contacto_principal} onChange={e => setSupplierFormData({...supplierFormData, contacto_principal: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teléfono</label>
+                        <input type="text" value={supplierFormData.telefono} onChange={e => setSupplierFormData({...supplierFormData, telefono: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" />
+                    </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
+                  <input type="email" value={supplierFormData.email} onChange={e => setSupplierFormData({...supplierFormData, email: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dirección Física</label>
+                  <input type="text" value={supplierFormData.direccion} onChange={e => setSupplierFormData({...supplierFormData, direccion: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" />
+                </div>
+                
+                <button 
+                  disabled={supplierLoading}
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2 animate-bounce-in mt-4"
+                >
+                  {supplierLoading ? 'Procesando...' : (isEditingSupplier ? 'Actualizar Datos' : 'Registrar Proveedor')}
+                </button>
+             </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* CUSTOM CONFIRM DELETE MODAL */}
+      {supplierToDelete && createPortal(
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setSupplierToDelete(null)}></div>
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative z-20 animate-scale-in border border-rose-100 overflow-hidden">
+             <div className="p-8 text-center space-y-6">
+                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto border-2 border-rose-100 shadow-inner">
+                  ⚠️
+                </div>
+                <div>
+                   <h3 className="text-2xl font-black text-slate-800 tracking-tight uppercase italic">¿Confirmas la baja?</h3>
+                   <p className="text-sm font-bold text-slate-500 mt-2 leading-relaxed">
+                     Vas a inhabilitar a <span className="text-rose-600">{supplierToDelete.nombre_empresa}</span>. Se mantendrá el registro histórico pero no podrás vincularlo a nuevos productos.
+                   </p>
+                </div>
+                
+                <div className="flex flex-col gap-3">
+                   <button 
+                     onClick={() => handleDeleteSupplier(supplierToDelete.id_proveedor)}
+                     className="w-full py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-200 transition-all active:scale-95"
+                   >
+                     Sí, inhabilitar ahora
+                   </button>
+                   <button 
+                     onClick={() => setSupplierToDelete(null)}
+                     className="w-full py-4 bg-slate-50 text-slate-400 hover:text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+                   >
+                     No, mantener activo
+                   </button>
+                </div>
+             </div>
           </div>
         </div>,
         document.body

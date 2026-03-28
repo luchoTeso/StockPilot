@@ -32,8 +32,8 @@ class Product {
                 codigo, nombre_producto, categoria, subcategoria, tipo_producto,
                 precio, cantidad, fecha_entrada, estado, id_tienda,
                 stock_minimo, stock_maximo, fecha_vencimiento, frecuencia_compra_dias, costo_compra,
-                stock_seguridad, lead_time
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_DATE, 'Disponible', ?, ?, ?, ?, ?, ?, ?, ?)
+                stock_seguridad, lead_time, id_proveedor
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_DATE, 'Disponible', ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const result = await db.runAsync(query, [
             productData.codigo,
@@ -50,7 +50,8 @@ class Product {
             productData.frecuencia_compra_dias,
             productData.costo_compra || 0,
             productData.stock_seguridad,
-            productData.lead_time
+            productData.lead_time,
+            productData.id_proveedor || null
         ]);
         return result.lastID;
     }
@@ -62,7 +63,7 @@ class Product {
             tipo_producto = ?, precio = ?, cantidad = ?,
             stock_minimo = ?, stock_maximo = ?, fecha_vencimiento = ?,
             frecuencia_compra_dias = ?, costo_compra = ?,
-            stock_seguridad = ?, lead_time = ?
+            stock_seguridad = ?, lead_time = ?, id_proveedor = ?
             WHERE id_producto = ?
         `;
         const result = await db.runAsync(query, [
@@ -80,6 +81,7 @@ class Product {
             productData.costo_compra || 0,
             productData.stock_seguridad || 0,
             productData.lead_time || 3,
+            productData.id_proveedor || null,
             productId
         ]);
         return result.changes > 0;

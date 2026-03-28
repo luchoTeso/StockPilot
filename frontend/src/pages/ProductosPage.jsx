@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { createPortal } from 'react-dom';
 import CustomSelect from '../components/CustomSelect';
-
+import CustomDatePicker from '../components/CustomDatePicker';
+import Tooltip from '../components/Tooltip';
 const ProductosPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -40,8 +41,11 @@ const ProductosPage = () => {
     stock_minimo: '5',
     stock_seguridad: '0',
     lead_time: '3',
-    fecha_vencimiento: ''
+    fecha_vencimiento: '',
+    id_proveedor: ''
   });
+
+  const [proveedores, setProveedores] = useState([]);
 
   // Modal Venta
   const [ventaModalOpen, setVentaModalOpen] = useState(false);
@@ -104,7 +108,17 @@ const ProductosPage = () => {
 
   useEffect(() => {
     cargarProductos();
+    fetchProveedores();
   }, []);
+
+  const fetchProveedores = async () => {
+    try {
+      const res = await axios.get('/api/proveedores');
+      if (res.data.success) setProveedores(res.data.data);
+    } catch (e) {
+      console.error('Error cargando proveedores:', e);
+    }
+  };
 
   const cargarProductos = async () => {
     setLoading(true);
@@ -174,7 +188,8 @@ const ProductosPage = () => {
         stock_minimo: producto.stock_minimo ?? '5',
         stock_seguridad: producto.stock_seguridad ?? '0',
         lead_time: producto.lead_time ?? '3',
-        fecha_vencimiento: producto.fecha_vencimiento ? producto.fecha_vencimiento.split('T')[0] : ''
+        fecha_vencimiento: producto.fecha_vencimiento ? producto.fecha_vencimiento.split('T')[0] : '',
+        id_proveedor: producto.id_proveedor || ''
       });
     } else {
       setEditMode(false);
@@ -182,7 +197,7 @@ const ProductosPage = () => {
         id_producto: '', codigo: '', nombre_producto: '', categoria: '',
         subcategoria: '', tipo_producto: '', precio_unitario: '', cantidad: '',
         stock_minimo: '5', stock_seguridad: '0', lead_time: '3',
-        fecha_vencimiento: ''
+        fecha_vencimiento: '', id_proveedor: ''
       });
     }
     setModalOpen(true);
@@ -546,14 +561,13 @@ const ProductosPage = () => {
                   />
                 </div>
                 {formData.tipo_producto === 'Perecedero' && (
-                  <div className="space-y-2 animate-bounce-in">
+                  <div className="space-y-2 animate-bounce-in relative">
                     <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Fecha de Vencimiento 📅</label>
-                    <input 
-                      required 
-                      type="date" 
+                    <CustomDatePicker 
                       value={formData.fecha_vencimiento} 
-                      onChange={e => setFormData({...formData, fecha_vencimiento: e.target.value})} 
-                      className="w-full p-4 bg-rose-50 border border-rose-200 rounded-2xl text-sm font-bold text-rose-800 focus:border-rose-500 outline-none transition-all" 
+                      onChange={v => setFormData({...formData, fecha_vencimiento: v})} 
+                      placeholder="Seleccionar vencimiento..." 
+                      align="left-flyout"
                     />
                   </div>
                 )}
@@ -589,11 +603,31 @@ const ProductosPage = () => {
                       <p className="text-[9px] font-bold text-slate-500 leading-relaxed">
                         Estos valores determinan cómo la IA y el motor de alertas evalúan el estado de este producto. Si no los configuras, se usarán los valores por defecto.
                       </p>
+                      
+                      <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">📦 Proveedor Principal (Opcional)</label>
+                          <CustomSelect 
+                            value={formData.id_proveedor} 
+                            onChange={val => setFormData({...formData, id_proveedor: val})}
+                            placeholder="Seleccione proveedor..."
+                            options={[
+                              { value: '', label: 'Ninguno / Sin asignar' },
+                              ...proveedores.map(prov => ({ 
+                                value: prov.id_proveedor, 
+                                label: `${prov.nombre_empresa} (${prov.contacto_principal})` 
+                              }))
+                            ]}
+                            className="p-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+                          />
+                      </div>
+
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 flex items-center gap-1">
                             Cantidad Mínima
-                            <span className="text-slate-400 font-normal normal-case tracking-normal" title="Cantidad mínima antes de activar alerta amarilla (Pedir más)">ⓘ</span>
+                            <Tooltip text="Cantidad mínima antes de activar alerta amarilla (Pedir más)">
+                              <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
+                            </Tooltip>
                           </label>
                           <input type="number" min="0" value={formData.stock_minimo} onChange={e => setFormData({...formData, stock_minimo: e.target.value})} className="w-full p-3 bg-white border border-amber-200 rounded-xl text-sm font-black text-amber-700 focus:border-amber-500 outline-none text-center transition-all" />
                           <p className="text-[8px] text-slate-400 font-bold text-center">Avisa cuándo comprar</p>
@@ -601,7 +635,9 @@ const ProductosPage = () => {
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-rose-600 uppercase tracking-widest ml-1 flex items-center gap-1">
                             Stock de Emergencia
-                            <span className="text-slate-400 font-normal normal-case tracking-normal" title="Colchón de emergencia. Si baja de aquí, se activa alerta roja (Agotado)">ⓘ</span>
+                            <Tooltip text="Colchón de emergencia. Si baja de aquí, se activa alerta roja (Agotado)">
+                              <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
+                            </Tooltip>
                           </label>
                           <input type="number" min="0" value={formData.stock_seguridad} onChange={e => setFormData({...formData, stock_seguridad: e.target.value})} className="w-full p-3 bg-white border border-rose-200 rounded-xl text-sm font-black text-rose-600 focus:border-rose-500 outline-none text-center transition-all" />
                           <p className="text-[8px] text-slate-400 font-bold text-center">Avisa riesgo de quiebre</p>
@@ -609,7 +645,9 @@ const ProductosPage = () => {
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1 flex items-center gap-1">
                             Días para recibir pedido
-                            <span className="text-slate-400 font-normal normal-case tracking-normal" title="Días que tarda el proveedor en entregarte este producto">ⓘ</span>
+                            <Tooltip text="Días que tarda el proveedor en entregarte este producto" align="right">
+                              <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
+                            </Tooltip>
                           </label>
                           <input type="number" min="1" value={formData.lead_time} onChange={e => setFormData({...formData, lead_time: e.target.value})} className="w-full p-3 bg-white border border-indigo-200 rounded-xl text-sm font-black text-indigo-600 focus:border-indigo-500 outline-none text-center transition-all" />
                           <p className="text-[8px] text-slate-400 font-bold text-center">Días de entrega</p>

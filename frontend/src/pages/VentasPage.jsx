@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import Tooltip from '../components/Tooltip';
 import CustomSelect from '../components/CustomSelect';
+import CustomDatePicker from '../components/CustomDatePicker';
 
 const VentasPage = () => {
   const toast = useToast();
@@ -176,12 +177,14 @@ const VentasPage = () => {
 
       {/* Buscador y Filtros */}
       <div className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-wrap gap-4">
-        <input 
-          type="date" 
-          value={filtroFecha} 
-          onChange={e => setFiltroFecha(e.target.value)} 
-          className="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800 min-w-[200px]" 
-        />
+        <div className="flex-1 min-w-[200px]">
+          <CustomDatePicker 
+            value={filtroFecha} 
+            onChange={v => setFiltroFecha(v)} 
+            placeholder="Filtrar por fecha..." 
+            align="left-flyout"
+          />
+        </div>
         <input 
           type="text" 
           placeholder="Buscar producto por nombre..." 

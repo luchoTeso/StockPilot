@@ -129,6 +129,17 @@ class User {
         const query = `UPDATE Usuarios SET reset_token = NULL, reset_expires = NULL WHERE id_usuario = ?`;
         await db.runAsync(query, [userId]);
     }
+
+    static async setCurrentSession(userId, sessionId) {
+        const query = `UPDATE Usuarios SET session_id = ? WHERE id_usuario = ?`;
+        await db.runAsync(query, [sessionId, userId]);
+    }
+
+    static async verifyCurrentSession(userId, sessionId) {
+        const query = `SELECT session_id FROM Usuarios WHERE id_usuario = ?`;
+        const user = await db.getAsync(query, [userId]);
+        return user && user.session_id === sessionId;
+    }
 }
 
 module.exports = User;

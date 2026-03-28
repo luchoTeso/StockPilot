@@ -1,6 +1,7 @@
 // controllers/reportController.js
 const Report = require('../models/Report');
 const excel = require('exceljs');
+const PDFDocument = require('pdfkit');
 const db = require('../config/database');
 
 class ReportController {
@@ -271,7 +272,86 @@ class ReportController {
 
         } catch (error) {
             console.error('Error generando archivo Excel:', error);
-            res.status(500).json({ success: false, error: "Fallo al generar el archivo Excel" });
+        }
+    }
+
+    static async generateMermaPDF(req, res) {
+        try {
+            const id_tienda = req.session.tiendaId;
+            const query = `
+                SELECT p.*, pr.nombre_empresa as proveedor
+                FROM Productos p
+                LEFT JOIN Proveedores pr ON p.id_proveedor = pr.id_proveedor
+                WHERE p.id_tienda = ? 
+                AND p.fecha_vencimiento IS NOT NULL 
+                AND DATE(p.fecha_vencimiento) < DATE('now')
+                AND p.cantidad > 0
+                ORDER BY p.fecha_vencimiento ASC
+            `;
+            const products = await db.allAsync(query, [id_tienda]);
+
+            const doc = new PDFDocument({ margin: 40, size: 'A4' });
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=Reporte_Merma_' + new Date().toISOString().split('T')[0] + '.pdf');
+            doc.pipe(res);
+
+            // Estilo StockPilot
+            const primaryColor = '#4F46E5';
+            const textColor = '#1F2937';
+            const grayColor = '#9CA3AF';
+
+            doc.fillColor(primaryColor).fontSize(26).text('StockPilot', { align: 'right' });
+            doc.fillColor(textColor).fontSize(10).text('Control de Inventario Inteligente', { align: 'right' });
+            doc.moveDown(1.5);
+
+            doc.fillColor(textColor).fontSize(20).text('REPORTE DE MERMA Y PÉRDIDAS', { align: 'left' });
+            doc.fontSize(10).fillColor(grayColor).text(`Generado el: ${new Date().toLocaleString()}`, { align: 'left' });
+            doc.moveDown(2);
+
+            // Tabla
+            const tableTop = 180;
+            const cols = { sku: 50, item: 120, qty: 280, cost: 350, loss: 420, prov: 480 };
+
+            doc.fontSize(10).fillColor(primaryColor);
+            doc.text('SKU', cols.sku, tableTop);
+            doc.text('Producto', cols.item, tableTop);
+            doc.text('Unds', cols.qty, tableTop);
+            doc.text('Costo Un.', cols.cost, tableTop);
+            doc.text('Pérdida ($)', cols.loss, tableTop);
+            doc.text('Proveedor', cols.prov, tableTop);
+
+            doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).strokeColor('#E5E7EB').stroke();
+
+            let y = tableTop + 25;
+            let totalGeneralLoss = 0;
+
+            doc.fontSize(9).fillColor(textColor);
+            products.forEach(p => {
+                const loss = (p.cantidad || 0) * (p.costo_compra || 0);
+                totalGeneralLoss += loss;
+
+                doc.text(p.codigo || 'N/A', cols.sku, y);
+                doc.text(p.nombre_producto?.substring(0, 25) || 'Sin nombre', cols.item, y);
+                doc.text(p.cantidad?.toString() || '0', cols.qty, y);
+                doc.text(`$${(p.costo_compra || 0).toLocaleString('es-CO')}`, cols.cost, y);
+                doc.text(`$${loss.toLocaleString('es-CO')}`, cols.loss, y);
+                doc.text(p.proveedor?.substring(0, 35) || 'No asignado', cols.prov, y);
+
+                y += 20;
+                if (y > 750) { doc.addPage(); y = 50; }
+            });
+
+            doc.moveTo(50, y + 10).lineTo(550, y + 10).strokeColor(primaryColor).stroke();
+            doc.moveDown(2);
+            doc.fillColor(primaryColor).fontSize(14).text(`RESUMEN IMPACTO FINANCIERO:`, 280, y + 30);
+            doc.fontSize(22).fillColor('#EF4444').text(`$${totalGeneralLoss.toLocaleString('es-CO')} COP`, 280, y + 50);
+            
+            doc.fontSize(8).fillColor(grayColor).text('Documento de control interno generado por StockPilot AI Core.', 50, 780, { align: 'center' });
+            doc.end();
+
+        } catch (error) {
+            console.error('Error generando PDF de Merma:', error);
+            res.status(500).json({ success: false, error: "Fallo al generar PDF" });
         }
     }
 }

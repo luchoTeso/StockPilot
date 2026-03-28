@@ -10,5 +10,6 @@ router.get('/api/reportes/download/:id', requireLogin, ReportController.download
 router.post('/api/reportes', requireLogin, sanitizeBody, validateReport, ReportController.createReport);
 router.put('/api/reportes/:id', requireLogin, sanitizeBody, validateReport, ReportController.updateReport);
 router.delete('/api/reportes/:id', requireLogin, ReportController.deleteReport);
+router.get('/api/reportes/merma/pdf', requireLogin, ReportController.generateMermaPDF);
 
 module.exports = router;

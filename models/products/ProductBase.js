@@ -51,6 +51,7 @@ class ProductBase {
             ...this.data,
             precio: parseFloat(this.data.precio) || 0,
             cantidad: parseInt(this.data.cantidad) || 0,
+            id_proveedor: this.data.id_proveedor ? parseInt(this.data.id_proveedor) : null,
             stock_minimo: parseInt(this.data.stock_minimo) || 5,
             stock_seguridad: parseInt(this.data.stock_seguridad) || 0,
             lead_time: parseInt(this.data.lead_time) || 3

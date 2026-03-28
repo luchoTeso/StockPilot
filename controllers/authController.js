@@ -43,6 +43,10 @@ class AuthController {
             req.session.rol = user.rol;
             req.session.nombres = user.nombres;
             req.session.cambio_clave_forzoso = user.cambio_clave_forzoso === 1;
+
+            // Bloquear sesión concurrente: Guardar el ID de la sesión actual en la DB
+            await User.setCurrentSession(user.id_usuario, req.sessionID);
+
             console.log('Sesión establecida correctamente. Enviando respuesta...');
 
             res.json({ 
@@ -316,9 +320,18 @@ class AuthController {
         }
     }
 
-    static logout(req, res) {
+    static async logout(req, res) {
+        if (req.session && req.session.userId) {
+            try {
+                // Limpiar el candado de sesión en la DB al salir voluntariamente
+                await User.setCurrentSession(req.session.userId, null);
+            } catch (error) {
+                console.error('Error limpiando session_id en logout:', error);
+            }
+        }
+        
         req.session.destroy(() => {
-            res.redirect('/');
+            res.status(200).json({ success: true, message: 'Sesión cerrada' });
         });
     }
 }

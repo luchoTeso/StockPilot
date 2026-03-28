@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
 import Tooltip from '../components/Tooltip';
+import CustomDatePicker from '../components/CustomDatePicker';
 
 const MovimientosPage = () => {
   const toast = useToast();
@@ -282,21 +283,19 @@ const MovimientosPage = () => {
               className="flex-1 min-w-[150px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
             />
             <div className="flex-1 min-w-[150px]">
-              <input 
-                type="date" 
+              <CustomDatePicker 
                 value={filtroDesde} 
-                onChange={(e) => setFiltroDesde(e.target.value)} 
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800"
-                title="Fecha Desde"
+                onChange={v => setFiltroDesde(v)} 
+                placeholder="Fecha Desde" 
+                align="left-flyout"
               />
             </div>
             <div className="flex-1 min-w-[150px]">
-              <input 
-                type="date" 
+              <CustomDatePicker 
                 value={filtroHasta} 
-                onChange={(e) => setFiltroHasta(e.target.value)} 
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800"
-                title="Fecha Hasta"
+                onChange={v => setFiltroHasta(v)} 
+                placeholder="Fecha Hasta" 
+                align="right-flyout"
               />
             </div>
             <button 

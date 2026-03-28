@@ -17,9 +17,13 @@
     "dotenv": "^17.3.1",
     "exceljs": "^4.4.0",
     "express": "^4.21.1",
+    "express-rate-limit": "^8.3.1",
     "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "node-cron": "^4.2.1",
     "nodemailer": "^8.0.4",
     "openai": "^6.32.0",
+    "pdfkit": "^0.18.0",
     "sqlite3": "^5.1.7"
   },
   "description": "",

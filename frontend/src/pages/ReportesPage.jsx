@@ -175,8 +175,6 @@ const ReportesPage = () => {
     } catch (err) {
       console.error(err);
       if (err.response && err.response.data instanceof Blob) {
-        // Axios wraps the error JSON in a Blob because of responseType: 'blob'
-        // We unpack it using FileReader to show the real error text to the user.
         const reader = new FileReader();
         reader.onload = () => {
           try {
@@ -190,6 +188,25 @@ const ReportesPage = () => {
       } else {
         toast.error('Error de conexión o fallo crítico al descargar.');
       }
+    }
+  };
+
+  const descargarReporteMerma = async () => {
+    try {
+      toast.success('Generando Auditoría de Merma...');
+      const resp = await axios.get('/api/reportes/merma/pdf', { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([resp.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Auditoria_Merma_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Auditoría PDF descargada correctamente');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al generar el PDF de Merma');
     }
   };
 
@@ -309,6 +326,49 @@ const ReportesPage = () => {
                 </div>
               </form>
             </div>
+            </div>
+
+            {/* Nuevo: Módulo de Auditoría de Mermas (Estética Armonizada) */}
+            <div className="mt-8 bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 relative overflow-hidden group">
+               {/* Elemento decorativo sutil */}
+               <div className="absolute -right-4 -top-4 w-32 h-32 bg-indigo-50 rounded-full blur-3xl group-hover:bg-indigo-100 transition-all opacity-50"></div>
+               
+               <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-xl shadow-sm border border-indigo-100">
+                      📄
+                    </div>
+                    <h4 className="text-slate-800 font-black text-lg tracking-tighter italic uppercase">Auditoría de Merma</h4>
+                  </div>
+                  
+                  <p className="text-slate-500 text-[11px] font-medium leading-relaxed mb-6 pl-1">
+                    Genera un reporte oficial en PDF con todos los productos vencidos y el cálculo de impacto financiero total para tu negocio.
+                  </p>
+                  
+                  <button 
+                    onClick={descargarReporteMerma}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95 flex items-center justify-center gap-3"
+                  >
+                    DESCARGAR REPORTE (PDF)
+                  </button>
+
+                  {/* Botón de Envío de Resumen Manual */}
+                  <button 
+                    onClick={async () => {
+                      try {
+                        toast.success('Enviando resumen semanal...');
+                        const resp = await axios.post('/api/alertas/test-summary');
+                        toast.success(resp.data.mensaje || '¡Resumen enviado exitosamente!');
+                      } catch (err) {
+                        console.error(err);
+                        toast.error(err.response?.data?.error || 'Error al enviar el resumen. Revisa la configuración SMTP.');
+                      }
+                    }}
+                    className="w-full py-3 mt-3 bg-white text-indigo-600 border-2 border-indigo-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 hover:border-indigo-400 transition-all active:scale-95 flex items-center justify-center gap-3"
+                  >
+                    📧 ENVIAR RESUMEN AHORA
+                  </button>
+               </div>
             </div>
           </div>
         )}

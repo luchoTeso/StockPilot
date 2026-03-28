@@ -87,8 +87,8 @@ class Alert {
               if (diasParaVencer <= 7 && quedaranSinVender > 0) {
                   // Vencimiento inminente y pérdida matemática segura
                   await logAlert('vencimiento_critico', 'critico', `Vence en ${diasParaVencer} días. Al ritmo actual, te sobrarán ~${quedaranSinVender} unidades invendibles.`);
-              } else if (diasParaVencer <= 15 && quedaranSinVender > 0) {
-                  // Vencimiento próximo
+              } else if (diasParaVencer <= 30 && quedaranSinVender > 0) {
+                  // Vencimiento próximo (Umbral de 30 días según plan de ingeniería)
                   await logAlert('vencimiento_proximo', 'advertencia', `Vence en ${diasParaVencer} días. Podrían sobrarte ~${quedaranSinVender} unidades. Sugerencia: Aplicar promoción hoy.`);
               }
           }
