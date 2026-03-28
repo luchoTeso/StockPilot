@@ -247,7 +247,7 @@ const TiendasPage = () => {
             </h3>
             {usuarios.length === 0 ? (
               <div className="bg-white p-10 rounded-[2rem] border border-slate-100 text-center shadow-sm">
-                 <p className="text-slate-400 font-bold italic">Aún no hay usuarios o tendederos vinculados a esta sucursal.</p>
+                 <p className="text-slate-400 font-bold italic">Aún no hay usuarios o colaboradores vinculados a esta sucursal.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

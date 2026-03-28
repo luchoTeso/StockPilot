@@ -80,46 +80,131 @@ const LandingPage = () => {
           </div>
         </div>
 
-        {/* Mockup / Dashboard Preview */}
+        {/* Mockup / Dashboard Preview de Alta Fidelidad */}
         <div className="max-w-5xl mx-auto mt-20 px-6 animate-scale-in" style={{ animationDelay: '0.2s' }}>
-          <div className="relative rounded-[2.5rem] p-2 bg-gradient-to-b from-indigo-100 to-white shadow-2xl">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-[2.5rem] blur opacity-30"></div>
-            <div className="relative bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner flex flex-col h-[400px]">
+          <div className="relative rounded-[2.5rem] p-2 bg-gradient-to-b from-indigo-100 to-white shadow-[0_20px_50px_-12px_rgba(99,102,241,0.2)] relative group transition-all duration-700 hover:shadow-[0_30px_60px_-15px_rgba(99,102,241,0.4)] hover:-translate-y-2">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-[2.5rem] blur opacity-30 group-hover:opacity-60 transition-opacity duration-1000"></div>
+            <div className="relative bg-[#f8fafc] rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner flex flex-col h-[480px]">
+              
               {/* Fake Browser header */}
-              <div className="h-12 bg-slate-50 border-b border-slate-100 flex items-center px-6 gap-2">
-                <div className="w-3 h-3 rounded-full bg-rose-400"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-                <div className="ml-4 px-4 py-1 bg-white rounded-md text-[10px] text-slate-400 font-bold w-64 border border-slate-200 flex items-center">
-                  🔒 app.stockpilot.com/dashboard
+              <div className="h-12 bg-white border-b border-slate-100 flex items-center px-6 gap-3 shrink-0">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-rose-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
+                </div>
+                <div className="ml-4 px-4 py-1.5 bg-slate-50/80 rounded-lg text-[10px] text-slate-500 font-bold w-full max-w-sm border border-slate-100 flex items-center gap-2">
+                  <span className="opacity-50">🔒</span> app.stockpilot.com/dashboard
                 </div>
               </div>
-              {/* Fake Content area */}
-              <div className="flex-1 bg-slate-50/50 p-8 flex gap-6">
-                <div className="w-48 bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hidden sm:block">
-                  <div className="h-4 w-20 bg-slate-200 rounded animate-pulse mb-6"></div>
-                  <div className="space-y-3">
-                    <div className="h-8 w-full bg-indigo-50 rounded-lg"></div>
-                    <div className="h-8 w-full bg-slate-100 rounded-lg"></div>
-                    <div className="h-8 w-full bg-slate-100 rounded-lg"></div>
+              
+              {/* Fake App Content */}
+              <div className="flex-1 flex overflow-hidden">
+                {/* Fake Sidebar */}
+                <div className="w-48 bg-white border-r border-slate-100 p-4 hidden sm:flex flex-col gap-1 shrink-0">
+                  <div className="flex items-center gap-2 mb-6 px-2">
+                    <span className="text-indigo-600 text-lg">🏪</span>
+                    <span className="font-black italic text-slate-800 tracking-tighter text-xs uppercase">StockPilot</span>
                   </div>
+                  <div className="px-3 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 font-bold shadow-sm"><span>📊</span> Panel Central</div>
+                  <div className="px-3 py-2 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><span>📦</span> Catálogo</div>
+                  <div className="px-3 py-2 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><span>📈</span> Ventas POS</div>
+                  <div className="px-3 py-2 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><span>🤖</span> Oráculo IA</div>
+                  <div className="px-3 py-2 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mt-auto border-t border-slate-50 pt-4"><span>⚙️</span> Ajustes</div>
                 </div>
-                <div className="flex-1 space-y-6">
-                  <div className="flex gap-4">
-                     <div className="h-24 flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm p-4"><div className="w-8 h-8 rounded-full bg-emerald-100 mb-2"></div><div className="h-4 w-16 bg-slate-200 rounded"></div></div>
-                     <div className="h-24 flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm p-4"><div className="w-8 h-8 rounded-full bg-indigo-100 mb-2"></div><div className="h-4 w-16 bg-slate-200 rounded"></div></div>
-                     <div className="h-24 flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm p-4"><div className="w-8 h-8 rounded-full bg-rose-100 mb-2"></div><div className="h-4 w-16 bg-slate-200 rounded"></div></div>
+                
+                {/* Fake Main View */}
+                <div className="flex-1 p-6 flex flex-col gap-6 overflow-hidden bg-slate-50/50">
+                  
+                  {/* Top Stats */}
+                  <div className="grid grid-cols-3 gap-4 shrink-0">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between group-hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start">
+                         <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-sm shadow-inner">💰</div>
+                         <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">+14.5%</span>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Ventas Mensuales</p>
+                        <p className="text-lg font-black tracking-tighter text-slate-800">$45,250</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden group-hover:shadow-md transition-shadow">
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-full -z-0"></div>
+                      <div className="flex justify-between items-start relative z-10">
+                         <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center text-sm shadow-inner">🤖</div>
+                         <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">Activo</span>
+                      </div>
+                      <div className="mt-2 relative z-10">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Copiloto Compras</p>
+                        <p className="text-lg font-black tracking-tighter text-indigo-600">3 Órdenes</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between group-hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start">
+                         <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-sm shadow-inner">🚨</div>
+                         <span className="text-[8px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">Urgente</span>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Stock Crítico</p>
+                        <p className="text-lg font-black tracking-tighter text-rose-600">12 Ítems</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-48 w-full bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                     <div className="h-4 w-32 bg-slate-200 rounded mb-6"></div>
-                     <div className="flex items-end gap-2 h-24">
-                       <div className="w-8 bg-indigo-200 rounded-t-md h-12"></div>
-                       <div className="w-8 bg-indigo-300 rounded-t-md h-16"></div>
-                       <div className="w-8 bg-indigo-400 rounded-t-md h-20"></div>
-                       <div className="w-8 bg-indigo-500 rounded-t-md h-10"></div>
-                       <div className="w-8 bg-indigo-600 rounded-t-md h-24"></div>
-                     </div>
+
+                  {/* Main Chart Area */}
+                  <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col relative overflow-hidden group-hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-center mb-6 shrink-0">
+                      <div>
+                        <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Flujo de Inventario vs Ventas</h4>
+                        <p className="text-[8px] font-bold text-slate-400 tracking-widest mt-0.5">Proyección últimos 12 meses</p>
+                      </div>
+                      <div className="flex gap-2">
+                         <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-indigo-500"></div><span className="text-[8px] font-black text-slate-400 uppercase">Proyección IA</span></div>
+                         <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-slate-200"></div><span className="text-[8px] font-black text-slate-400 uppercase">Real</span></div>
+                      </div>
+                    </div>
+                    
+                    {/* Fake Chart Bars */}
+                    <div className="flex-1 flex items-end gap-1 sm:gap-2 px-2 relative z-10 min-h-0 border-b border-slate-100/50 pb-2">
+                      {[30, 45, 25, 60, 40, 75, 50, 85, 65, 95, 80, 100].map((height, i) => (
+                        <div key={i} className="flex-1 flex justify-center items-end h-full gap-[1px]">
+                           <div className="w-full h-full flex items-end opacity-60">
+                             <div className="w-full rounded-t-[2px] bg-slate-200" style={{ height: `${height * 0.7}%` }}></div>
+                           </div>
+                           <div className="w-full h-full flex items-end">
+                             <div className="w-full rounded-t-[2px] bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.4)]" style={{ height: `${height}%` }}></div>
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Fake Table beneath */}
+                    <div className="mt-3 shrink-0 flex flex-col gap-2">
+                      <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-slate-200 rounded-lg flex items-center justify-center text-[10px]">📦</div>
+                          <div>
+                            <div className="text-[9px] font-black text-slate-700 uppercase">Bebida Energizan...</div>
+                            <div className="text-[8px] font-bold text-slate-400">Restock Sugerido: 50ud</div>
+                          </div>
+                        </div>
+                        <div className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-100">Aprobar Orden</div>
+                      </div>
+                       <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-slate-200 rounded-lg flex items-center justify-center text-[10px]">📦</div>
+                          <div>
+                            <div className="text-[9px] font-black text-slate-700 uppercase">Leche Deslactos...</div>
+                            <div className="text-[8px] font-bold text-slate-400">Alerta de Vencimiento Cercano</div>
+                          </div>
+                        </div>
+                        <div className="text-[9px] font-black text-rose-600 bg-rose-50 px-2 py-1 rounded-md border border-rose-100">Revisar Bote</div>
+                      </div>
+                    </div>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -199,7 +284,7 @@ const LandingPage = () => {
               Solución de Grado Empresarial
             </h2>
             <p className="mt-4 text-slate-500 font-bold mx-auto max-w-2xl">
-              Equipa a tus tenderos con las mismas herramientas que usan las grandes cadenas.
+              Equipa a tus colaboradores con las mismas herramientas que usan las grandes cadenas.
             </p>
         </div>
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
@@ -218,7 +303,7 @@ const LandingPage = () => {
           <FeatureCard 
             icon="🏢" 
             title="Multi-Tienda" 
-            desc="Asigna tenderos a sucursales específicas y controla movimientos de forma granular desde el panel maestro." 
+            desc="Asigna colaboradores a sucursales específicas y controla movimientos de forma granular desde el panel maestro." 
             color="rose"
           />
         </div>

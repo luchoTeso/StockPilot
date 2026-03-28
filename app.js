@@ -21,6 +21,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const auditRoutes = require('./routes/auditRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -55,6 +56,7 @@ app.use('/', inventoryRoutes);
 app.use('/', supplierRoutes);
 app.use('/api/alertas', alertRoutes);
 app.use('/api/auditoria', auditRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // La ruta principal '/' ahora la maneja Vite en React y el backend solo provee la API.
 

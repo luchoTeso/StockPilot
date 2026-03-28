@@ -135,15 +135,15 @@ const ProductosPage = () => {
         setAlert({
           show: true,
           isCritical: true,
-          title: '🚨 CRÍTICO DE STOCK',
-          message: `${criticos.length} ítem(s) en riesgo de quiebre y ${bajos.length} en punto de reorden.`
+          title: '🚨 ¡Atención! Productos agotándose',
+          message: `${criticos.length} producto(s) a punto de agotarse y ${bajos.length} que deberías pedir ya.`
         });
       } else {
         setAlert({
           show: true,
           isCritical: false,
-          title: '⚠️ ADVERTENCIA DE STOCK',
-          message: `${bajos.length} producto(s) por debajo del punto de reorden (ROP).`
+          title: '⚠️ REVISA TU INVENTARIO',
+          message: `${bajos.length} producto(s) se están agotando, deberías ir pensando en comprar más.`
         });
       }
     } else {
@@ -357,8 +357,8 @@ const ProductosPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Gestión de Catálogo</h2>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Inventario Físico Central</p>
+          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Tus Productos</h2>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Listado completo de lo que vendes</p>
         </div>
         <div>
           {isAdmin && (
@@ -401,12 +401,12 @@ const ProductosPage = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em]">
-                <th className="p-6">Código / Nombre</th>
+                <th className="p-6">Producto</th>
                 <th className="p-6">Categoría</th>
-                <th className="p-6 text-center">Nivel Stock</th>
+                <th className="p-6 text-center">En Bodega</th>
                 <th className="p-6 text-center">Estado</th>
-                <th className="p-6 text-center">Registro</th>
-                <th className="p-6 text-right">Controles Operativos</th>
+                <th className="p-6 text-center">Agregado el</th>
+                <th className="p-6 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
@@ -425,7 +425,7 @@ const ProductosPage = () => {
                     <tr key={p.id_producto} className={`group transition-all hover:bg-slate-50 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
                       <td className="p-6">
                          <p className="font-black text-slate-800 text-sm">{p.nombre_producto}</p>
-                         <p className="text-[10px] font-bold text-slate-500 mt-1 tracking-widest uppercase">CÓD: {p.codigo || 'S/N'}</p>
+                         <p className="text-[10px] font-bold text-slate-500 mt-1 tracking-widest uppercase">Ref: {p.codigo || 'S/N'}</p>
                       </td>
                       <td className="p-6">
                         <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[9px] font-black uppercase tracking-widest">{p.categoria || 'Sin Info'}</span>
@@ -433,11 +433,11 @@ const ProductosPage = () => {
                       <td className="p-6 text-center">
                         <div className="flex items-center justify-center gap-2">
                            <span className={`text-xl font-black tracking-tighter ${isCritico ? 'text-rose-600' : isBajo ? 'text-amber-500' : 'text-slate-800'}`}>{p.cantidad}</span>
-                           {isCritico && <button onClick={() => navigate('/analisis-detallado')} title="Riesgo de quiebre — stock por debajo de seguridad" className="bg-rose-100 text-rose-600 text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 hover:scale-105 transition-all cursor-pointer">Quiebre</button>}
-                           {isBajo && <button onClick={() => navigate('/analisis-detallado')} title="Por debajo del punto de reorden (ROP)" className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-amber-200 hover:bg-amber-200 hover:scale-105 transition-all cursor-pointer">Reponer</button>}
-                           {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-emerald-600 text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-emerald-100">Óptimo</span>}
+                           {isCritico && <button onClick={() => navigate('/analisis-detallado')} title="Riesgo de agotamiento inminente" className="bg-rose-100 text-rose-600 text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 hover:scale-105 transition-all cursor-pointer">Agotado</button>}
+                           {isBajo && <button onClick={() => navigate('/analisis-detallado')} title="El stock ha bajado del nivel seguro para operar" className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-amber-200 hover:bg-amber-200 hover:scale-105 transition-all cursor-pointer">Pedir Más</button>}
+                           {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-emerald-600 text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-emerald-100">Suficiente</span>}
                         </div>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-widest">Unidades</p>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-widest">ud</p>
                       </td>
                       <td className="p-6 text-center">
                         <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${isActive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
@@ -447,8 +447,8 @@ const ProductosPage = () => {
                       <td className="p-6 text-center font-bold text-slate-600 text-xs">
                         {formatearFecha(p.fecha_entrada)}
                       </td>
-                      <td className="p-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="p-6 text-center">
+                        <div className="flex items-center justify-center gap-2">
                           {isActive ? (
                             <>
                               <button onClick={() => registrarVenta(p)} className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95" title="Registrar Venta Directa">💲</button>
@@ -465,7 +465,7 @@ const ProductosPage = () => {
                             </>
                           ) : (
                             <>
-                              {isAdmin && <button onClick={() => abrirModalToggle(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all shadow-sm">Reactivar Lote</button>}
+                              {isAdmin && <button onClick={() => abrirModalToggle(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all shadow-sm">Reactivar</button>}
                               {isAdmin && <button onClick={() => abrirModalEliminar(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-all ml-2">Eliminar</button>}
                             </>
                           )}
@@ -486,25 +486,25 @@ const ProductosPage = () => {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={handleCloseModal}></div>
           <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-premium shadow-2xl animate-scale-in relative z-10 transition-all">
             <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-slate-50">
-              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">{editMode ? 'Ficha de Edición' : 'Alta de Catálogo'}</h3>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">{editMode ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h3>
               <button onClick={handleCloseModal} className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-rose-100 flex items-center justify-center text-xl transition-all shadow-sm">&times;</button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">SKU / Código Único</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Código (Referencia)</label>
                   <input required type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-all" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre Comercial</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Producto</label>
                   <input required type="text" value={formData.nombre_producto} onChange={e => setFormData({...formData, nombre_producto: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-all" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Categoría Principal</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
                   <CustomSelect 
                     value={formData.categoria} 
                     onChange={val => setFormData({...formData, categoria: val})}
@@ -524,14 +524,14 @@ const ProductosPage = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Subcategoría <span className="text-slate-400">(Opc)</span></label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Subcategoría <span className="text-slate-400">(Opcional)</span></label>
                   <input type="text" value={formData.subcategoria} onChange={e => setFormData({...formData, subcategoria: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-all" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tipo de Producto <span className="text-slate-400">(Fábrica)</span></label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tipo de Empaque / Venta</label>
                   <CustomSelect 
                     value={formData.tipo_producto} 
                     onChange={val => setFormData({...formData, tipo_producto: val})}
@@ -559,7 +559,7 @@ const ProductosPage = () => {
                 )}
                 {formData.tipo_producto !== 'Perecedero' && (
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Observación Formato <span className="text-slate-400">(Opc)</span></label>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Detalles Adicionales <span className="text-slate-400">(Opcional)</span></label>
                     <input type="text" value={formData.subcategoria} onChange={e => setFormData({...formData, subcategoria: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-all" placeholder="Ej: Pack x6, 500ml..." />
                   </div>
                 )}
@@ -567,13 +567,13 @@ const ProductosPage = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Precio Unitario Base</label>
+                  <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Precio de Venta</label>
                   <input required type="number" step="0.01" min="0" value={formData.precio_unitario} onChange={e => setFormData({...formData, precio_unitario: e.target.value})} className="w-full p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-lg font-black text-indigo-700 focus:border-indigo-500 outline-none transition-all" placeholder="0.00" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">Dotación Inicial</label>
+                  <label className="text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">Stock Inicial</label>
                   <input required type="number" min="0" disabled={editMode} value={formData.cantidad} onChange={e => setFormData({...formData, cantidad: e.target.value})} className={`w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-lg font-black text-emerald-700 outline-none transition-all ${editMode ? 'opacity-50 cursor-not-allowed' : 'focus:border-emerald-500'}`} placeholder="0" />
-                  {editMode && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase mt-1 inline-block">🔒 Protegido. Usar Inyección de Stock.</span>}
+                  {editMode && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase mt-1 inline-block">🔒 Protegido. Usar botón de agregar inventario.</span>}
                 </div>
               </div>
 
@@ -582,7 +582,7 @@ const ProductosPage = () => {
                 <div className="mb-8">
                   <details className="group">
                     <summary className="flex items-center gap-2 cursor-pointer select-none py-3 px-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-indigo-200 transition-all">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">⚙️ Configuración de Reabastecimiento</span>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">⚙️ Configuración de Alertas</span>
                       <span className="ml-auto text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                     </summary>
                     <div className="mt-4 p-5 bg-indigo-50/30 border border-indigo-100 rounded-2xl space-y-5">
@@ -592,23 +592,23 @@ const ProductosPage = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 flex items-center gap-1">
-                            Stock Mínimo
-                            <span className="text-slate-400 font-normal normal-case tracking-normal" title="Cantidad mínima antes de activar alerta amarilla (Reponer)">ⓘ</span>
+                            Cantidad Mínima
+                            <span className="text-slate-400 font-normal normal-case tracking-normal" title="Cantidad mínima antes de activar alerta amarilla (Pedir más)">ⓘ</span>
                           </label>
                           <input type="number" min="0" value={formData.stock_minimo} onChange={e => setFormData({...formData, stock_minimo: e.target.value})} className="w-full p-3 bg-white border border-amber-200 rounded-xl text-sm font-black text-amber-700 focus:border-amber-500 outline-none text-center transition-all" />
-                          <p className="text-[8px] text-slate-400 font-bold text-center">Alerta amarilla</p>
+                          <p className="text-[8px] text-slate-400 font-bold text-center">Avisa cuándo comprar</p>
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-rose-600 uppercase tracking-widest ml-1 flex items-center gap-1">
-                            Stock Seguridad
-                            <span className="text-slate-400 font-normal normal-case tracking-normal" title="Colchón de emergencia. Si baja de aquí, se activa alerta roja (Quiebre)">ⓘ</span>
+                            Stock de Emergencia
+                            <span className="text-slate-400 font-normal normal-case tracking-normal" title="Colchón de emergencia. Si baja de aquí, se activa alerta roja (Agotado)">ⓘ</span>
                           </label>
                           <input type="number" min="0" value={formData.stock_seguridad} onChange={e => setFormData({...formData, stock_seguridad: e.target.value})} className="w-full p-3 bg-white border border-rose-200 rounded-xl text-sm font-black text-rose-600 focus:border-rose-500 outline-none text-center transition-all" />
-                          <p className="text-[8px] text-slate-400 font-bold text-center">Alerta roja</p>
+                          <p className="text-[8px] text-slate-400 font-bold text-center">Avisa riesgo de quiebre</p>
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1 flex items-center gap-1">
-                            Lead Time
+                            Días para recibir pedido
                             <span className="text-slate-400 font-normal normal-case tracking-normal" title="Días que tarda el proveedor en entregarte este producto">ⓘ</span>
                           </label>
                           <input type="number" min="1" value={formData.lead_time} onChange={e => setFormData({...formData, lead_time: e.target.value})} className="w-full p-3 bg-white border border-indigo-200 rounded-xl text-sm font-black text-indigo-600 focus:border-indigo-500 outline-none text-center transition-all" />
@@ -621,9 +621,9 @@ const ProductosPage = () => {
               )}
 
               <div className="flex gap-4 pt-8 border-t border-slate-100">
-                <button type="button" onClick={handleCloseModal} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Descartar</button>
+                <button type="button" onClick={handleCloseModal} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
                 <button type="submit" disabled={formLoading} className="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
-                  {formLoading ? 'Sincronizando...' : editMode ? 'Actualizar Ficha' : 'Consolidar Producto'}
+                  {formLoading ? 'Sincronizando...' : editMode ? 'Actualizar Producto' : 'Guardar Producto'}
                 </button>
               </div>
             </form>
@@ -638,34 +638,34 @@ const ProductosPage = () => {
           <div className="bg-white rounded-[3rem] w-full max-w-md shadow-2xl animate-scale-in overflow-hidden">
             <div className="p-6 bg-indigo-600 text-white">
               <h3 className="text-2xl font-black tracking-tighter uppercase italic flex items-center gap-2">💲 Venta Exprés</h3>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mt-1">Terminal de Punto de Venta</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mt-1">Caja Rápida</p>
             </div>
             <form onSubmit={submitVenta} className="p-6">
               <div className="mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Cargando Cargo a Ficha</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Producto a vender</p>
                 <p className="font-black text-slate-800 uppercase line-clamp-1">{ventaProducto.nombre_producto}</p>
               </div>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-                  <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Mano Actual</p>
+                  <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Cantidad disponible</p>
                   <p className="text-xl font-black text-emerald-800">{ventaProducto.cantidad} <span className="text-xs opacity-60">u</span></p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">P.U.</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Precio Unitario</p>
                   <p className="text-xl font-black text-slate-800">${parseFloat(ventaProducto.precio ?? ventaProducto.precio_unitario ?? 0).toLocaleString('es-CO')}</p>
                 </div>
               </div>
 
               <div className="mb-6">
-                <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1 block mb-2">Unidades a Descargar</label>
+                <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1 block mb-2">Cantidad a vender</label>
                 <input required type="number" min="1" max={ventaProducto.cantidad} value={cantidadVender} onChange={e => setCantidadVender(e.target.value)} className="w-full p-4 bg-white border-2 border-indigo-100 rounded-2xl text-2xl font-black text-center text-indigo-600 focus:border-indigo-500 outline-none transition-all shadow-inner" placeholder="1" autoFocus />
               </div>
 
               <div className="mb-6 p-5 bg-slate-900 rounded-3xl flex justify-between items-center text-white shadow-xl">
                 <div>
-                   <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block">Ticket Final</span>
-                   <span className="text-xs font-bold opacity-40 uppercase">Tax Incl.</span>
+                   <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block">Total a cobrar</span>
+                   <span className="text-xs font-bold opacity-40 uppercase">(Impuestos incluidos)</span>
                 </div>
                 <span className="text-3xl font-black italic text-emerald-400">
                    ${ventaTotalCalculado.toLocaleString('es-CO')}
@@ -689,27 +689,27 @@ const ProductosPage = () => {
           <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl animate-scale-in overflow-hidden">
             <div className="p-8 bg-emerald-500 text-white text-center">
               <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 backdrop-blur-sm">📦</div>
-              <h3 className="text-2xl font-black tracking-tighter uppercase italic">Inyección Stock</h3>
+              <h3 className="text-2xl font-black tracking-tighter uppercase italic">Agregar Inventario</h3>
             </div>
             <form onSubmit={submitAgregarStock} className="p-8">
               <p className="text-center font-bold text-slate-500 text-sm mb-6 uppercase tracking-widest">
-                Target: <span className="text-slate-800 font-black">{stockProducto.nombre_producto}</span>
+                Producto: <span className="text-slate-800 font-black">{stockProducto.nombre_producto}</span>
               </p>
               
               <div className="mb-6 flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stock Actual Base</span>
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cantidad en bodega</span>
                  <span className="text-xl font-black text-slate-800">{stockProducto.cantidad} <span className="text-xs opacity-50 uppercase tracking-widest">ud</span></span>
               </div>
 
               <div className="mb-8">
-                <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1 block mb-2 text-center">Pallets / Unidades Entrantes</label>
+                <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1 block mb-2 text-center">Cantidad a agregar</label>
                 <input required type="number" min="1" value={cantidadStock} onChange={e => setCantidadStock(e.target.value)} className="w-full p-6 text-center text-4xl font-black text-emerald-600 bg-emerald-50/50 border-2 border-emerald-100 rounded-2xl focus:border-emerald-500 outline-none transition-all" placeholder="0" autoFocus />
               </div>
 
               <div className="flex gap-4">
                 <button type="button" onClick={() => setStockModalOpen(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
                 <button type="submit" disabled={stockLoading || !cantidadStock} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50">
-                  {stockLoading ? 'Sincronizando...' : 'Adicionar'}
+                  {stockLoading ? 'Sincronizando...' : 'Guardar'}
                 </button>
               </div>
             </form>
@@ -724,15 +724,15 @@ const ProductosPage = () => {
              <div className={`w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-6 shadow-xl ${toggleProducto.estado === 'Disponible' ? 'bg-amber-100 text-amber-500 shadow-amber-100/50' : 'bg-emerald-100 text-emerald-500 shadow-emerald-100/50'}`}>
                 {toggleProducto.estado === 'Disponible' ? '⏸️' : '✅'}
              </div>
-             <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Control de Flujo</h3>
+             <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Estado del Producto</h3>
              <p className="text-xs font-bold text-slate-500 mb-8 border-b border-slate-100 pb-8">
-                Estás a punto de pasar a estado <strong className={`uppercase ${toggleProducto.estado === 'Disponible' ? 'text-amber-500' : 'text-emerald-500'}`}>{toggleProducto.estado === 'Disponible' ? 'Suspendido' : 'Operativo'}</strong> el SKU de: <br/><strong className="text-slate-800 mt-2 block">{toggleProducto.nombre_producto}</strong>
+                Vas a cambiar a estado <strong className={`uppercase ${toggleProducto.estado === 'Disponible' ? 'text-amber-500' : 'text-emerald-500'}`}>{toggleProducto.estado === 'Disponible' ? 'Pausado' : 'Activo'}</strong> el siguiente producto: <br/><strong className="text-slate-800 mt-2 block">{toggleProducto.nombre_producto}</strong>
              </p>
 
               <div className="flex gap-4">
-                <button type="button" onClick={() => setToggleModalOpen(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Abortar</button>
+                <button type="button" onClick={() => setToggleModalOpen(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
                 <button type="button" onClick={submitToggleEstado} disabled={toggleLoading} className={`flex-1 py-4 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 disabled:opacity-50 transition-all ${toggleProducto.estado === 'Disponible' ? 'bg-amber-500 shadow-amber-200 hover:bg-amber-600' : 'bg-emerald-500 shadow-emerald-200 hover:bg-emerald-600'}`}>
-                  {toggleLoading ? '...' : 'Autorizar'}
+                  {toggleLoading ? '...' : 'Confirmar'}
                 </button>
               </div>
           </div>
@@ -744,8 +744,8 @@ const ProductosPage = () => {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl animate-scale-in p-8 text-center border-4 border-rose-100">
              <div className="w-20 h-20 rounded-3xl bg-rose-100 text-rose-600 shadow-xl shadow-rose-100/50 mx-auto flex items-center justify-center text-4xl mb-6">🗑️</div>
-             <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Remoción Total</h3>
-             <p className="text-xs font-bold text-slate-500 mb-6">Vas a destruir este registro del servidor. Esta acción <span className="text-rose-600 font-black uppercase underline decoration-2 underline-offset-2">no es reversible</span>.</p>
+             <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Eliminar Producto</h3>
+             <p className="text-xs font-bold text-slate-500 mb-6">Vas a eliminar permanentemente este producto. Esta acción <span className="text-rose-600 font-black uppercase underline decoration-2 underline-offset-2">no se puede deshacer</span>.</p>
              <div className="bg-rose-50 text-rose-700 font-black p-4 rounded-2xl border border-rose-100 mb-8 uppercase line-clamp-2">
                 {eliminarProductoSel.nombre_producto}
              </div>
@@ -753,7 +753,7 @@ const ProductosPage = () => {
               <div className="flex gap-4">
                 <button type="button" onClick={() => setEliminarModalOpen(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
                 <button type="button" onClick={submitEliminar} disabled={eliminarLoading} className="flex-[1.5] py-4 bg-rose-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all active:scale-95 disabled:opacity-50">
-                  {eliminarLoading ? 'Borrando...' : 'Confirmar Baja'}
+                  {eliminarLoading ? 'Borrando...' : 'Eliminar'}
                 </button>
               </div>
           </div>

@@ -124,12 +124,11 @@ const aiController = {
         messages: [
           { 
             role: "system", 
-            content: `Eres un Auditor Estratégico MBI (Micro-Business Intelligence) especializado en tiendas de barrio. Se te dará un JSON de inventario.
-            Propondrás un AJUSTE porcentual sobre la 'base_load' (ROP matemático).
-            Contexto Extendido: Se te dan velocidades de 60 y 90 días para detectar estacionalidad o cambios bruscos de largo plazo.
-            Límites Dinámicos: Clase A (max +100%), Clase B (max +50%), Clase C (max +20%).
+            content: `Eres el Asistente Copiloto de un dueño de negocio o administrador de Pyme. Analizarás un JSON de inventario de productos.
+            Propondrás un AJUSTE porcentual sobre la cantidad base ('base_load').
+            Límites de crecimiento: Clase A (max +100%), Clase B (max +50%), Clase C (max +20%).
             Responde ÚNICAMENTE con JSON: { "adjustments": [ { "id": ID, "adjustment": "+20%", "reason": "..." } ] }
-            REGLA CRÍTICA PARA 'reason': Justificación incisiva (20-35 palabras). Menciona si el ajuste se debe a la tendencia corta (7d/30d) o a la coherencia con los últimos 60-90 días.` 
+            REGLA CRÍTICA PARA 'reason': Tu tono DEBE SER EMPÁTICO, DIRECTO Y COMERCIAL. Cero palabras técnicas (evita: "ROP", "tendencia bajista", "velocidad", "Clase A", "conservador"). Escribe de 20 a 35 palabras dando una justificación de negocio al usuario. Ejemplo: 'Este producto se está moviendo lento hoy, pero siempre se vende. Recomiendo pedir un poco para evitar quedarnos en ceros.'`
           },
           { 
             role: "user", 

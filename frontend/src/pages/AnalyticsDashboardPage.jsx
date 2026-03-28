@@ -16,9 +16,10 @@ const PALETTE = {
 
 const CustomTooltipPareto = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
+  const fullName = payload[0]?.payload?.fullName || payload[0]?.payload?.name;
   return (
     <div className="bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-700 min-w-[180px]">
-      <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300 mb-2">{payload[0]?.payload?.name}</p>
+      <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300 mb-2">{fullName}</p>
       {payload.map((entry, i) => (
         <div key={i} className="flex justify-between items-center gap-6 py-1">
           <span className="text-[10px] font-bold text-slate-300">{entry.name}</span>
@@ -33,9 +34,10 @@ const CustomTooltipPareto = ({ active, payload }) => {
 
 const CustomTooltipGeneric = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  const fullName = payload[0]?.payload?.fullName || label;
   return (
     <div className="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700">
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-300 mb-1">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-300 mb-1">{fullName}</p>
       {payload.map((entry, i) => (
         <p key={i} className="text-sm font-black" style={{ color: entry.color || '#fff' }}>
           {entry.value?.toLocaleString()} {entry.name}
@@ -79,7 +81,7 @@ const AnalyticsDashboardPage = () => {
       cumulative += item.revenue;
       const pct = totalRevenue > 0 ? Math.round((cumulative / totalRevenue) * 100) : 0;
       return {
-        name: item.nombre?.length > 12 ? item.nombre.substring(0, 12) + '…' : item.nombre,
+        name: item.nombre?.length > 20 ? item.nombre.substring(0, 18) + '…' : item.nombre,
         fullName: item.nombre,
         revenue: item.revenue,
         cumulativePercent: pct,
@@ -92,9 +94,9 @@ const AnalyticsDashboardPage = () => {
     const counts = { A: 0, B: 0, C: 0 };
     data.forEach(item => { if (counts[item.category] !== undefined) counts[item.category]++; });
     return [
-      { name: 'Clase A', value: counts.A, fill: PALETTE.A.main },
-      { name: 'Clase B', value: counts.B, fill: PALETTE.B.main },
-      { name: 'Clase C', value: counts.C, fill: PALETTE.C.main }
+      { name: 'Alta Rotación (A)', value: counts.A, fill: PALETTE.A.main },
+      { name: 'Media (B)', value: counts.B, fill: PALETTE.B.main },
+      { name: 'Baja (C)', value: counts.C, fill: PALETTE.C.main }
     ].filter(d => d.value > 0);
   }, [data]);
 
@@ -114,7 +116,8 @@ const AnalyticsDashboardPage = () => {
       .sort((a, b) => a.days_to_exhaust - b.days_to_exhaust)
       .slice(0, 10)
       .map(item => ({
-        name: item.nombre?.length > 15 ? item.nombre.substring(0, 15) + '…' : item.nombre,
+        name: item.nombre?.length > 20 ? item.nombre.substring(0, 18) + '…' : item.nombre,
+        fullName: item.nombre,
         dias: item.days_to_exhaust,
         category: item.category
       }));
@@ -160,33 +163,43 @@ const AnalyticsDashboardPage = () => {
             <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1 ml-[52px]">Inteligencia de Datos y Patrones Estratégicos</p>
           </div>
         </div>
-        <div className="bg-slate-900 px-5 py-2.5 rounded-xl flex items-center gap-3 shadow-lg">
-           <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_#34d399]"></div>
-           <span className="font-black text-[9px] uppercase tracking-widest text-slate-100">Motor Proactivo v3.0</span>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate('/aprendizaje')}
+            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-colors shadow-sm"
+          >
+            <span>🧠</span>
+            <span>Ver Aprendizaje IA</span>
+          </button>
+          
+          <div className="bg-slate-900 px-5 py-2.5 rounded-xl flex items-center gap-3 shadow-lg">
+             <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_#34d399]"></div>
+             <span className="font-black text-[9px] uppercase tracking-widest text-slate-100">Motor Proactivo v3.0</span>
+          </div>
         </div>
       </div>
 
       {/* ═══════════ KPI CARDS ═══════════ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">SKUs Totales</p>
+          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Productos Activos</p>
           <p className="text-3xl font-black text-slate-800 tracking-tighter mt-2">{kpis.totalProducts}</p>
-          <p className="text-[9px] text-slate-500 font-bold mt-1">Productos activos</p>
+          <p className="text-[9px] text-slate-500 font-bold mt-1">Catálogo actual</p>
         </div>
         <div className="bg-indigo-50 p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Concentración A</p>
+          <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Dependencia de Estrellas</p>
           <p className="text-3xl font-black text-indigo-700 tracking-tighter mt-2">{kpis.concentrationA}%</p>
-          <p className="text-[9px] text-indigo-500 font-bold mt-1">Del ingreso total</p>
+          <p className="text-[9px] text-indigo-500 font-bold mt-1">Del ingreso total (Alta Rotación)</p>
         </div>
         <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Días Prom. Stock</p>
+          <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Stock Promedio</p>
           <p className="text-3xl font-black text-amber-700 tracking-tighter mt-2">{kpis.avgDays}d</p>
-          <p className="text-[9px] text-amber-600 font-bold mt-1">Horizonte promedio</p>
+          <p className="text-[9px] text-amber-600 font-bold mt-1">Para agotarse la mercancía</p>
         </div>
         <div className={`p-5 rounded-2xl border shadow-sm hover:shadow-md transition-shadow ${kpis.criticalCount > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-100'}`}>
-          <p className={`text-[9px] font-black uppercase tracking-widest ${kpis.criticalCount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>Riesgo Alto</p>
+          <p className={`text-[9px] font-black uppercase tracking-widest ${kpis.criticalCount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>Productos en Riesgo</p>
           <p className={`text-3xl font-black tracking-tighter mt-2 ${kpis.criticalCount > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{kpis.criticalCount}</p>
-          <p className={`text-[9px] font-bold mt-1 ${kpis.criticalCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{kpis.criticalCount > 0 ? 'Requieren acción' : 'Sin alertas'}</p>
+          <p className={`text-[9px] font-bold mt-1 ${kpis.criticalCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{kpis.criticalCount > 0 ? '¡Requieren tu acción ya!' : 'Todo en orden'}</p>
         </div>
       </div>
 
@@ -195,8 +208,8 @@ const AnalyticsDashboardPage = () => {
         <div className="bg-slate-900 px-8 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Análisis Pareto (80/20)</h3>
-              <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mt-1">Ingresos Acumulados vs Artículos — Top 15</p>
+              <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Tus Productos Estrella (Pareto 80/20)</h3>
+              <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mt-1">Tus 5 productos principales generan la mayoría de tus ingresos</p>
             </div>
             <div className="flex items-center gap-4 overflow-x-auto pb-1 sm:pb-0">
               <div className="flex items-center gap-2 shrink-0">
@@ -215,8 +228,8 @@ const AnalyticsDashboardPage = () => {
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={paretoData} margin={{ top: 10, right: 30, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" fontSize={9} fontWeight="bold" stroke="#64748b" angle={-35} textAnchor="end" interval={0} height={60} />
-                <YAxis yAxisId="left" orientation="left" stroke="#64748b" fontSize={10} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                <XAxis dataKey="name" fontSize={9} fontWeight="bold" stroke="#64748b" angle={-35} textAnchor="end" interval={0} height={70} />
+                <YAxis yAxisId="left" orientation="left" stroke="#64748b" fontSize={10} width={60} tickFormatter={(v) => v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : `$${(v/1000).toFixed(0)}k`} />
                 <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={10} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
                 <Tooltip content={<CustomTooltipPareto />} />
                 <Bar yAxisId="left" dataKey="revenue" name="Ingresos (30d)" radius={[6, 6, 0, 0]}>
@@ -234,7 +247,7 @@ const AnalyticsDashboardPage = () => {
               <div className="bg-amber-400 h-full" style={{ width: `${Math.min(100 - kpis.concentrationA, 25)}%` }}></div>
             </div>
             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest shrink-0">
-              {kpis.concentrationA}% de ingresos provienen de Clase A
+              {kpis.concentrationA}% de ingresos provienen de productos muy rentables (Clase A)
             </span>
           </div>
         </div>
@@ -246,8 +259,8 @@ const AnalyticsDashboardPage = () => {
         {/* Donut ABC */}
         <section className="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
           <div className="px-8 pt-7 pb-4 border-b border-slate-50">
-            <h3 className="text-base font-black text-slate-800 uppercase tracking-tight italic">Distribución del Portafolio</h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Composición por Clasificación ABC</p>
+            <h3 className="text-base font-black text-slate-800 uppercase tracking-tight italic">Tu Portafolio de Productos</h3>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">¿Cuáles te dejan más dinero? (Clase A = Más rentables)</p>
           </div>
           <div className="px-8 py-6">
             <div className="flex items-center gap-8">
@@ -282,7 +295,7 @@ const AnalyticsDashboardPage = () => {
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-xs font-black text-slate-700 uppercase">{item.name}</span>
-                          <span className="text-xs font-black" style={{ color: item.fill }}>{item.value} SKUs ({pct}%)</span>
+                          <span className="text-xs font-black" style={{ color: item.fill }}>{item.value} Productos ({pct}%)</span>
                         </div>
                         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                           <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, backgroundColor: item.fill }}></div>
@@ -339,8 +352,8 @@ const AnalyticsDashboardPage = () => {
           <div className="px-8 pt-7 pb-4 border-b border-slate-50">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-black text-slate-800 uppercase tracking-tight italic">Proyección de Agotamiento (ETA)</h3>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Días de Stock Restantes — Top 10 Más Críticos</p>
+                <h3 className="text-base font-black text-slate-800 uppercase tracking-tight italic">¿Cuándo se te acaba el stock?</h3>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Días que le quedan a tus 10 productos más críticos antes de agotarse</p>
               </div>
               <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest overflow-x-auto pb-2 sm:pb-0">
                 <span className="flex items-center gap-1.5 shrink-0"><span className="w-3 h-3 rounded bg-rose-500"></span><span className="text-slate-600">&lt; 5d</span></span>
@@ -355,7 +368,7 @@ const AnalyticsDashboardPage = () => {
                 <BarChart data={exhaustData} margin={{ bottom: 70, left: 10, right: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="name" angle={-45} textAnchor="end" interval={0} fontSize={8} fontWeight="bold" stroke="#475569" height={80} />
-                  <YAxis stroke="#64748b" fontSize={10} />
+                  <YAxis stroke="#64748b" fontSize={10} allowDecimals={false} />
                   <Tooltip content={<CustomTooltipGeneric />} />
                   <Bar dataKey="dias" name="Días Restantes" radius={[6, 6, 0, 0]}>
                     {exhaustData.map((entry, index) => (
@@ -402,7 +415,7 @@ const AnalyticsDashboardPage = () => {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff15" />
                   <XAxis dataKey="dia" stroke="#ffffff60" fontSize={11} fontWeight="bold" tickLine={false} />
-                  <YAxis stroke="#ffffff50" fontSize={10} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#ffffff50" fontSize={10} width={60} tickFormatter={(v) => v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : `$${(v/1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#0f172a', borderRadius: '1rem', border: '1px solid #334155', color: '#fff' }}
                     itemStyle={{ color: '#818cf8', fontWeight: 'bold' }}

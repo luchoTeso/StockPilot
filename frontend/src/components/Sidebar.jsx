@@ -25,25 +25,29 @@ const Sidebar = () => {
 
   const links = [
     { to: "/dashboard", text: "Panel de Control", icon: "📊" },
-    { to: "/analitica-visual", text: "Analítica Visual", icon: "📈", id: "nav-analitica-visual" },
-    { to: "/simulador", text: "Simulador", icon: "🧪", id: "nav-simulador" },
-    { to: "/alertas", text: "Alertas", icon: "🚨" },
-    { to: "/ventas", text: "Ventas", icon: "💰" },
+    { to: "/ventas", text: "Terminal Ventas", icon: "💰" },
+    { to: "/productos", text: "Catálogo", icon: "📦" },
     { to: "/movimientos", text: "Movimientos", icon: "🔄" },
-    { to: "/productos", text: "Ver Productos", icon: "📦" }
+    { to: "/tiendas", text: "Mi Tienda", icon: "🏪" }
   ];
 
   if (user?.rol === 'Administrador') {
-    links.push({ to: "/proveedores", text: "Proveedores (IA)", icon: "🏢" });
+    links.push({ to: "/proveedores", text: "Proveedores AI", icon: "🚚" });
   }
-  links.push({ to: "/reportes", text: "Reportes", icon: "📈" });
+
+  // --- Analítica e IA ---
+  links.push({ to: "/alertas", text: "Monitor Alertas", icon: "🚨" });
+  links.push({ to: "/analitica-visual", text: "Analítica Visual", icon: "📉", id: "nav-analitica-visual" });
+  links.push({ to: "/reportes", text: "Generar Reportes", icon: "📑" });
+  links.push({ to: "/simulador", text: "Simulador AI", icon: "🧪", id: "nav-simulador" });
+
   if (user?.rol === 'Administrador') {
-    links.push({ to: "/auditoria", text: "Auditoría IA", icon: "🔍" });
+    links.push({ to: "/auditoria", text: "Auditoría AI", icon: "🔍" });
+    links.push({ to: "/aprendizaje", text: "Aprendizaje AI", icon: "🧠" });
+    // --- Configuración ---
+    links.push({ to: "/registro-tendedero", text: "Colaboradores", icon: "👥", id: "nav-registro-tendedero" });
   }
-  links.push({ to: "/tiendas", text: "Ver Tienda", icon: "🏪" });
-  if (user?.rol === 'Administrador') {
-    links.push({ to: "/registro-tendedero", text: "Registro Tendedero", icon: "🏗️", id: "nav-registro-tendedero" });
-  }
+  
   links.push({ to: "/perfil", text: "Mi Perfil", icon: "👤" });
 
   const sidebarWidth = isCollapsed ? 'w-20' : 'w-64';

@@ -168,11 +168,11 @@ const SimuladorPage = () => {
             </div>
             <div>
               <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Simulador de Escenarios</h1>
-              <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] bg-indigo-50 px-2 py-0.5 rounded-full inline-block">Herramienta Proyectiva de Negocio</p>
+              <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] bg-indigo-50 px-2 py-0.5 rounded-full inline-block">Proyecta tus futuras compras</p>
             </div>
           </div>
           <p className="text-sm font-bold text-slate-400 max-w-xl">
-            Ajusta los parámetros de cobertura y presupuesto para visualizar el impacto en tu inventario y flujo de caja antes de ejecutar compras reales.
+            Ajusta cuántos días quieres cubrir y tu presupuesto para ver exactamente qué deberías comprar antes de gastar dinero en la vida real.
           </p>
         </div>
         
@@ -228,7 +228,7 @@ const SimuladorPage = () => {
               />
             </div>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-              ⚠️ El sistema priorizará productos Clase A y descartará automáticamente los Clase C si se excede el presupuesto.
+              ⚠️ Si el presupuesto no te alcanza, el sistema priorizará la compra de los productos que te dejan más ganancia (Tipo A).
             </p>
           </div>
         </div>
@@ -270,8 +270,8 @@ const SimuladorPage = () => {
       {/* TABLA DE PRODUCTOS */}
       <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-          <h3 className="text-xl font-black text-slate-800 leading-none uppercase tracking-tighter italic">Proyección Detallada por Ítem</h3>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Referencia matemática: Velocidad 30d</p>
+          <h3 className="text-xl font-black text-slate-800 leading-none uppercase tracking-tighter italic">¿Qué y cuánto comprar?</h3>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Calculado a partir de tu ritmo de ventas mensual</p>
         </div>
         
         <div className="overflow-x-auto">
@@ -280,12 +280,12 @@ const SimuladorPage = () => {
               <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
                 <th className="p-6 border-b border-slate-100 w-16">Inc.</th>
                 <th className="p-6 border-b border-slate-100">Producto</th>
-                <th className="p-6 border-b border-slate-100 text-center">ABC</th>
-                <th className="p-6 border-b border-slate-100 text-center">Stock Act.</th>
-                <th className="p-6 border-b border-slate-100 text-center">Velocidad</th>
-                <th className="p-6 border-b border-slate-100 text-center">Cobert. Act.</th>
-                <th className="p-6 border-b border-slate-100 text-center text-emerald-600">Simulación ({days}d)</th>
-                <th className="p-6 border-b border-slate-100 text-right">Costo Est.</th>
+                <th className="p-6 border-b border-slate-100 text-center">Tipo</th>
+                <th className="p-6 border-b border-slate-100 text-center">Reserva</th>
+                <th className="p-6 border-b border-slate-100 text-center">Ventas / Día</th>
+                <th className="p-6 border-b border-slate-100 text-center">Alcanza Para</th>
+                <th className="p-6 border-b border-slate-100 text-center text-emerald-600">Comprar ({days}d)</th>
+                <th className="p-6 border-b border-slate-100 text-right">Inversión</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -313,12 +313,12 @@ const SimuladorPage = () => {
                     </div>
                   </td>
                   <td className="p-6 text-center">
-                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black ${
+                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black whitespace-nowrap ${
                       p.category === 'A' ? 'bg-indigo-100 text-indigo-700' : 
                       p.category === 'B' ? 'bg-slate-100 text-slate-600' : 
                       'bg-slate-50 text-slate-400'
                     }`}>
-                      {p.category}
+                      {p.category === 'A' ? 'A (Alta)' : p.category === 'B' ? 'B (Media)' : 'C (Baja)'}
                     </span>
                   </td>
                   <td className="p-6 text-center text-sm font-bold text-slate-600">{p.stock_actual} ud</td>

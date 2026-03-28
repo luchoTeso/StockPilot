@@ -86,14 +86,14 @@ const RegisterPage = () => {
               Crear Cuenta
             </h1>
             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">
-              Registro de Administrador Maestro
+              Configura la cuenta de tu Negocio
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombres Completos <span className="text-rose-400">*</span></label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre Completo <span className="text-rose-400">*</span></label>
               <input 
                 type="text" 
                 value={formData.nombres} 
@@ -201,13 +201,13 @@ const RegisterPage = () => {
             </div>
 
             <button type="submit" disabled={isLoading} className="w-full py-5 bg-emerald-500 hover:bg-emerald-600 border border-emerald-400 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200/50 mt-6 active:scale-95 transition-all disabled:opacity-50">
-              {isLoading ? 'Cifrando datos...' : 'Establecer Control Administrativo'}
+              {isLoading ? 'Registrando y encriptando...' : 'Crear mi Negocio'}
             </button>
           </form>
 
           <div className="mt-8 text-center border-t border-slate-100 pt-8">
              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-               ¿Ya tienes un imperio? <button onClick={() => navigate('/login')} className="text-indigo-600 font-black hover:underline decoration-2 underline-offset-4 ml-1">Inicia Sesión</button>
+               ¿Ya abriste tu negocio? <button onClick={() => navigate('/login')} className="text-indigo-600 font-black hover:underline decoration-2 underline-offset-4 ml-1">Inicia Sesión</button>
              </p>
           </div>
 

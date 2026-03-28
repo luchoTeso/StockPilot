@@ -47,8 +47,8 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Identificador</label>
-              <input type="text" value={identificador} onChange={e => setIdentificador(e.target.value)} required placeholder="Usuario o Matrícula" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-all" />
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usuario o Correo</label>
+              <input type="text" value={identificador} onChange={e => setIdentificador(e.target.value)} required placeholder="tu@correo.com o usuario" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-all" />
             </div>
 
             <div className="space-y-1">
@@ -57,15 +57,15 @@ const LoginPage = () => {
             </div>
 
             <div className="space-y-1 relative z-50">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Rol Operativo</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nivel de Acceso</label>
               <div className="h-14">
                 <CustomSelect 
                   value={rol} 
                   onChange={v => setRol(v)} 
                   className="h-full bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus-within:border-indigo-600 text-slate-800"
                   options={[
-                    { value: 'Administrador', label: 'Administrador' },
-                    { value: 'Tendedero', label: 'Tendedero' }
+                    { value: 'Administrador', label: 'Administrador (Dueño)' },
+                    { value: 'Tendedero', label: 'Colaborador (Equipo)' }
                   ]}
                   placeholder="Seleccione..."
                 />
@@ -73,7 +73,7 @@ const LoginPage = () => {
             </div>
 
             <button type="submit" className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 transition-all">
-              Acceder al Sistema
+              Ingresar a mi Negocio
             </button>
           </form>
 

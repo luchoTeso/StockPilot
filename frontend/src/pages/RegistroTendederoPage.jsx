@@ -48,8 +48,8 @@ const RegistroTendederoPage = () => {
         <div className="text-[100px] mb-6 drop-shadow-xl animate-bounce-slow">🚫</div>
         <h2 className="text-4xl font-black text-rose-600 tracking-tighter uppercase italic mb-4">Acceso Denegado</h2>
         <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-rose-100 max-w-md">
-          <p className="text-slate-500 font-medium mb-2">Protocolo de seguridad activado.</p>
-          <p className="text-slate-500 font-medium text-sm">El registro de operadores está restringido exclusivamente al nivel <span className="text-rose-600 font-bold">Administrador</span>.</p>
+          <p className="text-slate-500 font-medium mb-2">Sección Restringida</p>
+          <p className="text-slate-500 font-medium text-sm">La creación de usuarios y accesos es exclusiva para el administrador de la tienda.</p>
         </div>
       </div>
     );
@@ -96,11 +96,11 @@ const RegistroTendederoPage = () => {
         const payload = { ...formData };
         delete payload.contrasena; 
         const { data } = await axios.put(`/api/tendedero/${formData.id_usuario}`, payload);
-        toast.success(data.message || 'Operador actualizado con éxito');
+        toast.success(data.message || 'Datos de acceso actualizados');
         cancelEdit();
       } else {
         const { data } = await axios.post('/api/tendedero', formData);
-        toast.success('Operador acreditado con éxito');
+        toast.success('Nuevo colaborador registrado con éxito');
         setFormData({
           id_usuario: '', nombres: '', genero: '', correo: '', celular: '', usuario: '', contrasena: ''
         });
@@ -115,12 +115,12 @@ const RegistroTendederoPage = () => {
 
   const eliminarTendedero = (id) => {
     openModal(
-      'Suspensión de Operador',
-      '¿Autorizas la destitución inmediata de este perfil operativo? Al confirmar, se le revocará el acceso permanentemente del ecosistema.',
+      'Eliminar Acceso al Sistema',
+      '¿Estás seguro de eliminar a esta persona de tu equipo de trabajo? No podrá volver a ingresar al sistema.',
       async () => {
         try {
           await axios.delete(`/api/tendedero/${id}`);
-          toast.success('Perfil operativo removido');
+          toast.success('Miembro del equipo eliminado');
           cargarTendederos();
         } catch (err) {
           toast.error('Error al suspender operador');
@@ -136,8 +136,10 @@ const RegistroTendederoPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Personal Operativo</h2>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Gestión Central de Credenciales Tendedero</p>
+          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Miembros del Equipo</h2>
+          <span className="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-sm mt-2 border border-indigo-200">
+            Gestión de usuarios y permisos de la tienda
+          </span>
         </div>
       </div>
 
@@ -148,7 +150,7 @@ const RegistroTendederoPage = () => {
           <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 lg:sticky lg:top-6 flex flex-col overflow-hidden">
             <div className="p-6 lg:p-8 flex-1">
               <h3 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100">
-                {editMode ? 'Editar Perfil' : 'Acreditar Perfil'}
+                {editMode ? 'Editar Información' : 'Registrar Colaborador'}
               </h3>
               
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -183,14 +185,14 @@ const RegistroTendederoPage = () => {
 
                 <div>
                   <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Correo Corporativo <span className="text-rose-500">*</span></label>
-                  <input required type="email" value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="tendedero@stockpilot.com" />
+                  <input required type="email" value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="colaborador@stockpilot.com" />
                 </div>
 
                 <div className="bg-indigo-50/50 p-4 border border-indigo-100 rounded-[2rem] space-y-4">
-                  <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center">🔐 Credenciales de Sistema</h4>
+                  <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center">🔐 Datos para Ingresar al Sistema</h4>
                   
                   <div>
-                    <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Identificador Usuario <span className="text-rose-500">*</span></label>
+                    <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Nombre de Usuario <span className="text-rose-500">*</span></label>
                     <input required type="text" value={formData.usuario} onChange={e => setFormData({...formData, usuario: e.target.value})} className="w-full p-4 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Ej. cx.mendoza" />
                   </div>
 
@@ -209,7 +211,7 @@ const RegistroTendederoPage = () => {
 
                 <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
                   <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'}`}>
-                    <span>{editMode ? '💾' : '🚀'}</span> {isSubmitting ? 'SINCRONIZANDO...' : (editMode ? 'ACTUALIZAR FICHA' : 'EMITIR CREDENCIALES')}
+                    <span>{editMode ? '💾' : '🚀'}</span> {isSubmitting ? 'GUARDANDO...' : (editMode ? 'GUARDAR CAMBIOS' : 'CREAR ACCESO')}
                   </button>
                   {editMode && (
                     <button type="button" onClick={cancelEdit} className="w-full p-4 rounded-2xl text-slate-500 bg-slate-100 hover:bg-slate-200 text-[10px] font-black uppercase tracking-[0.2em] transition-colors">
@@ -227,10 +229,10 @@ const RegistroTendederoPage = () => {
           
           <div className="flex items-center justify-between bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-               👥 Equipo Autorizado
+               👥 Equipo Registrado
              </h3>
              <div className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-inner">
-               {tendederos.length} ACTIVOS
+               {tendederos.length} PERSONAS
              </div>
           </div>
 
@@ -239,18 +241,18 @@ const RegistroTendederoPage = () => {
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
                   <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
-                    <th className="p-6 pl-8">Operador</th>
-                    <th className="p-6">Contacto</th>
-                    <th className="p-6 text-center">Identidad</th>
-                    <th className="p-6 text-center">Acceso</th>
-                    <th className="p-6 pr-8 text-right">Controles</th>
+                    <th className="p-6 pl-8">Nombre del Colaborador</th>
+                    <th className="p-6">Medios de Contacto</th>
+                    <th className="p-6 text-center">Género</th>
+                    <th className="p-6 text-center">Usuario Sistema</th>
+                    <th className="p-6 pr-8 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm divide-y divide-slate-50">
                   {loading ? (
-                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Desencriptando base de datos...</td></tr>
+                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Cargando perfiles del equipo...</td></tr>
                   ) : tendederos.length === 0 ? (
-                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px]">No existen operadores en la red</td></tr>
+                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Aún no has registrado a nadie en tu equipo</td></tr>
                   ) : (
                     tendederos.map(t => (
                       <tr key={t.id_usuario} className="hover:bg-slate-50 transition-colors group">
@@ -277,10 +279,10 @@ const RegistroTendederoPage = () => {
                         </td>
                         <td className="p-6 pr-8">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Actualizar Credenciales">
+                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Información">
                               ✏️
                             </button>
-                            <button onClick={() => eliminarTendedero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Revocar Acceso">
+                            <button onClick={() => eliminarTendedero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
                               🗑️
                             </button>
                           </div>
@@ -314,7 +316,7 @@ const RegistroTendederoPage = () => {
                 onClick={() => setModalOpen(false)}
                 className="flex-1 px-4 py-4 rounded-2xl text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] bg-slate-100 hover:bg-slate-200 transition-colors"
               >
-                Cancelar Operación
+                Cancelar
               </button>
               <button
                 onClick={() => {
@@ -327,7 +329,7 @@ const RegistroTendederoPage = () => {
                     : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'
                 }`}
               >
-                Proceder
+                Confirmar
               </button>
             </div>
           </div>

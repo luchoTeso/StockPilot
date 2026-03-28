@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
+import axios from 'axios';
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: Correo, 2: Código, 3: Nueva Clave
@@ -15,22 +16,25 @@ const ForgotPasswordPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const handleSendCode = (e) => {
+  const handleSendCode = async (e) => {
     e.preventDefault();
-    if (!rol) {
-      toast.error("Seleccione su rol operativo");
+    if (!email) {
+      toast.error("Por favor, ingrese su correo");
       return;
     }
     setIsLoading(true);
-    // Simulación de envío de correo/SMS
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data } = await axios.post('/api/forgot-password', { email });
       setStep(2);
-      toast.success("Código de 6 dígitos enviado a su correo/celular");
-    }, 1500);
+      toast.success(data.message || "Código de seguridad enviado");
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Error al solicitar el código");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleVerifyCode = (e) => {
+  const handleVerifyCode = async (e) => {
     e.preventDefault();
     const fullCode = code.join('');
     if (fullCode.length < 6) {
@@ -38,15 +42,18 @@ const ForgotPasswordPage = () => {
       return;
     }
     setIsLoading(true);
-    // Simulación de validación
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await axios.post('/api/verify-reset-code', { email, code: fullCode });
       setStep(3);
       toast.success("Identidad verificada exitosamente");
-    }, 1500);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Código inválido o expirado");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       toast.error("Las contraseñas no coinciden");
@@ -57,12 +64,15 @@ const ForgotPasswordPage = () => {
       return;
     }
     setIsLoading(true);
-    // Simulación de actualización en DB
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await axios.post('/api/reset-password', { email, code: code.join(''), newPassword: password });
       toast.success("Contraseña actualizada correctamente");
       navigate('/login');
-    }, 1500);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Error al restablecer la contraseña");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCodeChange = (index, value) => {
@@ -119,21 +129,6 @@ const ForgotPasswordPage = () => {
           {/* PASO 1: Ingreso de Correo */}
           {step === 1 && (
             <form onSubmit={handleSendCode} className="space-y-6 animate-scale-in origin-bottom">
-              <div className="space-y-1 relative z-50">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Mi Rol en la Empresa</label>
-                <div className="h-14">
-                  <CustomSelect 
-                    value={rol} 
-                    onChange={v => setRol(v)} 
-                    className="h-full bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus-within:border-indigo-600 text-slate-800"
-                    options={[
-                      { value: 'Administrador', label: 'Administrador' },
-                      { value: 'Tendedero', label: 'Tendedero' }
-                    ]}
-                    placeholder="Seleccione..."
-                  />
-                </div>
-              </div>
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
@@ -148,7 +143,7 @@ const ForgotPasswordPage = () => {
               </div>
 
               <button type="submit" disabled={isLoading} className="w-full py-5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl mt-4 active:scale-95 transition-all disabled:opacity-50">
-                {isLoading ? 'Conectando Servidor...' : 'Solicitar Código'}
+                {isLoading ? 'Procesando...' : 'Recuperar mi Cuenta'}
               </button>
             </form>
           )}
@@ -215,7 +210,7 @@ const ForgotPasswordPage = () => {
               </div>
 
               <button type="submit" disabled={isLoading} className="w-full py-5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 mt-4 active:scale-95 transition-all disabled:opacity-50">
-                {isLoading ? 'Encriptando...' : 'Restaurar y Acceder'}
+                {isLoading ? 'Asegurando credenciales...' : 'Restaurar mi Acceso'}
               </button>
             </form>
           )}

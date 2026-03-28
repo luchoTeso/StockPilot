@@ -192,7 +192,7 @@ const ProveedoresPage = () => {
             <h1 className="text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Red de Proveedores</h1>
           </div>
           <p className="text-sm font-bold text-slate-400 max-w-xl">
-            Centro logístico operado con Inteligencia Artificial. Consulta analíticas de inventario y genera órdenes de reposición trazables.
+            Gestiona tus compras apoyado en el Copiloto IA. Revisa qué productos necesitas pedir y genera tus órdenes de abastecimiento al instante.
           </p>
         </div>
       </div>
@@ -221,7 +221,7 @@ const ProveedoresPage = () => {
                 onClick={() => handleOpenForecast(p)}
                 className="mt-6 w-full py-3 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
               >
-                Analizar Demanda ⚡
+                Calcular Pedido ⚡
               </button>
             </div>
           ))}
@@ -243,7 +243,7 @@ const ProveedoresPage = () => {
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
                 <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase">Orden a: {selectedSupplier.nombre_empresa}</h2>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Cálculo de Reabastecimiento Automático</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Sugerencia del Asistente de Compras</p>
               </div>
               <button onClick={() => setShowOrderModal(false)} className="w-8 h-8 bg-slate-200 hover:bg-rose-500 hover:text-white rounded-full flex items-center justify-center transition-colors">
                 ×
@@ -255,10 +255,10 @@ const ProveedoresPage = () => {
               
               {/* STATUS CARD (RISK ENGINE) */}
               {riskEval && (
-                <div className={`p-4 rounded-2xl border-2 flex items-center justify-between \${riskEval.nivel === 'Bajo' ? 'bg-emerald-50 border-emerald-200' : (riskEval.nivel === 'Alto' ? 'bg-rose-50 border-rose-200' : 'bg-amber-50 border-amber-200')}`}>
+                <div className={`p-4 rounded-2xl border-2 flex items-center justify-between ${riskEval.nivel === 'Bajo' ? 'bg-emerald-50 border-emerald-200' : (riskEval.nivel === 'Alto' ? 'bg-rose-50 border-rose-200' : 'bg-amber-50 border-amber-200')}`}>
                   <div>
-                    <h4 className={`text-[10px] font-black uppercase tracking-widest \${riskEval.nivel === 'Bajo' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      Métrica de Riesgo: {riskEval.nivel}
+                    <h4 className={`text-[10px] font-black uppercase tracking-widest ${riskEval.nivel === 'Bajo' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      Alerta del Pedido: {riskEval.nivel === 'Bajo' ? 'Normal' : riskEval.nivel === 'Medio' ? 'Atención' : 'Crítica'}
                     </h4>
                     <p className="text-sm font-bold text-slate-600 mt-1">{riskEval.justificacion}</p>
                   </div>
@@ -275,11 +275,11 @@ const ProveedoresPage = () => {
                   <thead>
                     <tr className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
                       {smartCart && <th className="p-4 border-b border-slate-100 w-10">INC.</th>}
-                      <th className="p-4 border-b border-slate-100">Producto Crítico</th>
-                      <th className="p-4 border-b border-slate-100">Clase</th>
-                      <th className="p-4 border-b border-slate-100 text-center">Fórmula Base</th>
-                      {smartCart && <th className="p-4 border-b border-slate-100 text-center bg-indigo-50 text-indigo-500">Ajuste IA</th>}
-                      <th className="p-4 border-b border-slate-100 text-center text-emerald-600 border-x">Sugerencia Final</th>
+                      <th className="p-4 border-b border-slate-100">Producto</th>
+                      <th className="p-4 border-b border-slate-100">Prioridad</th>
+                      <th className="p-4 border-b border-slate-100 text-center">Cálculo Básico</th>
+                      {smartCart && <th className="p-4 border-b border-slate-100 text-center bg-indigo-50 text-indigo-500">Sugerencia IA</th>}
+                      <th className="p-4 border-b border-slate-100 text-center text-emerald-600 border-x">Cantidad a Pedir</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -301,7 +301,7 @@ const ProveedoresPage = () => {
                         </td>
                         <td className="p-4">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-black ${item.clasificacion_abc === 'A' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
-                            CLASE {item.clasificacion_abc}
+                            TIPO {item.clasificacion_abc}
                           </span>
                         </td>
                         <td className="p-4 text-center text-sm font-bold text-slate-400 italic">
@@ -328,7 +328,7 @@ const ProveedoresPage = () => {
                       </tr>
                     ))}
                     {(smartCart || forecastData).length === 0 && (
-                      <tr><td colSpan="6" className="p-8 text-center text-sm font-bold text-slate-400 italic uppercase tracking-widest">Calculando Oráculo Matemático...</td></tr>
+                      <tr><td colSpan="6" className="p-8 text-center text-sm font-bold text-slate-400 italic uppercase tracking-widest">Preparando lista sugerida...</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -345,12 +345,12 @@ const ProveedoresPage = () => {
                   className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
                 >
                   {isConsultingAI ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : '✨'} 
-                  {isConsultingAI ? 'Analizando Oráculo...' : 'Consultar Copiloto IA'}
+                  {isConsultingAI ? 'Pensando...' : 'Optimizar con IA ✨'}
                 </button>
               ) : (
                 <>
                   <button onClick={() => setSmartCart(null)} className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest px-4">
-                    Descartar IA
+                    Volver al original
                   </button>
                   <button 
                     onClick={submitFinalOrder}
@@ -361,7 +361,7 @@ const ProveedoresPage = () => {
                         : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'
                     }`}
                   >
-                    {isSubmitting ? 'Guardando Trazabilidad...' : (riskEval?.nivel === 'Bajo' ? 'Aprobar Auto-Orden' : 'Enviar a Revisión')}
+                    {isSubmitting ? 'Guardando...' : (riskEval?.nivel === 'Bajo' ? 'Confirmar Pedido' : 'Enviar a Revisión')}
                   </button>
                 </>
               )}
@@ -375,7 +375,7 @@ const ProveedoresPage = () => {
       <div className="relative z-10 pt-10 border-t border-slate-100">
         <div className="flex items-center gap-2 mb-6">
           <span className="text-2xl">📜</span>
-          <h2 className="text-2xl font-black text-slate-800 uppercase italic tracking-tighter">Historial de Órdenes Inteligentes</h2>
+          <h2 className="text-2xl font-black text-slate-800 uppercase italic tracking-tighter">Historial de Órdenes a Proveedores</h2>
         </div>
         
         {loadingHistory ? (
@@ -387,8 +387,8 @@ const ProveedoresPage = () => {
                 <tr className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <th className="p-5">Fecha</th>
                   <th className="p-5">Proveedor</th>
-                  <th className="p-5">Riesgo</th>
-                  <th className="p-5">Presupuesto</th>
+                  <th className="p-5">Alerta</th>
+                  <th className="p-5">Costo Estimado</th>
                   <th className="p-5">Estado</th>
                   <th className="p-5 text-right">Acción</th>
                 </tr>
@@ -414,7 +414,7 @@ const ProveedoresPage = () => {
                         onClick={() => fetchOrderDetail(o)}
                         className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-widest"
                       >
-                        Ver Detalle →
+                        Revisar Pedido →
                       </button>
                     </td>
                   </tr>
@@ -509,7 +509,7 @@ const ProveedoresPage = () => {
                   }}
                   className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all active:scale-95"
                 >
-                  ✓ Aprobar Orden
+                  ✓ Autorizar Pedido
                 </button>
               </div>
             )}

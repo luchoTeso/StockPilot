@@ -60,7 +60,13 @@ const suppliersController = {
           IFNULL(
             (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
              WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-30 days')
-            ), 0) / 30.0 as velocity_30d
+            ), 0) / 30.0 as velocity_30d,
+          IFNULL(
+            (SELECT AVG(factor_precision) FROM (
+              SELECT factor_precision FROM Feedback_IA f 
+              WHERE f.id_producto = p.id_producto 
+              ORDER BY fecha_evaluacion DESC LIMIT 5
+            )), 1.0) as factor_ia
         FROM Productos p
         WHERE p.id_tienda = ? AND p.id_proveedor = ? AND p.estado = 'Disponible'
       `;
@@ -71,7 +77,10 @@ const suppliersController = {
       const productsWithMath = rows.map(r => {
         const rev = r.velocity_30d * 30 * r.precio;
         totalRevenue += rev;
-        const rop = Math.ceil((r.velocity_30d * r.lead_time) + r.stock_seguridad);
+        // Módulo 14: Ajuste inteligente con Factor de Precisión IA
+        // Multiplicamos la demanda proyectada por el factor histórico de la IA (EMA de los últimos 5).
+        const rop_base = (r.velocity_30d * r.lead_time) + r.stock_seguridad;
+        const rop = Math.ceil(rop_base * r.factor_ia);
         const days = r.velocity_30d > 0.01 ? Math.round(r.stock_actual / r.velocity_30d) : Infinity;
         
         return { ...r, revenue: rev, rop, days_to_exhaust: days };
@@ -96,6 +105,7 @@ const suppliersController = {
           nivel_riesgo: risk,
           stock: item.stock_actual,
           dias_inventario: item.days_to_exhaust,
+          factor_aprendizaje_ia: item.factor_ia.toFixed(2), // Módulo 14
           cantidad_sugerida: risk !== 'low' ? Math.max(0, item.rop - item.stock_actual) : 0,
           presupuesto_estimado: risk !== 'low' ? Math.max(0, item.rop - item.stock_actual) * item.precio : 0
         };
@@ -158,10 +168,11 @@ const suppliersController = {
         messages: [
           { 
             role: "system", 
-            content: "Eres un copiloto de inventarios. Analizarás la 'sugerencia_matematica' base de cada producto. " +
-                     "Aplica tu intuición de mercado (estacionalidades, colchón táctico) y devuelve un AJUSTE porcentual. " +
-                     "Reglas: Clase A (max +100%), Clase B (max +50%), Clase C (max +20%). " +
-                     "FORMATO JSON REQUERIDO: { \"ajustes\": [ { \"id\": ID_PRODUCTO, \"porcentaje\": \"+15%\", \"razon\": \"Breve justificación\" } ] }" 
+            content: "Eres el Copiloto Experto Comercial para un dueño de Pyme. Vas a revisar un carrito de compras y la 'sugerencia_matematica' de pedido. " +
+                     "Aplica tu instinto de negocio para devolver un AJUSTE porcentual de esa sugerencia (para sumar o restar al pedido base). " +
+                     "Límites seguros: Clase A (max +100%), Clase B (max +50%), Clase C (max +20%). " +
+                     "Responde en JSON: { \"ajustes\": [ { \"id\": ID_PRODUCTO, \"porcentaje\": \"+15%\", \"razon\": \"...\" } ] }. " +
+                     "REGLA CRÍTICA PARA 'razon': Habla como un asesor cercano, empático y MUY simple. CERO lenguaje técnico (prohíbido usar 'Clase A', 'tendencia algorítmica', 'análisis MBI', 'ROP' o 'stock seguridad'). Usa entre 15 y 30 palabras. Ejemplo: 'Recomiendo asegurar un extra de unidades. Es mejor estar cubiertos con este proveedor para no dejar ganancias sobre la mesa.'"
           },
           { 
             role: "user", 

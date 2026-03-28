@@ -44,49 +44,49 @@ const DashboardPage = () => {
     <div className="animate-fade-in space-y-6">
       <header className="mb-0">
         <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Panel de Control</h1>
-        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1 decoration-indigo-200 underline underline-offset-8">Gestión Estratégica StockPilot</p>
+        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1 decoration-indigo-200 underline underline-offset-8">Centro de Comando de tu Negocio</p>
       </header>
 
       {/* Métricas Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
-          <Tooltip text="Total Artículos" className="w-full min-w-0">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate w-full">Total Artículos</p>
+          <Tooltip text="Productos Registrados" className="w-full min-w-0">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate w-full">Productos Registrados</p>
           </Tooltip>
           <div className="flex items-end justify-between mt-2 gap-2 min-w-0">
             <Tooltip text={String(stats.totalArticulos || 0)} className="flex-1">
               <p className="text-2xl xl:text-3xl font-black text-slate-800 tracking-tighter break-words">{stats.totalArticulos || 0}</p>
             </Tooltip>
-            <span className="text-[10px] text-emerald-500 font-bold mb-1 shrink-0 truncate">Stock Físico</span>
+            <span className="text-[10px] text-emerald-500 font-bold mb-1 shrink-0 truncate">Catálogo Activo</span>
           </div>
         </div>
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
           <Tooltip text="Valor Inventario" className="w-full min-w-0">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate w-full">Valor Inventario</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate w-full">Capital en Mercancía</p>
           </Tooltip>
           <div className="flex items-end justify-between mt-2 gap-2 min-w-0">
             <Tooltip text={`$${(stats.valorInventario || 0).toLocaleString()}`} className="flex-1">
               <p className="text-2xl xl:text-3xl font-black text-indigo-600 tracking-tighter break-words">${(stats.valorInventario || 0).toLocaleString()}</p>
             </Tooltip>
-            <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-lg border border-indigo-100 mb-1 shrink-0 truncate">Capital</span>
+            <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-lg border border-indigo-100 mb-1 shrink-0 truncate">Inversión Total</span>
           </div>
         </div>
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
-          <Tooltip text="Alertas Stock" className="w-full min-w-0">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate w-full">Vigilancia MBI</h3>
+          <Tooltip text="Alertas de Inventario" className="w-full min-w-0">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate w-full">Atención Requerida</h3>
           </Tooltip>
           <div className="flex items-end justify-between mt-2 gap-2 min-w-0">
             <Tooltip text={`Críticas: ${stats.alertasCriticas} | Advertencias: ${stats.alertasAdvertencia} | Total: ${stats.alertasStock}`} className="flex-1">
               <p className={`text-2xl xl:text-3xl font-black tracking-tighter break-words ${stats.alertasCriticas > 0 ? 'text-rose-500' : (stats.alertasAdvertencia > 0 ? 'text-amber-500' : 'text-emerald-500')}`}>{stats.alertasCriticas > 0 ? stats.alertasCriticas : (stats.alertasAdvertencia > 0 ? stats.alertasAdvertencia : stats.alertasStock)}</p>
             </Tooltip>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-black shrink-0 truncate ${stats.alertasCriticas > 0 ? 'bg-rose-100 text-rose-600 animate-pulse' : (stats.alertasAdvertencia > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600')} mb-1`}>
-              {stats.alertasCriticas > 0 ? 'URGENTE' : (stats.alertasAdvertencia > 0 ? 'PREVISIÓN' : 'ÓPTIMO')}
+              {stats.alertasCriticas > 0 ? '¡URGENTE!' : (stats.alertasAdvertencia > 0 ? 'POR VENCER STOCK' : 'TODO OK')}
             </span>
           </div>
         </div>
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
-          <Tooltip text="Ventas Recientes" className="w-full min-w-0">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate w-full">Ventas Recientes</p>
+          <Tooltip text="Ventas del Mes" className="w-full min-w-0">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate w-full">Ventas de este Mes</p>
           </Tooltip>
           <div className="flex items-end justify-between mt-2 gap-2 min-w-0">
             <Tooltip text={`$${(stats.ventasMes || 0).toLocaleString()}`} className="flex-1">
@@ -109,8 +109,8 @@ const DashboardPage = () => {
                 <div>
                   <h2 className="text-2xl font-black tracking-tighter uppercase italic">Asistente Estratégico IA</h2>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="bg-indigo-500 text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-widest">Modelo Proactivo</span>
-                    <span className="text-[9px] text-indigo-300 font-bold uppercase tracking-widest">Auditoría v2.4</span>
+                    <span className="bg-indigo-500 text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-widest">Análisis en Tiempo Real</span>
+                    <span className="text-[9px] text-indigo-300 font-bold uppercase tracking-widest">StockPilot AI</span>
                   </div>
                 </div>
               </div>
@@ -135,7 +135,7 @@ const DashboardPage = () => {
                       <div className="flex justify-between items-start mb-3 gap-2">
                         <span className="text-indigo-300 font-black text-sm uppercase tracking-tight leading-tight flex-1">{rec.product}</span>
                         <span className={`shrink-0 whitespace-nowrap text-[9px] font-black px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
-                          {rec.trend === 'alcista' ? '▲ ALTA VENTAS' : '▼ BAJA VENTAS'}
+                          {rec.trend === 'alcista' ? '▲ ALTA DEMANDA' : '▼ BAJA ROTACIÓN'}
                         </span>
                       </div>
                       <p className="text-[11px] text-indigo-100/90 mt-2 mb-4 font-medium leading-relaxed italic">"{rec.reason}"</p>
@@ -168,7 +168,7 @@ const DashboardPage = () => {
         <section className="space-y-6">
           <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 h-full flex flex-col">
             <h2 className="text-slate-800 font-black text-xs uppercase tracking-[0.3em] mb-8 border-b border-slate-50 pb-4 flex items-center gap-2">
-              🚨 Vigilancia Logística
+              🚨 Estado de tu Logística
             </h2>
             <div className="space-y-6 flex-grow">
               <div
@@ -193,7 +193,7 @@ const DashboardPage = () => {
                 className="group bg-indigo-600 p-5 rounded-[1.5rem] border border-indigo-400 shadow-xl shadow-indigo-100/30 cursor-pointer overflow-hidden relative transition-all hover:scale-[1.02] active:scale-95"
               >
                 <div className="absolute -top-1 -right-1 p-2 opacity-10 text-4xl group-hover:scale-125 transition-transform">📈</div>
-                <h4 className="text-base font-black text-white italic tracking-tighter uppercase mb-2 leading-tight">Acceder al Centro<br/>Analítico Visual</h4>
+                <h4 className="text-base font-black text-white italic tracking-tighter uppercase mb-2 leading-tight">Explorar Gráficos<br/>y Tendencias</h4>
                 <div className="flex items-center gap-2">
                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] text-white group-hover:translate-x-1 transition-transform">→</span>
                    <span className="text-[8px] font-black text-white/70 uppercase tracking-widest">Ver Pareto y Tendencias</span>
@@ -202,7 +202,7 @@ const DashboardPage = () => {
 
               <div className="mt-auto pt-6 border-t border-slate-50">
                 <p className={`text-[8px] font-bold uppercase text-center tracking-[0.3em] ${stats.alertasCriticas > 0 ? 'text-rose-500' : 'text-slate-400'}`}>
-                  {stats.alertasCriticas > 0 ? '⚠️ El sistema requiere intervención' : 'Operación Estable MBI'}
+                  {stats.alertasCriticas > 0 ? '⚠️ El sistema requiere intervención' : 'Operación Estable y Saludable'}
                 </p>
               </div>
             </div>

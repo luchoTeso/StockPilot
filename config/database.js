@@ -13,6 +13,19 @@ const db = new sqlite3.Database(dbPath, (err) => {
             // Se ignora el error si la columna ya existe
             if (!alterErr) console.log('🔧 Mantenimiento: Columna foto_url inyectada exitosamente en Usuarios.');
         });
+        db.run("ALTER TABLE Usuarios ADD COLUMN cambio_clave_forzoso BOOLEAN DEFAULT 0", (alterErr) => {
+            if (!alterErr) {
+                console.log('🔧 Mantenimiento: Columna cambio_clave_forzoso inyectada existosamente.');
+                // Aplicar regla al equipo actual exceptuando tendero1
+                db.run("UPDATE Usuarios SET cambio_clave_forzoso = 1 WHERE rol = 'Tendedero' AND usuario != 'tendero1'");
+            }
+        });
+        db.run("ALTER TABLE Usuarios ADD COLUMN reset_token TEXT", (e) => {
+            if (!e) console.log('🔧 Mantenimiento: Columna reset_token inyectada.');
+        });
+        db.run("ALTER TABLE Usuarios ADD COLUMN reset_expires INTEGER", (e) => {
+            if (!e) console.log('🔧 Mantenimiento: Columna reset_expires inyectada.');
+        });
     }
 });
 

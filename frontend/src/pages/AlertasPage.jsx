@@ -92,7 +92,7 @@ const AlertasPage = () => {
             <h1 className="text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Centro de Alertas</h1>
           </div>
           <p className="text-sm font-bold text-slate-600">
-            Vigilancia MBI (Micro-Business Intelligence) de inventario, caducidad y sobrestock.
+            Monitoreo constante e inteligente de stock bajo, excesos o problemas en ventas.
           </p>
         </div>
 
@@ -102,7 +102,7 @@ const AlertasPage = () => {
             disabled={isGenerating}
             className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-300 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {isGenerating ? 'Evaluando Reglas...' : '↻ Forzar Recálculo'}
+            {isGenerating ? 'Buscando problemas...' : '↻ Actualizar Alertas'}
           </button>
         )}
       </div>
@@ -149,8 +149,8 @@ const AlertasPage = () => {
         ) : filteredAlertas.length === 0 ? (
           <div className="p-12 text-center bg-white border border-dashed border-slate-300 rounded-[2rem]">
             <div className="text-4xl mb-4">😌</div>
-            <p className="text-lg font-black text-slate-800 tracking-tight">Cero alertas activas en esta categoría.</p>
-            <p className="text-sm font-bold text-slate-400 mt-1">El inventario está sano matemáticamente.</p>
+            <p className="text-lg font-black text-slate-800 tracking-tight">No tienes ninguna alerta activa aquí.</p>
+            <p className="text-sm font-bold text-slate-400 mt-1">El inventario está en perfecto estado y cubierto.</p>
           </div>
         ) : (
           filteredAlertas.map(alerta => (

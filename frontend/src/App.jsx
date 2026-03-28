@@ -18,6 +18,8 @@ import AlertasPage from './pages/AlertasPage';
 import AuditoriaPage from './pages/AuditoriaPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import SimuladorPage from './pages/SimuladorPage';
+import AprendizajePage from './pages/AprendizajePage';
+import ForcePasswordPage from './pages/ForcePasswordPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { SidebarProvider } from './context/SidebarContext';
@@ -28,6 +30,9 @@ const ProtectedRoute = ({ children }) => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+  if (user.cambioClaveForzoso) {
+    return <Navigate to="/activacion-cuenta" replace />;
+  }
   return children;
 };
 
@@ -35,8 +40,19 @@ const ProtectedRoute = ({ children }) => {
 const PublicRoute = ({ children }) => {
   const { user } = useAuth();
   if (user) {
+    if (user.cambioClaveForzoso) {
+      return <Navigate to="/activacion-cuenta" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
+  return children;
+};
+
+// Ruta especial para el flujo forzado
+const ForceChangeRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (!user.cambioClaveForzoso) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
@@ -72,6 +88,13 @@ function App() {
               <LandingPage />
             </PublicRoute>
           } />
+
+          {/* Ruta Especial: Activación de Cuenta Obligatoria */}
+          <Route path="/activacion-cuenta" element={
+            <ForceChangeRoute>
+              <ForcePasswordPage />
+            </ForceChangeRoute>
+          } />
           
           {/* Rutas Privadas con Layout del Dashboard */}
           <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -89,6 +112,7 @@ function App() {
             <Route path="/registro-tendedero" element={<RegistroTendederoPage />} />
             <Route path="/auditoria" element={<AuditoriaPage />} />
             <Route path="/simulador" element={<SimuladorPage />} />
+            <Route path="/aprendizaje" element={<AprendizajePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

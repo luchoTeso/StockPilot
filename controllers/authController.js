@@ -2,6 +2,7 @@
 const User = require('../models/User');
 const Store = require('../models/Store');
 const crypto = require('crypto'); // Para generar tokens aleatorios
+const Mailer = require('../utils/mailer'); // Servicio de envíos de correo
 
 class AuthController {
     static async login(req, res) {
@@ -41,6 +42,7 @@ class AuthController {
             req.session.tiendaId = user.id_tienda;
             req.session.rol = user.rol;
             req.session.nombres = user.nombres;
+            req.session.cambio_clave_forzoso = user.cambio_clave_forzoso === 1;
             console.log('Sesión establecida correctamente. Enviando respuesta...');
 
             res.json({ 
@@ -48,7 +50,8 @@ class AuthController {
                 message: 'Login exitoso',
                 user: {
                     nombres: user.nombres,
-                    rol: user.rol
+                    rol: user.rol,
+                    cambioClaveForzoso: user.cambio_clave_forzoso === 1
                 }
             });
         } catch (error) {
@@ -147,7 +150,8 @@ class AuthController {
             userId: req.session.userId,
             tiendaId: req.session.tiendaId,
             rol: req.session.rol,
-            nombres: req.session.nombres
+            nombres: req.session.nombres,
+            cambioClaveForzoso: req.session.cambio_clave_forzoso
         });
     }
 
@@ -217,6 +221,30 @@ class AuthController {
         }
     }
 
+    static async firstPasswordChange(req, res) {
+        try {
+            const userId = req.session.userId;
+            if (!userId) return res.status(401).json({ success: false, error: 'No autorizado' });
+
+            if (!req.session.cambio_clave_forzoso) {
+                return res.status(400).json({ success: false, error: 'Acción no permitida' });
+            }
+
+            const { newPassword } = req.body;
+            if (!newPassword || newPassword.length < 6) {
+                return res.status(400).json({ success: false, error: 'La contraseña debe tener al menos 6 caracteres' });
+            }
+
+            await User.updatePassword(userId, newPassword);
+            req.session.cambio_clave_forzoso = false;
+
+            res.json({ success: true, message: 'Contraseña establecida exitosamente' });
+        } catch (error) {
+            console.error('Error estableciendo primera contraseña:', error);
+            res.status(500).json({ success: false, error: 'Error del servidor' });
+        }
+    }
+
     static async forgotPassword(req, res) {
         try {
             const { email } = req.body;
@@ -234,18 +262,18 @@ class AuthController {
 
             await User.setResetToken(user.id_usuario, code, expires);
 
-            // SIMULACIÓN DE ENVÍO (MOCK)
-            console.log("\n" + "=".repeat(50));
-            console.log("📩 [SERVICIO DE RECUPERACIÓN] - CORREO ENVIADO");
-            console.log(`Para: ${user.correo} (${user.nombres})`);
-            console.log(`Código de seguridad: ${code}`);
-            console.log("Vence en: 15 minutos");
-            console.log("=".repeat(50) + "\n");
+            // ENVÍO DE CORREO MEDIANTE NODEMAILER
+            const emailEnviado = await Mailer.sendPasswordResetCode(user.correo, code);
+
+            if (!emailEnviado) {
+                // Aunque falle el correo real, el fallback en terminal permitirá continuar en dev
+                console.warn("⚠️ Aviso: El correo SMTP falló, revisa la terminal para el código.");
+            }
 
             // Respuesta segura (sin filtrar el código al cliente)
             res.json({ 
                 success: true, 
-                message: 'Se ha enviado un código de seguridad a su correo/consola.' 
+                message: 'Se ha enviado un código de seguridad a su correo electrónico.' 
             });
         } catch (error) {
             console.error('Error en forgotPassword:', error);

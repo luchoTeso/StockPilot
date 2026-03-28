@@ -13,6 +13,7 @@ router.get('/logout', AuthController.logout);
 router.get('/api/perfil', AuthController.getProfile);
 router.put('/api/perfil', AuthController.updateProfile);
 router.put('/api/perfil/password', AuthController.changePassword);
+router.put('/api/perfil/first-password', AuthController.firstPasswordChange);
 
 // Rutas de Recuperación
 router.post('/api/forgot-password', AuthController.forgotPassword);

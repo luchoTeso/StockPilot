@@ -31,11 +31,11 @@ class ExportController {
             const worksheet = workbook.addWorksheet('Historial de Ventas');
             
             worksheet.columns = [
-                { header: 'Producto', key: 'producto', width: 35 },
-                { header: 'Categoría', key: 'categoria', width: 25 },
-                { header: 'Cantidad (Und)', key: 'cantidad', width: 15 },
-                { header: 'Precio Total ($)', key: 'precio_total', width: 20 },
-                { header: 'Fecha de Salida', key: 'fecha', width: 25 }
+                { header: 'Descripción del Producto', key: 'producto', width: 40 },
+                { header: 'Categoría Comercial', key: 'categoria', width: 25 },
+                { header: 'Unidades Vendidas', key: 'cantidad', width: 20 },
+                { header: 'Ingreso Bruto ($)', key: 'precio_total', width: 20 },
+                { header: 'Fecha de Transacción', key: 'fecha', width: 25 }
             ];
             
             // Apply header styling

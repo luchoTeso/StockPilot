@@ -62,9 +62,9 @@ const AuditoriaPage = () => {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center text-xl shadow-inner border border-violet-100">🔍</div>
-            <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Centro de Auditoría IA</h2>
+            <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Historial del Copiloto</h2>
           </div>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Trazabilidad Completa de Decisiones del Motor Inteligente</p>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Revisa el por qué de las decisiones y sugerencias de compra</p>
         </div>
       </div>
 
@@ -113,11 +113,11 @@ const AuditoriaPage = () => {
             <thead>
               <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
                 <th className="p-6 pl-8">Fecha y Hora</th>
-                <th className="p-6">Fuente</th>
-                <th className="p-6">Motor</th>
+                <th className="p-6">Origen</th>
+                <th className="p-6">Motor utilizado</th>
                 <th className="p-6">Productos</th>
-                <th className="p-6">Impacto</th>
-                <th className="p-6 pr-8 text-right">Detalle</th>
+                <th className="p-6">Resultado</th>
+                <th className="p-6 pr-8 text-right">Revisar</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
@@ -201,7 +201,7 @@ const AuditoriaPage = () => {
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-violet-50 rounded-t-[2.5rem]">
               <div>
-                <h3 className="text-xl font-black text-violet-800 tracking-tighter uppercase italic">Registro de Auditoría</h3>
+                <h3 className="text-xl font-black text-violet-800 tracking-tighter uppercase italic">Detalle de la sugerencia</h3>
                 <p className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mt-1">{formatFecha(detailModal.fecha_auditoria)}</p>
               </div>
               <button onClick={() => setDetailModal(null)} className="w-10 h-10 bg-white border border-violet-200 text-violet-400 rounded-xl hover:text-rose-500 flex items-center justify-center text-xl transition-all">&times;</button>
@@ -281,7 +281,7 @@ const AuditoriaPage = () => {
                       }
 
                       return (
-                        <tr><td colSpan="5" className="px-4 py-6 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">Datos detallados no disponibles para este registro</td></tr>
+                        <tr><td colSpan="5" className="px-4 py-6 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">No pudimos cargar el detalle para esta acción</td></tr>
                       );
                     })()}
                   </tbody>

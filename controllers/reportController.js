@@ -171,19 +171,19 @@ class ReportController {
 
             if (reporte.tipo === 'Inventario') {
                 sheet.columns = [
-                    { header: 'ID Gen.', key: 'id_producto', width: 10 },
-                    { header: 'Código', key: 'codigo', width: 15 },
-                    { header: 'Nombre del Producto', key: 'nombre_producto', width: 35 },
+                    { header: 'ID', key: 'id_producto', width: 10 },
+                    { header: 'SKU / Código', key: 'codigo', width: 15 },
+                    { header: 'Producto', key: 'nombre_producto', width: 35 },
                     { header: 'Categoría', key: 'categoria', width: 20 },
-                    { header: 'Costo Compra', key: 'costo_compra', width: 15 },
-                    { header: 'Precio Venta', key: 'precio', width: 15 },
-                    { header: 'Márgen ($)', key: 'margen', width: 15 },
-                    { header: 'Stock Actual', key: 'cantidad', width: 15 },
-                    { header: 'Stock Mínimo', key: 'stock_minimo', width: 15 },
-                    { header: 'Stock Máximo', key: 'stock_maximo', width: 15 },
-                    { header: 'Lead Time (Días)', key: 'lead_time', width: 15 },
-                    { header: 'F. Vencimiento', key: 'fecha_vencimiento', width: 20 },
-                    { header: 'Estado', key: 'estado', width: 15 }
+                    { header: 'Costo Unitario', key: 'costo_compra', width: 18 },
+                    { header: 'Precio Público', key: 'precio', width: 18 },
+                    { header: 'Ganancia Bruta', key: 'margen', width: 18 },
+                    { header: 'Cantidad Disponible', key: 'cantidad', width: 20 },
+                    { header: 'Alerta Mínima', key: 'stock_minimo', width: 15 },
+                    { header: 'Tope Máximo', key: 'stock_maximo', width: 15 },
+                    { header: 'Días de Envío', key: 'lead_time', width: 15 },
+                    { header: 'Vencimiento', key: 'fecha_vencimiento', width: 20 },
+                    { header: 'Estatus', key: 'estado', width: 15 }
                 ];
                 query = `SELECT *, (precio - costo_compra) as margen FROM Productos WHERE id_tienda = ?`;
                 
@@ -193,14 +193,14 @@ class ReportController {
                 }
             } else if (reporte.tipo === 'Ventas') {
                 sheet.columns = [
-                    { header: 'Recibo / Venta', key: 'id_venta', width: 15 },
-                    { header: 'F. Transacción', key: 'fecha_salida', width: 25 },
-                    { header: 'Producto Vendido', key: 'producto', width: 35 },
-                    { header: 'Cant. Items', key: 'cantidad_items', width: 15 },
-                    { header: 'Precio Ud. Pago ($)', key: 'precio_unitario', width: 20 },
-                    { header: 'Subtotal Producto ($)', key: 'subtotal', width: 20 },
-                    { header: 'Gran Total Recibo ($)', key: 'precio_total', width: 20 },
-                    { header: 'Vendedor Responsable', key: 'nombres', width: 25 }
+                    { header: 'Recibo #', key: 'id_venta', width: 15 },
+                    { header: 'Fecha de Venta', key: 'fecha_salida', width: 25 },
+                    { header: 'Artículo', key: 'producto', width: 35 },
+                    { header: 'Unidades', key: 'cantidad_items', width: 15 },
+                    { header: 'Precio Cobrado', key: 'precio_unitario', width: 20 },
+                    { header: 'Subtotal Línea', key: 'subtotal', width: 20 },
+                    { header: 'Total Ticket', key: 'precio_total', width: 20 },
+                    { header: 'Atendido por', key: 'nombres', width: 25 }
                 ];
                 query = `
                     SELECT v.id_venta, v.fecha_salida, p.nombre_producto as producto, vp.cantidad as cantidad_items, 
@@ -222,19 +222,19 @@ class ReportController {
             } else if (reporte.tipo === 'Operativo' || reporte.tipo === 'Financiero') {
                 const isFinanciero = reporte.tipo === 'Financiero';
                 sheet.columns = [
-                    { header: 'ID' + (isFinanciero ? ' Op.' : ' Mov.'), key: 'id_movimiento', width: 12 },
-                    { header: 'Producto Modificado', key: 'producto', width: 35 },
-                    { header: 'Fluctuación', key: 'tipo_movimiento', width: 20 },
-                    { header: 'Cant. Alterada', key: 'cantidad', width: 15 },
-                    { header: 'Bal. Stock Final', key: 'stock_final', width: 20 },
-                    { header: 'Fecha de Registro', key: 'fecha_movimiento', width: 25 },
+                    { header: 'Transacción #', key: 'id_movimiento', width: 15 },
+                    { header: 'Producto', key: 'producto', width: 35 },
+                    { header: 'Tipo Movimiento', key: 'tipo_movimiento', width: 20 },
+                    { header: 'Piezas Afectadas', key: 'cantidad', width: 18 },
+                    { header: 'Inventario Final', key: 'stock_final', width: 20 },
+                    { header: 'Fecha', key: 'fecha_movimiento', width: 25 },
                     ...(isFinanciero ? [
-                        { header: 'Costo Unit. ($)', key: 'costo_compra', width: 15 },
-                        { header: 'Valor Movimiento ($)', key: 'valor_total', width: 20 }
+                        { header: 'Costo Unitario ($)', key: 'costo_compra', width: 18 },
+                        { header: 'Valor Total ($)', key: 'valor_total', width: 20 }
                     ] : [
-                        { header: 'Motivo Técnico', key: 'observacion', width: 30 }
+                        { header: 'Detalle / Comentario', key: 'observacion', width: 30 }
                     ]),
-                    { header: 'Responsable', key: 'nombres', width: 25 }
+                    { header: 'Realizado por', key: 'nombres', width: 25 }
                 ];
                 query = `
                     SELECT m.*, p.nombre_producto as producto, u.nombres, p.costo_compra,

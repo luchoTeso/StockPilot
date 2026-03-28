@@ -39,7 +39,8 @@ class TendederoController {
                 usuario,
                 contrasena, // bcrypt se aplica dentro de User.create()
                 rol: 'Tendedero',
-                id_tienda
+                id_tienda,
+                cambio_clave_forzoso: 1
             };
 
             const userId = await User.create(userData);

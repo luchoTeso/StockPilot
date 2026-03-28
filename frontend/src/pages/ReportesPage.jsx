@@ -209,8 +209,9 @@ const ReportesPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Reportes e Inteligencia</h2>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Centro Analítico de Exportación Comercial</p>
+          <span className="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-sm mt-2 border border-indigo-200">
+            Exportación y Análisis de Datos del Negocio
+          </span>
         </div>
       </div>
 
@@ -222,18 +223,18 @@ const ReportesPage = () => {
           <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 lg:sticky lg:top-6 max-h-[85vh] flex flex-col overflow-hidden">
             <div className="p-6 lg:p-8 overflow-y-auto scrollbar-hide flex-1">
               <h3 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100 shrink-0">
-                {editMode ? 'Editar Informe' : 'Nuevo Informe'}
+                {editMode ? 'Editar Reporte' : 'Generar Nuevo Reporte'}
               </h3>
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Título de la Carpeta <span className="text-rose-500 text-sm">*</span></label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Nombre del Reporte <span className="text-rose-500 text-sm">*</span></label>
                   <input required type="text" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Balance Mensual..."/>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Clasificación <span className="text-rose-500 text-sm">*</span></label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Categoría <span className="text-rose-500 text-sm">*</span></label>
                     <div className="form-control-premium">
                       <CustomSelect 
                         value={formData.tipo} 
@@ -250,7 +251,7 @@ const ReportesPage = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Emisión <span className="text-rose-500 text-sm">*</span></label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Fecha del Reporte <span className="text-rose-500 text-sm">*</span></label>
                     <CustomDatePicker 
                       value={formData.fecha_reporte} 
                       onChange={v => setFormData({...formData, fecha_reporte: v})} 
@@ -262,7 +263,7 @@ const ReportesPage = () => {
 
                 {['Ventas', 'Financiero', 'Operativo', 'Inventario'].includes(formData.tipo) && (
                   <div className="bg-indigo-50/50 p-4 border border-indigo-100 rounded-[2rem] space-y-4">
-                    <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center">⏳ Rango de Evaluación</h4>
+                    <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center">⏳ Periodo Evaluado</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-1">Corte Inicial</label>
@@ -287,18 +288,18 @@ const ReportesPage = () => {
                 )}
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Auditor (Creador) <span className="text-rose-500 text-sm">*</span></label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Responsable <span className="text-rose-500 text-sm">*</span></label>
                   <input required type="text" value={formData.creador} onChange={e => setFormData({...formData, creador: e.target.value})} className="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-500" readOnly/>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Comentarios / Hallazgos</label>
-                  <textarea required rows="3" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:border-indigo-500 outline-none text-slate-800 resize-none hover:bg-white transition-colors" placeholder="Diagnóstico de la sesión..."></textarea>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Conclusiones o Notas</label>
+                  <textarea required rows="3" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:border-indigo-500 outline-none text-slate-800 resize-none hover:bg-white transition-colors" placeholder="Añade detalles relevantes o un resumen aquí..."></textarea>
                 </div>
 
                 <div className="flex flex-col gap-3 pt-4 pb-2">
                   <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'}`}>
-                    <span>{editMode ? '💾' : '➕'}</span> {isSubmitting ? 'SINCRONIZANDO...' : (editMode ? 'GUARDAR EDICIÓN' : 'EMITIR REPORTE VÁLIDO')}
+                    <span>{editMode ? '💾' : '➕'}</span> {isSubmitting ? 'GUARDANDO...' : (editMode ? 'ACTUALIZAR REPORTE' : 'CREAR REPORTE')}
                   </button>
                   {editMode && (
                     <button type="button" onClick={handleCancelEdit} className="w-full p-4 rounded-2xl text-slate-500 bg-slate-100 hover:bg-slate-200 text-[10px] font-black uppercase tracking-[0.2em] transition-colors">
@@ -318,7 +319,7 @@ const ReportesPage = () => {
           {/* Cabecera y Filtros de Tabla */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm gap-4">
              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-               📊 Registro Documental
+               📊 Archivos Generados
              </h3>
              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                <div className="w-full sm:w-48 z-10 form-control-premium text-sm">
@@ -339,7 +340,7 @@ const ReportesPage = () => {
                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">🔍</div>
                  <input 
                    type="text" 
-                   placeholder="Rastrear carpeta..." 
+                   placeholder="Buscar reporte..." 
                    value={filtroBusqueda} 
                    onChange={e => setFiltroBusqueda(e.target.value)} 
                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800 transition-colors"
@@ -353,16 +354,16 @@ const ReportesPage = () => {
               <table className="w-full text-left border-collapse min-w-[900px]">
                 <thead>
                   <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
-                    <th className="p-6 pl-8">Carpeta Documental</th>
-                    <th className="p-6">Etiqueta</th>
-                    <th className="p-6">Emisión</th>
-                    <th className="p-6">Auditor</th>
-                    <th className="p-6 pr-8 text-right">Operaciones</th>
+                    <th className="p-6 pl-8">Nombre y Detalles</th>
+                    <th className="p-6">Categoría</th>
+                    <th className="p-6">Fecha</th>
+                    <th className="p-6">Responsable</th>
+                    <th className="p-6 pr-8 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm divide-y divide-slate-50">
                   {loading ? (
-                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Sincronizando Base Documental...</td></tr>
+                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Cargando reportes guardados...</td></tr>
                   ) : filteredReportes.length === 0 ? (
                     <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px]">No Existen Registros para Este Filtro</td></tr>
                   ) : (
@@ -394,10 +395,10 @@ const ReportesPage = () => {
                             </button>
                             {isAdmin && (
                               <>
-                                <button onClick={() => handleEditClick(r)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Modificar Parámetros">
+                                <button onClick={() => handleEditClick(r)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Reporte">
                                   ✏️
                                 </button>
-                                <button onClick={() => eliminarReporte(r.id)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Destruir Registro">
+                                <button onClick={() => eliminarReporte(r.id)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Reporte">
                                   🗑️
                                 </button>
                               </>
@@ -433,7 +434,7 @@ const ReportesPage = () => {
                 onClick={() => setModalOpen(false)}
                 className="flex-1 px-4 py-4 rounded-2xl text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] bg-slate-100 hover:bg-slate-200 transition-colors"
               >
-                Abortar
+                Cancelar
               </button>
               <button
                 onClick={() => {
@@ -446,7 +447,7 @@ const ReportesPage = () => {
                     : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'
                 }`}
               >
-                Autorizar
+                Confirmar
               </button>
             </div>
           </div>

@@ -109,7 +109,7 @@ const ProfilePage = () => {
       <header className="mb-10 flex justify-between items-end border-b border-slate-100 pb-6">
         <div>
           <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Mi Perfil</h1>
-          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1">Configuración Operativa StockPilot</p>
+          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1">Administración de Cuenta y Seguridad</p>
         </div>
         {!isEditing ? (
           <button
@@ -151,7 +151,7 @@ const ProfilePage = () => {
 
             <h2 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase">{profileData.nombres}</h2>
             <p className="text-indigo-600 text-sm font-bold">@{profileData.usuario}</p>
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-4">ID Empleado: #{profileData.id_usuario || '...'}</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-4">ID de Colaborador: #{profileData.id_usuario || '...'}</p>
 
             <div className="mt-8 flex justify-center gap-2">
               <span className="px-3 py-1 bg-slate-900 text-white text-[9px] font-black rounded-full uppercase tracking-tighter">{profileData.rol}</span>
@@ -176,7 +176,7 @@ const ProfilePage = () => {
 
         {/* Lado Derecho: Formulario Detallado */}
         <div className="lg:col-span-2 bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-50">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-10 border-b border-slate-50 pb-5">Especificaciones del Perfil</h3>
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-10 border-b border-slate-50 pb-5">Datos Personales y de Contacto</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
@@ -249,19 +249,19 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Rol Operativo</label>
+              <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nivel de Acceso</label>
               <p className="text-base font-black text-slate-700 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60 italic">{profileData.rol}</p>
             </div>
           </div>
 
-          <div className="mt-12 p-8 bg-slate-900 rounded-[2rem] text-white flex items-center justify-between">
+          <div className="mt-12 p-8 bg-slate-900 rounded-[2rem] text-white flex items-center justify-between shadow-xl">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest">Estado de Cuenta</p>
-              <p className="text-[10px] text-indigo-400 font-bold uppercase mt-1">Sincronización AI: Activa</p>
+              <p className="text-xs font-black uppercase tracking-widest">Estado del Sistema</p>
+              <p className="text-[10px] text-indigo-400 font-bold uppercase mt-1 flex items-center gap-1">✨ Asistente Inteligente: Conectado</p>
             </div>
             <div className="text-right">
-              <p className="text-xl font-black italic uppercase">Operador VIP</p>
-              <p className="text-[8px] opacity-40 uppercase">Token de Sistema: {profileData.usuario?.slice(0, 4).toUpperCase()}-2026</p>
+              <p className="text-xl font-black italic uppercase text-indigo-50">Acceso {profileData.rol === 'Administrador' ? 'Total' : 'Autorizado'}</p>
+              <p className="text-[8px] opacity-40 uppercase mt-1">Credencial Segura: {profileData.usuario?.slice(0, 4).toUpperCase()}-SP</p>
             </div>
           </div>
         </div>

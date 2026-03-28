@@ -151,17 +151,17 @@ const MovimientosPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Auditoría Operativa</h2>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Control Analítico de Inventario</p>
+          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Movimientos de Inventario</h2>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Registro completo de entradas, salidas y ajustes</p>
         </div>
       </div>
 
       {/* Tarjetas de Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Ingresos Registrados', value: resumen.entradas, icon: '📥', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-          { label: 'Salidas Procesadas', value: resumen.salidas, icon: '📤', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'Ajustes Auditados', value: resumen.ajustes, icon: '⚖️', color: 'text-amber-500', bg: 'bg-amber-50' }
+          { label: 'Entradas de Producto', value: resumen.entradas, icon: '📥', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: 'Salidas de Producto', value: resumen.salidas, icon: '📤', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+          { label: 'Ajustes Manuales', value: resumen.ajustes, icon: '⚖️', color: 'text-amber-500', bg: 'bg-amber-50' }
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 flex items-center gap-4 transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-slate-200">
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 ${stat.bg}`}>
@@ -193,7 +193,7 @@ const MovimientosPage = () => {
                 <CustomSelect 
                   value={tipo} 
                   onChange={(val) => setTipo(val)}
-                  placeholder="Seleccionar origen..."
+                  placeholder="Elige una opción..."
                   options={[
                     { value: 'Entrada', label: 'Entrada de mercancía' },
                     { value: 'Salida', label: 'Salida manual' },
@@ -208,7 +208,7 @@ const MovimientosPage = () => {
                 <CustomSelect 
                   value={productoId} 
                   onChange={(val) => setProductoId(val)}
-                  placeholder="Elegir SKU..."
+                  placeholder="Buscar producto..."
                   options={productos.map(p => ({
                     value: String(p.id_producto),
                     label: `${p.nombre_producto} (Stock: ${p.cantidad})`
@@ -239,12 +239,12 @@ const MovimientosPage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Observación</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Motivo o Justificación (Opcional)</label>
                 <input 
                   type="text" 
                   value={observacion} 
                   onChange={(e) => setObservacion(e.target.value)} 
-                  placeholder="Referencia o justificación..." 
+                  placeholder="Escribe aquí el motivo del movimiento..." 
                   className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800 transition-colors" 
                 />
               </div>
@@ -325,7 +325,7 @@ const MovimientosPage = () => {
                 </thead>
                 <tbody className="text-sm divide-y divide-slate-50">
                   {loadingMovimientos ? (
-                    <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold animate-pulse tracking-widest uppercase text-[10px]">Cargando auditoría...</td></tr>
+                    <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold animate-pulse tracking-widest uppercase text-[10px]">Consultando registros...</td></tr>
                   ) : movimientos.length === 0 ? (
                     <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold italic">No se encontraron movimientos registrados en este período.</td></tr>
                   ) : (
