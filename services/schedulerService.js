@@ -1,23 +1,7 @@
 const cron = require('node-cron');
-const nodemailer = require('nodemailer');
 const db = require('../config/database');
 const Alert = require('../models/Alert');
-
-/**
- * Servicio encargado de la automatización de tareas en StockPilot.
- * Incluye el Resumen Semanal de Alertas para Administradores.
- */
-
-// Configuración del transporte de correo (Usa variables de entorno)
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
-    secure: false, 
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+const transporter = require('../config/mailer');
 
 // Función reutilizable para enviar el resumen (usada por cron y por disparo manual)
 const runWeeklySummary = async (targetTiendaId = null) => {

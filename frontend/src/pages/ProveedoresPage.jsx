@@ -39,6 +39,10 @@ const ProveedoresPage = () => {
   const [supplierLoading, setSupplierLoading] = useState(false);
   const [supplierToDelete, setSupplierToDelete] = useState(null);
 
+  // Email sending state
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailMessage, setEmailMessage] = useState('');
+
   const toast = useToast();
 
   useEffect(() => {
@@ -189,6 +193,25 @@ const ProveedoresPage = () => {
       toast.error('Ocurrió un error guardando la Orden');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSendToSupplier = async (ordenId) => {
+    setIsSendingEmail(true);
+    try {
+      const res = await axios.post(`/api/ordenes/${ordenId}/enviar-proveedor`, {
+        mensaje_personalizado: emailMessage || ''
+      });
+      if (res.data.success) {
+        toast.success(`✅ ${res.data.message}`);
+        setEmailMessage('');
+        setShowHistoryDetail(prev => ({ ...prev, estado: 'Enviada' }));
+        fetchHistory();
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Error al enviar la orden por correo');
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -500,8 +523,13 @@ const ProveedoresPage = () => {
                     </td>
                     <td className="p-5 text-sm font-black text-slate-700">${o.presupuesto_total.toLocaleString()}</td>
                     <td className="p-5">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${o.estado === 'Aprobada' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                        {o.estado}
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                        o.estado === 'Aprobada' ? 'bg-emerald-500 text-white' : 
+                        o.estado === 'Enviada' ? 'bg-indigo-500 text-white' : 
+                        o.estado === 'Rechazada' ? 'bg-rose-500 text-white' : 
+                        'bg-slate-100 text-slate-500'
+                      }`}>
+                        {o.estado === 'Enviada' ? '📧 Enviada' : o.estado}
                       </span>
                     </td>
                     <td className="p-5 text-right">
@@ -527,7 +555,7 @@ const ProveedoresPage = () => {
       {showHistoryDetail && createPortal(
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setShowHistoryDetail(null)}></div>
-          <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl relative z-10 overflow-hidden animate-scale-in">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-[2rem] shadow-2xl relative z-10 overflow-y-auto animate-scale-in">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="text-xl font-black text-slate-800 uppercase italic">Detalle de Orden #{showHistoryDetail.id_orden}</h2>
               <button onClick={() => setShowHistoryDetail(null)} className="text-2xl text-slate-400 hover:text-rose-500 transition-colors">×</button>
@@ -547,9 +575,9 @@ const ProveedoresPage = () => {
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Presupuesto</p>
                 <p className="text-sm font-black text-slate-800 mt-1">${showHistoryDetail.presupuesto_total?.toLocaleString()}</p>
               </div>
-              <div className={`rounded-xl p-3 border ${showHistoryDetail.estado === 'Aprobada' ? 'bg-emerald-50 border-emerald-200' : showHistoryDetail.estado === 'Rechazada' ? 'bg-rose-50 border-rose-200' : 'bg-amber-50 border-amber-200'}`}>
+              <div className={`rounded-xl p-3 border ${showHistoryDetail.estado === 'Aprobada' ? 'bg-emerald-50 border-emerald-200' : showHistoryDetail.estado === 'Rechazada' ? 'bg-rose-50 border-rose-200' : showHistoryDetail.estado === 'Enviada' ? 'bg-indigo-50 border-indigo-200' : 'bg-amber-50 border-amber-200'}`}>
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estado</p>
-                <p className={`text-sm font-black mt-1 ${showHistoryDetail.estado === 'Aprobada' ? 'text-emerald-600' : showHistoryDetail.estado === 'Rechazada' ? 'text-rose-600' : 'text-amber-600'}`}>{showHistoryDetail.estado}</p>
+                <p className={`text-sm font-black mt-1 ${showHistoryDetail.estado === 'Aprobada' ? 'text-emerald-600' : showHistoryDetail.estado === 'Rechazada' ? 'text-rose-600' : showHistoryDetail.estado === 'Enviada' ? 'text-indigo-600' : 'text-amber-600'}`}>{showHistoryDetail.estado === 'Enviada' ? '📧 Enviada' : showHistoryDetail.estado}</p>
               </div>
             </div>
 
@@ -611,8 +639,35 @@ const ProveedoresPage = () => {
 
             {/* Estado final (para órdenes ya aprobadas o rechazadas) */}
             {showHistoryDetail.estado === 'Aprobada' && (
-              <div className="p-4 border-t border-emerald-100 bg-emerald-50 text-center">
-                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">✓ Orden aprobada y lista para enviar al proveedor</span>
+              <div className="p-5 border-t border-emerald-100 bg-emerald-50 space-y-4">
+                <div className="text-center">
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">✓ Orden aprobada — Lista para enviar</span>
+                </div>
+                <div className="space-y-3">
+                  <textarea
+                    value={emailMessage}
+                    onChange={e => setEmailMessage(e.target.value)}
+                    placeholder="Mensaje para el proveedor (opcional). Ej: Por favor confirmar disponibilidad y tiempo de entrega."
+                    className="w-full p-4 bg-white border border-emerald-200 rounded-2xl text-sm text-slate-700 outline-none focus:border-emerald-500 resize-none placeholder:text-slate-400"
+                    rows={2}
+                  />
+                  <button
+                    onClick={() => handleSendToSupplier(showHistoryDetail.id_orden)}
+                    disabled={isSendingEmail}
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSendingEmail ? (
+                      <><span className="animate-spin">⏳</span> Enviando correo...</>
+                    ) : (
+                      <>📧 Enviar Orden al Proveedor por Email</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+            {showHistoryDetail.estado === 'Enviada' && (
+              <div className="p-4 border-t border-indigo-100 bg-indigo-50 text-center">
+                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">📧 Orden enviada al proveedor por correo electrónico</span>
               </div>
             )}
             {showHistoryDetail.estado === 'Rechazada' && (

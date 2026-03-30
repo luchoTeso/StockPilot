@@ -22,4 +22,8 @@ router.get('/api/ordenes/historial', suppliersController.getOrdersHistory);
 router.get('/api/ordenes/:ordenId', suppliersController.getOrderDetail);
 router.patch('/api/ordenes/:ordenId/estado', suppliersController.updateOrderStatus);
 
+// Envío de Orden al Proveedor por Email
+router.post('/api/ordenes/:ordenId/enviar-proveedor', suppliersController.sendOrderToSupplier);
+
 module.exports = router;
+

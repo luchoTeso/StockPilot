@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const { OpenAI } = require('openai');
+const transporter = require('../config/mailer');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -401,12 +402,11 @@ const suppliersController = {
       const tiendaId = req.session.tiendaId || 6;
       const { estado, notas } = req.body;
 
-      const estadosPermitidos = ['Aprobada', 'Rechazada'];
+      const estadosPermitidos = ['Aprobada', 'Rechazada', 'Enviada'];
       if (!estadosPermitidos.includes(estado)) {
-        return res.status(400).json({ success: false, error: 'Estado no válido. Use: Aprobada o Rechazada.' });
+        return res.status(400).json({ success: false, error: 'Estado no válido. Use: Aprobada, Rechazada o Enviada.' });
       }
 
-      // Verificar que la orden existe y pertenece a la tienda
       const orden = await db.getAsync(
         'SELECT * FROM Ordenes_Compra WHERE id_orden = ? AND id_tienda = ?',
         [ordenId, tiendaId]
@@ -416,7 +416,7 @@ const suppliersController = {
         return res.status(404).json({ success: false, error: 'Orden no encontrada.' });
       }
 
-      if (orden.estado !== 'Pendiente' && orden.estado !== 'Borrador') {
+      if (orden.estado !== 'Pendiente' && orden.estado !== 'Borrador' && orden.estado !== 'Aprobada') {
         return res.status(400).json({ success: false, error: `No se puede modificar una orden en estado "${orden.estado}".` });
       }
 
@@ -430,7 +430,194 @@ const suppliersController = {
       console.error(e);
       res.status(500).json({ success: false, error: e.message });
     }
+  },
+
+  // Enviar Orden de Compra al Proveedor por Email
+  sendOrderToSupplier: async (req, res) => {
+    try {
+      const { ordenId } = req.params;
+      const tiendaId = req.session.tiendaId || 6;
+      const { mensaje_personalizado } = req.body;
+
+      // 1. Obtener datos de la orden + proveedor
+      const orden = await db.getAsync(`
+        SELECT o.*, p.nombre_empresa, p.contacto_principal, p.email as proveedor_email, p.telefono as proveedor_telefono,
+               t.nombre_establecimiento, t.direccion as tienda_direccion, t.celular as tienda_celular
+        FROM Ordenes_Compra o
+        JOIN Proveedores p ON o.id_proveedor = p.id_proveedor
+        JOIN Tienda t ON o.id_tienda = t.id_tienda
+        WHERE o.id_orden = ? AND o.id_tienda = ?
+      `, [ordenId, tiendaId]);
+
+      if (!orden) {
+        return res.status(404).json({ success: false, error: 'Orden no encontrada.' });
+      }
+
+      if (!orden.proveedor_email || orden.proveedor_email.trim() === '') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Este proveedor no tiene un correo electrónico registrado. Edita sus datos y agrega un email antes de enviar.' 
+        });
+      }
+
+      // 2. Obtener detalle de productos
+      const items = await db.allAsync(`
+        SELECT d.*, p.nombre_producto
+        FROM Ordenes_Detalle d
+        JOIN Productos p ON d.id_producto = p.id_producto
+        WHERE d.id_orden = ?
+      `, [ordenId]);
+
+      if (items.length === 0) {
+        return res.status(400).json({ success: false, error: 'La orden no tiene productos.' });
+      }
+
+      // 3. Obtener correo del admin para replyTo
+      const admin = await db.getAsync(`
+        SELECT correo, nombres FROM Usuarios 
+        WHERE id_tienda = ? AND (rol = 'Administrador' OR rol = 'Dueño') AND correo IS NOT NULL
+        LIMIT 1
+      `, [tiendaId]);
+
+      // 4. Construir la tabla HTML de productos
+      const formatCOP = (num) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(num);
+      
+      const fechaFormateada = new Date().toLocaleDateString('es-CO', { 
+        year: 'numeric', month: 'long', day: 'numeric' 
+      });
+
+      const productRows = items.map((item, idx) => {
+        const subtotal = item.cantidad_final * item.costo_unitario;
+        return `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px 12px; font-size: 13px; color: #1e293b; font-weight: 600;">${item.nombre_producto}</td>
+            <td style="padding: 10px 12px; font-size: 13px; color: #334155; text-align: center; font-weight: 700;">${item.cantidad_final}</td>
+            <td style="padding: 10px 12px; font-size: 13px; color: #1e293b; font-weight: 700; text-align: right;">${formatCOP(subtotal)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalGeneral = items.reduce((acc, item) => acc + (item.cantidad_final * item.costo_unitario), 0);
+
+      // 5. Plantilla HTML del correo
+      const htmlEmail = `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #334155; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #ffffff; width: 100%;">
+          
+          <!-- ENCABEZADO -->
+          <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px 20px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 22px; letter-spacing: -0.025em; font-weight: 800;">📋 Orden de Compra</h1>
+            <p style="margin: 8px 0 0 0; opacity: 0.85; font-size: 13px;">StockPilot — Sistema Inteligente de Inventarios</p>
+          </div>
+
+          <!-- INFO DE LA ORDEN -->
+          <div style="padding: 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 4px 0;">
+                  <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 700;">De:</span>
+                  <span style="font-size: 13px; color: #1e293b; font-weight: 600; margin-left: 6px;">${orden.nombre_establecimiento}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0;">
+                  <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 700;">Para:</span>
+                  <span style="font-size: 13px; color: #1e293b; font-weight: 600; margin-left: 6px;">${orden.nombre_empresa}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0;">
+                  <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 700;">Orden:</span>
+                  <span style="font-size: 13px; color: #4f46e5; font-weight: 800; margin-left: 6px;">OC-${String(ordenId).padStart(4, '0')}</span>
+                  <span style="font-size: 10px; color: #94a3b8; margin-left: 12px;">|</span>
+                  <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 700; margin-left: 12px;">Fecha:</span>
+                  <span style="font-size: 13px; color: #1e293b; font-weight: 600; margin-left: 6px;">${fechaFormateada}</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- TABLA DE PRODUCTOS -->
+          <div style="padding: 20px;">
+            <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; font-weight: 700; margin: 0 0 12px 0;">Productos Solicitados</h3>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
+              <thead>
+                <tr style="background: #f1f5f9;">
+                  <th style="padding: 10px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; text-align: left;">Producto</th>
+                  <th style="padding: 10px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; text-align: center;">Cantidad</th>
+                  <th style="padding: 10px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; text-align: right;">Subtotal Ref.</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${productRows}
+              </tbody>
+              <tfoot>
+                <tr style="background: #f8fafc; border-top: 2px solid #e2e8f0;">
+                  <td colspan="2" style="padding: 14px 12px; font-size: 13px; font-weight: 800; color: #1e293b; text-align: right; text-transform: uppercase; letter-spacing: 0.05em;">Total Referencia:</td>
+                  <td style="padding: 14px 12px; font-size: 16px; font-weight: 800; color: #4f46e5; text-align: right;">${formatCOP(totalGeneral)}</td>
+                </tr>
+              </tfoot>
+            </table>
+            <p style="margin: 10px 0 0 0; font-size: 11px; color: #94a3b8; font-style: italic;">* Los valores son de referencia interna. Los precios finales quedan sujetos a confirmación del proveedor.</p>
+          </div>
+
+          <!-- MENSAJE PERSONALIZADO -->
+          ${mensaje_personalizado ? `
+          <div style="padding: 0 30px 25px 30px;">
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px;">
+              <p style="margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; font-weight: 700; margin-bottom: 6px;">Mensaje del Comprador:</p>
+              <p style="margin: 0; font-size: 14px; color: #1e40af; line-height: 1.6;">${mensaje_personalizado}</p>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- CONTACTO -->
+          <div style="padding: 20px 30px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+            <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.8;">
+              <strong>Contacto para confirmar:</strong> ${admin ? admin.nombres : 'Administrador'} — ${admin ? admin.correo : process.env.EMAIL_USER}
+              ${orden.tienda_celular ? ' | Tel: ' + orden.tienda_celular : ''}
+            </p>
+          </div>
+
+          <!-- PIE -->
+          <div style="padding: 20px 30px; text-align: center; border-top: 1px solid #f1f5f9;">
+            <p style="margin: 0; font-size: 11px; color: #94a3b8;">
+              Orden generada automáticamente por <strong>StockPilot</strong>. Para responder, use el botón "Responder" de su cliente de correo.
+            </p>
+          </div>
+        </div>
+      `;
+
+      // 6. Enviar el correo
+      const mailOptions = {
+        from: `"${orden.nombre_establecimiento} vía StockPilot" <${process.env.EMAIL_USER}>`,
+        to: orden.proveedor_email,
+        replyTo: admin ? admin.correo : process.env.EMAIL_USER,
+        subject: `📋 Orden de Compra OC-${String(ordenId).padStart(4, '0')} — ${orden.nombre_establecimiento}`,
+        html: htmlEmail
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      // 7. Actualizar estado a 'Enviada'
+      await db.runAsync(
+        'UPDATE Ordenes_Compra SET estado = ? WHERE id_orden = ?',
+        ['Enviada', ordenId]
+      );
+
+      console.log(`📧 [Orden] Orden #${ordenId} enviada exitosamente a ${orden.proveedor_email} (Proveedor: ${orden.nombre_empresa})`);
+
+      res.json({ 
+        success: true, 
+        message: `Orden enviada exitosamente a ${orden.proveedor_email}`,
+        email_destino: orden.proveedor_email
+      });
+
+    } catch (e) {
+      console.error('❌ [Orden] Error al enviar orden por email:', e);
+      res.status(500).json({ success: false, error: 'Error al enviar el correo: ' + e.message });
+    }
   }
 };
 
 module.exports = suppliersController;
+
