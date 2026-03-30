@@ -10,16 +10,88 @@ const NotificationCenter = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const dropdownRef = useRef(null);
+    const prevCountRef = useRef(null);
+    const audioContextRef = useRef(null);
+    useEffect(() => {
+        const unlockAudio = () => {
+            if (!audioContextRef.current) {
+                audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('[Notificación] Audio desbloqueado por interacción');
+            } else if (audioContextRef.current.state === 'suspended') {
+                audioContextRef.current.resume();
+            }
+            // Una vez desbloqueado, podemos quitar el listener
+            window.removeEventListener('click', unlockAudio);
+        };
+        window.addEventListener('click', unlockAudio);
+        return () => window.removeEventListener('click', unlockAudio);
+    }, []);
+
+    const playNotificationSound = (isCritical = false) => {
+        if (!audioContextRef.current) return;
+
+        const SOUND_URLS = {
+            normal: '/sounds/normal.wav',
+            critical: '/sounds/critica.wav'
+        };
+
+        const tryPlayFile = () => {
+            const audio = new Audio(isCritical ? SOUND_URLS.critical : SOUND_URLS.normal);
+            audio.volume = 1.0; // VOLUMEN AL MÁXIMO
+
+            audio.play().catch(err => {
+                console.warn('[Notificación] No se pudo reproducir el archivo MP3, usando sintetizador de respaldo:', err);
+                playSynthesizedFallback(isCritical);
+            });
+        };
+
+        // Sintetizador de respaldo (por si falla el internet o el archivo)
+        const playSynthesizedFallback = (isCrit) => {
+            try {
+                const ctx = audioContextRef.current;
+                if (ctx.state === 'suspended') ctx.resume();
+                const now = ctx.currentTime;
+                const masterGain = ctx.createGain();
+                masterGain.gain.setValueAtTime(1.0, now);
+                masterGain.connect(ctx.destination);
+
+                const osc = ctx.createOscillator();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(isCrit ? 440 : 880, now);
+                osc.frequency.exponentialRampToValueAtTime(isCrit ? 110 : 220, now + 0.5);
+
+                const g = ctx.createGain();
+                g.gain.setValueAtTime(0.5, now);
+                g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+                osc.connect(g);
+                g.connect(masterGain);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } catch (e) { console.error(e); }
+        };
+
+        tryPlayFile();
+    };
 
     const fetchNotifications = async () => {
         try {
             setLoading(true);
             const [statsRes, alertsRes] = await Promise.all([
                 axios.get('/api/alertas/stats'),
-                axios.get('/api/alertas?limit=5') // Traer las últimas 5
+                axios.get('/api/alertas?limit=5')
             ]);
-            
-            if (statsRes.data.success) setStats(statsRes.data.stats);
+
+            if (statsRes.data.success) {
+                const newTotal = statsRes.data.stats.total;
+                const newCritico = statsRes.data.stats.critico;
+
+                if (prevCountRef.current !== null && newTotal > prevCountRef.current) {
+                    playNotificationSound(newCritico > 0);
+                }
+                prevCountRef.current = newTotal;
+                setStats(statsRes.data.stats);
+            }
             if (alertsRes.data.success) setAlerts(alertsRes.data.alerts.slice(0, 5));
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -30,7 +102,6 @@ const NotificationCenter = () => {
 
     useEffect(() => {
         fetchNotifications();
-        // Polling cada 2 minutos para no saturar pero mantener informado
         const interval = setInterval(fetchNotifications, 120000);
         return () => clearInterval(interval);
     }, []);
@@ -56,7 +127,7 @@ const NotificationCenter = () => {
     return (
         <div className="relative" ref={dropdownRef}>
             {/* Bell Icon Button */}
-            <button 
+            <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all active:scale-90 shadow-lg border-2 ${isOpen ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-200 shadow-slate-200/50'}`}
                 title="Centro de Alertas"
@@ -71,7 +142,7 @@ const NotificationCenter = () => {
 
             {/* Dropdown Panel - RENDERED AS PORTAL TO AVOID Z-INDEX ISSUES */}
             {isOpen && createPortal(
-                <div 
+                <div
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
                     className="fixed top-20 right-4 sm:top-24 sm:right-12 w-[calc(100vw-2rem)] sm:w-96 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-indigo-100/50 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-4 duration-300 origin-top-right scale-100"
@@ -95,11 +166,11 @@ const NotificationCenter = () => {
                                     // Lógica de resolución inteligente
                                     const isStockAlert = alert.tipo.includes('stock') || alert.tipo.includes('rop');
                                     const targetPath = isStockAlert ? '/analisis-detallado' : '/alertas';
-                                    
+
                                     return (
-                                        <div 
-                                            key={alert.id_alerta} 
-                                            onClick={() => { 
+                                        <div
+                                            key={alert.id_alerta}
+                                            onClick={() => {
                                                 setIsOpen(false);
                                                 // Pequeño delay para asegurar que el navegador procese el cambio de estado antes de la transición de ruta
                                                 setTimeout(() => navigate(targetPath), 10);
@@ -141,9 +212,9 @@ const NotificationCenter = () => {
                         )}
                     </div>
 
-                    <button 
-                        onMouseDown={(e) => e.stopPropagation()} 
-                        onClick={(e) => { 
+                    <button
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             setIsOpen(false);
