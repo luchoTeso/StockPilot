@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import Tooltip from '../components/Tooltip';
 import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
+import { SYNC_EVENTS, subscribeToSync } from '../utils/stockSync';
 
 const VentasPage = () => {
   const toast = useToast();
@@ -27,6 +28,16 @@ const VentasPage = () => {
 
   useEffect(() => {
     cargarVentasIniciales();
+
+    // Suscribirse a eventos de sincronización (Punto 2: Tiempo Real)
+    const unsubscribe = subscribeToSync((event) => {
+      // Si se completa una venta en cualquier parte del APP, refrescamos el historial
+      if (event.type === SYNC_EVENTS.SALE_COMPLETED) {
+        cargarVentasIniciales();
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const cargarVentasIniciales = async () => {
@@ -135,18 +146,21 @@ const VentasPage = () => {
   return (
     <div className="animate-fade-in pb-12 space-y-8 font-outfit">
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
+      {/* Header Premium (Floating Style) */}
+      <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-xl shadow-indigo-500/5 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 mt-2">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Historial de Ventas</h2>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Todas las ventas de tu negocio</p>
+          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase leading-none">Ventas <span className="text-indigo-600">Historial</span></h2>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            Registro maestro de transacciones
+          </p>
         </div>
         <div className="flex flex-wrap gap-4">
-          <button onClick={abrirTopVendidos} className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95">
-            <span>🏆</span> Top Ventas
+          <button onClick={abrirTopVendidos} className="bg-white/10 backdrop-blur-md hover:bg-indigo-600 text-indigo-600 hover:text-white py-4 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100/20 border border-indigo-100 transition-all flex items-center gap-3 active:scale-95 group">
+            <span className="text-xl group-hover:rotate-12 transition-transform">🏆</span> Top Ventas
           </button>
-          <button onClick={exportarCSV} className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 transition-all flex items-center gap-2 active:scale-95">
-            <span>📗</span> Exportar Excel
+          <button onClick={exportarCSV} className="bg-emerald-500 hover:bg-emerald-600 text-white py-4 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-200/50 transition-all flex items-center gap-3 active:scale-95">
+             <span className="text-xl">📗</span> Generar Reporte
           </button>
         </div>
       </div>
@@ -159,8 +173,8 @@ const VentasPage = () => {
           { label: 'Venta Promedio', value: `$${statsRender.ventaPromedio.toLocaleString('es-CO', {maximumFractionDigits:0})}`, icon: '🧾', color: 'text-amber-500', bg: 'bg-amber-50' },
           { label: 'Variedad Vendida', value: statsRender.productosUnicos, icon: '🔄', color: 'text-rose-500', bg: 'bg-rose-50' }
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 flex items-center gap-4 transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-slate-200">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 ${stat.bg}`}>
+          <div key={i} className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 flex items-center gap-6 transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-100 group">
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0 transition-transform group-hover:scale-110 ${stat.bg}`}>
               {stat.icon}
             </div>
             <div className="min-w-0 flex-1 flex flex-col justify-center">
@@ -205,49 +219,49 @@ const VentasPage = () => {
       </div>
 
       {/* Tabla Premium */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+      <div className="bg-white/70 backdrop-blur-sm rounded-[2.5rem] border border-white/20 shadow-xl overflow-hidden ring-1 ring-slate-100">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
-                <th className="p-6">Producto</th>
-                <th className="p-6">Categoría</th>
-                <th className="p-6 text-center">Unidades</th>
-                <th className="p-6 text-right">Precio</th>
-                <th className="p-6 text-right">Total</th>
-                <th className="p-6 text-center">Fecha</th>
+                <th className="p-8">Producto</th>
+                <th className="p-8">Categoría</th>
+                <th className="p-8 text-center">Unidades</th>
+                <th className="p-8 text-right">Precio</th>
+                <th className="p-8 text-right">Total</th>
+                <th className="p-8 text-center">Fecha</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
               {isLoading && ventasFiltradas.length === 0 ? (
-                <tr><td colSpan="6" className="p-24 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse">Consultando Registros...</td></tr>
+                <tr><td colSpan="6" className="p-32 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse">Consultando Registros...</td></tr>
               ) : ventasFiltradas.length === 0 ? (
-                <tr><td colSpan="6" className="p-24 text-center text-slate-400 font-bold italic">No se encontraron transacciones en este período.</td></tr>
+                <tr><td colSpan="6" className="p-32 text-center text-slate-400 font-bold italic">No se encontraron transacciones en este período.</td></tr>
               ) : (
                 ventasFiltradas.map((v, idx) => {
                   const precioUnitario = v.precio_unitario || (v.precio_total / v.cantidad);
                   return (
-                    <tr key={v.id_venta ? `${v.id_venta}-${idx}` : idx} className="group transition-all hover:bg-slate-50">
-                       <td className="p-6">
-                         <p className="font-black text-slate-800 text-sm">{v.nombre_producto}</p>
+                    <tr key={v.id_venta ? `${v.id_venta}-${idx}` : idx} className="group transition-all hover:bg-indigo-50/30">
+                       <td className="p-8">
+                         <p className="font-black text-slate-800 text-sm group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{v.nombre_producto}</p>
                          <p className="text-[9px] font-bold text-slate-400 mt-1 tracking-widest uppercase">
                            {v.id_venta ? `VENTA #${String(v.id_venta).padStart(6, '0')}` : 'ID VENTA: ---'}
                          </p>
                        </td>
-                      <td className="p-6">
-                         <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[9px] font-black uppercase tracking-widest">{v.categoria || 'Sin Info'}</span>
+                      <td className="p-8">
+                         <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[9px] font-black uppercase tracking-widest group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">{v.categoria || 'Sin Info'}</span>
                       </td>
-                      <td className="p-6 text-center">
-                         <span className="text-lg font-black tracking-tighter text-slate-800">{v.cantidad}</span>
+                      <td className="p-8 text-center">
+                         <span className="text-xl font-black tracking-tighter text-slate-800">{v.cantidad}</span>
                          <span className="text-[9px] text-slate-400 font-bold uppercase ml-1 tracking-widest">ud</span>
                       </td>
-                      <td className="p-6 text-right font-black text-slate-500">
+                      <td className="p-8 text-right font-black text-slate-400">
                          ${precioUnitario.toLocaleString('es-CO')}
                       </td>
-                      <td className="p-6 text-right text-emerald-600 font-black text-lg italic tracking-tighter">
+                      <td className="p-8 text-right text-emerald-600 font-black text-2xl italic tracking-tighter">
                          ${v.precio_total.toLocaleString('es-CO')}
                       </td>
-                      <td className="p-6 text-center font-bold text-slate-600 text-xs tracking-widest">
+                      <td className="p-8 text-center font-bold text-slate-600 text-xs tracking-widest">
                         {formatearFecha(v.fecha_salida)}
                       </td>
                     </tr>
@@ -261,26 +275,26 @@ const VentasPage = () => {
 
       {/* Paginación Cargar Más */}
       {!filtroFecha && !filtroProducto && !filtroCategoria && totalVentasServer > PAGE_SIZE && (
-        <div className="flex flex-col items-center justify-center gap-4 py-8">
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
            <span className="text-slate-400 text-[10px] uppercase font-black tracking-[0.2em]">
-             Mostrando <strong className="text-slate-600">{ventasOriginales.length}</strong> de <strong className="text-slate-600">{totalVentasServer}</strong> registros
+             Mostrando <strong className="text-slate-600 font-outfit">{ventasOriginales.length}</strong> de <strong className="text-slate-600 font-outfit">{totalVentasServer}</strong> registros
            </span>
           {currentOffset < totalVentasServer && (
             <button 
               onClick={cargarMasVentas} 
               disabled={isLoading}
-              className="px-8 py-4 bg-slate-100 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50"
+              className="px-12 py-5 bg-white text-slate-600 hover:text-white border border-slate-100 hover:bg-slate-900 rounded-3xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl hover:shadow-slate-200 transition-all active:scale-95 disabled:opacity-50"
             >
-              {isLoading ? 'Cargando ventas...' : 'Cargar Más Ventas'}
+              {isLoading ? 'Sincronizando...' : 'Cargar Más Ventas'}
             </button>
           )}
         </div>
       )}
 
-      {/* Modal Top Vendidos */}
+      {/* Modal Top Vendidos (Premium Glass) */}
       {modalMasVendidos && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[80] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-scale-in overflow-hidden">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xl z-[80] flex items-center justify-center p-4">
+          <div className="bg-white/90 backdrop-blur-md rounded-[3rem] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-scale-in overflow-hidden border border-white/20">
             <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-white z-20 relative shrink-0">
               <div>
                  <h3 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">🚀 Top Productos</h3>

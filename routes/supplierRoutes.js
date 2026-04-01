@@ -1,29 +1,33 @@
 const express = require('express');
 const router = express.Router();
 const suppliersController = require('../controllers/suppliersController');
+const { requireLogin } = require('../middleware/auth');
 
-// Rutas de administración de base de datos
-router.get('/api/proveedores', suppliersController.getAll);
-router.post('/api/proveedores', suppliersController.create);
-router.put('/api/proveedores/:id', suppliersController.update);
-router.delete('/api/proveedores/:id', suppliersController.delete);
+// --- ADMINISTRACIÓN DE PROVEEDORES (CRUD) ---
+router.get('/api/proveedores', requireLogin, suppliersController.getAll);
+router.post('/api/proveedores', requireLogin, suppliersController.create);
+router.put('/api/proveedores/:id', requireLogin, suppliersController.update);
+router.delete('/api/proveedores/:id', requireLogin, suppliersController.delete);
 
-// Ruta Matemática Pura (FASE 1)
-router.get('/api/proveedores/:proveedorId/forecast', suppliersController.getSupplierForecast);
+// --- COMPRAS INTELIGENTES (CO-PILOTO IA) ---
+// FASE 1: Forecast Matemático
+router.get('/api/proveedores/:proveedorId/forecast', requireLogin, suppliersController.getSupplierForecast);
 
-// Ruta IA Copiloto y Riesgo (FASE 3 & 4)
-router.post('/api/proveedores/:proveedorId/ai-copilot', suppliersController.generateSmartOrder);
+// FASE 3 & 4: Consulta IA Copiloto
+router.post('/api/proveedores/:proveedorId/ai-copilot', requireLogin, suppliersController.generateSmartOrder);
 
-// Ruta Consolidación y Trazabilidad (FASE 5 & 6)
-router.post('/api/proveedores/:proveedorId/ordenes', suppliersController.submitSmartOrder);
+// FASE 5 & 6: Registro de Orden y Trazabilidad
+router.post('/api/proveedores/:proveedorId/ordenes', requireLogin, suppliersController.submitSmartOrder);
 
-// Rutas de Historial (Nuevas Brechas)
-router.get('/api/ordenes/historial', suppliersController.getOrdersHistory);
-router.get('/api/ordenes/:ordenId', suppliersController.getOrderDetail);
-router.patch('/api/ordenes/:ordenId/estado', suppliersController.updateOrderStatus);
+// --- HISTORIAL Y CUENTAS POR PAGAR (FINANZAS) ---
+router.get('/api/ordenes/historial', requireLogin, suppliersController.getOrdersHistory);
+router.get('/api/ordenes/:ordenId', requireLogin, suppliersController.getOrderDetail);
+router.patch('/api/ordenes/:ordenId/estado', requireLogin, suppliersController.updateOrderStatus);
 
-// Envío de Orden al Proveedor por Email
-router.post('/api/ordenes/:ordenId/enviar-proveedor', suppliersController.sendOrderToSupplier);
+// Registro de Pagos (Abonos)
+router.post('/api/proveedores/ordenes/:ordenId/pay', requireLogin, suppliersController.registerPayment);
+
+// Envío de Orden por Email
+router.post('/api/ordenes/:ordenId/enviar-proveedor', requireLogin, suppliersController.sendOrderToSupplier);
 
 module.exports = router;
-

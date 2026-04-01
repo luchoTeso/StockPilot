@@ -59,15 +59,34 @@ const aiController = {
         return res.status(500).json({ error: "La API Key de OpenAI no está configurada correctamente en el archivo .env." });
       }
 
-      // 1. Obtener datos crudos para Hash y Análisis
+      // 1. Obtener datos crudos con SQL optimizado (CTE en lugar de subconsultas correlacionadas)
       const snapshotQuery = `
+        WITH VentasRecientes AS (
+          SELECT 
+            vp.id_producto,
+            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-7 days') THEN vp.cantidad ELSE 0 END) as qty_7d,
+            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-30 days') THEN vp.cantidad ELSE 0 END) as qty_30d,
+            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-60 days') THEN vp.cantidad ELSE 0 END) as qty_60d,
+            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-90 days') THEN vp.cantidad ELSE 0 END) as qty_90d
+          FROM VentasProductos vp
+          JOIN Ventas v ON vp.id_venta = v.id_venta
+          WHERE v.fecha_salida >= DATE('now', '-90 days')
+          GROUP BY vp.id_producto
+        )
         SELECT 
-          p.id_producto as id, p.nombre_producto as nombre, p.cantidad as stock_actual, p.precio, p.categoria, p.stock_seguridad, p.lead_time,
-          IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-30 days')), 0) / 30.0 as velocity_30d,
-          IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-7 days')), 0) / 7.0 as velocity_7d,
-          IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-60 days')), 0) / 60.0 as velocity_60d,
-          IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-90 days')), 0) / 90.0 as velocity_90d
+          p.id_producto as id, 
+          p.nombre_producto as nombre, 
+          p.cantidad as stock_actual, 
+          p.precio, 
+          p.categoria, 
+          p.stock_seguridad, 
+          p.lead_time,
+          IFNULL(vr.qty_7d, 0) / 7.0 as velocity_7d,
+          IFNULL(vr.qty_30d, 0) / 30.0 as velocity_30d,
+          IFNULL(vr.qty_60d, 0) / 60.0 as velocity_60d,
+          IFNULL(vr.qty_90d, 0) / 90.0 as velocity_90d
         FROM Productos p
+        LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
         WHERE p.id_tienda = ? AND p.estado = 'Disponible'
       `;
       const rows = await db.allAsync(snapshotQuery, [tiendaId]);
@@ -300,6 +319,151 @@ const aiController = {
   },
 
   /**
+   * Genera sugerencias de promociones comerciales basadas en estacionalidad, 
+   * baja rotación, sobrestock o riesgo de vencimiento.
+   * 
+   * @async
+   * @function getPromotionSuggestions
+   * @param {import('express').Request} req - Objeto de petición Express.
+   * @param {import('express').Response} res - Objeto de respuesta Express.
+   */
+  getPromotionSuggestions: async (req, res) => {
+    try {
+      const tiendaId = req.session.tiendaId;
+      if (!tiendaId) return res.status(401).json({ error: "No autorizado" });
+
+      // 1. Obtener candidatos con SQL optimizado (CTE)
+      const query = `
+        WITH VentasRecientes AS (
+          SELECT 
+            vp.id_producto,
+            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-30 days') THEN vp.cantidad ELSE 0 END) as qty_30d,
+            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-7 days') THEN vp.cantidad ELSE 0 END) as qty_7d
+          FROM VentasProductos vp
+          JOIN Ventas v ON vp.id_venta = v.id_venta
+          WHERE v.fecha_salida >= DATE('now', '-30 days')
+          GROUP BY vp.id_producto
+        )
+        SELECT 
+          p.id_producto as id, 
+          p.nombre_producto as nombre, 
+          p.cantidad as stock, 
+          p.precio, 
+          p.categoria, 
+          p.fecha_vencimiento,
+          IFNULL(vr.qty_30d, 0) / 30.0 as velocity_30d,
+          IFNULL(vr.qty_7d, 0) / 7.0 as velocity_7d
+        FROM Productos p
+        LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
+        WHERE p.id_tienda = ? AND p.estado = 'Disponible'
+        ORDER BY p.cantidad DESC
+      `;
+      const rows = await db.allAsync(query, [tiendaId]);
+
+      // 2. Filtrado Lógico (Candidatos: Tendencia baja, sobrestock o vencimiento)
+      const candidates = rows.filter(r => {
+        const trend = r.velocity_30d > 0.01 ? (r.velocity_7d / r.velocity_30d) : 0.5;
+        const isLowTurnover = trend < 0.7 && r.stock > 10;
+        const isNearExpiry = r.fecha_vencimiento && (new Date(r.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24) < 30;
+        const isOverstock = r.stock > 50 && r.velocity_30d < 1; // Simplificado para el prompt
+        return isLowTurnover || isNearExpiry || isOverstock;
+      }).slice(0, 10);
+
+      if (candidates.length === 0) {
+        return res.json({ success: true, promotions: [] });
+      }
+
+      // 3. Hash para Caché (Independiente de recomendaciones de compra)
+      const dataString = "PROMO_" + JSON.stringify(candidates);
+      const currentHash = crypto.createHash('md5').update(dataString).digest('hex');
+      
+      const cacheKey = `PROMO_${tiendaId}`;
+      if (aiCache_v3[cacheKey] && aiCache_v3[cacheKey].dataHash === currentHash) {
+        return res.json({ cached: true, promotions: aiCache_v3[cacheKey].recommendations });
+      }
+
+      // 4. Prompt de Estrategia Comercial
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { 
+            role: "system", 
+            content: `Eres un Experto en Retail y Estrategia de Ventas. Analizarás productos estancados o en riesgo de pérdida.
+            Tu misión es proponer estrategias COMERCIALES (no logísticas).
+            TIPOS PERMITIDOS: 'descuento', 'combo', '2x1', 'liquidacion'.
+            REGLAS:
+            - Descuento máximo: 30%.
+            - Si el tipo es '2x1', el campo 'discount' DEBE SER 50 (porque el cliente paga 1 y lleva 2, es decir, ahorra el 50%).
+            - Los 'combos' deben ser lógicos y estratégicos.
+            - TONO: Consultivo, ejecutivo y analítico.
+            - ESTILO: Escribe un párrafo fluido, natural y profesional de 35 a 50 palabras. NO uses etiquetas como '(Diagnóstico)' o '(Objetivo)'.
+            - LÓGICA: Conecta la causa técnica (ej: baja rotación, sobrestock) con el beneficio estratégico (ej: recuperar liquidez, optimizar espacio) usando conectores naturales.
+            - EJEMPLO: 'Dado que la rotación de [Producto] ha sido nula en los últimos 20 días, se sugiere este descuento para recuperar el capital inmovilizado y optimizar el espacio en estantería para productos de mayor demanda.'
+            - EXTENSIÓN: Entre 35 y 50 palabras.
+            - DURACIÓN: Sugiere una duración lógica en 'duration_days'.
+            - COMBOS: Si es 'combo', identifica un producto afín y pon su nombre en 'complementary_name'.
+            - Responde ÚNICAMENTE JSON: { "promotions": [ { "id": ID, "type": "TIPO", "title": "Título corto", "reason": "Justificación profesional fluida", "duration_days": 15, "complementary_name": "Nombre o null", "discount": 15 } ] }`
+          },
+          { role: "user", content: `Sugiere promociones para estos productos: ${JSON.stringify(candidates)}` }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const aiResponse = JSON.parse(completion.choices[0].message.content);
+      const promotions = (aiResponse.promotions || []).map(p => {
+        const product = candidates.find(c => c.id === p.id);
+        if (!product) return null;
+
+        // Corrección automática: 2x1 siempre es 50% de ahorro real
+        let effectiveDiscount = p.discount || 0;
+        if (p.type === '2x1' && effectiveDiscount === 0) {
+          effectiveDiscount = 50;
+        }
+
+        // Cálculo de impacto financiero estimado (Capital a liberar)
+        const discountFactor = effectiveDiscount / 100;
+        const discountedPrice = Math.round(product.precio * (1 - discountFactor));
+        const capitalLiberado = Math.round(product.stock * discountedPrice);
+
+        return {
+          ...p,
+          id: product.id, // ID explícito de la base de datos
+          discount: effectiveDiscount,
+          productName: product.nombre,
+          originalPrice: product.precio,
+          discountedPrice: discountedPrice,
+          impact: capitalLiberado,
+          isCritical: product.fecha_vencimiento && (new Date(product.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24) < 10
+        };
+      }).filter(p => p !== null);
+
+      // 5. Auditar y Cachear
+      aiCache_v3[cacheKey] = { dataHash: currentHash, recommendations: promotions, timestamp: new Date() };
+
+      // Registrar en BD (Auditoria_IA)
+      try {
+        await db.runAsync(
+          'INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia) VALUES (?, NULL, ?, ?, ?, ?, ?)',
+          [
+            tiendaId, 
+            'Estratega Comercial v1.2', 
+            JSON.stringify(candidates), 
+            JSON.stringify(promotions), 
+            'Sugerencias de Promoción', 
+            'Optimización de flujo de caja'
+          ]
+        );
+      } catch (err) { console.error('Error auditoría promo:', err); }
+
+      res.json({ cached: false, promotions });
+
+    } catch (error) {
+      console.error('Error promotion suggestions:', error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  /**
    * Obtiene alertas críticas basadas en reglas de negocio estrictas (Punto de Reorden).
    * Cruza datos de stock actual contra el modelo de predicción de demanda.
    * 
@@ -315,6 +479,115 @@ const aiController = {
       const alerts = await Product.findProAlerts(tiendaId);
       
       res.json({ success: true, alerts });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+
+  /**
+   * Aplica una estrategia de precio sugerida por la IA.
+   * Guarda el precio original para restauraciones automáticas.
+   */
+  applyPromotionStrategy: async (req, res) => {
+    try {
+      const { id_producto, nuevo_precio, duration_days, razon, tipo } = req.body;
+      const tiendaId = req.session.tiendaId;
+
+      if (!id_producto || !nuevo_precio) {
+        return res.status(400).json({ error: "Datos incompletos" });
+      }
+
+      // 1. Obtener datos actuales del producto
+      const current = await db.getAsync('SELECT precio, nombre_producto FROM Productos WHERE id_producto = ? AND id_tienda = ?', [id_producto, tiendaId]);
+      if (!current) return res.status(404).json({ error: "Producto no encontrado" });
+
+      const precioAnterior = current.precio;
+      const fechaFin = new Date();
+      fechaFin.setDate(fechaFin.getDate() + (parseInt(duration_days) || 7));
+      const fechaFinStr = fechaFin.toISOString().split('T')[0];
+
+      // 2. Transacción de actualización
+      await db.runAsync('BEGIN TRANSACTION');
+
+      try {
+        // Actualizar precio y guardar original (solo si no tiene ya un precio original guardado)
+        await db.runAsync(
+          `UPDATE Productos 
+           SET precio = ?, 
+               precio_original = COALESCE(precio_original, ?), 
+               fecha_fin_promocion = ? 
+           WHERE id_producto = ?`,
+          [nuevo_precio, precioAnterior, fechaFinStr, id_producto]
+        );
+
+        // Registrar en Historial_Precios
+        await db.runAsync(
+          `INSERT INTO Historial_Precios (id_producto, precio_anterior, precio_nuevo, motivo) 
+           VALUES (?, ?, ?, ?)`,
+          [id_producto, precioAnterior, nuevo_precio, `Estrategia IA: ${tipo} - ${razon}`]
+        );
+
+        // Auditoría IA completa para cumplir con las restricciones de la BD
+        // Auditoría IA completa con ID y Nombre explícitos para mayor claridad
+        await db.runAsync(
+          `INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia) 
+           VALUES (?, NULL, ?, ?, ?, ?, ?)`,
+          [
+            tiendaId, 
+            'Ejecución Estrategia Directa', 
+            JSON.stringify([{ id: id_producto, product: current.nombre_producto, base: precioAnterior }]), 
+            JSON.stringify([{ 
+                id: id_producto,
+                product: current.nombre_producto, 
+                adjustment: `${Math.round(((nuevo_precio - precioAnterior) / precioAnterior) * 100)}%`, 
+                final: nuevo_precio, 
+                reason: razon 
+            }]),
+            'ESTRATEGIA APLICADA', 
+            `Ajuste de precio automático: ${razon}`
+          ]
+        );
+
+        await db.runAsync('COMMIT');
+        res.json({ success: true, message: "Estrategia aplicada con éxito y registrada en auditoría." });
+
+      } catch (err) {
+        await db.runAsync('ROLLBACK');
+        throw err;
+      }
+
+    } catch (error) {
+      console.error('Error aplicando estrategia IA:', error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  /**
+   * Obtiene la tendencia de precios histórica para gráficas.
+   */
+  getPriceTrend: async (req, res) => {
+    try {
+      const tiendaId = req.session.tiendaId;
+      const query = `
+        SELECT hp.*, p.nombre_producto, hp.fecha_cambio 
+        FROM Historial_Precios hp
+        JOIN Productos p ON hp.id_producto = p.id_producto
+        WHERE p.id_tienda = ?
+        ORDER BY hp.fecha_cambio ASC
+        LIMIT 100
+      `;
+      const rows = await db.allAsync(query, [tiendaId]);
+      
+      // Agrupar por fecha para la gráfica
+      const trend = rows.map(r => ({
+        fecha: r.fecha_cambio.split(' ')[0],
+        producto: r.nombre_producto,
+        precioAnterior: r.precio_anterior,
+        precioNuevo: r.precio_nuevo,
+        variacion: r.precio_nuevo - r.precio_anterior
+      }));
+
+      res.json({ success: true, trend });
     } catch (e) {
       res.status(500).json({ error: e.message });
     }

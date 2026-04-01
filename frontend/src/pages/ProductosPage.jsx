@@ -7,6 +7,8 @@ import { createPortal } from 'react-dom';
 import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
 import Tooltip from '../components/Tooltip';
+import { SYNC_EVENTS, emitSyncEvent, subscribeToSync } from '../utils/stockSync';
+
 const ProductosPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -109,6 +111,20 @@ const ProductosPage = () => {
   useEffect(() => {
     cargarProductos();
     fetchProveedores();
+
+    // Suscribirse a eventos de sincronización (Punto 2: Tiempo Real)
+    const unsubscribe = subscribeToSync((event) => {
+      // Si recibimos un evento de stock o producto, refrescamos la lista
+      if (
+        event.type === SYNC_EVENTS.STOCK_UPDATED || 
+        event.type === SYNC_EVENTS.SALE_COMPLETED || 
+        event.type === SYNC_EVENTS.PRODUCT_MODIFIED
+      ) {
+        cargarProductos();
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const fetchProveedores = async () => {
@@ -228,6 +244,8 @@ const ProductosPage = () => {
         toast.success(response.data.message || 'Operación exitosa');
         handleCloseModal();
         cargarProductos();
+        // Emitir sincronización
+        emitSyncEvent(SYNC_EVENTS.PRODUCT_MODIFIED, { id: formData.id_producto });
       }
     } catch (err) {
       toast.error(`${err.response?.data?.error || err.message}`);
@@ -255,6 +273,8 @@ const ProductosPage = () => {
         toast.success(data.message || 'Stock agregado correctamente');
         setStockModalOpen(false);
         cargarProductos();
+        // Emitir sincronización
+        emitSyncEvent(SYNC_EVENTS.STOCK_UPDATED, { id: stockProducto.id_producto });
       }
     } catch (err) {
       toast.error('No se pudo agregar stock. Intenta nuevamente.');
@@ -280,6 +300,8 @@ const ProductosPage = () => {
       toast.success(data.message || 'Estado del producto actualizado');
       setToggleModalOpen(false);
       cargarProductos();
+      // Emitir sincronización
+      emitSyncEvent(SYNC_EVENTS.PRODUCT_MODIFIED, { id: toggleProducto.id_producto });
     } catch (err) {
       toast.error(`Error al ${verbo} el producto`);
     } finally {
@@ -300,6 +322,8 @@ const ProductosPage = () => {
       toast.success(data.message || 'Producto eliminado permanentemente');
       setEliminarModalOpen(false);
       cargarProductos();
+      // Emitir sincronización
+      emitSyncEvent(SYNC_EVENTS.PRODUCT_MODIFIED);
     } catch (err) {
       toast.error('Error al eliminar el producto');
     } finally {
@@ -328,6 +352,8 @@ const ProductosPage = () => {
       toast.success(data.message || 'Venta registrada con éxito');
       setVentaModalOpen(false);
       cargarProductos();
+      // Emitir sincronización
+      emitSyncEvent(SYNC_EVENTS.SALE_COMPLETED, { id: ventaProducto.id_producto });
     } catch (err) {
       toast.error(`${err.response?.data?.error || err.message}`);
     } finally {
@@ -348,24 +374,29 @@ const ProductosPage = () => {
 
   return (
     <div className="animate-fade-in pb-12 space-y-8 font-outfit">
-      {/* Alerta Global */}
+      {/* Alerta Global Premium (Floating Glass) */}
       {alert.show && (
         <div 
           onClick={() => navigate('/alertas')}
-          className={`group flex items-center gap-4 p-5 rounded-[2rem] mb-6 shadow-xl border animate-pulse cursor-pointer hover:shadow-2xl hover:scale-[1.01] transition-all ${alert.isCritical ? 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}
+          className={`group relative flex flex-col md:flex-row items-center gap-6 p-8 rounded-[2.5rem] mb-10 shadow-2xl border backdrop-blur-xl animate-fade-in cursor-pointer hover:shadow-indigo-500/10 transition-all transform hover:-translate-y-1 ${alert.isCritical ? 'bg-rose-50/80 border-rose-100 text-rose-800' : 'bg-amber-50/80 border-amber-100 text-amber-800'}`}
         >
-          <span className="text-3xl transition-transform group-hover:scale-110">⚠️</span>
-          <div className="flex-1">
-            <div className="font-black uppercase tracking-widest text-sm mb-1">{alert.title}</div>
-            <div className="font-bold text-xs">{alert.message}</div>
+          <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-lg border-2 ${alert.isCritical ? 'bg-rose-100 border-white text-rose-600 animate-bounce' : 'bg-amber-100 border-white text-amber-600 rotate-12'}`}>
+            {alert.isCritical ? '🚨' : '⚠️'}
           </div>
-          <button 
-             onClick={(e) => { e.stopPropagation(); setAlert({ show: false }); }} 
-             className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/10 transition-colors font-black text-xl hover:scale-110"
-             title="Descartar alerta"
-          >
-             &times;
-          </button>
+          <div className="flex-1 text-center md:text-left">
+            <h4 className="text-xl font-black uppercase tracking-tighter italic mb-1">{alert.title}</h4>
+            <p className="font-bold text-sm opacity-80 leading-relaxed max-w-2xl">{alert.message}</p>
+          </div>
+          <div className="flex items-center gap-4">
+             <span className="hidden md:inline-block text-[10px] font-black uppercase tracking-[0.2em] bg-white/50 px-4 py-2 rounded-xl">Revisar Ahora →</span>
+             <button 
+                onClick={(e) => { e.stopPropagation(); setAlert({ show: false }); }} 
+                className="w-12 h-12 flex items-center justify-center rounded-2xl hover:bg-black/5 transition-all font-black text-2xl hover:scale-110 active:scale-90"
+                title="Cerrar"
+             >
+                &times;
+             </button>
+          </div>
         </div>
       )}
 
@@ -411,24 +442,24 @@ const ProductosPage = () => {
       </div>
 
       {/* Tabla Premium */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-sm rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden ring-1 ring-slate-100">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em]">
-                <th className="p-6">Producto</th>
-                <th className="p-6">Categoría</th>
-                <th className="p-6 text-center">En Bodega</th>
-                <th className="p-6 text-center">Estado</th>
-                <th className="p-6 text-center">Agregado el</th>
-                <th className="p-6 text-center">Acciones</th>
+              <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
+                <th className="p-8">Producto</th>
+                <th className="p-8">Categoría</th>
+                <th className="p-8 text-center whitespace-nowrap">En Bodega</th>
+                <th className="p-8 text-center">Estado</th>
+                <th className="p-8 text-center">Registro</th>
+                <th className="p-8 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
               {loading ? (
-                <tr><td colSpan="6" className="p-24 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse">Cargando Bóveda...</td></tr>
+                <tr><td colSpan="6" className="p-32 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse whitespace-nowrap">Consultando Bóveda...</td></tr>
               ) : listRender.length === 0 ? (
-                <tr><td colSpan="6" className="p-24 text-center text-slate-400 font-bold italic">No hay productos en esta vista.</td></tr>
+                <tr><td colSpan="6" className="p-32 text-center text-slate-400 font-bold italic whitespace-nowrap">No hay productos en esta vista.</td></tr>
               ) : (
                 listRender.map(p => {
                   const isActive = p.estado === 'Disponible';

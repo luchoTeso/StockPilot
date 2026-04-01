@@ -10,9 +10,15 @@ class DashboardController {
             const articulosQuery = `SELECT SUM(cantidad) as total FROM Productos WHERE id_tienda = ?`;
             const articulos = await db.getAsync(articulosQuery, [tiendaId]);
 
-            // 2. Valor Inventario (Precio de venta * cantidad)
-            const valorQuery = `SELECT SUM(cantidad * precio) as valor FROM Productos WHERE id_tienda = ?`;
-            const valor = await db.getAsync(valorQuery, [tiendaId]);
+            // 2. Valor Inventario y Rentabilidad (Precio de venta * cantidad)
+            const valorQuery = `
+                SELECT 
+                    SUM(cantidad * precio) as valor,
+                    SUM((precio - costo_compra) * cantidad) as utilidad_potencial,
+                    AVG(((precio - costo_compra) / NULLIF(precio, 0)) * 100) as margen_avg
+                FROM Productos WHERE id_tienda = ?
+            `;
+            const valorRecord = await db.getAsync(valorQuery, [tiendaId]);
 
             // 3. Alertas Stock (Avanzadas)
             const Alert = require('../models/Alert');
@@ -48,7 +54,9 @@ class DashboardController {
 
             res.json({
                 totalArticulos: articulos.total || 0,
-                valorInventario: valor.valor || 0,
+                valorInventario: valorRecord.valor || 0,
+                utilidadPotencial: valorRecord.utilidad_potencial || 0,
+                margenPromedio: Math.round(valorRecord.margen_avg || 0),
                 // Proveer desglose avanzado al Frontend
                 alertasCriticas: alertasStats.critico || 0,
                 alertasAdvertencia: alertasStats.advertencia || 0,

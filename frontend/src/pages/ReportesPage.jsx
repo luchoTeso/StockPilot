@@ -223,12 +223,20 @@ const ReportesPage = () => {
   return (
     <div className="animate-fade-in pb-12 font-outfit">
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
+      {/* Header Premium (Floating Style) */}
+      <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-xl shadow-indigo-500/5 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 mt-2 animate-fade-in">
         <div>
-          <span className="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-sm mt-2 border border-indigo-200">
+          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase leading-none">Centro de <span className="text-indigo-600">Reportes</span></h2>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
+            <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
             Exportación y Análisis de Datos del Negocio
-          </span>
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+           <div className="bg-white/60 px-6 py-3 rounded-2xl border border-white/40 shadow-sm">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Archivos totales</span>
+              <span className="text-xl font-black text-slate-800">{reportes.length} <span className="text-[10px] text-indigo-500 italic">docs</span></span>
+           </div>
         </div>
       </div>
 

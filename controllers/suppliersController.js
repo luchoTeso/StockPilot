@@ -13,7 +13,8 @@ const suppliersController = {
       const tiendaId = req.session.tiendaId || 6;
       const query = `
         SELECT p.*, 
-               (SELECT COUNT(id_producto) FROM Productos WHERE id_proveedor = p.id_proveedor AND estado='Disponible') as productos_vinculados
+               (SELECT COUNT(id_producto) FROM Productos WHERE id_proveedor = p.id_proveedor AND estado='Disponible') as productos_vinculados,
+               (SELECT SUM(presupuesto_total - monto_pagado) FROM Ordenes_Compra WHERE id_proveedor = p.id_proveedor) as total_deuda
         FROM Proveedores p
         WHERE p.id_tienda = ? AND p.estado = 'Activo'
         ORDER BY p.nombre_empresa ASC
@@ -364,7 +365,8 @@ const suppliersController = {
       const tiendaId = req.session.tiendaId || 6;
       const query = `
         SELECT o.*, p.nombre_empresa as proveedor_nombre, u.nombres as usuario_nombre,
-               (SELECT COUNT(*) FROM Ordenes_Detalle WHERE id_orden = o.id_orden) as items_count
+               (SELECT COUNT(*) FROM Ordenes_Detalle WHERE id_orden = o.id_orden) as items_count,
+               (o.presupuesto_total - o.monto_pagado) as saldo_pendiente
         FROM Ordenes_Compra o
         JOIN Proveedores p ON o.id_proveedor = p.id_proveedor
         JOIN Usuarios u ON o.id_usuario = u.id_usuario
@@ -615,6 +617,50 @@ const suppliersController = {
     } catch (e) {
       console.error('❌ [Orden] Error al enviar orden por email:', e);
       res.status(500).json({ success: false, error: 'Error al enviar el correo: ' + e.message });
+    }
+  },
+
+  /**
+   * Registra un pago (abono) a una orden de compra.
+   * Módulo: Inteligencia Financiera / Cuentas por Pagar.
+   */
+  registerPayment: async (req, res) => {
+    try {
+      const { ordenId } = req.params;
+      const { monto } = req.body;
+      const tiendaId = req.session.tiendaId;
+
+      if (!monto || monto <= 0) {
+        return res.status(400).json({ success: false, error: 'Monto inválido.' });
+      }
+
+      const orden = await db.getAsync(
+        'SELECT presupuesto_total, monto_pagado FROM Ordenes_Compra WHERE id_orden = ? AND id_tienda = ?',
+        [ordenId, tiendaId]
+      );
+
+      if (!orden) return res.status(404).json({ success: false, error: 'Orden no encontrada.' });
+
+      const nuevoMontoPagado = (orden.monto_pagado || 0) + parseFloat(monto);
+      let nuevoEstadoPago = 'Abonado';
+      
+      if (nuevoMontoPagado >= orden.presupuesto_total) {
+        nuevoEstadoPago = 'Pagado';
+      }
+
+      await db.runAsync(
+        'UPDATE Ordenes_Compra SET monto_pagado = ?, estado_pago = ? WHERE id_orden = ?',
+        [nuevoMontoPagado, nuevoEstadoPago, ordenId]
+      );
+
+      res.json({ 
+        success: true, 
+        message: 'Pago registrado con éxito.',
+        nuevoSaldo: Math.max(0, orden.presupuesto_total - nuevoMontoPagado)
+      });
+
+    } catch (e) {
+      res.status(500).json({ success: false, error: e.message });
     }
   }
 };

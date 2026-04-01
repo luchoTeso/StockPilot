@@ -249,32 +249,36 @@ const AuditoriaPage = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {(() => {
-                      const sugerencias = parseSafe(detailModal.sugerencia_ia_json);
-                      const datosBase = parseSafe(detailModal.datos_base_json);
+                      let sugerencias = parseSafe(detailModal.sugerencia_ia_json);
+                      let datosBase = parseSafe(detailModal.datos_base_json);
+
+                      // Si no es un array, lo convertimos para que la tabla mapee bien (Resiliencia)
+                      if (sugerencias && typeof sugerencias === 'object' && !Array.isArray(sugerencias)) sugerencias = [sugerencias];
+                      if (datosBase && typeof datosBase === 'object' && !Array.isArray(datosBase)) datosBase = [datosBase];
 
                       if (Array.isArray(sugerencias) && sugerencias.length > 0) {
                         return sugerencias.map((s, i) => {
-                          // Buscar base: puede estar en sugerencia o en datos_base
-                          const baseVal = s.base || datosBase[i]?.base || datosBase[i]?.calculo_base || '---';
+                          const itemBase = Array.isArray(datosBase) ? datosBase[i] : datosBase;
+                          const baseVal = s.base || itemBase?.base || itemBase?.precio || s.originalPrice || '---';
+                          
+                          // Lógica de nombre + ID
+                          const name = s.product || s.productName || itemBase?.product || itemBase?.nombre_producto || 'Producto';
+                          const id = s.id || s.id_producto || itemBase?.id || itemBase?.id_producto || '';
+                          const displayName = id ? `${name} (ID: ${id})` : name;
+                          
                           return (
                             <tr key={i} className="hover:bg-white transition-colors">
-                              <td className="px-4 py-3 font-bold text-slate-800">{s.product || s.id || `Producto ${i+1}`}</td>
-                              <td className="px-4 py-3 text-center font-black text-slate-600">{baseVal}</td>
+                              <td className="px-4 py-3 font-bold text-slate-800 uppercase italic text-[11px] tracking-tight">{displayName}</td>
+                              <td className="px-4 py-3 text-center font-black text-slate-600">${baseVal.toLocaleString()}</td>
                               <td className="px-4 py-3 text-center">
-                                <span className={`font-black ${(s.adjustment || s.ajuste || '').includes('+') ? 'text-emerald-600' : (s.adjustment === '0%' || s.ajuste === '0%') ? 'text-slate-400' : 'text-rose-600'}`}>
-                                  {s.adjustment || s.ajuste || '---'}
+                                <span className={`font-black ${(s.adjustment || s.ajuste || '').toString().includes('+') || (s.discount && s.type !== 'discount') ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                  {s.adjustment || s.ajuste || (s.discount ? `-${s.discount}%` : '---')}
                                 </span>
                               </td>
                               <td className="px-4 py-3 text-center font-black text-indigo-600">
-                                {s.final || (() => {
-                                  if (typeof baseVal === 'number' && (s.adjustment || s.ajuste)) {
-                                    const proc = parseInt((s.adjustment || s.ajuste).replace(/[^0-9-]/g, '')) || 0;
-                                    return Math.ceil(baseVal * (1 + proc/100));
-                                  }
-                                  return '---';
-                                })()}
+                                ${(s.final || s.nuevo_precio || s.discountedPrice || '---').toLocaleString()}
                               </td>
-                              <td className="px-4 py-3 text-xs text-slate-500 italic leading-snug">{s.reason || s.razon || '---'}</td>
+                              <td className="px-4 py-3 text-xs text-slate-500 italic leading-snug">{s.reason || s.razon || detailModal.razon_ia}</td>
                             </tr>
                           );
                         });

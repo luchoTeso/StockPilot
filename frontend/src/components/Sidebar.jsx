@@ -24,8 +24,8 @@ const Sidebar = () => {
   }, []);
 
   const links = [
-    { to: "/dashboard", text: "Panel de Control", icon: "📊" },
-    { to: "/ventas", text: "Terminal Ventas", icon: "💰" },
+    { to: "/dashboard", text: "Vista general", icon: "📊" },
+    { to: "/ventas", text: "Ventas", icon: "💰" },
     { to: "/productos", text: "Catálogo", icon: "📦" },
     { to: "/movimientos", text: "Movimientos", icon: "🔄" },
     { to: "/tiendas", text: "Mi Tienda", icon: "🏪" }
@@ -47,7 +47,7 @@ const Sidebar = () => {
     // --- Configuración ---
     links.push({ to: "/registro-tendedero", text: "Colaboradores", icon: "👥", id: "nav-registro-tendedero" });
   }
-  
+
   links.push({ to: "/perfil", text: "Mi Perfil", icon: "👤" });
 
   const sidebarWidth = isCollapsed ? 'w-20' : 'w-64';
@@ -56,7 +56,7 @@ const Sidebar = () => {
     <>
       {/* Overlay Móvil */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] md:hidden transition-opacity"
           onClick={closeSidebar}
         ></div>
@@ -72,20 +72,20 @@ const Sidebar = () => {
         ${isCollapsed ? 'items-center' : ''}
         shrink-0 overflow-visible
       `}>
-        
+
         {/* Logo / Header - Diseño Flotante Moderno */}
         <div className="flex flex-col items-center mb-10 px-4 relative shrink-0">
-          
+
           {/* Botón de Cerrar (Solo Móvil) */}
-          <button 
+          <button
             onClick={closeSidebar}
             className="md:hidden absolute -right-2 top-0 bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-90 transition-all z-10"
           >
-             ✕
+            ✕
           </button>
 
           {/* Botón de Colapsar (Desktop/Tablet - Estilo Tirador de Borde) */}
-          <button 
+          <button
             onClick={toggleCollapse}
             className={`
               hidden md:flex absolute top-10 -right-4 w-8 h-8 rounded-full 
@@ -104,7 +104,7 @@ const Sidebar = () => {
               bg-white text-slate-900 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/10 transition-all transform
               ${isCollapsed ? 'w-10 h-10 text-xl' : 'w-16 h-16 text-3xl mb-4'}
             `}>🏪</div>
-            
+
             {!isCollapsed && (
               <div className="text-center animate-fade-in whitespace-nowrap overflow-hidden">
                 <h1 className="text-2xl font-black tracking-tighter italic uppercase text-white">StockPilot</h1>
@@ -113,7 +113,7 @@ const Sidebar = () => {
             )}
           </div>
         </div>
-        
+
         {/* Navegación - Con Scroll Independiente */}
         <nav className="flex-grow flex flex-col space-y-1 px-3 overflow-y-auto scrollbar-hide overflow-x-visible">
           {links.map((link) => (
@@ -121,14 +121,12 @@ const Sidebar = () => {
               key={link.to}
               to={link.to}
               id={link.id}
-              onClick={() => { if(window.innerWidth < 768) closeSidebar(); }}
+              onClick={() => { if (window.innerWidth < 768) closeSidebar(); }}
               className={({ isActive }) =>
-                `flex items-center group py-3 transition-all duration-300 rounded-xl relative mb-1 ${
-                  isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
-                } ${
-                  isActive 
-                    ? 'bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/20' 
-                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                `flex items-center group py-3 transition-all duration-300 rounded-xl relative mb-1 ${isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
+                } ${isActive
+                  ? 'bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/20'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
                 }`
               }
             >
@@ -140,7 +138,7 @@ const Sidebar = () => {
                     </span>
                     {!isCollapsed && <span className="text-sm tracking-wide">{link.text}</span>}
                   </div>
-                  
+
                   {!isCollapsed && link.to === "/productos" && alertCount > 0 && (
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm ${isActive ? 'bg-white text-indigo-600' : 'bg-rose-500 text-white animate-pulse'}`}>
                       {alertCount}
@@ -156,9 +154,9 @@ const Sidebar = () => {
               )}
             </NavLink>
           ))}
-          
-          <button 
-            onClick={logout} 
+
+          <button
+            onClick={logout}
             className={`
               flex items-center gap-3 py-3 transition-all text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 mt-4 rounded-xl shrink-0
               ${isCollapsed ? 'justify-center px-0' : 'px-4'}
@@ -172,7 +170,7 @@ const Sidebar = () => {
         {/* Footer (v3.0) */}
         <div className="p-4 shrink-0 mt-2 border-t border-white/5">
           <p className="text-[10px] text-slate-600 text-center font-bold uppercase tracking-widest opacity-40 italic">
-             {isCollapsed ? 'v3.0' : 'StockPilot Project v3.0'}
+            {isCollapsed ? 'v3.0' : 'StockPilot Project v3.0'}
           </p>
         </div>
       </div>

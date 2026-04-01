@@ -129,10 +129,41 @@ const MAX_RETRIES = 5;
 function startServer(port) {
     const server = app.listen(port);
 
-    server.on('listening', () => {
+    server.on('listening', async () => {
         retries = 0; // Reset en caso de éxito
         console.log('✅ Servidor MVC corriendo en http://localhost:' + port);
         
+        // 🚀 MIGRACIÓN AUTOMÁTICA: Inteligencia Financiera y Deuda
+        try {
+            const db = require('./config/database');
+            console.log('🚀 Iniciando Migración Interna...');
+            
+            // 1. Columnas en Productos
+            await db.runAsync('ALTER TABLE Productos ADD COLUMN precio_original REAL').catch(() => {});
+            await db.runAsync('ALTER TABLE Productos ADD COLUMN fecha_fin_promocion TEXT').catch(() => {});
+            
+            // 2. Columnas en Ordenes_Compra
+            await db.runAsync("ALTER TABLE Ordenes_Compra ADD COLUMN estado_pago TEXT DEFAULT 'Pendiente'").catch(() => {});
+            await db.runAsync('ALTER TABLE Ordenes_Compra ADD COLUMN monto_pagado REAL DEFAULT 0').catch(() => {});
+            
+            // 3. Tabla Historial_Precios
+            await db.runAsync(`
+                CREATE TABLE IF NOT EXISTS Historial_Precios (
+                    id_historial INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id_producto INTEGER NOT NULL,
+                    precio_anterior REAL NOT NULL,
+                    precio_nuevo REAL NOT NULL,
+                    motivo TEXT,
+                    fecha_cambio DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(id_producto) REFERENCES Productos(id_producto)
+                )
+            `).catch(() => {});
+            
+            console.log('✅ Migraciones internas verificadas.');
+        } catch (e) {
+            console.error('⚠️ Error en migración interna:', e.message);
+        }
+
         // 📦 RESPALDO: Crear backup de la BD al iniciar el sistema
         createBackup();
 

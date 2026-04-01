@@ -51,18 +51,21 @@ const AnalyticsDashboardPage = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [stats, setStats] = useState(null);
+  const [priceTrend, setPriceTrend] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [snapshotRes, statsRes] = await Promise.all([
+        const [snapshotRes, statsRes, trendRes] = await Promise.all([
           axios.get('/api/ia/snapshot'),
-          axios.get('/api/dashboard/stats')
+          axios.get('/api/dashboard/stats'),
+          axios.get('/api/ia/price-trend')
         ]);
         setData(snapshotRes.data.data || []);
         setStats(statsRes.data);
+        setPriceTrend(trendRes.data.trend || []);
       } catch (err) {
         console.error('Error fetching analytics data:', err);
       } finally {
@@ -345,6 +348,55 @@ const AnalyticsDashboardPage = () => {
           </div>
         </section>
       </div>
+
+      {/* ═══════════ PRICE HISTORY (IA STRATEGY) ═══════════ */}
+      <section className="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
+        <div className="px-8 pt-7 pb-4 border-b border-slate-50 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-black text-slate-800 uppercase tracking-tight italic">Evolución de Estrategia de Precios (IA)</h3>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Historial de variaciones aplicadas por el motor de decisión</p>
+          </div>
+          <div className="bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full text-[9px] font-black text-indigo-600 uppercase tracking-widest">
+            Auditoría Activa
+          </div>
+        </div>
+        <div className="p-8">
+          <div className="h-[280px] w-full flex items-center justify-center">
+            {priceTrend.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={priceTrend} margin={{ top: 10, right: 30, bottom: 20, left: 10 }}>
+                  <defs>
+                    <linearGradient id="gradientTrend" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#6366f1" stopOpacity={0.2}/>
+                      <stop offset="100%" stopColor="#6366f1" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="fecha" fontSize={10} fontWeight="bold" stroke="#64748b" interval="preserveStartEnd" />
+                  <YAxis stroke="#64748b" fontSize={10} tickFormatter={(v) => `$${v?.toLocaleString()}`} />
+                  <Tooltip content={<CustomTooltipGeneric />} />
+                  <Area type="stepAfter" dataKey="precioNuevo" name="Precio Venta" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#gradientTrend)" dot={{ r: 4, fill: '#6366f1' }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100 flex flex-col items-center gap-3 w-full px-4">
+                <div className="text-3xl grayscale opacity-50">🔬</div>
+                <div>
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest px-2">Esperando Datos Estratégicos</p>
+                  <p className="text-[10px] text-slate-400 font-medium italic mt-1 leading-tight">
+                    "Las variaciones de precio aplicadas por la IA aparecerán aquí una vez <br className="hidden sm:block" /> que empieces a activar ofertas comerciales."
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="mt-4 text-center">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+              Mostrando los últimos 100 movimientos en el historial de precios aplicados
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* ═══════════ PROYECCIÓN DE AGOTAMIENTO ═══════════ */}
       {exhaustData.length > 0 && (
