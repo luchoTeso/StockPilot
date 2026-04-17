@@ -39,6 +39,9 @@ class Alert {
         if (pct <= 0.8) p.clasificacion_abc = 'A';
         else if (pct <= 0.95) p.clasificacion_abc = 'B';
         else p.clasificacion_abc = 'C';
+        
+        // RF-009 Fix: Persist calculated ABC class to DB
+        db.runAsync('UPDATE Productos SET clasificacion_abc = ? WHERE id_producto = ?', [p.clasificacion_abc, p.id_producto]).catch(e => console.error('Error guardando ABC', e));
     });
 
     const hoy = new Date();

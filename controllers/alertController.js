@@ -4,7 +4,7 @@ const alertController = {
   // Dispara el recálculo (suele invocarse manualmente o por cron en el futuro)
   generateAlerts: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 14; 
+      const tiendaId = req.session.tiendaId; 
       const cantidadGeneradas = await Alert.generate(tiendaId);
       res.json({ success: true, generadas: cantidadGeneradas });
     } catch (e) {
@@ -16,7 +16,7 @@ const alertController = {
   // Obtiene la lista visible de alertas activas
   getActiveAlerts: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 14;
+      const tiendaId = req.session.tiendaId;
       const filters = {};
       if (req.query.tipo) filters.tipo = req.query.tipo;
       if (req.query.severidad) filters.severidad = req.query.severidad;
@@ -32,7 +32,7 @@ const alertController = {
   // Obtiene los conteos agregados para la navegación
   getStats: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 14;
+      const tiendaId = req.session.tiendaId;
       const stats = await Alert.getStats(tiendaId);
       res.json({ success: true, stats });
     } catch (e) {
@@ -44,7 +44,7 @@ const alertController = {
   // Marca una alerta como resuelta
   resolveAlert: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 14;
+      const tiendaId = req.session.tiendaId;
       const alertaId = req.params.id;
       await Alert.resolve(alertaId, tiendaId);
       res.json({ success: true, message: 'Alerta archivada.' });

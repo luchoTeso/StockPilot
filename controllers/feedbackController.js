@@ -138,7 +138,7 @@ const feedbackController = {
    */
   getGlobalPrecision: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 6; // Tienda por defecto si no hay sesión para dev
+      const tiendaId = req.session.tiendaId;
       
       // 1. Precisión Promedio Global (últimos 30 días de evaluación o en general)
       const globalQuery = `
@@ -208,7 +208,7 @@ const feedbackController = {
    */
   getEvaluableOrders: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       
       const query = `
         SELECT o.id_orden, COALESCE(o.fecha_aprobacion, o.fecha_creacion) as fecha_aprobacion, o.estado, p.nombre_empresa as proveedor

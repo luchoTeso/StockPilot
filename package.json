@@ -6,7 +6,12 @@
     "start": "node app.js",
     "dev": "npx nodemon app.js",
     "seed": "node database/seed_test_data.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:evidence": "vitest run --reporter=verbose --reporter=json --outputFile=evidencia_pruebas.json && node generar_reporte.js",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:dashboard": "vitest --ui",
+    "test:ui": "npx playwright test --ui"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +30,13 @@
     "openai": "^6.32.0",
     "pdfkit": "^0.18.0",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^4.1.4",
+    "@vitest/ui": "^4.1.4",
+    "vitest": "^4.1.4"
   },
   "description": "",
   "type": "commonjs"

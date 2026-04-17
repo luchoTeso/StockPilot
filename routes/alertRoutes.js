@@ -4,13 +4,14 @@ const alertController = require('../controllers/alertController');
 
 // Todas estas rutas caen bajo el prefijo /api/alertas
 
-router.post('/generate', alertController.generateAlerts);
-router.get('/', alertController.getActiveAlerts);
-router.get('/stats', alertController.getStats);
-router.patch('/:id/resolve', alertController.resolveAlert);
+const { requireLogin } = require('../middleware/auth');
+
+router.post('/generate', requireLogin, alertController.generateAlerts);
+router.get('/', requireLogin, alertController.getActiveAlerts);
+router.get('/stats', requireLogin, alertController.getStats);
+router.patch('/:id/resolve', requireLogin, alertController.resolveAlert);
 
 // Ruta para disparo manual del resumen semanal (solo admins)
-const { requireLogin } = require('../middleware/auth');
 const { runWeeklySummary } = require('../services/schedulerService');
 router.post('/test-summary', requireLogin, async (req, res) => {
     try {

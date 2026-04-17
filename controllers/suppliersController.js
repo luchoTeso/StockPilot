@@ -10,7 +10,7 @@ const suppliersController = {
   // Obtener todos los proveedores de la tienda
   getAll: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       const query = `
         SELECT p.*, 
                (SELECT COUNT(id_producto) FROM Productos WHERE id_proveedor = p.id_proveedor AND estado='Disponible') as productos_vinculados,
@@ -29,7 +29,7 @@ const suppliersController = {
   // Crear un proveedor
   create: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       const { nombre_empresa, contacto_principal, email, telefono, direccion } = req.body;
       
       const query = `
@@ -54,7 +54,7 @@ const suppliersController = {
   update: async (req, res) => {
     try {
       const { id } = req.params;
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       const { nombre_empresa, contacto_principal, email, telefono, direccion } = req.body;
       
       const query = `
@@ -74,7 +74,7 @@ const suppliersController = {
   delete: async (req, res) => {
     try {
       const { id } = req.params;
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       
       // Borrado lógico por seguridad y trazabilidad
       const query = `UPDATE Proveedores SET estado = 'Inactivo' WHERE id_proveedor = ? AND id_tienda = ?`;
@@ -89,7 +89,7 @@ const suppliersController = {
   // Obtener el Forecast Matemático (Sin IA) agrupado por Proveedor
   getSupplierForecast: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       const { proveedorId } = req.params;
 
       const query = `
@@ -275,7 +275,7 @@ const suppliersController = {
   submitSmartOrder: async (req, res) => {
     try {
       const { proveedorId } = req.params;
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       const userId = req.session.userId || 1;
       const { 
         carrito_final, 
@@ -347,7 +347,15 @@ const suppliersController = {
           "Impacto Múltiple", 
           "Consolidación Inteligente de Multiples Items"
         ], function(err) {
-          if (err) reject(err); else resolve(this);
+          if (err) reject(err); else {
+            try {
+              const fs = require('fs');
+              const path = require('path');
+              const logEntry = `[${new Date().toISOString()}] Tienda: ${tiendaId} | Orden: ${ordenId} | Razón: Consolidación Inteligente de Multiples Items | Impacto: Impacto Múltiple\n`;
+              fs.appendFileSync(path.join(__dirname, '..', 'ai_audit.log'), logEntry);
+            } catch (e) { console.error('Error audit log', e); }
+            resolve(this);
+          }
         });
       });
 
@@ -362,7 +370,7 @@ const suppliersController = {
   // Obtener Historial de Órdenes
   getOrdersHistory: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       const query = `
         SELECT o.*, p.nombre_empresa as proveedor_nombre, u.nombres as usuario_nombre,
                (SELECT COUNT(*) FROM Ordenes_Detalle WHERE id_orden = o.id_orden) as items_count,
@@ -401,7 +409,7 @@ const suppliersController = {
   updateOrderStatus: async (req, res) => {
     try {
       const { ordenId } = req.params;
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       const { estado, notas } = req.body;
 
       const estadosPermitidos = ['Aprobada', 'Rechazada', 'Enviada'];
@@ -438,7 +446,7 @@ const suppliersController = {
   sendOrderToSupplier: async (req, res) => {
     try {
       const { ordenId } = req.params;
-      const tiendaId = req.session.tiendaId || 6;
+      const tiendaId = req.session.tiendaId;
       const { mensaje_personalizado } = req.body;
 
       // 1. Obtener datos de la orden + proveedor

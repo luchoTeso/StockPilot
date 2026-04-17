@@ -21,6 +21,17 @@ const openai = new OpenAI({
 // Ruta legada para auditoría de archivos (se mantiene por compatibilidad)
 const AUDIT_LOG_PATH = path.join(__dirname, '..', 'ai_audit.log');
 
+// Helper para escribir en el archivo de log (RF-026)
+const logToAuditFile = (tiendaId, ordenId, razon, impacto) => {
+  try {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] Tienda: ${tiendaId} | Orden: ${ordenId || 'N/A'} | Razón: ${razon} | Impacto: ${impact}\n`;
+    fs.appendFileSync(AUDIT_LOG_PATH, logEntry);
+  } catch (err) {
+    console.error('Error escribiendo en ai_audit.log:', err);
+  }
+};
+
 /**
  * @typedef {Object} AICacheEntry
  * @property {string} dataHash - Hash MD5 de los datos de inventario consultados.
@@ -206,6 +217,7 @@ const aiController = {
           'INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia, fecha_auditoria) VALUES (?, NULL, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
           [tiendaId, 'Dashboard Auditor MBI v2.4', datos_base, sugerencia_json, 'Recomendaciones Dashboard', 'Análisis proactivo de inventario']
         );
+        logToAuditFile(tiendaId, null, 'Análisis proactivo de inventario', 'Recomendaciones Dashboard');
       } catch (auditErr) {
         console.error('⚠️ Auditoría IA omitida:', auditErr.message);
       }
@@ -453,6 +465,7 @@ const aiController = {
             'Optimización de flujo de caja'
           ]
         );
+        logToAuditFile(tiendaId, null, 'Optimización de flujo de caja', 'Sugerencias de Promoción');
       } catch (err) { console.error('Error auditoría promo:', err); }
 
       res.json({ cached: false, promotions });
@@ -474,7 +487,7 @@ const aiController = {
    */
   getProAlerts: async (req, res) => {
     try {
-      const tiendaId = req.session.tiendaId || 5;
+      const tiendaId = req.session.tiendaId;
       const Product = require('../models/Product');
       const alerts = await Product.findProAlerts(tiendaId);
       
@@ -547,6 +560,7 @@ const aiController = {
             `Ajuste de precio automático: ${razon}`
           ]
         );
+        logToAuditFile(tiendaId, null, `Ajuste de precio automático: ${razon}`, 'ESTRATEGIA APLICADA');
 
         await db.runAsync('COMMIT');
         res.json({ success: true, message: "Estrategia aplicada con éxito y registrada en auditoría." });

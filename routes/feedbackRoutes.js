@@ -7,13 +7,15 @@ const express = require('express');
 const router = express.Router();
 const feedbackController = require('../controllers/feedbackController');
 
+const { requireLogin } = require('../middleware/auth');
+
 // Forzar la evaluación de precisión de una orden específica
-router.post('/evaluate/:orderId', feedbackController.evaluateOrder);
+router.post('/evaluate/:orderId', requireLogin, feedbackController.evaluateOrder);
 
 // Obtener todas las métricas de precisión para el dashboard de Aprendizaje
-router.get('/metrics', feedbackController.getGlobalPrecision);
+router.get('/metrics', requireLogin, feedbackController.getGlobalPrecision);
 
 // Obtener órdenes sugeridas para calibración manual
-router.get('/orders/evaluable', feedbackController.getEvaluableOrders);
+router.get('/orders/evaluable', requireLogin, feedbackController.getEvaluableOrders);
 
 module.exports = router;

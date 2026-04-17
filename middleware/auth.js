@@ -1,5 +1,17 @@
 // middleware/auth.js
 const User = require('../models/User');
+
+function evaluarAcceso(session, isSessionValid) {
+  if (!session || !session.userId) return 'no_auth';
+  if (!isSessionValid) return 'concurrent';
+  return 'pass';
+}
+
+function evaluarAdmin(session) {
+  if (!session || session.rol !== 'Administrador') return 'forbidden';
+  return 'pass';
+}
+
 async function requireLogin(req, res, next) {
     if (!req.session || !req.session.userId) {
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
@@ -11,7 +23,9 @@ async function requireLogin(req, res, next) {
     // VALIDACIÓN DE SESIÓN CONCURRENTE
     try {
         const isSessionValid = await User.verifyCurrentSession(req.session.userId, req.sessionID);
-        if (!isSessionValid) {
+        const status = evaluarAcceso(req.session, isSessionValid);
+        
+        if (status === 'concurrent') {
             console.warn(`🛡️ SESIÓN INVALIDADA: El usuario ${req.session.userId} intentó usar una sesión antigua.`);
             
             // Destruir la sesión local porque ya existe una más nueva en otro lugar
@@ -31,10 +45,11 @@ async function requireLogin(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
-    if (!req.session || req.session.rol !== 'Administrador') {
+    const status = evaluarAdmin(req.session);
+    if (status === 'forbidden') {
         return res.status(403).json({ error: "Se requieren permisos de administrador" });
     }
     next();
 }
 
-module.exports = { requireLogin, requireAdmin };
+module.exports = { requireLogin, requireAdmin, evaluarAcceso, evaluarAdmin };

@@ -16,3 +16,14 @@ npm-debug.log*
 # Carpetas del sistema operativo
 .DS_Store
 Thumbs.db
+
+# Resultados de Pruebas y Reportes (StockPilot QA)
+evidencia_pruebas.json
+coverage/
+playwright-report/
+test-results/
+
+# Archivos generados por la aplicación (Exportaciones)
+exports/*.xlsx
+exports/*.pdf
+backups/

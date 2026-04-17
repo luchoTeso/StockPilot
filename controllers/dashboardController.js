@@ -4,7 +4,7 @@ const db = require('../config/database');
 class DashboardController {
     static async getStats(req, res) {
         try {
-            const tiendaId = req.session.tiendaId || 14;
+            const tiendaId = req.session.tiendaId;
             
             // 1. Total Artículos (Stock físico)
             const articulosQuery = `SELECT SUM(cantidad) as total FROM Productos WHERE id_tienda = ?`;
@@ -88,6 +88,7 @@ class DashboardController {
             
             let totalPerdidaProyectada = 0;
             let productosEnRiesgo = 0;
+            let listaRiesgo = [];
 
             itemsVencimiento.forEach(item => {
                 const hoy = new Date();
@@ -98,10 +99,22 @@ class DashboardController {
                 const unidadesQueVenceran = Math.max(0, item.cantidad - ventasEstimadas);
                 
                 if (unidadesQueVenceran > 0) {
-                    totalPerdidaProyectada += (unidadesQueVenceran * item.precio);
+                    const perdida = unidadesQueVenceran * item.precio;
+                    totalPerdidaProyectada += perdida;
                     productosEnRiesgo++;
+                    listaRiesgo.push({
+                        id: item.id_producto,
+                        nombre: item.nombre_producto,
+                        dias: diasRestantes,
+                        unidadesPerdidas: Math.round(unidadesQueVenceran),
+                        perdidaEstimada: Math.round(perdida)
+                    });
                 }
             });
+            
+            // RF-041: Top 10 más críticos por pérdida estimada
+            listaRiesgo.sort((a, b) => b.perdidaEstimada - a.perdidaEstimada);
+            const top10Criticos = listaRiesgo.slice(0, 10);
 
             // 2. Nivel de Servicio Estimado (% productos con stock > ROP)
             const servicioQuery = `
@@ -137,7 +150,8 @@ class DashboardController {
                 success: true,
                 perdidasVencimiento: {
                     totalMonto: Math.round(totalPerdidaProyectada),
-                    conteoProductos: productosEnRiesgo
+                    conteoProductos: productosEnRiesgo,
+                    top10Criticos: top10Criticos
                 },
                 nivelServicio: {
                     porcentaje: Math.round(nivelServicio),

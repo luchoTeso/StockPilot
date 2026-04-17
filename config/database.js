@@ -32,6 +32,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
         db.run("ALTER TABLE Productos ADD COLUMN id_proveedor INTEGER", (e) => {
             if (!e) console.log('📦 Inventario: Columna id_proveedor vinculada exitosamente.');
         });
+        db.run("ALTER TABLE Productos ADD COLUMN clasificacion_abc TEXT DEFAULT 'C'", (e) => {
+            if (!e) console.log('📦 Inventario: Columna clasificacion_abc inyectada exitosamente.');
+        });
     }
 });
 
