@@ -25,7 +25,7 @@ const AUDIT_LOG_PATH = path.join(__dirname, '..', 'ai_audit.log');
 const logToAuditFile = (tiendaId, ordenId, razon, impacto) => {
   try {
     const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] Tienda: ${tiendaId} | Orden: ${ordenId || 'N/A'} | Razón: ${razon} | Impacto: ${impact}\n`;
+    const logEntry = `[${timestamp}] Tienda: ${tiendaId} | Orden: ${ordenId || 'N/A'} | Razón: ${razon} | Impacto: ${impacto}\n`;
     fs.appendFileSync(AUDIT_LOG_PATH, logEntry);
   } catch (err) {
     console.error('Error escribiendo en ai_audit.log:', err);
