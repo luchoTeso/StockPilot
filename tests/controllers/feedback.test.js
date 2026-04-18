@@ -5,59 +5,14 @@ import { describe, it, expect } from 'vitest';
  * Probamos el cálculo de precisión de la IA sin tocar la base de datos.
  */
 
-// === LÓGICA PURA EXTRAÍDA DE feedbackController.js ===
+import feedbackController from '../../controllers/feedbackController.js';
 
-/**
- * Calcula el periodo objetivo de evaluación.
- * Replica feedbackController.js línea 71.
- * @param {number} leadTime - Días que tarda el proveedor en entregar.
- * @returns {number} Periodo objetivo en días.
- */
-function calcularPeriodoObjetivo(leadTime) {
-  return Math.max((leadTime || 3) * 2, 14);
-}
-
-/**
- * Proyecta las ventas al periodo objetivo completo.
- * Replica feedbackController.js líneas 76-79.
- */
-function proyectarVentas(ventasReales, diasTranscurridos, periodoObjetivo) {
-  if (diasTranscurridos < periodoObjetivo) {
-    return (ventasReales / diasTranscurridos) * periodoObjetivo;
-  }
-  return ventasReales;
-}
-
-/**
- * Calcula el factor de precisión de la IA con clamping.
- * Replica feedbackController.js líneas 83-94.
- * @param {number} ventasProyectadas - Ventas proyectadas al periodo objetivo.
- * @param {number} sugerido - Cantidad sugerida por la IA.
- * @returns {number} Factor de precisión limitado entre 0.2 y 3.0.
- */
-function calcularFactorPrecision(ventasProyectadas, sugerido) {
-  let factor = 1.0;
-
-  if (sugerido > 0) {
-    factor = ventasProyectadas / sugerido;
-  } else if (sugerido === 0 && ventasProyectadas > 0) {
-    factor = 2.0; // Cap máximo inicial
-  }
-
-  // Clamping: min 0.2, max 3.0
-  factor = Math.min(Math.max(factor, 0.2), 3.0);
-  return factor;
-}
-
-/**
- * Determina el veredicto de la IA basado en el factor.
- * Replica la lógica implícita del frontend y dashboard de aprendizaje.
- */
-function determinarVeredicto(factor) {
-  if (factor >= 0.9 && factor <= 1.1) return 'Acertado';
-  if (factor < 0.9) return 'Sugirió de más';
-  return 'Sugirió de menos';
-}
+const {
+  calcularPeriodoObjetivo,
+  proyectarVentas,
+  calcularFactorPrecision,
+  determinarVeredicto
+} = feedbackController;
 
 // === PRUEBAS UNITARIAS ===
 

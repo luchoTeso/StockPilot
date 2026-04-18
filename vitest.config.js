@@ -6,7 +6,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: [
-        'tests/**/*.js',
+        'models/Alert.js',
+        'controllers/feedbackController.js',
         'middleware/auth.js'
       ],
       exclude: ['tests/e2e/**'],

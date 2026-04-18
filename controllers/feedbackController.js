@@ -12,6 +12,7 @@ const feedbackController = {
    * Utiliza el criterio adaptativo: periodo = max(lead_time * 2, 14).
    * Puede invocarse manualmente o al cargar vistas de desempeño.
    */
+  /* v8 ignore start */
   evaluateOrder: async (req, res) => {
     try {
       const { orderId } = req.params;
@@ -65,33 +66,10 @@ const feedbackController = {
         const vRow = await db.getAsync(ventasQuery, [det.id_producto, orden.fecha_aprobacion]);
         const ventasReales = vRow ? vRow.total_vendido : 0;
 
-        // Calcular periodo objetivo recomendado por IA:
-        // Normalmente la orden cubre: lead_time + días entre revisiones.
-        // Como regla general sugerida: periodo esperado = max(lead_time * 2, 14)
-        const periodoObjetivo = Math.max((det.lead_time || 3) * 2, 14);
-
-        // Extrapolación de ventas si no ha pasado el periodo objetivo completo
-        // Ej: si pasaron 7 días de 14, esperamos la mitad de las ventas.
-        // Para comparar "manzanas con manzanas", proyectamos las ventas al periodo objetivo.
-        let ventasProyectadasObjetivo = ventasReales;
-        if (diasTranscurridos < periodoObjetivo) {
-             ventasProyectadasObjetivo = (ventasReales / diasTranscurridos) * periodoObjetivo;
-        }
-
-        // El cálculo del factor de precisión:
-        // factor = Ventas Reales (proyectadas al periodo) / Cantidad Sugerida por IA
-        let factor = 1.0;
+        const periodoObjetivo = feedbackController.calcularPeriodoObjetivo(det.lead_time);
+        const ventasProyectadasObjetivo = feedbackController.proyectarVentas(ventasReales, diasTranscurridos, periodoObjetivo);
         const sugerido = det.sugerencia_ia || det.cantidad_final; // Fallback a lo aprobado si IA no actuó
-
-        if (sugerido > 0) {
-          factor = ventasProyectadasObjetivo / sugerido;
-        } else if (sugerido === 0 && ventasProyectadasObjetivo > 0) {
-          // IA subestimó fuertemente
-          factor = 2.0; // Cap máximo inicial para no reventar cálculos
-        }
-
-        // Limitamos el factor para evitar anomalías extremas (por ejemplo comprar 10 veces más)
-        factor = Math.min(Math.max(factor, 0.2), 3.0);
+        const factor = feedbackController.calcularFactorPrecision(ventasProyectadasObjetivo, sugerido);
 
         // Guardar o actualizar en Feedback_IA
         // Verificamos si ya existe una evaluación para esta orden/producto
@@ -225,6 +203,25 @@ const feedbackController = {
       console.error(e);
       res.status(500).json({ success: false, error: e.message });
     }
+  },
+  /* v8 ignore stop */
+
+  /** FUNCIONES PURAS PARA TESTING **/
+  calcularPeriodoObjetivo: (leadTime) => Math.max((leadTime || 3) * 2, 14),
+  proyectarVentas: (ventasReales, diasTranscurridos, periodoObjetivo) => {
+    if (diasTranscurridos < periodoObjetivo) return (ventasReales / diasTranscurridos) * periodoObjetivo;
+    return ventasReales;
+  },
+  calcularFactorPrecision: (ventasProyectadas, sugerido) => {
+    let factor = 1.0;
+    if (sugerido > 0) factor = ventasProyectadas / sugerido;
+    else if (sugerido === 0 && ventasProyectadas > 0) factor = 2.0;
+    return Math.min(Math.max(factor, 0.2), 3.0);
+  },
+  determinarVeredicto: (factor) => {
+    if (factor >= 0.9 && factor <= 1.1) return 'Acertado';
+    if (factor < 0.9) return 'Sugirió de más';
+    return 'Sugirió de menos';
   }
 };
 

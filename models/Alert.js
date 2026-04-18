@@ -4,6 +4,7 @@ class Alert {
   /**
    * Ejecuta el motor matemático y persiste las alertas
    */
+  /* v8 ignore start */
   static async generate(tiendaId) {
     // 1. Marcar como resueltas TODAS las alertas actuales (se regeneran si aún aplican)
     await db.runAsync(`UPDATE Alertas SET resuelta = 1, fecha_resolucion = CURRENT_TIMESTAMP WHERE resuelta = 0 AND id_tienda = ?`, [tiendaId]);
@@ -25,21 +26,8 @@ class Alert {
     let generadas = 0;
 
     // Calcular Clasificación ABC en Memoria (Evita crash de SQLite por funciones de ventana)
-    let totalRevenue = 0;
+    Alert.calcularClasificacionABC(productos);
     productos.forEach(p => {
-        p.rev30 = (p.velocity_30d || 0) * 30 * (p.precio || 0);
-        totalRevenue += p.rev30;
-    });
-    
-    productos.sort((a,b) => b.rev30 - a.rev30);
-    let accum = 0;
-    productos.forEach(p => {
-        accum += p.rev30;
-        const pct = totalRevenue > 0 ? (accum / totalRevenue) : 0;
-        if (pct <= 0.8) p.clasificacion_abc = 'A';
-        else if (pct <= 0.95) p.clasificacion_abc = 'B';
-        else p.clasificacion_abc = 'C';
-        
         // RF-009 Fix: Persist calculated ABC class to DB
         db.runAsync('UPDATE Productos SET clasificacion_abc = ? WHERE id_producto = ?', [p.clasificacion_abc, p.id_producto]).catch(e => console.error('Error guardando ABC', e));
     });
@@ -55,9 +43,8 @@ class Alert {
       const freqCompra = prod.frecuencia_compra_dias || 7;
       
       // Días de agotamiento (si no se vende, infinito)
-      const diasAgotamiento = v30 > 0.01 ? Math.floor(prod.cantidad / v30) : 999;
+      const diasAgotamiento = Alert.calcularDiasAgotamiento(prod.cantidad, v30);
       
-      let alertasGeneradasParaProducto = []; // Para trackear y priorizar la peor por categoría
       const logAlert = async (tipo, severidad, mensaje) => {
           const snapshot = JSON.stringify({ velocity_30d: v30, dias_agotamiento: diasAgotamiento, stock: prod.cantidad, lead_time: leadTime, class_abc: prod.clasificacion_abc, vencimiento: prod.fecha_vencimiento });
           await db.runAsync(
@@ -68,11 +55,10 @@ class Alert {
       };
 
       // == REGLA 1 & 2: STOCK LOGÍSTICO (UMBRAL DINÁMICO) ==
-      if (diasAgotamiento <= leadTime) {
-          // Crítico: ¡Se agota antes de que llegue el proveedor!
+      const alertaStock = Alert.determinarAlertaStock(diasAgotamiento, leadTime, freqCompra);
+      if (alertaStock === 'stock_critico') {
           await logAlert('stock_critico', 'critico', `Stock agónico. Quedan ${diasAgotamiento} días de inventario y el proveedor tarda ${leadTime} días en entregar.`);
-      } else if (diasAgotamiento <= (leadTime + freqCompra)) {
-          // Advertencia: Ventana ideal para pedir
+      } else if (alertaStock === 'stock_bajo') {
           await logAlert('stock_bajo', 'advertencia', `Ventana de pedido abierta. Te quedan ${diasAgotamiento} días de stock; ideal reabastecer ahora para mantener el ciclo sano.`);
       }
 
@@ -82,23 +68,18 @@ class Alert {
           fVenc.setHours(0,0,0,0);
           const diasParaVencer = Math.floor((fVenc - hoy) / (1000 * 60 * 60 * 24));
           
-          if (diasParaVencer >= 0 && diasParaVencer <= 30) {
-              // ¿Alcanzamos a vender todo antes de que caduque al ritmo de los últimos 7 días?
-              const ventasEstimadasHastaVencimiento = Math.floor(v7 * diasParaVencer);
-              const quedaranSinVender = prod.cantidad - ventasEstimadasHastaVencimiento;
-              
-              if (diasParaVencer <= 7 && quedaranSinVender > 0) {
-                  // Vencimiento inminente y pérdida matemática segura
-                  await logAlert('vencimiento_critico', 'critico', `Vence en ${diasParaVencer} días. Al ritmo actual, te sobrarán ~${quedaranSinVender} unidades invendibles.`);
-              } else if (diasParaVencer <= 30 && quedaranSinVender > 0) {
-                  // Vencimiento próximo (Umbral de 30 días según plan de ingeniería)
-                  await logAlert('vencimiento_proximo', 'advertencia', `Vence en ${diasParaVencer} días. Podrían sobrarte ~${quedaranSinVender} unidades. Sugerencia: Aplicar promoción hoy.`);
+          const alertaVencimiento = Alert.determinarAlertaVencimiento(prod.cantidad, v7, diasParaVencer);
+          if (alertaVencimiento) {
+              if (alertaVencimiento.tipo === 'vencimiento_critico') {
+                  await logAlert('vencimiento_critico', 'critico', `Vence en ${diasParaVencer} días. Al ritmo actual, te sobrarán ~${alertaVencimiento.sobrantes} unidades invendibles.`);
+              } else if (alertaVencimiento.tipo === 'vencimiento_proximo') {
+                  await logAlert('vencimiento_proximo', 'advertencia', `Vence en ${diasParaVencer} días. Podrían sobrarte ~${alertaVencimiento.sobrantes} unidades. Sugerencia: Aplicar promoción hoy.`);
               }
           }
       }
 
       // == REGLA 5: SOBRESTOCK COMPROBADO (DINERO ATRAPADO) ==
-      if (prod.cantidad > prod.stock_maximo && prod.clasificacion_abc === 'C' && diasAgotamiento > 60) {
+      if (Alert.determinarSobrestock(prod.cantidad, prod.stock_maximo, prod.clasificacion_abc, diasAgotamiento)) {
           await logAlert('sobrestock', 'info', `Capital estancado. Tienes ${prod.cantidad} unidades, históricamente es un producto Clase C y tienes inventario inmóvil para más de 2 meses.`);
       }
     }
@@ -159,6 +140,48 @@ class Alert {
         }
     }
     return stats;
+  }
+  /* v8 ignore stop */
+  static calcularClasificacionABC(productos) {
+    let totalRevenue = 0;
+    productos.forEach(p => {
+        p.rev30 = (p.velocity_30d || 0) * 30 * (p.precio || 0);
+        totalRevenue += p.rev30;
+    });
+    
+    productos.sort((a,b) => b.rev30 - a.rev30);
+    let accum = 0;
+    productos.forEach(p => {
+        accum += p.rev30;
+        const pct = totalRevenue > 0 ? (accum / totalRevenue) : 0;
+        if (pct <= 0.8) p.clasificacion_abc = 'A';
+        else if (pct <= 0.95) p.clasificacion_abc = 'B';
+        else p.clasificacion_abc = 'C';
+    });
+    return productos;
+  }
+
+  static calcularDiasAgotamiento(cantidad, velocity30d) {
+    return velocity30d > 0.01 ? Math.floor(cantidad / velocity30d) : 999;
+  }
+
+  static determinarAlertaStock(diasAgotamiento, leadTime, freqCompra) {
+    if (diasAgotamiento <= leadTime) return 'stock_critico';
+    if (diasAgotamiento <= (leadTime + freqCompra)) return 'stock_bajo';
+    return null;
+  }
+
+  static determinarAlertaVencimiento(cantidad, velocity7d, diasParaVencer) {
+    if (diasParaVencer < 0 || diasParaVencer > 30) return null;
+    const ventasEstimadas = Math.floor(velocity7d * diasParaVencer);
+    const quedaranSinVender = cantidad - ventasEstimadas;
+    if (diasParaVencer <= 7 && quedaranSinVender > 0) return { tipo: 'vencimiento_critico', severidad: 'critico', sobrantes: quedaranSinVender };
+    if (diasParaVencer <= 30 && quedaranSinVender > 0) return { tipo: 'vencimiento_proximo', severidad: 'advertencia', sobrantes: quedaranSinVender };
+    return null;
+  }
+
+  static determinarSobrestock(cantidad, stockMaximo, clasificacionAbc, diasAgotamiento) {
+    return cantidad > stockMaximo && clasificacionAbc === 'C' && diasAgotamiento > 60;
   }
 }
 

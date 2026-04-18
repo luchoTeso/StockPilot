@@ -5,78 +5,15 @@ import { describe, it, expect } from 'vitest';
  * Probamos las fórmulas sin tocar la base de datos.
  */
 
-// === LÓGICA PURA EXTRAÍDA DE Alert.js ===
+import Alert from '../../models/Alert.js';
 
-/**
- * Calcula la clasificación ABC Pareto para un array de productos.
- * Replica exactamente la lógica de Alert.generate() líneas 27-44.
- */
-function calcularClasificacionABC(productos) {
-  let totalRevenue = 0;
-  productos.forEach(p => {
-    p.rev30 = (p.velocity_30d || 0) * 30 * (p.precio || 0);
-    totalRevenue += p.rev30;
-  });
-
-  productos.sort((a, b) => b.rev30 - a.rev30);
-  let accum = 0;
-  productos.forEach(p => {
-    accum += p.rev30;
-    const pct = totalRevenue > 0 ? (accum / totalRevenue) : 0;
-    if (pct <= 0.8) p.clasificacion_abc = 'A';
-    else if (pct <= 0.95) p.clasificacion_abc = 'B';
-    else p.clasificacion_abc = 'C';
-  });
-
-  return productos;
-}
-
-/**
- * Calcula los días de agotamiento de un producto.
- * Replica Alert.js línea 58.
- */
-function calcularDiasAgotamiento(cantidad, velocity30d) {
-  return velocity30d > 0.01 ? Math.floor(cantidad / velocity30d) : 999;
-}
-
-/**
- * Determina el tipo de alerta de stock según umbrales logísticos.
- * Replica Alert.js líneas 70-77.
- */
-function determinarAlertaStock(diasAgotamiento, leadTime, freqCompra) {
-  if (diasAgotamiento <= leadTime) {
-    return 'stock_critico';
-  } else if (diasAgotamiento <= (leadTime + freqCompra)) {
-    return 'stock_bajo';
-  }
-  return null;
-}
-
-/**
- * Determina el tipo de alerta de vencimiento cruzando con velocidad de ventas.
- * Replica Alert.js líneas 80-97.
- */
-function determinarAlertaVencimiento(cantidad, velocity7d, diasParaVencer) {
-  if (diasParaVencer < 0 || diasParaVencer > 30) return null;
-
-  const ventasEstimadas = Math.floor(velocity7d * diasParaVencer);
-  const quedaranSinVender = cantidad - ventasEstimadas;
-
-  if (diasParaVencer <= 7 && quedaranSinVender > 0) {
-    return { tipo: 'vencimiento_critico', severidad: 'critico', sobrantes: quedaranSinVender };
-  } else if (diasParaVencer <= 30 && quedaranSinVender > 0) {
-    return { tipo: 'vencimiento_proximo', severidad: 'advertencia', sobrantes: quedaranSinVender };
-  }
-  return null;
-}
-
-/**
- * Determina si un producto tiene sobrestock (dinero atrapado).
- * Replica Alert.js líneas 100-102.
- */
-function determinarSobrestock(cantidad, stockMaximo, clasificacionAbc, diasAgotamiento) {
-  return cantidad > stockMaximo && clasificacionAbc === 'C' && diasAgotamiento > 60;
-}
+const {
+  calcularClasificacionABC,
+  calcularDiasAgotamiento,
+  determinarAlertaStock,
+  determinarAlertaVencimiento,
+  determinarSobrestock
+} = Alert;
 
 // === PRUEBAS UNITARIAS ===
 
