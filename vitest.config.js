@@ -7,10 +7,11 @@ export default defineConfig({
       provider: 'v8',
       include: [
         'models/Alert.js',
+        'models/products/**/*.js',
         'controllers/feedbackController.js',
-        'middleware/auth.js'
+        'middleware/auth.js',
+        'middleware/validation.js'
       ],
-      exclude: ['tests/e2e/**'],
       reporter: ['text', 'html', 'json']
     }
   }

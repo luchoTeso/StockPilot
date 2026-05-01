@@ -68,6 +68,15 @@ describe('Motor Matemático de Alertas (Alert.js)', () => {
       });
     });
 
+    it('Debería manejar productos con propiedades indefinidas (fallbacks a 0)', () => {
+      const productos = [
+        { id_producto: 1 } // Sin precio ni velocity_30d
+      ];
+      const resultado = calcularClasificacionABC(productos);
+      expect(resultado[0].rev30).toBe(0);
+      expect(resultado[0].clasificacion_abc).toBe('A');
+    });
+
     it('Debería clasificar correctamente con distribución equilibrada', () => {
       // 5 productos con ingresos similares - la distribución debe ser más equitativa
       const productos = [

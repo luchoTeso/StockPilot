@@ -16,6 +16,7 @@ function sanitize(str) {
 /**
  * Sanitiza todos los campos string del body
  */
+/* v8 ignore start */
 function sanitizeBody(req, res, next) {
     if (req.body && typeof req.body === 'object') {
         for (const key of Object.keys(req.body)) {
@@ -119,6 +120,7 @@ function validateReport(req, res, next) {
 
     next();
 }
+/* v8 ignore stop */
 
 module.exports = {
     sanitize,

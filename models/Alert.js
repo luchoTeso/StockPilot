@@ -126,10 +126,11 @@ class Alert {
    */
   static async getStats(tiendaId) {
     const rows = await db.allAsync(`
-        SELECT severidad, COUNT(*) as count 
-        FROM Alertas 
-        WHERE id_tienda = ? AND resuelta = 0 
-        GROUP BY severidad
+        SELECT a.severidad, COUNT(*) as count 
+        FROM Alertas a
+        JOIN Productos p ON a.id_producto = p.id_producto
+        WHERE a.id_tienda = ? AND a.resuelta = 0 
+        GROUP BY a.severidad
     `, [tiendaId]);
 
     const stats = { critico: 0, advertencia: 0, info: 0, total: 0 };

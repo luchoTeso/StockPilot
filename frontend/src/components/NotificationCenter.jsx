@@ -184,7 +184,7 @@ const NotificationCenter = () => {
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between items-start">
                                                         <p className="text-[12px] font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
-                                                            {alert.nombre_producto}
+                                                            {alert.nombre_producto || 'Producto Desconocido'}
                                                         </p>
                                                         <span className="text-[9px] font-black text-indigo-400 group-hover:translate-x-1 transition-transform">→</span>
                                                     </div>
