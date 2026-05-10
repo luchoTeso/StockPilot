@@ -20,6 +20,40 @@ const MovimientosPage = () => {
   const [observacion, setObservacion] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Opciones de motivo estandarizadas según el tipo (RF-024)
+  const opcionesMotivo = useMemo(() => {
+    if (tipo === 'Entrada') {
+      return [
+        { value: 'Compra a Proveedor', label: '📥 Compra a Proveedor' },
+        { value: 'Devolución de Cliente', label: '🔄 Devolución de Cliente' },
+        { value: 'Reingreso por Error', label: '⚠️ Reingreso por Error' },
+        { value: 'Donación / Otro', label: '🎁 Donación / Otro' }
+      ];
+    }
+    if (tipo === 'Salida') {
+      return [
+        { value: 'Venta Manual', label: '💵 Venta Manual' },
+        { value: 'Daño o Merma', label: '🗑️ Daño o Merma' },
+        { value: 'Vencimiento', label: '⏰ Vencimiento' },
+        { value: 'Uso Interno', label: '🏠 Uso Interno' },
+        { value: 'Robo / Pérdida', label: '🚨 Robo / Pérdida' }
+      ];
+    }
+    if (tipo === 'Ajuste') {
+      return [
+        { value: 'Inventario Físico', label: '📝 Inventario Físico' },
+        { value: 'Corrección de Error', label: '🔧 Corrección de Error' },
+        { value: 'Cambio de Lote', label: '🔢 Cambio de Lote' }
+      ];
+    }
+    return [];
+  }, [tipo]);
+
+  // Limpiar observación al cambiar tipo para evitar inconsistencias
+  useEffect(() => {
+    setObservacion('');
+  }, [tipo]);
+
   // Filtros Historial
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroDesde, setFiltroDesde] = useState('');
@@ -240,20 +274,20 @@ const MovimientosPage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Motivo o Justificación (Opcional)</label>
-                <input 
-                  type="text" 
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Motivo o Justificación</label>
+                <CustomSelect 
                   value={observacion} 
-                  onChange={(e) => setObservacion(e.target.value)} 
-                  placeholder="Escribe aquí el motivo del movimiento..." 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800 transition-colors" 
+                  onChange={(val) => setObservacion(val)}
+                  placeholder={tipo ? "Seleccione el motivo..." : "Primero elija tipo de mov."}
+                  options={opcionesMotivo}
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
                 />
               </div>
 
               <div className="pt-4 pb-2">
                 <button 
                   type="submit" 
-                  disabled={isSubmitting || !tipo || !productoId || !cantidad} 
+                  disabled={isSubmitting || !tipo || !productoId || !cantidad || !observacion} 
                   className="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                 >
                   {isSubmitting ? 'Procesando...' : 'Ejecutar Movimiento'}
@@ -287,7 +321,7 @@ const MovimientosPage = () => {
                 value={filtroDesde} 
                 onChange={v => setFiltroDesde(v)} 
                 placeholder="Fecha Desde" 
-                align="left-flyout"
+                align="left"
               />
             </div>
             <div className="flex-1 min-w-[150px]">
@@ -295,7 +329,7 @@ const MovimientosPage = () => {
                 value={filtroHasta} 
                 onChange={v => setFiltroHasta(v)} 
                 placeholder="Fecha Hasta" 
-                align="right-flyout"
+                align="right"
               />
             </div>
             <button 

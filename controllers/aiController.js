@@ -363,11 +363,16 @@ const aiController = {
           p.precio, 
           p.categoria, 
           p.fecha_vencimiento,
+          p.precio_original,
+          p.fecha_fin_promocion,
           IFNULL(vr.qty_30d, 0) / 30.0 as velocity_30d,
           IFNULL(vr.qty_7d, 0) / 7.0 as velocity_7d
         FROM Productos p
         LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
-        WHERE p.id_tienda = ? AND p.estado = 'Disponible'
+        WHERE p.id_tienda = ? 
+          AND p.estado = 'Disponible'
+          AND (p.fecha_fin_promocion IS NULL OR p.fecha_fin_promocion < DATE('now'))
+          AND p.precio_original IS NULL
         ORDER BY p.cantidad DESC
       `;
       const rows = await db.allAsync(query, [tiendaId]);

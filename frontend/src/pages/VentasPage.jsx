@@ -114,22 +114,40 @@ const VentasPage = () => {
     return fecha.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
   };
 
-  const abrirTopVendidos = () => {
-    let resumen = {};
-    ventasOriginales.forEach(v => {
-      if (!resumen[v.nombre_producto]) {
-        resumen[v.nombre_producto] = { cantidad: 0, total: 0, categoria: v.categoria };
-      }
-      resumen[v.nombre_producto].cantidad += v.cantidad;
-      resumen[v.nombre_producto].total += v.precio_total;
-    });
+  const abrirTopVendidos = async () => {
+    try {
+      // Consultar el Snapshot analítico real (30 días de historia completa)
+      const response = await axios.get('/api/ia/snapshot');
+      const dataFull = response.data.data || [];
 
-    const ordenados = Object.entries(resumen)
-      .sort((a, b) => b[1].cantidad - a[1].cantidad)
-      .slice(0, 10);
-    
-    setTopProductos(ordenados);
-    setModalMasVendidos(true);
+      if (dataFull.length === 0) {
+        setTopProductos([]);
+        setModalMasVendidos(true);
+        return;
+      }
+
+      // Encontrar máximos para las insignias inteligentes
+      const maxRev = Math.max(...dataFull.map(item => item.revenue));
+      const maxVel = Math.max(...dataFull.map(item => item.velocity));
+
+      const ordenados = dataFull
+        .sort((a, b) => b.revenue - a.revenue) // Ordenar por DINERO real
+        .slice(0, 10)
+        .map(item => ({
+          nombre: item.nombre,
+          cantidad: Math.round(item.velocity * 30), // Proyección/Total de unidades
+          total: item.revenue,
+          categoria: item.category === 'A' ? 'Prioridad Alta' : (item.category === 'B' ? 'Prioridad Media' : 'Baja Rotación'),
+          isTopRevenue: item.revenue === maxRev,
+          isHighRotation: item.velocity === maxVel
+        }));
+      
+      setTopProductos(ordenados);
+      setModalMasVendidos(true);
+    } catch (error) {
+      console.error('Error al obtener ranking real:', error);
+      toast.error('No se pudo sincronizar el ranking con el motor IA');
+    }
   };
 
   const exportarCSV = async () => {
@@ -304,26 +322,34 @@ const VentasPage = () => {
             </div>
             
             <div className="p-8 overflow-y-auto space-y-4">
-              {topProductos.map(([nombre, data], idx) => {
+              {topProductos.map((item, idx) => {
                  let positionColor = "bg-slate-100 text-slate-500 scale-100";
                  if(idx === 0) positionColor = "bg-amber-100 text-amber-500 scale-110 shadow-lg shadow-amber-100/50";
                  else if(idx === 1) positionColor = "bg-slate-200 text-slate-600 scale-105 shadow-md";
                  else if(idx === 2) positionColor = "bg-orange-100 text-orange-600 scale-105 shadow-md";
 
                  return (
-                  <div key={nombre} className="flex flex-col sm:flex-row justify-between items-center p-6 bg-slate-50 rounded-[2rem] border border-slate-100 gap-4 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all">
+                  <div key={item.nombre} className="flex flex-col sm:flex-row justify-between items-center p-6 bg-slate-50 rounded-[2rem] border border-slate-100 gap-4 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group">
                     <div className="flex items-center gap-6 w-full sm:w-auto">
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl italic tracking-tighter shrink-0 transition-all transform ${positionColor}`}>
                         #{idx + 1}
                       </div>
-                      <div>
-                         <p className="font-black text-slate-800 text-lg uppercase tracking-tight">{nombre}</p>
-                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">{data.categoria}</p>
+                      <div className="flex-1 min-w-0">
+                         <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <p className="font-black text-slate-800 text-lg uppercase tracking-tight truncate">{item.nombre}</p>
+                            {item.isTopRevenue && (
+                              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] font-black uppercase rounded-lg border border-emerald-200 shadow-sm">💰 Mayor Ingreso</span>
+                            )}
+                            {item.isHighRotation && (
+                              <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[8px] font-black uppercase rounded-lg border border-indigo-200 shadow-sm animate-pulse">⚡ Alta Rotación</span>
+                            )}
+                         </div>
+                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{item.categoria}</p>
                       </div>
                     </div>
                     <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto mt-2 sm:mt-0 pt-4 sm:pt-0 border-t border-slate-200 sm:border-0">
-                      <div className="font-black text-slate-800 text-lg">{data.cantidad} <span className="text-[10px] uppercase text-slate-500 tracking-widest">Und</span></div>
-                      <div className="font-black text-emerald-500 text-sm mt-1 italic">${data.total.toLocaleString('es-CO')}</div>
+                      <div className="font-black text-slate-800 text-lg">{item.cantidad} <span className="text-[10px] uppercase text-slate-500 tracking-widest">Und</span></div>
+                      <div className="font-black text-emerald-600 text-sm mt-1 italic">${item.total.toLocaleString('es-CO')}</div>
                     </div>
                   </div>
                 )

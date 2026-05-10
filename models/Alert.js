@@ -90,7 +90,7 @@ class Alert {
   /**
    * Obtiene las alertas activas, ordenadas por severidad
    */
-  static async findActive(tiendaId, filters = {}) {
+  static async findActive(tiendaId, filters = {}, limit = null) {
     let sql = `
       SELECT a.*, p.nombre_producto, p.codigo 
       FROM Alertas a 
@@ -110,6 +110,11 @@ class Alert {
     
     // Orden críco -> advertencia -> info
     sql += ` ORDER BY CASE a.severidad WHEN 'critico' THEN 1 WHEN 'advertencia' THEN 2 ELSE 3 END, a.fecha_creacion DESC`;
+
+    if (limit) {
+        sql += ` LIMIT ?`;
+        params.push(parseInt(limit, 10));
+    }
 
     return await db.allAsync(sql, params);
   }

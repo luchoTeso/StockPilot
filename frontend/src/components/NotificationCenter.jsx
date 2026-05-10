@@ -128,7 +128,11 @@ const NotificationCenter = () => {
         <div className="relative" ref={dropdownRef}>
             {/* Bell Icon Button */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => {
+                    const newOpen = !isOpen;
+                    setIsOpen(newOpen);
+                    if (newOpen) fetchNotifications();
+                }}
                 className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all active:scale-90 shadow-lg border-2 ${isOpen ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-200 shadow-slate-200/50'}`}
                 title="Centro de Alertas"
             >

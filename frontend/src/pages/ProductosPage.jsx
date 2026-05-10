@@ -363,12 +363,32 @@ const ProductosPage = () => {
 
   // ----- Filtrado -----
   const listRender = useMemo(() => {
-    return productos.filter(p => {
+    const filtered = productos.filter(p => {
       const matchText = p.nombre_producto.toLowerCase().includes(filtroTexto.toLowerCase()) || 
                         (p.codigo && p.codigo.toLowerCase().includes(filtroTexto.toLowerCase()));
       const matchCat = filtroCategoria === '' || p.categoria === filtroCategoria;
       const matchEst = filtroEstado === '' || p.estado === filtroEstado;
       return matchText && matchCat && matchEst;
+    });
+
+    return filtered.sort((a, b) => {
+      // 1. Prioridad por operatividad (Activos primero)
+      if (a.estado !== b.estado) {
+        return a.estado === 'Disponible' ? -1 : 1;
+      }
+      
+      // 2. Prioridad por nivel de stock (Crítico > Bajo > OK)
+      const nivelA = calcNivelStock(a);
+      const nivelB = calcNivelStock(b);
+      
+      const pesos = { 'critico': 1, 'bajo': 2, 'ok': 3 };
+      
+      if (pesos[nivelA] !== pesos[nivelB]) {
+        return pesos[nivelA] - pesos[nivelB];
+      }
+      
+      // 3. Orden alfabético si tienen la misma prioridad
+      return a.nombre_producto.localeCompare(b.nombre_producto);
     });
   }, [productos, filtroTexto, filtroCategoria, filtroEstado]);
 
@@ -430,7 +450,7 @@ const ProductosPage = () => {
           />
           <CustomSelect 
             value={filtroEstado} 
-            onChange={e => setFiltroEstado(e.target.value)}
+            onChange={val => setFiltroEstado(val)}
             placeholder="Estado: Todos"
             options={[
               { value: '', label: 'Estado: Todos' },

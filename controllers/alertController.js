@@ -21,8 +21,8 @@ const alertController = {
       if (req.query.tipo) filters.tipo = req.query.tipo;
       if (req.query.severidad) filters.severidad = req.query.severidad;
 
-      const alerts = await Alert.findActive(tiendaId, filters);
-      res.json({ success: true, alerts });
+      const alerts = await Alert.findActive(tiendaId, filters, req.query.limit);
+      res.json({ success: true, alerts, data: alerts });
     } catch (e) {
       console.error('Error obteniendo alertas:', e);
       res.status(500).json({ success: false, error: 'Error al consultar las alertas.' });
