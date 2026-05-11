@@ -72,7 +72,7 @@ desarrollado bajo la metodología ágil Scrum en 5 sprints de dos semanas.
 
   Período           2026
 
-  Stack principal   Node.js 18 + Express.js + EJS + SQLite3 + OpenAI API
+  Stack principal   Node.js 18 + Express.js + React 19 + SQLite3 + OpenAI API
 
   RF implementados  62 de 62 (100%)
 
@@ -345,8 +345,7 @@ diseño SOLID.
 
 **3.2.1 Capa Vista --- Frontend (Presentación)**
 
-- Tecnología: HTML5, CSS3 vanilla, JavaScript ES6+ con fetch API. Motor
-  de plantillas EJS (Embedded JavaScript) para renderizado server-side.
+- Tecnología: React 19, TailwindCSS 4, JavaScript ES6+ con Axios para peticiones a la API. Arquitectura Single Page Application (SPA).
 
 - Responsabilidad: Renderizar la interfaz que el usuario ve; capturar
   eventos del usuario (clics, formularios) y enviarlos al controlador
@@ -398,8 +397,7 @@ diseño SOLID.
   externo).
 
 - Responsabilidad: Persistir y consultar datos, garantizar integridad
-  referencial mediante claves foráneas, ejecutar migraciones
-  incrementales (RNF-014).
+  referencial mediante claves foráneas, ejecutar migraciones explícitas mediante el comando migrate (RNF-014).
 
 - 13 tablas principales con segregación multi-tienda por clave id_tienda
   en todos los registros operativos (RF-018, RF-019).
@@ -480,26 +478,26 @@ diseño SOLID.
   -----------------------------------------------------------------------------
   **Componente**        **Tipo**      **Entrada**          **Salida / Acción**
   --------------------- ------------- -------------------- --------------------
-  Landing Page +        Vista (EJS)   ---                  Formularios de
+  Landing Page +        Vista (React) ---                  Formularios de
   Login + Registro                                         autenticación, CTA
                                                            al sistema
 
-  Dashboard + Centro    Vista (EJS)   JSON KPIs            Tarjetas KPI,
+  Dashboard + Centro    Vista (React) JSON KPIs            Tarjetas KPI,
   Analítico                                                Asistente IA,
                                                            gráfico caja, ABC
 
-  Módulo Alertas        Vista (EJS)   JSON alertas         Lista filtrable,
+  Módulo Alertas        Vista (React) JSON alertas         Lista filtrable,
                                                            marcar resueltas,
                                                            forzar recálculo
 
-  Módulo Ventas +       Vista (EJS)   JSON                 Historial, top 10,
+  Módulo Ventas +       Vista (React) JSON                 Historial, top 10,
   Movimientos                         ventas/movimientos   exportar XLSX
 
-  Módulo Productos      Vista (EJS)   JSON productos       Tabla semáforo,
+  Módulo Productos      Vista (React) JSON productos       Tabla semáforo,
                                                            CRUD, configuración
                                                            reabastecimiento
 
-  Módulo Proveedores +  Vista (EJS)   JSON proveedores +   Órdenes IA,
+  Módulo Proveedores +  Vista (React) JSON proveedores +   Órdenes IA,
   Simulador                           cálculos             simulador greedy,
                                                            historial
 

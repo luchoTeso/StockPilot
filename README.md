@@ -96,15 +96,21 @@ EMAIL_PASS=tu_contraseña_de_aplicacion
 npm install
 ```
 
-### Paso 4 — Inicializar la Base de Datos
+### Paso 4 — Inicializar la Base de Datos y Migraciones
 
-La primera vez que ejecutes el servidor, SQLite creará automáticamente el archivo `database/inventario.db` con las tablas base. Para poblar la base de datos con datos de prueba (productos, ventas, usuarios):
+La primera vez que ejecutes el proyecto, debes crear las tablas y aplicar las actualizaciones de esquema necesarias:
+
+```bash
+npm run migrate
+```
+
+Para poblar la base de datos con datos de prueba (productos, ventas, usuarios):
 
 ```bash
 npm run seed
 ```
 
-> Esto ejecuta `database/seed_test_data.js` e inserta datos realistas para que puedas explorar la aplicación inmediatamente.
+> **Importante:** El comando `migrate` asegura que tu base de datos local tenga todas las columnas y tablas necesarias (como Alertas o Historial de Precios) antes de arrancar.
 
 **Usuarios de prueba creados por el seed:**
 

@@ -321,8 +321,8 @@ const SimuladorPage = () => {
                       {p.category === 'A' ? 'A (Alta)' : p.category === 'B' ? 'B (Media)' : 'C (Baja)'}
                     </span>
                   </td>
-                  <td className="p-6 text-center text-sm font-bold text-slate-600">{p.stock_actual} ud</td>
-                  <td className="p-6 text-center text-sm font-bold text-slate-400 italic">{(p.velocity || 0).toFixed(1)} /día</td>
+                  <td className="p-6 text-center text-sm font-bold text-slate-600">{(Number(p.stock_actual) || 0)} ud</td>
+                  <td className="p-6 text-center text-sm font-bold text-slate-400 italic">{(Number(p.velocity) || 0).toFixed(1)} /día</td>
                   <td className="p-6 text-center">
                     <div className="flex flex-col items-center">
                       <span className={`text-sm font-black ${

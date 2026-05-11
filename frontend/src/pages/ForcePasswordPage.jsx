@@ -24,8 +24,9 @@ const ForcePasswordPage = () => {
     if (formData.newPassword !== formData.confirmPassword) {
       return toast.error('Las contraseñas no coinciden, verifícalas por favor.');
     }
-    if (formData.newPassword.length < 6) {
-      return toast.error('La contraseña debe tener al menos 6 caracteres algebraicos o numéricos.');
+    if (formData.newPassword.length < 8) {
+      toast.error('La contraseña debe tener al menos 8 caracteres');
+      return;
     }
 
     setIsSubmitting(true);

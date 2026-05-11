@@ -74,7 +74,7 @@ const AnalisisDetalladoPage = () => {
                           {item.risk === 'high' ? 'ALTO' : item.risk === 'medium' ? 'MEDIO' : 'BAJO'}
                        </span>
                     </td>
-                    <td className="p-6 text-center font-black text-indigo-600 italic">{item.velocity.toFixed(2)} <span className="text-[9px] opacity-50 not-italic">u/d</span></td>
+                    <td className="p-6 text-center font-black text-indigo-600 italic">{(Number(item.velocity) || 0).toFixed(2)} <span className="text-[9px] opacity-50 not-italic">u/d</span></td>
                     <td className="p-6 text-center">
                        <p className="font-black text-slate-800 text-base tracking-tighter">{item.stock_actual}</p>
                        <p className="text-[9px] text-slate-400 uppercase font-black tracking-tighter mt-1">Sugerido: {item.stock_seguridad}u</p>
@@ -84,7 +84,7 @@ const AnalisisDetalladoPage = () => {
                           {item.days_to_exhaust === null || item.days_to_exhaust === Infinity ? 'Estable' : `${item.days_to_exhaust} días`}
                        </span>
                     </td>
-                    <td className="p-6 text-right px-10 font-black text-slate-800 text-base tracking-tighter italic">${item.revenue.toLocaleString()}</td>
+                    <td className="p-6 text-right px-10 font-black text-slate-800 text-base tracking-tighter italic">${(Number(item.revenue) || 0).toLocaleString()}</td>
                   </tr>
                 ))
               )}

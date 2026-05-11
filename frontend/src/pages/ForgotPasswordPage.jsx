@@ -59,8 +59,8 @@ const ForgotPasswordPage = () => {
       toast.error("Las contraseñas no coinciden");
       return;
     }
-    if (password.length < 6) {
-      toast.error("La contraseña debe tener mínimo 6 caracteres");
+    if (password.length < 8) {
+      toast.error("La contraseña debe tener mínimo 8 caracteres");
       return;
     }
     setIsLoading(true);

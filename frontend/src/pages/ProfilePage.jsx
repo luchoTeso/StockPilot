@@ -58,6 +58,9 @@ const ProfilePage = () => {
     if (passData.newPassword !== passData.confirmPassword) {
       return toast.error('Las contraseñas no coinciden');
     }
+    if (passData.newPassword.length < 8) {
+      return toast.error('La nueva contraseña debe tener al menos 8 caracteres');
+    }
     try {
       await axios.put('/api/perfil/password', {
         currentPassword: passData.currentPassword,

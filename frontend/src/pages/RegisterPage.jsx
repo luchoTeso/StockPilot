@@ -27,8 +27,8 @@ const RegisterPage = () => {
     if (formData.contrasena !== formData.confirmarContrasena) {
       return toast.error('Las contraseñas no coinciden');
     }
-    if (formData.contrasena.length < 6) {
-      return toast.error('La contraseña debe tener al menos 6 caracteres');
+    if (formData.contrasena.length < 8) {
+      return toast.error('La contraseña debe tener al menos 8 caracteres');
     }
 
     setIsLoading(true);
@@ -177,7 +177,7 @@ const RegisterPage = () => {
                   value={formData.contrasena} 
                   onChange={e => setFormData({...formData, contrasena: e.target.value})} 
                   required 
-                  minLength={6}
+                  minLength={8}
                   placeholder="••••••••" 
                   className="w-full p-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
                 />
@@ -194,7 +194,7 @@ const RegisterPage = () => {
                 value={formData.confirmarContrasena} 
                 onChange={e => setFormData({...formData, confirmarContrasena: e.target.value})} 
                 required 
-                minLength={6}
+                minLength={8}
                 placeholder="••••••••" 
                 className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
               />

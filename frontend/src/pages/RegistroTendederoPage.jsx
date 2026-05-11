@@ -200,7 +200,7 @@ const RegistroTendederoPage = () => {
                     <div>
                       <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Contraseña de Acceso <span className="text-rose-500">*</span></label>
                       <div className="relative">
-                        <input required minLength="6" type={showPassword ? 'text' : 'password'} value={formData.contrasena} onChange={e => setFormData({...formData, contrasena: e.target.value})} className="w-full p-4 pr-12 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Mínimo 6 dígitos" />
+                        <input required minLength="8" type={showPassword ? 'text' : 'password'} value={formData.contrasena} onChange={e => setFormData({...formData, contrasena: e.target.value})} className="w-full p-4 pr-12 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Mínimo 8 dígitos" />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-2xl drop-shadow-sm hover:scale-110 transition-transform">
                           {showPassword ? '🙈' : '👁️'}
                         </button>
