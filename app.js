@@ -37,10 +37,15 @@ const scheduler = require('./services/schedulerService');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// 🛡️ REQUISITO PARA CLOUD (Railway/Heroku): Confiar en el proxy inverso
+app.set('trust proxy', 1);
+
 // Orígenes permitidos: leer desde env, con fallback para desarrollo local
 const allowedOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
     : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174'];
+
+console.log('📍 Origins permitidos:', allowedOrigins);
 
 // 🛡️ SEGURIDAD: Configuración de Helmet (Cabeceras de respuesta seguras)
 app.use(helmet({
@@ -160,13 +165,9 @@ function startServer(port) {
 
     server.on('listening', async () => {
         retries = 0; // Reset en caso de éxito
-        console.log('✅ Servidor MVC corriendo en http://localhost:' + port);
-        
-        // 📦 RESPALDO: (Desactivado para Postgres)
-        // createBackup();
-
+        console.log('✅ Servidor MVC corriendo en puerto ' + port);
         console.log('📁 Arquitectura MVC completada exitosamente');
-        console.log('📍 Origin permitido: http://localhost:5173');
+        console.log('📍 Orígenes CORS permitidos:', allowedOrigins.join(', '));
     });
 
     server.on('error', (err) => {
