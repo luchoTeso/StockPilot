@@ -83,6 +83,13 @@ class AuthController {
                 });
             }
 
+            if (password.length < 8) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'La contraseña debe tener al menos 8 caracteres por seguridad' 
+                });
+            }
+
             // Crear la tienda primero
             const storeData = {
                 nombre_establecimiento: store_name,
@@ -217,6 +224,10 @@ class AuthController {
                 return res.status(400).json({ success: false, error: 'La contraseña actual es incorrecta' });
             }
 
+            if (newPassword.length < 8) {
+                return res.status(400).json({ success: false, error: 'La nueva contraseña debe tener al menos 8 caracteres' });
+            }
+
             await User.updatePassword(userId, newPassword);
             res.json({ success: true, message: 'Contraseña cambiada exitosamente' });
         } catch (error) {
@@ -235,8 +246,8 @@ class AuthController {
             }
 
             const { newPassword } = req.body;
-            if (!newPassword || newPassword.length < 6) {
-                return res.status(400).json({ success: false, error: 'La contraseña debe tener al menos 6 caracteres' });
+            if (!newPassword || newPassword.length < 8) {
+                return res.status(400).json({ success: false, error: 'La contraseña debe tener al menos 8 caracteres' });
             }
 
             await User.updatePassword(userId, newPassword);

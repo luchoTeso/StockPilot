@@ -46,8 +46,9 @@ const AuditoriaPage = () => {
 
   const formatFecha = (f) => {
     if (!f) return '---';
-    const d = new Date(f + 'Z'); // SQLite guarda UTC, forzar interpretación UTC
-    return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Bogota' }) + 
+    const d = new Date(f);
+    if (isNaN(d.getTime())) return '---';
+    return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Bogota' }) +
       ' ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Bogota' });
   };
 

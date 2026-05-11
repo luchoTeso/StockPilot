@@ -32,10 +32,10 @@ class DashboardController {
 
             // 5. Array 7 Días (Gráfica)
             const ventasSemanalesQuery = `
-              SELECT DATE(fecha_salida) as fecha, SUM(precio_total) as total 
+              SELECT fecha_salida::date as fecha, SUM(precio_total) as total 
               FROM Ventas 
-              WHERE id_tienda = ? AND fecha_salida >= DATE('now', '-6 days')
-              GROUP BY DATE(fecha_salida)
+              WHERE id_tienda = ? AND fecha_salida >= CURRENT_DATE - INTERVAL '6 days'
+              GROUP BY fecha_salida::date
               ORDER BY fecha ASC
             `;
             const ventasData = await db.allAsync(ventasSemanalesQuery, [tiendaId]) || [];
@@ -48,7 +48,7 @@ class DashboardController {
                 const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
                 ultimos7Dias.push({
                     dia: diasSemana[d.getDay()],
-                    total: dataFech ? dataFech.total : 0
+                    total: dataFech ? Number(dataFech.total) : 0
                 });
             }
 
@@ -79,10 +79,10 @@ class DashboardController {
             const vencimientoQuery = `
                 SELECT 
                     id_producto, nombre_producto, cantidad, precio, fecha_vencimiento,
-                    IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-30 days')), 0) / 30.0 as velocity
+                    COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) / 30.0 as velocity
                 FROM Productos p
                 WHERE id_tienda = ? AND fecha_vencimiento IS NOT NULL 
-                AND fecha_vencimiento <= DATE('now', '+30 days') AND fecha_vencimiento > DATE('now')
+                AND fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days' AND fecha_vencimiento > CURRENT_DATE
             `;
             const itemsVencimiento = await db.allAsync(vencimientoQuery, [tiendaId]);
             
@@ -120,7 +120,7 @@ class DashboardController {
             const servicioQuery = `
                 SELECT 
                     p.id_producto, p.cantidad as stock_actual, p.stock_seguridad, p.lead_time,
-                    IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-30 days')), 0) / 30.0 as velocity
+                    COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) / 30.0 as velocity
                 FROM Productos p
                 WHERE id_tienda = ? AND estado = 'Disponible'
             `;
@@ -140,8 +140,8 @@ class DashboardController {
             // 3. Comparativa de Ventas (30d actuales vs 30d anteriores)
             const comparativaQuery = `
                 SELECT 
-                    (SELECT SUM(precio_total) FROM Ventas WHERE id_tienda = ? AND fecha_salida >= DATE('now', '-30 days')) as actual,
-                    (SELECT SUM(precio_total) FROM Ventas WHERE id_tienda = ? AND fecha_salida < DATE('now', '-30 days') AND fecha_salida >= DATE('now', '-60 days')) as previo
+                    (SELECT SUM(precio_total) FROM Ventas WHERE id_tienda = ? AND fecha_salida >= CURRENT_DATE - INTERVAL '30 days') as actual,
+                    (SELECT SUM(precio_total) FROM Ventas WHERE id_tienda = ? AND fecha_salida < CURRENT_DATE - INTERVAL '30 days' AND fecha_salida >= CURRENT_DATE - INTERVAL '60 days') as previo
             `;
             const comp = await db.getAsync(comparativaQuery, [tiendaId, tiendaId]);
             const variacionVentas = comp.previo > 0 ? ((comp.actual - comp.previo) / comp.previo) * 100 : 0;

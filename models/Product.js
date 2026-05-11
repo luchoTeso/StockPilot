@@ -7,12 +7,12 @@ class Product {
         const query = `
             SELECT 
                 p.*,
-                IFNULL(
+                COALESCE(
                   (SELECT SUM(vp2.cantidad) 
                    FROM VentasProductos vp2 
                    JOIN Ventas v2 ON vp2.id_venta = v2.id_venta 
                    WHERE vp2.id_producto = p.id_producto 
-                   AND v2.fecha_salida >= DATE('now', '-30 days')
+                   AND v2.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
                   ), 0) / 30.0 as velocity
             FROM Productos p 
             WHERE p.id_tienda = ? 
@@ -126,13 +126,12 @@ class Product {
     static async findExpiringByStore(storeId, days = 7) {
         const query = `
             SELECT *, 
-                CAST(julianday(fecha_vencimiento) - julianday('now') AS INTEGER) AS dias_para_vencer
+                (fecha_vencimiento::date - CURRENT_DATE) AS dias_para_vencer
             FROM Productos 
             WHERE id_tienda = ? 
-              AND fecha_vencimiento IS NOT NULL 
-              AND fecha_vencimiento != ''
-              AND julianday(fecha_vencimiento) - julianday('now') <= ?
-              AND julianday(fecha_vencimiento) - julianday('now') >= 0
+              AND fecha_vencimiento IS NOT NULL
+              AND (fecha_vencimiento::date - CURRENT_DATE) <= ?
+              AND (fecha_vencimiento::date - CURRENT_DATE) >= 0
               AND estado = 'Disponible'
             ORDER BY fecha_vencimiento ASC
         `;
@@ -152,12 +151,12 @@ class Product {
                     p.cantidad as stock_actual,
                     p.stock_seguridad,
                     p.lead_time,
-                    IFNULL(
+                    COALESCE(
                         (SELECT SUM(vp2.cantidad) 
                          FROM VentasProductos vp2 
                          JOIN Ventas v2 ON vp2.id_venta = v2.id_venta 
                          WHERE vp2.id_producto = p.id_producto 
-                         AND v2.fecha_salida >= DATE('now', '-30 days')
+                         AND v2.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
                         ), 0) / 30.0 as velocity
                 FROM Productos p
                 WHERE p.id_tienda = ? AND p.estado = 'Disponible'

@@ -16,8 +16,8 @@ class Alert {
         p.id_producto, p.nombre_producto, p.cantidad, p.stock_minimo, p.stock_maximo, 
         p.fecha_vencimiento, p.frecuencia_compra_dias, p.stock_seguridad, p.lead_time,
         p.precio,
-        IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-30 days')), 0) / 30.0 as velocity_30d,
-        IFNULL((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= DATE('now', '-7 days')), 0) / 7.0 as velocity_7d
+        COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) / 30.0 as velocity_30d,
+        COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days'), 0) / 7.0 as velocity_7d
       FROM Productos p
       WHERE p.id_tienda = ? AND p.estado = 'Disponible'
     `;
@@ -141,8 +141,9 @@ class Alert {
     const stats = { critico: 0, advertencia: 0, info: 0, total: 0 };
     for (const r of rows) {
         if (stats[r.severidad] !== undefined) {
-            stats[r.severidad] = r.count;
-            stats.total += r.count;
+            const countNum = Number(r.count);
+            stats[r.severidad] = countNum;
+            stats.total += countNum;
         }
     }
     return stats;

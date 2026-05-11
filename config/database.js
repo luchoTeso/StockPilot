@@ -1,79 +1,130 @@
-// config/database.js
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+// config/database.js - ADAPTADOR POSTGRESQL (Compatibilidad SQLite)
+require('dotenv').config();
+const { Pool } = require('pg');
 
-const dbPath = path.join(__dirname, '..', 'database', 'inventario.db');
-
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error al conectar a la base de datos:', err.message);
-    } else {
-        console.log('✅ Conectado a la base de datos SQLite.');
-        db.run("ALTER TABLE Usuarios ADD COLUMN foto_url TEXT", (alterErr) => {
-            // Se ignora el error si la columna ya existe
-            if (!alterErr) console.log('🔧 Mantenimiento: Columna foto_url inyectada exitosamente en Usuarios.');
-        });
-        db.run("ALTER TABLE Usuarios ADD COLUMN cambio_clave_forzoso BOOLEAN DEFAULT 0", (alterErr) => {
-            if (!alterErr) {
-                console.log('🔧 Mantenimiento: Columna cambio_clave_forzoso inyectada existosamente.');
-                // Aplicar regla al equipo actual exceptuando tendero1
-                db.run("UPDATE Usuarios SET cambio_clave_forzoso = 1 WHERE rol = 'Tendedero' AND usuario != 'tendero1'");
-            }
-        });
-        db.run("ALTER TABLE Usuarios ADD COLUMN reset_token TEXT", (e) => {
-            if (!e) console.log('🔧 Mantenimiento: Columna reset_token inyectada.');
-        });
-        db.run("ALTER TABLE Usuarios ADD COLUMN reset_expires INTEGER", (e) => {
-            if (!e) console.log('🔧 Mantenimiento: Columna reset_expires inyectada.');
-        });
-        db.run("ALTER TABLE Usuarios ADD COLUMN session_id TEXT", (e) => {
-            if (!e) console.log('🛡️ Seguridad: Candado de sesión (session_id) inyectado en BD.');
-        });
-        db.run("ALTER TABLE Productos ADD COLUMN id_proveedor INTEGER", (e) => {
-            if (!e) console.log('📦 Inventario: Columna id_proveedor vinculada exitosamente.');
-        });
-        db.run("ALTER TABLE Productos ADD COLUMN clasificacion_abc TEXT DEFAULT 'C'", (e) => {
-            if (!e) console.log('📦 Inventario: Columna clasificacion_abc inyectada exitosamente.');
-        });
-    }
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 /**
- * Retorna la fecha actual en formato YYYY-MM-DD ajustada a Bogotá
+ * Traductor seguro de placeholders para PostgreSQL
+ * Convierte '?' en '$1', '$2', etc., respetando comillas simples para evitar
+ * romper literales de texto que contengan signos de interrogación.
  */
-db.getBogotaDate = function() {
-    const now = new Date();
-    // Ajuste manual de 5 horas
-    const bogotaDate = new Date(now.getTime() - (5 * 60 * 60 * 1000));
-    return bogotaDate.toISOString().split('T')[0];
-};
+function translateSQL(sql) {
+    let index = 1;
+    let inString = false;
+    let result = '';
 
-// Promisify para usar async/await
-db.runAsync = function (sql, params = []) {
-    return new Promise((resolve, reject) => {
-        this.run(sql, params, function (err) {
-            if (err) reject(err);
-            else resolve(this);
-        });
-    });
-};
+    for (let i = 0; i < sql.length; i++) {
+        const char = sql[i];
+        // Detectar si estamos dentro de una cadena literal (comillas simples)
+        if (char === "'" && (i === 0 || sql[i-1] !== '\\')) {
+            inString = !inString;
+        }
+        
+        if (char === '?' && !inString) {
+            result += `$${index++}`;
+        } else {
+            result += char;
+        }
+    }
+    return result;
+}
 
-db.getAsync = function (sql, params = []) {
-    return new Promise((resolve, reject) => {
-        this.get(sql, params, (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-        });
-    });
-};
+const db = {
+    /**
+     * Ejecuta una query que devuelve múltiples filas (allAsync)
+     */
+    allAsync: async function(sql, params = []) {
+        const pgSql = translateSQL(sql);
+        try {
+            const result = await pool.query(pgSql, params);
+            return result.rows;
+        } catch (error) {
+            console.error('❌ PG allAsync Error:', { sql: pgSql, error: error.message });
+            throw error;
+        }
+    },
 
-db.allAsync = function (sql, params = []) {
-    return new Promise((resolve, reject) => {
-        this.all(sql, params, (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
-    });
+    /**
+     * Ejecuta una query que devuelve una sola fila (getAsync)
+     */
+    getAsync: async function(sql, params = []) {
+        const pgSql = translateSQL(sql);
+        try {
+            const result = await pool.query(pgSql, params);
+            return result.rows[0];
+        } catch (error) {
+            console.error('❌ PG getAsync Error:', { sql: pgSql, error: error.message });
+            throw error;
+        }
+    },
+
+    /**
+     * Ejecuta una query de modificación (runAsync)
+     * Simula el comportamiento de SQLite devolviendo lastID y changes.
+     */
+    runAsync: async function(sql, params = []) {
+        let pgSql = translateSQL(sql);
+        const isInsert = sql.trim().toUpperCase().startsWith('INSERT');
+        
+        // Inyección de RETURNING para emular lastID de SQLite
+        if (isInsert && !pgSql.toUpperCase().includes('RETURNING')) {
+            pgSql += ' RETURNING *';
+        }
+
+        try {
+            const result = await pool.query(pgSql, params);
+            
+            // Simular objeto de resultado de SQLite
+            // Buscamos el primer campo de la primera fila si fue un INSERT
+            let lastID = null;
+            if (isInsert && result.rows.length > 0) {
+                const firstRow = result.rows[0];
+                // Intentamos encontrar una columna que parezca ID (id_..., id, o la primera)
+                const idKey = Object.keys(firstRow).find(k => k.toLowerCase().startsWith('id')) || Object.keys(firstRow)[0];
+                lastID = firstRow[idKey];
+            }
+
+            return {
+                lastID: lastID,
+                changes: result.rowCount
+            };
+        } catch (error) {
+            console.error('❌ PG runAsync Error:', { sql: pgSql, error: error.message });
+            throw error;
+        }
+    },
+
+    /**
+     * Retorna la fecha actual en formato YYYY-MM-DD ajustada a Bogotá
+     */
+    getBogotaDate: function() {
+        return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+    },
+
+    /**
+     * Obtiene un cliente dedicado del pool para transacciones
+     * Retorna un objeto con la misma interfaz para evitar romper lógica compleja.
+     */
+    getClient: async function() {
+        const client = await pool.connect();
+        
+        // Envolver el cliente para que soporte translateSQL automáticamente
+        const wrappedClient = {
+            query: async (sql, params = []) => {
+                return await client.query(translateSQL(sql), params);
+            },
+            release: () => client.release()
+        };
+        
+        return wrappedClient;
+    },
+
+    // Exportar el pool por si se necesita acceso directo (ej: Session Store)
+    pool: pool
 };
 
 module.exports = db;

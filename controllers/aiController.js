@@ -75,13 +75,13 @@ const aiController = {
         WITH VentasRecientes AS (
           SELECT 
             vp.id_producto,
-            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-7 days') THEN vp.cantidad ELSE 0 END) as qty_7d,
-            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-30 days') THEN vp.cantidad ELSE 0 END) as qty_30d,
-            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-60 days') THEN vp.cantidad ELSE 0 END) as qty_60d,
-            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-90 days') THEN vp.cantidad ELSE 0 END) as qty_90d
+            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days' THEN vp.cantidad ELSE 0 END) as qty_7d,
+            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days' THEN vp.cantidad ELSE 0 END) as qty_30d,
+            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '60 days' THEN vp.cantidad ELSE 0 END) as qty_60d,
+            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '90 days' THEN vp.cantidad ELSE 0 END) as qty_90d
           FROM VentasProductos vp
           JOIN Ventas v ON vp.id_venta = v.id_venta
-          WHERE v.fecha_salida >= DATE('now', '-90 days')
+          WHERE v.fecha_salida >= CURRENT_DATE - INTERVAL '90 days'
           GROUP BY vp.id_producto
         )
         SELECT 
@@ -92,10 +92,10 @@ const aiController = {
           p.categoria, 
           p.stock_seguridad, 
           p.lead_time,
-          IFNULL(vr.qty_7d, 0) / 7.0 as velocity_7d,
-          IFNULL(vr.qty_30d, 0) / 30.0 as velocity_30d,
-          IFNULL(vr.qty_60d, 0) / 60.0 as velocity_60d,
-          IFNULL(vr.qty_90d, 0) / 90.0 as velocity_90d
+          COALESCE(vr.qty_7d, 0) / 7.0 as velocity_7d,
+          COALESCE(vr.qty_30d, 0) / 30.0 as velocity_30d,
+          COALESCE(vr.qty_60d, 0) / 60.0 as velocity_60d,
+          COALESCE(vr.qty_90d, 0) / 90.0 as velocity_90d
         FROM Productos p
         LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
         WHERE p.id_tienda = ? AND p.estado = 'Disponible'
@@ -117,13 +117,15 @@ const aiController = {
 
       // 3. Procesamiento Analítico (Tendencia y Variabilidad)
       let totalRevenue = 0;
-      const processed = rows.map(r => {
-        const rev = (r.velocity_30d || 0) * 30 * r.precio;
-        totalRevenue += rev;
-        // Tendencia: >1.2 alcista, <0.8 bajista
-        const trend = r.velocity_30d > 0.01 ? (r.velocity_7d / r.velocity_30d) : 1;
-        return { ...r, revenue: rev, trend: parseFloat(trend.toFixed(2)) };
-      });
+        const processed = rows.map(r => {
+          const v30 = Number(r.velocity_30d || 0);
+          const v7 = Number(r.velocity_7d || 0);
+          const rev = v30 * 30 * r.precio;
+          totalRevenue += rev;
+          // Tendencia: >1.2 alcista, <0.8 bajista
+          const trend = v30 > 0.01 ? (v7 / v30) : 1;
+          return { ...r, velocity_30d: v30, velocity_7d: v7, revenue: rev, trend: parseFloat(Number(trend).toFixed(2)) };
+        });
 
       processed.sort((a, b) => b.revenue - a.revenue);
       let cum = 0;
@@ -133,17 +135,20 @@ const aiController = {
         const category = p <= 80 ? 'A' : (p <= 95 ? 'B' : 'C');
         const rop = (item.velocity_30d * item.lead_time) + item.stock_seguridad;
         
-        return {
-          id: item.id,
-          nombre: item.nombre,
-          stock: item.stock_actual,
-          base_load: Math.ceil(rop),
-          abc: category,
-          trend_val: item.trend,
-          trend_label: item.trend > 1.2 ? 'alcista' : (item.trend < 0.8 ? 'bajista' : 'estable'),
-          velocity_long: { d60: parseFloat(item.velocity_60d.toFixed(2)), d90: parseFloat(item.velocity_90d.toFixed(2)) },
-          risk: item.stock_actual <= item.stock_seguridad ? 'CRÍTICO' : (item.stock_actual <= rop ? 'MEDIO' : 'BAJO')
-        };
+          return {
+            id: item.id,
+            nombre: item.nombre,
+            stock: item.stock_actual,
+            base_load: Math.ceil(rop),
+            abc: category,
+            trend_val: item.trend,
+            trend_label: item.trend > 1.2 ? 'alcista' : (item.trend < 0.8 ? 'bajista' : 'estable'),
+            velocity_long: { 
+                d60: parseFloat(Number(item.velocity_60d || 0).toFixed(2)), 
+                d90: parseFloat(Number(item.velocity_90d || 0).toFixed(2)) 
+            },
+            risk: item.stock_actual <= item.stock_seguridad ? 'CRÍTICO' : (item.stock_actual <= rop ? 'MEDIO' : 'BAJO')
+          };
       });
 
       const contextItemsForAI = contextItemsFull.slice(0, 15);
@@ -257,38 +262,33 @@ const aiController = {
     try {
       const tiendaId = req.session.tiendaId;
       if (!tiendaId) return res.status(401).json({ error: "No autorizado" });
-      const getSnapshot = () => new Promise((resolve, reject) => {
-        const query = `
-          SELECT 
-            p.id_producto, 
-            p.nombre_producto,
-            p.cantidad as stock_actual,
-            p.precio,
-            p.id_proveedor,
-            p.categoria,
-            p.stock_seguridad,
-            p.lead_time,
-            IFNULL(
-              (SELECT SUM(vp2.cantidad) 
-               FROM VentasProductos vp2 
-               JOIN Ventas v2 ON vp2.id_venta = v2.id_venta 
-               WHERE vp2.id_producto = p.id_producto
-              ), 0) / 30.0 as velocidad_venta
-          FROM Productos p
-          WHERE p.id_tienda = ? AND p.estado = 'Disponible'
-        `;
-        db.all(query, [tiendaId], (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows);
-        });
-      });
+      const query = `
+        SELECT 
+          p.id_producto, 
+          p.nombre_producto,
+          p.cantidad as stock_actual,
+          p.precio,
+          p.id_proveedor,
+          p.categoria,
+          p.stock_seguridad,
+          p.lead_time,
+          COALESCE(
+            (SELECT SUM(vp2.cantidad) 
+             FROM VentasProductos vp2 
+             JOIN Ventas v2 ON vp2.id_venta = v2.id_venta 
+             WHERE vp2.id_producto = p.id_producto
+            ), 0) / 30.0 as velocidad_venta
+        FROM Productos p
+        WHERE p.id_tienda = ? AND p.estado = 'Disponible'
+      `;
 
-      const rows = await getSnapshot();
+      const rows = await db.allAsync(query, [tiendaId]);
       let totalRevenue = 0;
       const base = rows.map(r => {
-        const rev = r.velocidad_venta * 30 * r.precio;
+        const vel = Number(r.velocidad_venta || 0);
+        const rev = vel * 30 * r.precio;
         totalRevenue += rev;
-        return { ...r, revenue: rev, days_to_exhaust: r.velocidad_venta > 0 ? Math.round(r.stock_actual / r.velocidad_venta) : Infinity };
+        return { ...r, velocidad_venta: vel, revenue: rev, days_to_exhaust: vel > 0 ? Math.round(r.stock_actual / vel) : Infinity };
       });
 
       base.sort((a, b) => b.revenue - a.revenue);
@@ -349,11 +349,11 @@ const aiController = {
         WITH VentasRecientes AS (
           SELECT 
             vp.id_producto,
-            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-30 days') THEN vp.cantidad ELSE 0 END) as qty_30d,
-            SUM(CASE WHEN v.fecha_salida >= DATE('now', '-7 days') THEN vp.cantidad ELSE 0 END) as qty_7d
+            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days' THEN vp.cantidad ELSE 0 END) as qty_30d,
+            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days' THEN vp.cantidad ELSE 0 END) as qty_7d
           FROM VentasProductos vp
           JOIN Ventas v ON vp.id_venta = v.id_venta
-          WHERE v.fecha_salida >= DATE('now', '-30 days')
+          WHERE v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
           GROUP BY vp.id_producto
         )
         SELECT 
@@ -365,13 +365,13 @@ const aiController = {
           p.fecha_vencimiento,
           p.precio_original,
           p.fecha_fin_promocion,
-          IFNULL(vr.qty_30d, 0) / 30.0 as velocity_30d,
-          IFNULL(vr.qty_7d, 0) / 7.0 as velocity_7d
+          COALESCE(vr.qty_30d, 0) / 30.0 as velocity_30d,
+          COALESCE(vr.qty_7d, 0) / 7.0 as velocity_7d
         FROM Productos p
         LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
         WHERE p.id_tienda = ? 
           AND p.estado = 'Disponible'
-          AND (p.fecha_fin_promocion IS NULL OR p.fecha_fin_promocion < DATE('now'))
+          AND (p.fecha_fin_promocion IS NULL OR p.fecha_fin_promocion < CURRENT_DATE)
           AND p.precio_original IS NULL
         ORDER BY p.cantidad DESC
       `;
@@ -524,12 +524,14 @@ const aiController = {
       fechaFin.setDate(fechaFin.getDate() + (parseInt(duration_days) || 7));
       const fechaFinStr = fechaFin.toISOString().split('T')[0];
 
-      // 2. Transacción de actualización
-      await db.runAsync('BEGIN TRANSACTION');
+      // 2. Transacción de actualización (Postgres Client)
+      const client = await db.getClient();
 
       try {
+        await client.query('BEGIN');
+
         // Actualizar precio y guardar original (solo si no tiene ya un precio original guardado)
-        await db.runAsync(
+        await client.query(
           `UPDATE Productos 
            SET precio = ?, 
                precio_original = COALESCE(precio_original, ?), 
@@ -539,15 +541,14 @@ const aiController = {
         );
 
         // Registrar en Historial_Precios
-        await db.runAsync(
+        await client.query(
           `INSERT INTO Historial_Precios (id_producto, precio_anterior, precio_nuevo, motivo) 
            VALUES (?, ?, ?, ?)`,
           [id_producto, precioAnterior, nuevo_precio, `Estrategia IA: ${tipo} - ${razon}`]
         );
 
-        // Auditoría IA completa para cumplir con las restricciones de la BD
-        // Auditoría IA completa con ID y Nombre explícitos para mayor claridad
-        await db.runAsync(
+        // Auditoría IA completa
+        await client.query(
           `INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia) 
            VALUES (?, NULL, ?, ?, ?, ?, ?)`,
           [
@@ -567,12 +568,14 @@ const aiController = {
         );
         logToAuditFile(tiendaId, null, `Ajuste de precio automático: ${razon}`, 'ESTRATEGIA APLICADA');
 
-        await db.runAsync('COMMIT');
+        await client.query('COMMIT');
         res.json({ success: true, message: "Estrategia aplicada con éxito y registrada en auditoría." });
 
       } catch (err) {
-        await db.runAsync('ROLLBACK');
+        await client.query('ROLLBACK');
         throw err;
+      } finally {
+        client.release();
       }
 
     } catch (error) {
@@ -598,12 +601,13 @@ const aiController = {
       const rows = await db.allAsync(query, [tiendaId]);
       
       // Agrupar por fecha para la gráfica
+      // fecha_cambio es un Date object en node-postgres (TIMESTAMPTZ); convertir a string ISO
       const trend = rows.map(r => ({
-        fecha: r.fecha_cambio.split(' ')[0],
+        fecha: new Date(r.fecha_cambio).toISOString().split('T')[0],
         producto: r.nombre_producto,
-        precioAnterior: r.precio_anterior,
-        precioNuevo: r.precio_nuevo,
-        variacion: r.precio_nuevo - r.precio_anterior
+        precioAnterior: Number(r.precio_anterior),
+        precioNuevo: Number(r.precio_nuevo),
+        variacion: Number(r.precio_nuevo) - Number(r.precio_anterior)
       }));
 
       res.json({ success: true, trend });

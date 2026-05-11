@@ -58,14 +58,18 @@ const AnalyticsDashboardPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [snapshotRes, statsRes, trendRes] = await Promise.all([
+        // allSettled: cada request falla de forma independiente sin bloquear las demás
+        const [snapshotRes, statsRes, trendRes] = await Promise.allSettled([
           axios.get('/api/ia/snapshot'),
           axios.get('/api/dashboard/stats'),
           axios.get('/api/ia/price-trend')
         ]);
-        setData(snapshotRes.data.data || []);
-        setStats(statsRes.data);
-        setPriceTrend(trendRes.data.trend || []);
+        if (snapshotRes.status === 'fulfilled') setData(snapshotRes.value.data.data || []);
+        if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
+        if (trendRes.status === 'fulfilled') setPriceTrend(trendRes.value.data.trend || []);
+        if (snapshotRes.status === 'rejected') console.error('snapshot error:', snapshotRes.reason);
+        if (statsRes.status === 'rejected') console.error('stats error:', statsRes.reason);
+        if (trendRes.status === 'rejected') console.error('price-trend error:', trendRes.reason);
       } catch (err) {
         console.error('Error fetching analytics data:', err);
       } finally {

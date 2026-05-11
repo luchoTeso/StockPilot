@@ -88,59 +88,65 @@ class SaleController {
                 return res.status(401).json({ success: false, error: "Sesión no válida" });
             }
 
-            // Iniciar transacción de BD
-            await db.runAsync('BEGIN TRANSACTION');
+            // Iniciar transacción de BD (Patrón Postgres Client)
+            const client = await db.getClient();
 
             try {
-                // 1. Obtener información del producto DENTRO de la transacción (bloqueo ligero de SQLite)
-                const producto = await db.getAsync('SELECT cantidad, precio FROM Productos WHERE id_producto = ?', [id_producto]);
+                await client.query('BEGIN');
+
+                // 1. Obtener información del producto DENTRO de la transacción
+                const prodResult = await client.query('SELECT cantidad, precio FROM Productos WHERE id_producto = ?', [id_producto]);
+                const producto = prodResult.rows[0];
                 
                 if (!producto) {
-                    await db.runAsync('ROLLBACK');
+                    await client.query('ROLLBACK');
                     return res.status(404).json({ success: false, error: "Producto no encontrado" });
                 }
 
                 if (producto.cantidad < cantidad) {
-                    await db.runAsync('ROLLBACK');
+                    await client.query('ROLLBACK');
                     return res.status(400).json({ success: false, error: "Stock insuficiente para la venta" });
                 }
 
                 const total = producto.precio * cantidad;
 
-                // 2. Registrar la venta principal
-                const id_venta = await Sale.create({
-                    id_vendedor,
-                    id_tienda,
-                    precio_total: total
-                });
+                // 2. Registrar la venta principal (Sale.create debe adaptarse o usarse el client)
+                // Para mantener la consistencia de la transacción, usaremos el client directamente aquí
+                const saleInsert = await client.query(
+                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida) 
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP) RETURNING id_venta`,
+                    [id_vendedor, id_tienda, total]
+                );
+                const id_venta = saleInsert.rows[0].id_venta;
 
-                // 3. Registrar detalle de venta (con precio histórico)
-                await Sale.createSaleProduct({
-                    id_venta,
-                    id_producto,
-                    cantidad,
-                    precio_unitario: producto.precio
-                });
+                // 3. Registrar detalle de venta
+                await client.query(
+                    `INSERT INTO VentasProductos (id_venta, id_producto, cantidad) VALUES (?, ?, ?)`,
+                    [id_venta, id_producto, cantidad]
+                );
 
-                // 4. Descontar stock Y registrar movimiento (Trazabilidad completa)
+                // 4. Descontar stock Y registrar movimiento
                 const stockFinalResult = producto.cantidad - cantidad;
 
                 // Descontar del producto
-                await db.runAsync('UPDATE Productos SET cantidad = ? WHERE id_producto = ?', [stockFinalResult, id_producto]);
+                await client.query('UPDATE Productos SET cantidad = ? WHERE id_producto = ?', [stockFinalResult, id_producto]);
 
                 // Registrar movimiento con saldo final
-                await db.runAsync(
+                // printf -> LPAD en Postgres
+                await client.query(
                     `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, stock_final, fecha_movimiento, observacion, id_usuario, id_tienda)
-                     VALUES (?, 'Salida', ?, ?, CURRENT_TIMESTAMP, 'Venta #' || printf('%06d', ?), ?, ?)`,
+                     VALUES (?, 'Salida', ?, ?, CURRENT_TIMESTAMP, 'Venta #' || LPAD(?::text, 6, '0'), ?, ?)`,
                     [id_producto, cantidad, stockFinalResult, id_venta, id_vendedor, id_tienda]
                 );
 
-                await db.runAsync('COMMIT');
+                await client.query('COMMIT');
                 res.json({ success: true, message: "Venta procesada y stock actualizado" });
 
             } catch (txError) {
-                await db.runAsync('ROLLBACK');
+                await client.query('ROLLBACK');
                 throw txError;
+            } finally {
+                client.release();
             }
 
         } catch (error) {

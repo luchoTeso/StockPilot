@@ -20,28 +20,28 @@ class ReportController {
             const hasDates = fecha_inicio && fecha_fin;
 
             if (tipo === 'Inventario' && hasDates) {
-                validationQuery = `SELECT COUNT(*) as count FROM Productos WHERE id_tienda = ? AND DATE(fecha_entrada) BETWEEN ? AND ?`;
+                validationQuery = `SELECT COUNT(*) as count FROM Productos WHERE id_tienda = ? AND fecha_entrada::date BETWEEN ? AND ?`;
                 validationParams.push(fecha_inicio, fecha_fin);
             } else if (tipo === 'Ventas' && hasDates) {
-                validationQuery = `SELECT COUNT(*) as count FROM Ventas WHERE id_tienda = ? AND DATE(fecha_salida) BETWEEN ? AND ?`;
+                validationQuery = `SELECT COUNT(*) as count FROM Ventas WHERE id_tienda = ? AND fecha_salida::date BETWEEN ? AND ?`;
                 validationParams.push(fecha_inicio, fecha_fin);
             } else if ((tipo === 'Operativo' || tipo === 'Financiero') && hasDates) {
                 validationQuery = `
                     SELECT COUNT(m.id_movimiento) as count 
                     FROM MovimientosStock m
                     JOIN Productos p ON m.id_producto = p.id_producto
-                    WHERE p.id_tienda = ? AND DATE(m.fecha_movimiento) BETWEEN ? AND ?
+                    WHERE p.id_tienda = ? AND m.fecha_movimiento::date BETWEEN ? AND ?
                 `;
                 validationParams.push(fecha_inicio, fecha_fin);
             }
 
             if (validationQuery && !force) {
                 const check = await db.getAsync(validationQuery, validationParams);
-                if (!check || check.count === 0) {
-                    return res.status(409).json({ 
-                        success: false, 
+                if (!check || parseInt(check.count) === 0) {
+                    return res.status(409).json({
+                        success: false,
                         requireConfirmation: true,
-                        error: `Atención: No hay registros de movimientos para ${tipo} entre el ${fecha_inicio} y el ${fecha_fin}.\nEl documento de Excel descargable estará vacío.\n\n¿Desea crear este reporte de todos modos?` 
+                        error: `Atención: No hay registros de movimientos para ${tipo} entre el ${fecha_inicio} y el ${fecha_fin}.\nEl documento de Excel descargable estará vacío.\n\n¿Desea crear este reporte de todos modos?`
                     });
                 }
             }
@@ -87,28 +87,28 @@ class ReportController {
             const hasDates = fecha_inicio && fecha_fin;
 
             if (tipo === 'Inventario' && hasDates) {
-                validationQuery = `SELECT COUNT(*) as count FROM Productos WHERE id_tienda = ? AND DATE(fecha_entrada) BETWEEN ? AND ?`;
+                validationQuery = `SELECT COUNT(*) as count FROM Productos WHERE id_tienda = ? AND fecha_entrada::date BETWEEN ? AND ?`;
                 validationParams.push(fecha_inicio, fecha_fin);
             } else if (tipo === 'Ventas' && hasDates) {
-                validationQuery = `SELECT COUNT(*) as count FROM Ventas WHERE id_tienda = ? AND DATE(fecha_salida) BETWEEN ? AND ?`;
+                validationQuery = `SELECT COUNT(*) as count FROM Ventas WHERE id_tienda = ? AND fecha_salida::date BETWEEN ? AND ?`;
                 validationParams.push(fecha_inicio, fecha_fin);
             } else if ((tipo === 'Operativo' || tipo === 'Financiero') && hasDates) {
                 validationQuery = `
                     SELECT COUNT(m.id_movimiento) as count 
                     FROM MovimientosStock m
                     JOIN Productos p ON m.id_producto = p.id_producto
-                    WHERE p.id_tienda = ? AND DATE(m.fecha_movimiento) BETWEEN ? AND ?
+                    WHERE p.id_tienda = ? AND m.fecha_movimiento::date BETWEEN ? AND ?
                 `;
                 validationParams.push(fecha_inicio, fecha_fin);
             }
 
             if (validationQuery && !force) {
                 const check = await db.getAsync(validationQuery, validationParams);
-                if (!check || check.count === 0) {
-                    return res.status(409).json({ 
-                        success: false, 
+                if (!check || parseInt(check.count) === 0) {
+                    return res.status(409).json({
+                        success: false,
                         requireConfirmation: true,
-                        error: `Atención: No hay registros de movimientos para ${tipo} entre el ${fecha_inicio} y el ${fecha_fin}.\nEl documento de Excel descargable estará vacío.\n\n¿Desea guardar esta edición de todos modos?` 
+                        error: `Atención: No hay registros de movimientos para ${tipo} entre el ${fecha_inicio} y el ${fecha_fin}.\nEl documento de Excel descargable estará vacío.\n\n¿Desea guardar esta edición de todos modos?`
                     });
                 }
             }
@@ -189,7 +189,7 @@ class ReportController {
                 query = `SELECT *, (precio - costo_compra) as margen FROM Productos WHERE id_tienda = ?`;
                 
                 if (hasDates) {
-                    query += ` AND DATE(fecha_entrada) BETWEEN ? AND ?`;
+                    query += ` AND fecha_entrada::date BETWEEN ? AND ?`;
                     params.push(reporte.fecha_inicio, reporte.fecha_fin);
                 }
             } else if (reporte.tipo === 'Ventas') {
@@ -216,7 +216,7 @@ class ReportController {
                 `;
                 
                 if (hasDates) {
-                    query += ` AND DATE(v.fecha_salida) BETWEEN ? AND ?`;
+                    query += ` AND v.fecha_salida::date BETWEEN ? AND ?`;
                     params.push(reporte.fecha_inicio, reporte.fecha_fin);
                 }
                 query += ` ORDER BY v.fecha_salida DESC`;
@@ -246,7 +246,7 @@ class ReportController {
                     WHERE p.id_tienda = ?
                 `;
                 if (hasDates) {
-                    query += ` AND DATE(m.fecha_movimiento) BETWEEN ? AND ?`;
+                    query += ` AND m.fecha_movimiento::date BETWEEN ? AND ?`;
                     params.push(reporte.fecha_inicio, reporte.fecha_fin);
                 }
                 query += ` ORDER BY m.fecha_movimiento DESC`;
@@ -284,7 +284,7 @@ class ReportController {
                 LEFT JOIN Proveedores pr ON p.id_proveedor = pr.id_proveedor
                 WHERE p.id_tienda = ? 
                 AND p.fecha_vencimiento IS NOT NULL 
-                AND DATE(p.fecha_vencimiento) < DATE('now')
+                AND p.fecha_vencimiento::date < CURRENT_DATE
                 AND p.cantidad > 0
                 ORDER BY p.fecha_vencimiento ASC
             `;
@@ -327,13 +327,15 @@ class ReportController {
 
             doc.fontSize(9).fillColor(textColor);
             products.forEach(p => {
-                const loss = (p.cantidad || 0) * (p.costo_compra || 0);
+                const cantidad = Number(p.cantidad) || 0;
+                const costo = Number(p.costo_compra) || 0;
+                const loss = cantidad * costo;
                 totalGeneralLoss += loss;
 
                 doc.text(p.codigo || 'N/A', cols.sku, y);
                 doc.text(p.nombre_producto?.substring(0, 25) || 'Sin nombre', cols.item, y);
-                doc.text(p.cantidad?.toString() || '0', cols.qty, y);
-                doc.text(`$${(p.costo_compra || 0).toLocaleString('es-CO')}`, cols.cost, y);
+                doc.text(cantidad.toString(), cols.qty, y);
+                doc.text(`$${costo.toLocaleString('es-CO')}`, cols.cost, y);
                 doc.text(`$${loss.toLocaleString('es-CO')}`, cols.loss, y);
                 doc.text(p.proveedor?.substring(0, 35) || 'No asignado', cols.prov, y);
 

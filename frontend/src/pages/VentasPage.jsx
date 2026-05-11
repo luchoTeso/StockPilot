@@ -86,18 +86,22 @@ const VentasPage = () => {
   };
 
   const ventasFiltradas = useMemo(() => {
-    return ventasOriginales.filter(v => 
-      (filtroFecha === '' || v.fecha_salida.startsWith(filtroFecha)) &&
-      (filtroProducto === '' || v.nombre_producto.toLowerCase().includes(filtroProducto.toLowerCase())) &&
-      (filtroCategoria === '' || v.categoria === filtroCategoria)
-    );
+    return ventasOriginales.filter(v => {
+      // fecha_salida viene como Date object desde PostgreSQL → convertir a ISO string
+      const fechaStr = v.fecha_salida ? new Date(v.fecha_salida).toISOString().slice(0, 10) : '';
+      return (
+        (filtroFecha === '' || fechaStr.startsWith(filtroFecha)) &&
+        (filtroProducto === '' || (v.nombre_producto || '').toLowerCase().includes(filtroProducto.toLowerCase())) &&
+        (filtroCategoria === '' || v.categoria === filtroCategoria)
+      );
+    });
   }, [ventasOriginales, filtroFecha, filtroProducto, filtroCategoria]);
 
   const statsRender = useMemo(() => {
     if (filtroFecha || filtroProducto || filtroCategoria) {
-      // Recalcular localmente si hay filtros
-      const totalVts = ventasFiltradas.reduce((sum, v) => sum + v.precio_total, 0);
-      const totalProds = ventasFiltradas.reduce((sum, v) => sum + v.cantidad, 0);
+      // Recalcular localmente si hay filtros; usar Number() porque PG devuelve strings
+      const totalVts = ventasFiltradas.reduce((sum, v) => sum + Number(v.precio_total), 0);
+      const totalProds = ventasFiltradas.reduce((sum, v) => sum + Number(v.cantidad), 0);
       const vPromedio = ventasFiltradas.length ? totalVts / ventasFiltradas.length : 0;
       const pUnicos = new Set(ventasFiltradas.map(v => v.nombre_producto)).size;
       return { totalVentas: totalVts, totalProductos: totalProds, ventaPromedio: vPromedio, productosUnicos: pUnicos };
@@ -108,9 +112,9 @@ const VentasPage = () => {
 
   const formatearFecha = (fechaString) => {
     if (!fechaString) return '---';
-    // Normalizar a ISO UTC para evitar desvíos de zona horaria en el navegador
-    const isoStr = fechaString.includes('T') ? fechaString : fechaString.replace(' ', 'T') + 'Z';
-    const fecha = new Date(isoStr);
+    // Acepta tanto string como Date object (node-postgres devuelve TIMESTAMP como Date)
+    const fecha = new Date(fechaString);
+    if (isNaN(fecha.getTime())) return '---';
     return fecha.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
   };
 

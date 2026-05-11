@@ -1,12 +1,19 @@
 // app.js - VERSIÓN MVC COMPLETA
 require('dotenv').config();
 
+// Validación temprana de variables de entorno obligatorias
+if (!process.env.SESSION_SECRET) {
+    console.error('❌ FATAL: SESSION_SECRET no está definido en las variables de entorno.');
+    console.error('   Genera uno con: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+    process.exit(1);
+}
+
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
-const { createBackup } = require('./utils/backup');
+// const { createBackup } = require('./utils/backup'); (Obsoleto en Postgres)
 const { globalLimiter, authLimiter } = require('./middleware/rateLimiter');
 
 // Importar rutas
@@ -30,9 +37,23 @@ const scheduler = require('./services/schedulerService');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Orígenes permitidos: leer desde env, con fallback para desarrollo local
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174'];
+
 // 🛡️ SEGURIDAD: Configuración de Helmet (Cabeceras de respuesta seguras)
 app.use(helmet({
-    contentSecurityPolicy: false, // Se desactiva para compatibilidad con CDN de frontend durante dev
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "blob:"],
+            connectSrc: ["'self'", ...allowedOrigins]
+        }
+    },
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
@@ -41,22 +62,30 @@ app.use('/api/', globalLimiter);
 
 // Configuración del servidor
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'],
+    origin: allowedOrigins,
     credentials: true
 }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '1mb' }));
 
-// 🛡️ SEGURIDAD: Configuración de Sesión Hardened
+const pgSession = require('connect-pg-simple')(session);
+const db = require('./config/database');
+
+// 🛡️ SEGURIDAD: Configuración de Sesión Hardened (Persistente en Postgres)
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'fallback-dev-secret',
+    store: new pgSession({
+        pool: db.pool,                // Usar el pool de conexiones de Postgres
+        tableName: 'session',         // Se creará automáticamente o mediante init_pg.sql
+        createTableIfMissing: true    // Auto-creación de tabla de sesiones
+    }),
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false, // No guardar sesiones vacías (Mejor cumplimiento GDPR)
+    saveUninitialized: false, 
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
-        httpOnly: true, // No accesible por scripts (Previene XSS)
-        maxAge: 1000 * 60 * 60 * 24, // 24 horas de vigencia
-        sameSite: 'lax' // Protección básica CSRF
+        secure: process.env.NODE_ENV === 'production', 
+        httpOnly: true, 
+        maxAge: 1000 * 60 * 60 * 24, // 24 horas
+        sameSite: 'lax' 
     }
 }));
 
@@ -133,47 +162,11 @@ function startServer(port) {
         retries = 0; // Reset en caso de éxito
         console.log('✅ Servidor MVC corriendo en http://localhost:' + port);
         
-        // 🚀 MIGRACIÓN AUTOMÁTICA: Inteligencia Financiera y Deuda
-        try {
-            const db = require('./config/database');
-            console.log('🚀 Iniciando Migración Interna...');
-            
-            // 1. Columnas en Productos
-            await db.runAsync('ALTER TABLE Productos ADD COLUMN precio_original REAL').catch(() => {});
-            await db.runAsync('ALTER TABLE Productos ADD COLUMN fecha_fin_promocion TEXT').catch(() => {});
-            
-            // 2. Columnas en Ordenes_Compra
-            await db.runAsync("ALTER TABLE Ordenes_Compra ADD COLUMN estado_pago TEXT DEFAULT 'Pendiente'").catch(() => {});
-            await db.runAsync('ALTER TABLE Ordenes_Compra ADD COLUMN monto_pagado REAL DEFAULT 0').catch(() => {});
-            
-            // 3. Tabla Historial_Precios
-            await db.runAsync(`
-                CREATE TABLE IF NOT EXISTS Historial_Precios (
-                    id_historial INTEGER PRIMARY KEY AUTOINCREMENT,
-                    id_producto INTEGER NOT NULL,
-                    precio_anterior REAL NOT NULL,
-                    precio_nuevo REAL NOT NULL,
-                    motivo TEXT,
-                    fecha_cambio DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY(id_producto) REFERENCES Productos(id_producto)
-                )
-            `).catch(() => {});
-            
-            console.log('✅ Migraciones internas verificadas.');
-        } catch (e) {
-            console.error('⚠️ Error en migración interna:', e.message);
-        }
-
-        // 📦 RESPALDO: Crear backup de la BD al iniciar el sistema
-        createBackup();
+        // 📦 RESPALDO: (Desactivado para Postgres)
+        // createBackup();
 
         console.log('📁 Arquitectura MVC completada exitosamente');
         console.log('📍 Origin permitido: http://localhost:5173');
-
-        const Sale = require('./models/Sale');
-        Sale.ensureIndexes()
-            .then(() => console.log('📊 Índices de BD verificados'))
-            .catch(e => console.log('⚠️ No se pudieron crear índices:', e.message));
     });
 
     server.on('error', (err) => {

@@ -56,7 +56,7 @@ class Sale {
             WHERE v.id_tienda = ?
         `;
         const row = await db.getAsync(query, [storeId]);
-        return row.total;
+        return parseInt(row.total || 0, 10);
     }
 
     /**
@@ -75,11 +75,13 @@ class Sale {
             WHERE v.id_tienda = ?
         `;
         const stats = await db.getAsync(query, [storeId]);
+        // PostgreSQL normaliza aliases sin comillas a minúsculas; convertir a número
+        // porque SUM/AVG/COUNT devuelven string en node-postgres
         return {
-            totalVentas: stats.totalVentas,
-            totalProductos: stats.totalProductos,
-            ventaPromedio: Math.round(stats.ventaPromedio * 100) / 100,
-            productosUnicos: stats.productosUnicos
+            totalVentas: Number(stats.totalventas || 0),
+            totalProductos: Number(stats.totalproductos || 0),
+            ventaPromedio: Math.round(Number(stats.ventapromedio || 0) * 100) / 100,
+            productosUnicos: Number(stats.productosunicos || 0)
         };
     }
 

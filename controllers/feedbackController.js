@@ -58,13 +58,13 @@ const feedbackController = {
         
         // Ventas reales desde la fecha de aprobación hasta hoy:
         const ventasQuery = `
-          SELECT IFNULL(SUM(vp.cantidad), 0) as total_vendido
+          SELECT COALESCE(SUM(vp.cantidad), 0) as total_vendido
           FROM VentasProductos vp
           JOIN Ventas v ON vp.id_venta = v.id_venta
           WHERE vp.id_producto = ? AND v.fecha_salida >= ?
         `;
         const vRow = await db.getAsync(ventasQuery, [det.id_producto, orden.fecha_aprobacion]);
-        const ventasReales = vRow ? vRow.total_vendido : 0;
+        const ventasReales = vRow ? Number(vRow.total_vendido) : 0;
 
         const periodoObjetivo = feedbackController.calcularPeriodoObjetivo(det.lead_time);
         const ventasProyectadasObjetivo = feedbackController.proyectarVentas(ventasReales, diasTranscurridos, periodoObjetivo);
@@ -129,13 +129,13 @@ const feedbackController = {
 
       // 2. Evolución temporal de la precisión (Mensual)
       const evolucionQuery = `
-        SELECT strftime('%Y-%m', f.fecha_evaluacion) as mes,
+        SELECT TO_CHAR(f.fecha_evaluacion, 'YYYY-MM') as mes,
                AVG(f.factor_precision) as factor_promedio,
                COUNT(f.id_feedback) as volumen
         FROM Feedback_IA f
         JOIN Ordenes_Compra o ON f.id_orden = o.id_orden
         WHERE o.id_tienda = ?
-        GROUP BY mes
+        GROUP BY TO_CHAR(f.fecha_evaluacion, 'YYYY-MM')
         ORDER BY mes ASC
         LIMIT 6
       `;
@@ -149,14 +149,14 @@ const feedbackController = {
         FROM Feedback_IA f
         JOIN Productos p ON f.id_producto = p.id_producto
         WHERE p.id_tienda = ?
-        GROUP BY p.id_producto
-        HAVING evaluaciones > 0
+        GROUP BY p.id_producto, p.nombre_producto, p.categoria
+        HAVING COUNT(f.id_feedback) > 0
       `;
       const productosData = await db.allAsync(productosQuery, [tiendaId]);
 
       // Ordenar para predecibles (más cercano a 1.0)
-      const ordenadoPorDistanciaA1 = [...productosData].sort((a, b) => 
-        Math.abs(a.factor_historico - 1.0) - Math.abs(b.factor_historico - 1.0)
+      const ordenadoPorDistanciaA1 = [...productosData].sort((a, b) =>
+        Math.abs(Number(a.factor_historico) - 1.0) - Math.abs(Number(b.factor_historico) - 1.0)
       );
 
       const topPredecibles = ordenadoPorDistanciaA1.slice(0, 5);
@@ -166,8 +166,8 @@ const feedbackController = {
         success: true,
         data: {
           global: {
-            promedio: globalStats.precision_global || 1.0,
-            totalEval: globalStats.total_evaluaciones || 0
+            promedio: Number(globalStats.precision_global) || 1.0,
+            totalEval: Number(globalStats.total_evaluaciones) || 0
           },
           evolucion,
           topPredecibles,

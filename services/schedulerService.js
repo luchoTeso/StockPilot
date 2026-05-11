@@ -120,7 +120,7 @@ const runDailyPriceReversion = async () => {
             SELECT id_producto, id_tienda, nombre_producto, precio_original 
             FROM Productos 
             WHERE fecha_fin_promocion IS NOT NULL 
-            AND fecha_fin_promocion <= DATE('now')
+            AND fecha_fin_promocion <= CURRENT_DATE
         `);
 
         if (expiredProducts.length === 0) {
@@ -129,32 +129,36 @@ const runDailyPriceReversion = async () => {
         }
 
         for (const prod of expiredProducts) {
-            await db.runAsync('BEGIN TRANSACTION');
+            const client = await db.getClient();
             try {
+                await client.query('BEGIN');
+                
                 // 1. Restaurar precio
-                await db.runAsync(
-                    'UPDATE Productos SET precio = precio_original, precio_original = NULL, fecha_fin_promocion = NULL WHERE id_producto = ?',
+                await client.query(
+                    'UPDATE Productos SET precio = precio_original, precio_original = NULL, fecha_fin_promocion = NULL WHERE id_producto = $1',
                     [prod.id_producto]
                 );
 
                 // 2. Notificar al sistema
-                await db.runAsync(
-                    `INSERT INTO Alertas (id_producto, id_tienda, tipo, severidad, mensaje, resuelta) 
-                     VALUES (?, ?, 'reversion_precio', 'info', ?, 0)`,
+                await client.query(
+                    `INSERT INTO Alertas (id_producto, id_tienda, tipo, severidad, mensaje, resuelta)
+                     VALUES ($1, $2, 'reversion_precio', 'info', $3, 0)`,
                     [prod.id_producto, prod.id_tienda, `Promoción finalizada. El precio de ${prod.nombre_producto} se ha restaurado automáticamente.`]
                 );
 
                 // 3. Registrar en historial
-                await db.runAsync(
-                    'INSERT INTO Historial_Precios (id_producto, precio_anterior, precio_nuevo, motivo) VALUES (?, ?, ?, ?)',
+                await client.query(
+                    'INSERT INTO Historial_Precios (id_producto, precio_anterior, precio_nuevo, motivo) VALUES ($1, $2, $3, $4)',
                     [prod.id_producto, 0, prod.precio_original, 'Restauración automática post-promoción']
                 );
 
-                await db.runAsync('COMMIT');
+                await client.query('COMMIT');
                 console.log(`[Scheduler] Precio restaurado: ${prod.nombre_producto}`);
             } catch (err) {
-                await db.runAsync('ROLLBACK');
+                await client.query('ROLLBACK');
                 console.error(`[Scheduler] Error revirtiendo ${prod.nombre_producto}:`, err);
+            } finally {
+                client.release();
             }
         }
     } catch (error) {
