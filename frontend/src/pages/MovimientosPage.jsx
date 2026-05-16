@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
 import Tooltip from '../components/Tooltip';
 import CustomDatePicker from '../components/CustomDatePicker';
+import { PackagePlus, PackageMinus, SlidersHorizontal } from 'lucide-react';
 
 const MovimientosPage = () => {
   const toast = useToast();
@@ -24,26 +25,26 @@ const MovimientosPage = () => {
   const opcionesMotivo = useMemo(() => {
     if (tipo === 'Entrada') {
       return [
-        { value: 'Compra a Proveedor', label: '📥 Compra a Proveedor' },
-        { value: 'Devolución de Cliente', label: '🔄 Devolución de Cliente' },
-        { value: 'Reingreso por Error', label: '⚠️ Reingreso por Error' },
-        { value: 'Donación / Otro', label: '🎁 Donación / Otro' }
+        { value: 'Compra a Proveedor', label: 'Compra a Proveedor' },
+        { value: 'Devolución de Cliente', label: 'Devolución de Cliente' },
+        { value: 'Reingreso por Error', label: 'Reingreso por Error' },
+        { value: 'Donación / Otro', label: 'Donación / Otro' }
       ];
     }
     if (tipo === 'Salida') {
       return [
-        { value: 'Venta Manual', label: '💵 Venta Manual' },
-        { value: 'Daño o Merma', label: '🗑️ Daño o Merma' },
-        { value: 'Vencimiento', label: '⏰ Vencimiento' },
-        { value: 'Uso Interno', label: '🏠 Uso Interno' },
-        { value: 'Robo / Pérdida', label: '🚨 Robo / Pérdida' }
+        { value: 'Venta Manual', label: 'Venta Manual' },
+        { value: 'Daño o Merma', label: 'Daño o Merma' },
+        { value: 'Vencimiento', label: 'Vencimiento' },
+        { value: 'Uso Interno', label: 'Uso Interno' },
+        { value: 'Robo / Pérdida', label: 'Robo / Pérdida' }
       ];
     }
     if (tipo === 'Ajuste') {
       return [
-        { value: 'Inventario Físico', label: '📝 Inventario Físico' },
-        { value: 'Corrección de Error', label: '🔧 Corrección de Error' },
-        { value: 'Cambio de Lote', label: '🔢 Cambio de Lote' }
+        { value: 'Inventario Físico', label: 'Inventario Físico' },
+        { value: 'Corrección de Error', label: 'Corrección de Error' },
+        { value: 'Cambio de Lote', label: 'Cambio de Lote' }
       ];
     }
     return [];
@@ -194,13 +195,13 @@ const MovimientosPage = () => {
       {/* Tarjetas de Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Entradas de Producto', value: resumen.entradas, icon: '📥', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-          { label: 'Salidas de Producto', value: resumen.salidas, icon: '📤', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'Ajustes Manuales', value: resumen.ajustes, icon: '⚖️', color: 'text-amber-500', bg: 'bg-amber-50' }
+          { label: 'Entradas de Producto', value: resumen.entradas, icon: PackagePlus, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: 'Salidas de Producto', value: resumen.salidas, icon: PackageMinus, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+          { label: 'Ajustes Manuales', value: resumen.ajustes, icon: SlidersHorizontal, color: 'text-amber-500', bg: 'bg-amber-50' }
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 flex items-center gap-4 transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-slate-200">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 ${stat.bg}`}>
-              {stat.icon}
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${stat.bg} ${stat.color}`}>
+              {(() => { const Icon = stat.icon; return <Icon size={26} />; })()}
             </div>
             <div className="min-w-0 flex-1 flex flex-col justify-center">
               <Tooltip text={stat.label} className="w-full min-w-0">
