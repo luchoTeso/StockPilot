@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Store } from 'lucide-react';
 
 const LoginPage = () => {
   const [identificador, setIdentificador] = useState('');
@@ -36,7 +37,7 @@ const LoginPage = () => {
           <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600"></div>
           
           <div className="text-center mb-10">
-            <div className="w-20 h-20 bg-slate-900 text-white rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-lg shadow-slate-200 hover:scale-105 transition-transform cursor-default">🏪</div>
+            <div className="w-20 h-20 bg-slate-900 text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-slate-200 hover:scale-105 transition-transform cursor-default"><Store size={36} /></div>
             <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">StockPilot</h1>
             <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2 font-outfit">Gestión Inteligente de Inventario</p>
           </div>

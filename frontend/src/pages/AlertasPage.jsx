@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
+import { AlertCircle, AlertTriangle, Info, ShieldCheck, RefreshCw } from 'lucide-react';
 
 const AlertasPage = () => {
   const [alertas, setAlertas] = useState([]);
@@ -76,9 +77,9 @@ const AlertasPage = () => {
   };
 
   const SeveridadIcon = {
-    critico: '🔴',
-    advertencia: '🟡',
-    info: '🟠'
+    critico: AlertCircle,
+    advertencia: AlertTriangle,
+    info: Info,
   };
 
   return (
@@ -88,8 +89,8 @@ const AlertasPage = () => {
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-rose-500/10 blur-[50px] rounded-full pointer-events-none"></div>
         <div className="relative z-10 w-full mb-4 md:mb-0">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl shadow-inner border border-rose-100">
-              🚨
+            <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shadow-inner border border-rose-100">
+              <AlertCircle size={20} />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Centro de Alertas</h1>
           </div>
@@ -104,7 +105,7 @@ const AlertasPage = () => {
             disabled={isGenerating}
             className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-300 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {isGenerating ? 'Buscando problemas...' : '↻ Actualizar Alertas'}
+            {isGenerating ? 'Buscando problemas...' : <><RefreshCw size={13} className="inline mr-1" />Actualizar Alertas</>}
           </button>
         )}
       </div>
@@ -123,7 +124,7 @@ const AlertasPage = () => {
           onClick={() => setFilter('critico')}
           className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-rose-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
         >
-          <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1">🚨 Críticas</p>
+          <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><AlertCircle size={10} /> Críticas</p>
           <p className="text-3xl font-black">{stats.critico}</p>
         </button>
 
@@ -131,7 +132,7 @@ const AlertasPage = () => {
           onClick={() => setFilter('advertencia')}
           className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-amber-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
         >
-          <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1">⚠️ Advertencias</p>
+          <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><AlertTriangle size={10} /> Advertencias</p>
           <p className="text-3xl font-black">{stats.advertencia}</p>
         </button>
 
@@ -139,7 +140,7 @@ const AlertasPage = () => {
           onClick={() => setFilter('info')}
           className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'info' ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-blue-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'}`}
         >
-          <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1">ℹ️ Sobrestock</p>
+          <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><Info size={10} /> Sobrestock</p>
           <p className="text-3xl font-black">{stats.info}</p>
         </button>
       </div>
@@ -150,7 +151,7 @@ const AlertasPage = () => {
           <div className="flex items-center justify-center h-40"><div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full"></div></div>
         ) : filteredAlertas.length === 0 ? (
           <div className="p-12 text-center bg-white border border-dashed border-slate-300 rounded-[2rem]">
-            <div className="text-4xl mb-4">😌</div>
+            <div className="mb-4 flex justify-center text-slate-300"><ShieldCheck size={48} /></div>
             <p className="text-lg font-black text-slate-800 tracking-tight">No tienes ninguna alerta activa aquí.</p>
             <p className="text-sm font-bold text-slate-400 mt-1">El inventario está en perfecto estado y cubierto.</p>
           </div>
@@ -159,7 +160,7 @@ const AlertasPage = () => {
             <div key={alerta.id_alerta} className={`p-4 sm:p-6 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 transition-all hover:shadow-xl ${SeveridadColors[alerta.severidad]}`}>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-xl">{SeveridadIcon[alerta.severidad]}</span>
+                  {(() => { const Icon = SeveridadIcon[alerta.severidad]; return <Icon size={20} />; })()}
                   <h3 className="text-lg font-black uppercase tracking-tight">{alerta.nombre_producto} <span className="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded ml-2 shadow-sm">{alerta.codigo}</span></h3>
                 </div>
                 <p className="text-sm font-bold opacity-100 text-slate-800 leading-relaxed max-w-3xl">

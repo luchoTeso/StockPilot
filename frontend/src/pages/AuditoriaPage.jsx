@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
+import { Search, LayoutDashboard, Building2, X } from 'lucide-react';
 
 const AuditoriaPage = () => {
   const toast = useToast();
@@ -64,7 +65,7 @@ const AuditoriaPage = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center text-xl shadow-inner border border-violet-100">🔍</div>
+            <div className="w-10 h-10 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center shadow-inner border border-violet-100"><Search size={20} /></div>
             <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Historial del Copiloto</h2>
           </div>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Revisa el por qué de las decisiones y sugerencias de compra</p>
@@ -144,7 +145,10 @@ const AuditoriaPage = () => {
                           ? 'bg-violet-50 text-violet-600 border border-violet-100' 
                           : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
                       }`}>
-                        {fuente === 'Dashboard' ? '📊 Dashboard' : `🏢 ${log.proveedor_nombre || 'Proveedor'}`}
+                        {fuente === 'Dashboard'
+                          ? <span className="flex items-center gap-1"><LayoutDashboard size={10} /> Dashboard</span>
+                          : <span className="flex items-center gap-1"><Building2 size={10} /> {log.proveedor_nombre || 'Proveedor'}</span>
+                        }
                       </span>
                     </td>
                     <td className="p-6 text-slate-600 font-bold text-xs truncate max-w-[180px]" title={log.prompt_utilizado}>
@@ -209,14 +213,19 @@ const AuditoriaPage = () => {
                 <h3 className="text-xl font-black text-violet-800 tracking-tighter uppercase italic">Detalle de la sugerencia</h3>
                 <p className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mt-1">{formatFecha(detailModal.fecha_auditoria)}</p>
               </div>
-              <button onClick={() => setDetailModal(null)} className="w-10 h-10 bg-white border border-violet-200 text-violet-400 rounded-xl hover:text-rose-500 flex items-center justify-center text-xl transition-all">&times;</button>
+              <button onClick={() => setDetailModal(null)} className="w-10 h-10 bg-white border border-violet-200 text-violet-400 rounded-xl hover:text-rose-500 flex items-center justify-center transition-all"><X size={16} /></button>
             </div>
 
             {/* Metadata */}
             <div className="p-6 grid grid-cols-2 gap-3">
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fuente</p>
-                <p className="text-sm font-bold text-slate-800 mt-1">{detailModal.id_orden ? `🏢 Orden #${detailModal.id_orden}` : '📊 Dashboard'}</p>
+                <p className="text-sm font-bold text-slate-800 mt-1 flex items-center gap-1">
+                  {detailModal.id_orden
+                    ? <><Building2 size={14} /> Orden #{detailModal.id_orden}</>
+                    : <><LayoutDashboard size={14} /> Dashboard</>
+                  }
+                </p>
               </div>
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Motor</p>
