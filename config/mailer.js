@@ -10,12 +10,17 @@ if (useResend) {
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
 
+    // Dirección "from" válida en Resend: debe ser de un dominio verificado en el dashboard,
+    // o "onboarding@resend.dev" para el dominio de prueba de Resend.
+    // Nunca usar @gmail.com u otros dominios que no sean tuyos — Resend los rechaza.
+    const resendFrom = process.env.RESEND_FROM_EMAIL || 'StockPilot <onboarding@resend.dev>';
+
     // Adaptador con la misma interfaz que nodemailer para no cambiar el resto del código
     transporter = {
         sendMail: async (options) => {
-            const { from, to, subject, html, text } = options;
+            const { to, subject, html, text } = options;
             const { data, error } = await resend.emails.send({
-                from: from || `StockPilot <onboarding@resend.dev>`,
+                from: resendFrom,
                 to: Array.isArray(to) ? to : [to],
                 subject,
                 html,
