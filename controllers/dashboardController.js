@@ -25,8 +25,13 @@ class DashboardController {
             Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas en dashboard:', e));
             const alertasStats = await Alert.getStats(tiendaId);
 
-            // 4. Ventas Recientes (Últimas 30 días de datos detectados en la BD para evitar ceros por desfase temporal)
-            const ventasQuery = `SELECT SUM(precio_total) as ventas FROM Ventas WHERE id_tienda = ?`;
+            // 4. Ventas de hoy y del mes (filtradas por fecha en PostgreSQL)
+            const ventasQuery = `
+                SELECT
+                    COALESCE(SUM(CASE WHEN fecha_salida::date = CURRENT_DATE THEN precio_total ELSE 0 END), 0) AS ventas_hoy,
+                    COALESCE(SUM(CASE WHEN fecha_salida >= CURRENT_DATE - INTERVAL '30 days' THEN precio_total ELSE 0 END), 0) AS ventas_mes
+                FROM Ventas WHERE id_tienda = ?
+            `;
             const ventas = await db.getAsync(ventasQuery, [tiendaId]);
 
             // 5. Array 7 Días (Gráfica) — generate_series garantiza los 7 días sin depender de fechas de Node.js
@@ -62,7 +67,8 @@ class DashboardController {
                 alertasCriticas: alertasStats.critico || 0,
                 alertasAdvertencia: alertasStats.advertencia || 0,
                 alertasStock: alertasStats.total || 0, // Fallback para ui legada
-                ventasMes: ventas.ventas || 0,
+                ventasHoy: Number(ventas.ventas_hoy) || 0,
+                ventasMes: Number(ventas.ventas_mes) || 0,
                 ventasSemanales: ultimos7Dias
             });
         } catch (error) {
