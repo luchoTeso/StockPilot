@@ -183,19 +183,40 @@ const ProveedoresPage = () => {
     }
   };
 
-  const submitFinalOrder = async () => {
+  const submitFinalOrder = async (sinIA = false) => {
     setIsSubmitting(true);
     try {
-      const includedItems = smartCart.filter(i => i.incluido);
+      let includedItems, riskData;
+
+      if (sinIA || !smartCart) {
+        includedItems = forecastData.map(i => ({
+          ...i,
+          sugerencia_final: i.cantidad_sugerida,
+          calculo_base: i.cantidad_sugerida,
+          ajuste_ia: '+0%',
+          razon_ia: 'Orden manual sin optimización IA.',
+          presupuesto_estimado_final: i.presupuesto_estimado,
+          incluido: true
+        }));
+        riskData = {
+          nivel: 'Bajo',
+          justificacion: 'Orden manual generada sin análisis IA.',
+          costo_total_estimado: forecastData.reduce((acc, i) => acc + i.presupuesto_estimado, 0)
+        };
+      } else {
+        includedItems = smartCart.filter(i => i.incluido);
+        riskData = riskEval;
+      }
+
       if (includedItems.length === 0) return toast.error('Debe incluir al menos un producto.');
 
       const res = await axios.post(`/api/proveedores/${selectedSupplier.id_proveedor}/ordenes`, {
         carrito_final: includedItems,
-        evaluacion_riesgo: riskEval,
-        estado_deseado: riskEval.nivel === 'Bajo' ? 'Aprobada' : 'Pendiente' // Regla de Negocio
+        evaluacion_riesgo: riskData,
+        estado_deseado: riskData.nivel === 'Bajo' ? 'Aprobada' : 'Pendiente'
       });
       if (res.data.success) {
-        toast.success(`Orden registrada y Auditada (${res.data.orden_id})`);
+        toast.success(`Orden registrada (${res.data.orden_id})`);
         setShowOrderModal(false);
         fetchHistory();
       }
@@ -507,14 +528,23 @@ const ProveedoresPage = () => {
             {/* Modal Footer Align Action */}
             <div className="p-6 border-t border-slate-100 bg-white flex gap-4 justify-end items-center">
               {!smartCart ? (
-                <button 
-                  onClick={requestCopilot}
-                  disabled={isConsultingAI || forecastData.length === 0}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
-                >
-                  {isConsultingAI ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : '✨'} 
-                  {isConsultingAI ? 'Pensando...' : 'Optimizar con IA ✨'}
-                </button>
+                <div className="flex gap-3 items-center">
+                  <button
+                    onClick={() => submitFinalOrder(true)}
+                    disabled={isSubmitting || forecastData.length === 0}
+                    className="border border-slate-300 text-slate-600 hover:bg-slate-50 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {isSubmitting ? 'Guardando...' : 'Crear Orden sin IA'}
+                  </button>
+                  <button
+                    onClick={requestCopilot}
+                    disabled={isConsultingAI || forecastData.length === 0}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isConsultingAI ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : '✨'}
+                    {isConsultingAI ? 'Pensando...' : 'Optimizar con IA ✨'}
+                  </button>
+                </div>
               ) : (
                 <>
                   <button onClick={() => setSmartCart(null)} className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest px-4">

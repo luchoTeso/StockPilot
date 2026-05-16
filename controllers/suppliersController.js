@@ -122,6 +122,9 @@ const suppliersController = {
         let risk = 'low';
         if (item.stock_actual <= item.stock_seguridad) risk = 'critical';
         else if (item.stock_actual <= item.rop) risk = 'medium';
+        // Crítico/medio: cubrir hasta ROP. Stock suficiente: sugerir 1 semana de ventas (mínimo 1).
+        const qtyCritica = risk !== 'low' ? Math.max(0, item.rop - item.stock_actual) : 0;
+        const qtySugerida = qtyCritica > 0 ? qtyCritica : Math.max(1, Math.ceil(item.velocity_30d * 7));
         return {
           id_producto: item.id_producto,
           nombre: item.nombre_producto,
@@ -130,12 +133,11 @@ const suppliersController = {
           stock: item.stock_actual,
           dias_inventario: item.days_to_exhaust,
           factor_aprendizaje_ia: item.factor_ia.toFixed(2),
-          cantidad_sugerida: risk !== 'low' ? Math.max(0, item.rop - item.stock_actual) : 0,
-          presupuesto_estimado: risk !== 'low' ? Math.max(0, item.rop - item.stock_actual) * item.precio : 0
+          cantidad_sugerida: qtySugerida,
+          presupuesto_estimado: qtySugerida * item.precio
         };
       });
-      const replenishmentList = smartList.filter(item => item.cantidad_sugerida > 0);
-      res.json({ success: true, proveedor_id: proveedorId, recomendaciones_matematicas: replenishmentList, total_presupuesto_base: replenishmentList.reduce((acc, curr) => acc + curr.presupuesto_estimado, 0) });
+      res.json({ success: true, proveedor_id: proveedorId, recomendaciones_matematicas: smartList, total_presupuesto_base: smartList.reduce((acc, curr) => acc + curr.presupuesto_estimado, 0) });
     } catch (e) {
       res.status(500).json({ success: false, error: e.message });
     }
