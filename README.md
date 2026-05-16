@@ -1,232 +1,202 @@
-# 📦 StockPilot — Sistema de Gestión de Inventario Inteligente
+# StockPilot — Sistema de Gestión de Inventario Inteligente
 
-Sistema integral de gestión de inventario para tiendas y microempresas colombianas, con módulo de Inteligencia Artificial para predicción de reabastecimiento, alertas logísticas inteligentes y analítica financiera en tiempo real.
+Sistema integral de gestión de inventario para tiendas y microempresas colombianas, con módulo de Inteligencia Artificial para predicción de reabastecimiento, alertas logísticas automáticas y analítica financiera en tiempo real.
+
+**Desplegado en producción:** [stockpilot.up.railway.app](https://stockpilot.up.railway.app) *(Railway — redeploy automático en cada push a `main`)*
 
 ---
 
-## 🏗️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 | Capa | Tecnología | Descripción |
 |:-----|:-----------|:------------|
-| **Frontend** | React 19 + Vite + TailwindCSS 4 | SPA con gráficas interactivas (Recharts) |
+| **Frontend** | React 19 + Vite + TailwindCSS | SPA con gráficas interactivas (Recharts) |
 | **Backend** | Node.js + Express 4 | API REST con arquitectura MVC |
-| **Base de Datos** | SQLite 3 | Base de datos embebida (cero configuración) |
-| **IA** | OpenAI GPT-4o-mini | Motor de sugerencias de reabastecimiento |
+| **Base de Datos** | PostgreSQL 16 (Railway) | Base de datos relacional en producción |
+| **IA** | OpenAI GPT-4o-mini | Motor de sugerencias de reabastecimiento y promociones |
+| **Email** | Resend | Envío de notificaciones y órdenes de compra |
+| **Sesiones** | connect-pg-simple | Sesiones persistidas en PostgreSQL |
 | **Testing** | Vitest + Playwright | Pruebas unitarias (lógica de negocio) + E2E |
 
 ```
 inventario-node/
 ├── app.js                    # Punto de entrada del servidor
-├── config/                   # Configuración de BD y correo
-├── controllers/              # Lógica de rutas (MVC)
-├── middleware/                # Autenticación, validación, rate limiting
-├── models/                   # Modelos de datos y Factory Method
+├── config/
+│   ├── database.js           # Pool de conexión PostgreSQL (pg)
+│   └── mailer.js             # Cliente Resend para emails
+├── controllers/              # Lógica de negocio (MVC)
+├── middleware/               # Auth, rate limiting, validación
+├── models/                   # Modelos de datos
 │   ├── Alert.js              # Motor matemático de alertas (ABC, ROP)
 │   ├── Product.js            # CRUD de productos
 │   └── products/             # Patrón Factory (Perecedero, Digital, etc.)
-├── routes/                   # Definición de endpoints REST
-├── services/                 # Tareas programadas (cron jobs)
+├── routes/                   # Endpoints REST
 ├── database/
-│   ├── init.sql              # Esquema de la base de datos
-│   ├── seed_test_data.js     # Datos de prueba (productos, ventas, etc.)
-│   └── migrate_*.js          # Scripts de migración incremental
+│   └── init_pg.sql           # Esquema PostgreSQL completo
 ├── frontend/                 # Aplicación React (SPA)
 │   ├── src/
 │   │   ├── pages/            # Vistas principales
 │   │   ├── components/       # Componentes reutilizables
-│   │   └── context/          # Estado global (AuthContext)
+│   │   └── context/          # Estado global (Auth, Toast, Sidebar)
 │   └── vite.config.js
-├── tests/
-│   └── business_logic/       # Suite de pruebas unitarias (124 escenarios)
-└── vitest.config.js          # Configuración de cobertura
+└── tests/
+    └── business_logic/       # Suite de pruebas unitarias
 ```
 
 ---
 
-## ⚙️ Requisitos Previos
+## Roles del Sistema
 
-Antes de empezar, asegúrate de tener instalado:
-
-| Herramienta | Versión Mínima | Verificar con |
-|:------------|:--------------:|:--------------|
-| **Node.js** | 18+ | `node -v` |
-| **npm** | 9+ | `npm -v` |
-| **Git** | 2+ | `git --version` |
-
-> **Nota:** SQLite viene embebido con el paquete `sqlite3` de npm. **No** necesitas instalar ninguna base de datos por separado.
+| Rol | Acceso |
+|:----|:-------|
+| **Administrador** | Dashboard, Ventas, Catálogo, Alertas, Mi Tienda, Movimientos, Proveedores AI, Analítica Visual, Simulador AI, Reportes, Auditoría AI, Aprendizaje AI, Colaboradores |
+| **Colaborador** | Dashboard, Ventas, Catálogo, Monitor Alertas, Mi Tienda |
 
 ---
 
-## 🚀 Guía de Instalación Local
+## Requisitos Previos (Desarrollo Local)
 
-### Paso 1 — Clonar el repositorio
+| Herramienta | Versión Mínima |
+|:------------|:--------------:|
+| **Node.js** | 18+ |
+| **npm** | 9+ |
+| **PostgreSQL** | 14+ |
+
+---
+
+## Instalación Local
+
+### 1 — Clonar el repositorio
 
 ```bash
 git clone <url-del-repositorio>
 cd inventario-node
 ```
 
-### Paso 2 — Configurar variables de entorno
+### 2 — Variables de entorno
 
-Copia el archivo de ejemplo y completa tus credenciales:
-
-```bash
-# Windows (PowerShell)
-copy .env.example .env
-
-# Linux / Mac
-cp .env.example .env
-```
-
-Abre `.env` con tu editor y rellena los valores:
+Crea un archivo `.env` en la raíz del proyecto:
 
 ```env
-SESSION_SECRET=una_frase_secreta_cualquiera
+# Servidor
 PORT=3000
-OPENAI_API_KEY=sk-tu_api_key_de_openai
-EMAIL_USER=tu_correo@gmail.com
-EMAIL_PASS=tu_contraseña_de_aplicacion
+SESSION_SECRET=una_frase_secreta_larga
+
+# PostgreSQL (local o remoto)
+DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/stockpilot
+
+# IA (opcional — sin ella el módulo de recomendaciones queda deshabilitado)
+OPENAI_API_KEY=sk-...
+
+# Email con Resend (opcional — sin él no se envían correos)
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=StockPilot <onboarding@resend.dev>
 ```
 
-> **💡 Tip:** Si no tienes API Key de OpenAI, el sistema funciona normalmente sin ella; solo el módulo de IA estará deshabilitado. El correo es opcional; sin él, las alertas semanales no se enviarán.
+> **Nota:** El sistema arranca sin `OPENAI_API_KEY` ni `RESEND_API_KEY`. Solo quedan deshabilitados el módulo de IA y el envío de emails respectivamente.
 
-### Paso 3 — Instalar dependencias del Backend
+### 3 — Inicializar la base de datos
+
+Crea la base de datos y ejecuta el esquema:
 
 ```bash
+# Crear la BD en PostgreSQL local
+psql -U postgres -c "CREATE DATABASE stockpilot;"
+
+# Aplicar el esquema completo
+psql -U postgres -d stockpilot -f database/init_pg.sql
+```
+
+### 4 — Instalar dependencias
+
+```bash
+# Backend
 npm install
+
+# Frontend
+cd frontend && npm install && cd ..
 ```
 
-### Paso 4 — Inicializar la Base de Datos y Migraciones
+### 5 — Ejecutar el proyecto
 
-La primera vez que ejecutes el proyecto, debes crear las tablas y aplicar las actualizaciones de esquema necesarias:
-
-```bash
-npm run migrate
-```
-
-Para poblar la base de datos con datos de prueba (productos, ventas, usuarios):
+Abre **dos terminales**:
 
 ```bash
-npm run seed
-```
-
-> **Importante:** El comando `migrate` asegura que tu base de datos local tenga todas las columnas y tablas necesarias (como Alertas o Historial de Precios) antes de arrancar.
-
-**Usuarios de prueba creados por el seed:**
-
-| Usuario | Contraseña | Rol |
-|:--------|:-----------|:----|
-| `admin1` | `admin123` | Administrador |
-| `carlos` | `1234` | Tendedero (Colaborador) |
-
-### Paso 5 — Instalar dependencias del Frontend
-
-```bash
-cd frontend
-npm install
-cd ..
-```
-
-### Paso 6 — Ejecutar el proyecto
-
-Necesitas **dos terminales** abiertas simultáneamente:
-
-**Terminal 1 — Backend (API REST):**
-```bash
+# Terminal 1 — Backend (http://localhost:3000)
 npm run dev
+
+# Terminal 2 — Frontend (http://localhost:5173)
+cd frontend && npm run dev
 ```
-> Esto levanta Express en `http://localhost:3000` con hot-reload (nodemon).
 
-**Terminal 2 — Frontend (React + Vite):**
-```bash
-cd frontend
-npm run dev
-```
-> Esto levanta Vite en `http://localhost:5173` con proxy automático al backend.
-
-### Paso 7 — Abrir en el navegador
-
-Ingresa a **[http://localhost:5173](http://localhost:5173)** e inicia sesión con alguno de los usuarios de prueba.
+Ingresa a **http://localhost:5173**.
 
 ---
 
-## 🧪 Ejecución de Pruebas
+## Usuarios de Prueba
 
-El proyecto cuenta con una suite de **124 escenarios** de pruebas unitarias enfocadas en la lógica de negocio, con **100% de cobertura** certificada.
+> Estos usuarios existen en el entorno de producción (Railway) para demo.
+
+| Usuario | Contraseña | Rol |
+|:--------|:-----------|:----|
+| `Carlos Admin` | *(consultar al autor)* | Administrador |
+| `María` | *(consultar al autor)* | Colaborador |
+
+---
+
+## Pruebas
 
 ```bash
 # Ejecutar todas las pruebas
 npm test
 
-# Ejecutar con reporte detallado (verbose)
+# Con reporte detallado
 npx vitest run --reporter=verbose
 
-# Generar reporte de cobertura de código (abre coverage/index.html)
+# Reporte de cobertura (genera coverage/index.html)
 npm run test:coverage
-
-# Dashboard visual de pruebas en el navegador
-npm run test:dashboard
 ```
 
-**Archivos de prueba** (en `tests/business_logic/`):
+**Suite de pruebas** (`tests/business_logic/`):
 
-| Archivo | Dominio que evalúa |
-|:--------|:-------------------|
+| Archivo | Dominio |
+|:--------|:--------|
 | `inventory_math.test.js` | Clasificación ABC, agotamiento, alertas logísticas |
 | `product_polymorphism.test.js` | Factory Method, herencia, validaciones por tipo |
-| `ai_feedback_metrics.test.js` | Precisión de IA, clamping, proyección de ventas |
+| `ai_feedback_metrics.test.js` | Precisión IA, clamping, proyección de ventas |
 | `dashboard_analytics.test.js` | Pérdidas por vencimiento, nivel de servicio, márgenes |
 | `input_sanitization.test.js` | Prevención XSS, validación de entidades |
 | `security_auth_rules.test.js` | RBAC, sesiones concurrentes, control de acceso |
 
 ---
 
-## 🌐 URLs de Acceso (Desarrollo)
+## Despliegue en Railway
 
-| Servicio | URL |
-|:---------|:----|
-| Frontend (UI) | [http://localhost:5173](http://localhost:5173) |
-| Backend API | [http://localhost:3000](http://localhost:3000) |
-| Cobertura (después de `test:coverage`) | Abrir `coverage/index.html` en el navegador |
+El proyecto usa despliegue continuo: cada `git push` a `main` redespliega automáticamente en Railway.
 
----
+**Variables de entorno requeridas en Railway:**
 
-## ⚠️ Solución de Problemas Comunes
-
-### ❌ `Error: EADDRINUSE: address already in use :::3000`
-El puerto 3000 ya está ocupado. Ciérralo con:
-```powershell
-# PowerShell (Windows)
-Stop-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess -Force
 ```
-
-### ❌ `npm install` falla con errores de `sqlite3` o `bcrypt`
-Estos paquetes requieren compilación nativa. Asegúrate de tener las build tools:
-```bash
-# Windows: Instalar desde PowerShell con permisos de administrador
-npm install --global windows-build-tools
-```
-
-### ❌ El frontend no conecta con el backend (Error de red / CORS)
-Verifica que:
-1. El backend esté corriendo en el puerto **3000** (no otro).
-2. El frontend esté corriendo en el puerto **5173**.
-3. El archivo `frontend/vite.config.js` tenga el proxy configurado apuntando a `http://localhost:3000`.
-
-### ❌ La base de datos está vacía después de clonar
-Ejecuta el seed:
-```bash
-npm run seed
+DATABASE_URL        → provista automáticamente por el plugin de PostgreSQL
+SESSION_SECRET      → frase secreta para sesiones
+OPENAI_API_KEY      → clave de OpenAI
+RESEND_API_KEY      → clave de Resend
+RESEND_FROM_EMAIL   → StockPilot <onboarding@resend.dev>
 ```
 
 ---
 
-## 📄 Documentación Adicional
+## Solución de Problemas
 
-- `StockPilot_Documentacion_Completa.md` — Documentación técnica exhaustiva del sistema.
-- `Reporte_Pruebas_StockPilot.md` — Certificado de calidad con trazabilidad de los 124 escenarios.
-- `coverage/index.html` — Reporte interactivo de cobertura de código (generado con `npm run test:coverage`).
+### El frontend no conecta con el backend
+Verifica que el backend corra en el puerto **3000** y el frontend en **5173**. El proxy de Vite (`vite.config.js`) redirige `/api/*` automáticamente.
+
+### Error de conexión a PostgreSQL
+Verifica que `DATABASE_URL` tenga el formato correcto: `postgresql://user:pass@host:port/dbname`.
+
+### El módulo de IA no responde
+Confirma que `OPENAI_API_KEY` esté definida en `.env`. Sin ella, el endpoint devuelve un mensaje de error controlado y el resto del sistema funciona con normalidad.
 
 ---
 
-*Desarrollado como proyecto de grado — Práctica de Ingeniería de Software.*
+*Desarrollado como proyecto de grado — Ingeniería de Software.*
