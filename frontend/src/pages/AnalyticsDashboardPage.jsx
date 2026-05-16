@@ -53,6 +53,7 @@ const AnalyticsDashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [priceTrend, setPriceTrend] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,7 +78,7 @@ const AnalyticsDashboardPage = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [refreshKey]);
 
   // === DATA TRANSFORMS ===
   const paretoData = useMemo(() => {
@@ -451,11 +452,18 @@ const AnalyticsDashboardPage = () => {
                 <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Ritmo de Caja Semanal</h3>
                 <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mt-1">Ventas Consolidadas — Últimos 7 Días</p>
               </div>
-              <div className="text-left sm:text-right">
+              <div className="text-left sm:text-right flex flex-col items-end gap-2">
                 <p className="text-2xl font-black text-white tracking-tighter italic">
                   ${(stats?.ventasSemanales?.reduce((s, d) => s + d.total, 0) || 0).toLocaleString()}
                 </p>
                 <p className="text-[9px] text-indigo-400 font-bold uppercase tracking-widest">total semanal</p>
+                <button
+                  onClick={() => setRefreshKey(k => k + 1)}
+                  disabled={loading}
+                  className="text-[9px] font-bold uppercase tracking-widest text-indigo-300 hover:text-white border border-indigo-700 hover:border-indigo-400 px-3 py-1 rounded-full transition-all disabled:opacity-40"
+                >
+                  {loading ? 'Actualizando…' : '↻ Actualizar'}
+                </button>
               </div>
             </div>
           </div>

@@ -30,27 +30,29 @@ class DashboardController {
             const ventasQuery = `SELECT SUM(precio_total) as ventas FROM Ventas WHERE id_tienda = ?`;
             const ventas = await db.getAsync(ventasQuery, [tiendaId]);
 
-            // 5. Array 7 Días (Gráfica)
+            // 5. Array 7 Días (Gráfica) — generate_series garantiza los 7 días sin depender de fechas de Node.js
             const ventasSemanalesQuery = `
-              SELECT fecha_salida::date as fecha, SUM(precio_total) as total 
-              FROM Ventas 
-              WHERE id_tienda = ? AND fecha_salida >= CURRENT_DATE - INTERVAL '6 days'
-              GROUP BY fecha_salida::date
-              ORDER BY fecha ASC
+              SELECT
+                to_char(day, 'Dy') as dia_en,
+                EXTRACT(DOW FROM day)::int as dow,
+                COALESCE(SUM(v.precio_total), 0) as total
+              FROM generate_series(
+                CURRENT_DATE - INTERVAL '6 days',
+                CURRENT_DATE,
+                INTERVAL '1 day'
+              ) AS day
+              LEFT JOIN Ventas v
+                ON v.fecha_salida::date = day
+                AND v.id_tienda = ?
+              GROUP BY day
+              ORDER BY day ASC
             `;
             const ventasData = await db.allAsync(ventasSemanalesQuery, [tiendaId]) || [];
-            const ultimos7Dias = [];
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const fechaStr = d.toISOString().split('T')[0];
-                const dataFech = ventasData.find(v => v.fecha === fechaStr);
-                const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-                ultimos7Dias.push({
-                    dia: diasSemana[d.getDay()],
-                    total: dataFech ? Number(dataFech.total) : 0
-                });
-            }
+            const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const ultimos7Dias = ventasData.map(row => ({
+                dia: diasSemana[Number(row.dow)],
+                total: Number(row.total)
+            }));
 
             res.json({
                 totalArticulos: articulos.total || 0,
