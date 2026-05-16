@@ -237,11 +237,11 @@ const DashboardPage = () => {
         </section>
 
         {/* Estado del Inventario */}
-        <section className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 flex flex-col">
+        <section className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 self-start">
           <h2 className="text-slate-800 font-black text-xs uppercase tracking-[0.3em] mb-8 border-b border-slate-50 pb-4">
             🚨 Estado del Inventario
           </h2>
-          <div className="space-y-6 flex-grow">
+          <div className="space-y-6">
             <div 
               onClick={() => navigate('/alertas')}
               className={`p-6 rounded-[1.5rem] transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${stats.alertasCriticas > 0 ? 'bg-rose-50 border border-rose-100 shadow-xl shadow-rose-100/50 hover:shadow-rose-200/50' : (stats.alertasAdvertencia > 0 ? 'bg-amber-50 border border-amber-100 shadow-xl shadow-amber-100/50' : 'bg-emerald-50 border border-emerald-100 hover:shadow-lg')}`}
