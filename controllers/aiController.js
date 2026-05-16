@@ -39,9 +39,29 @@ const logToAuditFile = (tiendaId, ordenId, razon, impacto) => {
  * @property {Date} timestamp - Fecha y hora de la última actualización del caché.
  */
 
-// Caché avanzada v3 (Independizado por Tienda para evitar fugas de datos)
-/** @type {Object.<number, AICacheEntry>} */
-let aiCache_v3 = {}; 
+// Caché en memoria (rápido, se pierde en reinicios)
+/** @type {Object.<string, AICacheEntry>} */
+let aiCache_v3 = {};
+
+// Helpers para caché persistente en PostgreSQL
+const dbCacheGet = async (clave, currentHash) => {
+  try {
+    const row = await db.getAsync('SELECT datos_json, data_hash FROM Cache_IA WHERE clave = ?', [clave]);
+    if (row && row.data_hash === currentHash) return JSON.parse(row.datos_json);
+  } catch (_) {}
+  return null;
+};
+
+const dbCacheSet = async (clave, currentHash, datos) => {
+  try {
+    await db.runAsync(
+      `INSERT INTO Cache_IA (clave, data_hash, datos_json, actualizado_at)
+       VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT (clave) DO UPDATE SET data_hash = EXCLUDED.data_hash, datos_json = EXCLUDED.datos_json, actualizado_at = CURRENT_TIMESTAMP`,
+      [clave, currentHash, JSON.stringify(datos)]
+    );
+  } catch (_) {}
+};
 
 /**
  * AI Controller
@@ -106,11 +126,16 @@ const aiController = {
       const dataString = JSON.stringify(rows);
       const currentHash = crypto.createHash('md5').update(dataString).digest('hex');
 
-      // Verificar caché específico de la tienda
+      // 1. Memoria (instantáneo)
       const tiendaCache = aiCache_v3[tiendaId];
       if (tiendaCache && tiendaCache.dataHash === currentHash) {
-        console.log(`--- AUDITOR [Tienda ${tiendaId}]: DATOS SIN CAMBIOS. SIRVIENDO CACHÉ ---`);
         return res.json({ cached: true, recommendations: tiendaCache.recommendations });
+      }
+      // 2. BD (sobrevive reinicios de Railway — evita llamada a OpenAI si los datos no cambiaron)
+      const dbCached = await dbCacheGet(`RECS_${tiendaId}`, currentHash);
+      if (dbCached) {
+        aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: dbCached, timestamp: new Date() };
+        return res.json({ cached: true, recommendations: dbCached });
       }
 
       console.log('--- AUDITOR: DETECTADO CAMBIO EN INVENTARIO. RECALCULANDO IA ---');
@@ -227,12 +252,9 @@ const aiController = {
         console.error('⚠️ Auditoría IA omitida:', auditErr.message);
       }
 
-      // 6. Actualizar Caché por tienda
-      aiCache_v3[tiendaId] = { 
-        dataHash: currentHash, 
-        recommendations: finalRecommendations, 
-        timestamp: new Date() 
-      };
+      // 6. Guardar en memoria y en BD (persiste entre reinicios)
+      aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: finalRecommendations, timestamp: new Date() };
+      dbCacheSet(`RECS_${tiendaId}`, currentHash, finalRecommendations);
 
       res.json({ cached: false, recommendations: finalRecommendations });
 
@@ -398,6 +420,11 @@ const aiController = {
       if (aiCache_v3[cacheKey] && aiCache_v3[cacheKey].dataHash === currentHash) {
         return res.json({ cached: true, promotions: aiCache_v3[cacheKey].recommendations });
       }
+      const dbCachedPromo = await dbCacheGet(cacheKey, currentHash);
+      if (dbCachedPromo) {
+        aiCache_v3[cacheKey] = { dataHash: currentHash, recommendations: dbCachedPromo, timestamp: new Date() };
+        return res.json({ cached: true, promotions: dbCachedPromo });
+      }
 
       // 4. Prompt de Estrategia Comercial
       const completion = await openai.chat.completions.create({
@@ -454,8 +481,9 @@ const aiController = {
         };
       }).filter(p => p !== null);
 
-      // 5. Auditar y Cachear
+      // 5. Guardar en memoria y BD
       aiCache_v3[cacheKey] = { dataHash: currentHash, recommendations: promotions, timestamp: new Date() };
+      dbCacheSet(cacheKey, currentHash, promotions);
 
       // Registrar en BD (Auditoria_IA)
       try {

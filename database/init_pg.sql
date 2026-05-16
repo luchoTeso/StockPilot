@@ -217,7 +217,15 @@ CREATE TABLE IF NOT EXISTS reportes (
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 15. TABLA SESIONES (connect-pg-simple)
+-- 15. CACHÉ IA PERSISTENTE (sobrevive reinicios de Railway)
+CREATE TABLE IF NOT EXISTS Cache_IA (
+    clave VARCHAR(64) PRIMARY KEY,
+    data_hash VARCHAR(32) NOT NULL,
+    datos_json TEXT NOT NULL,
+    actualizado_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 16. TABLA SESIONES (connect-pg-simple)
 CREATE TABLE IF NOT EXISTS "session" (
   "sid" varchar NOT NULL COLLATE "default" PRIMARY KEY,
   "sess" json NOT NULL,

@@ -30,42 +30,41 @@ const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
 
   const fetchDashboardData = async () => {
+    // --- Fase 0: caché local para respuesta instantánea ---
+    const cachedStats = localStorage.getItem(`stockpilot_stats_${storeKey}`);
+    const cachedPromos = localStorage.getItem(`stockpilot_promos_${storeKey}`);
+    const cachedRecs = localStorage.getItem(`stockpilot_recs_${storeKey}`);
+
+    if (cachedStats) { setStats(JSON.parse(cachedStats)); setLoading(false); }
+    if (cachedRecs) setRecommendations(JSON.parse(cachedRecs));
+    if (cachedPromos) { setPromotions(JSON.parse(cachedPromos)); setLoadingPromos(false); }
+
+    // --- Fase 1: stats SQL puros (~100–200ms), quita el spinner de inmediato ---
     try {
-      // 0. Caché aislado por tienda para evitar filtración de datos entre negocios
-      const cachedStats = localStorage.getItem(`stockpilot_stats_${storeKey}`);
-      const cachedPromos = localStorage.getItem(`stockpilot_promos_${storeKey}`);
-      const cachedRecs = localStorage.getItem(`stockpilot_recs_${storeKey}`);
+      const statsRes = await axios.get('/api/dashboard/stats');
+      setStats(statsRes.data);
+      setLoading(false);
+      localStorage.setItem(`stockpilot_stats_${storeKey}`, JSON.stringify(statsRes.data));
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setLoading(false);
+    }
 
-      if (cachedStats) setStats(JSON.parse(cachedStats));
-      if (cachedPromos) setPromotions(JSON.parse(cachedPromos));
-      if (cachedRecs) setRecommendations(JSON.parse(cachedRecs));
-
-      // Si hay caché de esta tienda, quitamos el loading para respuesta inmediata
-      if (cachedStats || cachedPromos) {
-        setLoading(false);
-        setLoadingPromos(false);
-      }
-
-      const [statsRes, aiRes, promoRes] = await Promise.all([
-        axios.get('/api/dashboard/stats'),
+    // --- Fase 2: IA en background, no bloquea las tarjetas de stats ---
+    try {
+      const [aiRes, promoRes] = await Promise.all([
         axios.get('/api/ia/recommendations'),
         axios.get('/api/ia/promotions').catch(() => ({ data: { promotions: [] } }))
       ]);
-
-      // Guardar en caché con clave de tienda
-      setStats(statsRes.data);
-      localStorage.setItem(`stockpilot_stats_${storeKey}`, JSON.stringify(statsRes.data));
 
       setRecommendations(aiRes.data.recommendations || []);
       localStorage.setItem(`stockpilot_recs_${storeKey}`, JSON.stringify(aiRes.data.recommendations || []));
 
       setPromotions(promoRes.data.promotions || []);
       localStorage.setItem(`stockpilot_promos_${storeKey}`, JSON.stringify(promoRes.data.promotions || []));
-
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('Error fetching AI data:', error);
     } finally {
-      setLoading(false);
       setLoadingPromos(false);
     }
   };
