@@ -10,10 +10,6 @@ const TiendasPage = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal Confirmación Cambio Estado
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-
   // Modal Edición Tienda
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
@@ -44,29 +40,6 @@ const TiendasPage = () => {
   useEffect(() => {
     cargarTienda();
   }, []);
-
-  const abrirModalConfirmacion = () => {
-    setConfirmModalOpen(true);
-  };
-
-  const submitCambiarEstadoTienda = async () => {
-    setConfirmLoading(true);
-    try {
-      const resp = await axios.put(`/api/tienda/estado/${tienda.id_tienda}`);
-      if (resp.data.success || resp.data.message) {
-        toast.success(resp.data.message || 'Estado cambiado exitosamente');
-        // Update local state dynamically
-        const nuevoEstado = resp.data.nuevoEstado || (tienda.estado === 'Activa' || tienda.estado === 'Activo' ? 'Inactiva' : 'Activo');
-        setTienda((prev) => ({ ...prev, estado: nuevoEstado }));
-        setConfirmModalOpen(false);
-      }
-    } catch (err) {
-      console.error('Error cambiando estado tienda:', err);
-      toast.error(err.response?.data?.error || 'Error al cambiar el estado de la tienda');
-    } finally {
-      setConfirmLoading(false);
-    }
-  };
 
   const abrirModalEdit = () => {
     setFormData({
@@ -111,8 +84,6 @@ const TiendasPage = () => {
     }
     return new Date(fechaStr).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
   };
-
-  const isActivo = tienda && (tienda.estado === 'Activa' || tienda.estado === 'Activo');
 
   return (
     <div className="animate-fade-in pb-12 font-outfit">
@@ -170,12 +141,6 @@ const TiendasPage = () => {
                       onClick={abrirModalEdit}
                     >
                       <span>✏️</span> EDITAR PERFIL
-                    </button>
-                    <button 
-                      className={`flex-1 md:flex-none flex items-center justify-center gap-2 p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 border ${isActivo ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 hover:border-rose-300' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300'}`}
-                      onClick={abrirModalConfirmacion}
-                    >
-                      {isActivo ? '⏸️ INACTIVAR SUCURSAL' : '✅ REACTIVAR SUCURSAL'}
                     </button>
                   </div>
                 )}
@@ -282,47 +247,6 @@ const TiendasPage = () => {
                 ))}
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Modal Confirmación Cambio Estado Tienda */}
-      {confirmModalOpen && tienda && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in font-outfit">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-[400px] shadow-2xl overflow-hidden transform animate-scale-in border border-white">
-            <div className={`p-8 text-center border-b ${isActivo ? 'border-amber-100 bg-amber-50' : 'border-emerald-100 bg-emerald-50'}`}>
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg ${isActivo ? 'bg-amber-100 text-amber-600 shadow-amber-200' : 'bg-emerald-100 text-emerald-600 shadow-emerald-200'}`}>
-                 {isActivo ? '⏸️' : '✅'}
-              </div>
-              <h3 className={`text-2xl font-black tracking-tighter italic uppercase ${isActivo ? 'text-amber-600' : 'text-emerald-600'}`}>
-                {isActivo ? 'Inactivar Sucursal' : 'Reactivar Sucursal'}
-              </h3>
-            </div>
-            
-            <div className="p-8">
-              <p className="text-slate-500 text-center font-medium mb-6">
-                ¿Estás seguro que deseas <strong className="text-slate-800 font-black">{isActivo ? 'congelar/inactivar' : 'reanudar/activar'}</strong> las operaciones corporativas de la siguiente tienda?
-              </p>
-              
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center shadow-inner mb-8">
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Nombre Comercial</p>
-                 <p className="text-indigo-600 font-black text-xl italic">{tienda.nombre_establecimiento}</p>
-              </div>
-
-              <div className="flex gap-4">
-                <button type="button" onClick={() => setConfirmModalOpen(false)} className="flex-1 px-4 py-4 rounded-2xl text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] bg-slate-100 hover:bg-slate-200 transition-colors">
-                  Cancelar Operación
-                </button>
-                <button 
-                  type="button" 
-                  onClick={submitCambiarEstadoTienda} 
-                  disabled={confirmLoading} 
-                  className={`flex-1 px-4 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 disabled:opacity-50 ${isActivo ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'}`}
-                >
-                  {confirmLoading ? 'PROCESANDO...' : 'CONFIRMAR ACCIÓN'}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}

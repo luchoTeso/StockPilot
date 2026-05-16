@@ -20,9 +20,8 @@ class DashboardController {
             `;
             const valorRecord = await db.getAsync(valorQuery, [tiendaId]);
 
-            // 3. Alertas Stock — se regeneran en background para no bloquear la carga del dashboard
+            // 3. Alertas Stock — solo leer, las alertas se regeneran al registrar ventas
             const Alert = require('../models/Alert');
-            Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas en dashboard:', e));
             const alertasStats = await Alert.getStats(tiendaId);
 
             // 4. Ventas de hoy y del mes (filtradas por fecha en PostgreSQL)
