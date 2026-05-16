@@ -1,274 +1,421 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [scrolled, setScrolled] = useState(false);
+  const [visibleSections, setVisibleSections] = useState(new Set());
+  const observerRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setVisibleSections(prev => new Set([...prev, entry.target.dataset.section]));
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    document.querySelectorAll('[data-section]').forEach(el => observerRef.current.observe(el));
+    return () => observerRef.current?.disconnect();
+  }, []);
+
+  const isVisible = (id) => visibleSections.has(id);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-outfit overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+    <div style={{
+      fontFamily: "'Outfit', 'Inter Tight', system-ui, sans-serif",
+      background: '#0f172a',
+      color: '#f8fafc',
+      overflowX: 'hidden',
+      minHeight: '100vh',
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap');
 
-      {/* NAVEGADOR */}
-      <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-default">
-            <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center text-xl shadow-lg shadow-slate-200">🏪</div>
-            <span className="text-xl font-black tracking-tighter italic text-slate-800 uppercase">StockPilot</span>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition: opacity 0.65s cubic-bezier(.22,1,.36,1), transform 0.65s cubic-bezier(.22,1,.36,1);
+        }
+        .reveal.visible {
+          opacity: 1;
+          transform: none;
+        }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+
+        .nav-blur {
+          background: rgba(15,23,42,0.0);
+          backdrop-filter: none;
+          transition: background 0.3s, backdrop-filter 0.3s, border-color 0.3s;
+          border-bottom: 1px solid transparent;
+        }
+        .nav-blur.scrolled {
+          background: rgba(15,23,42,0.85);
+          backdrop-filter: blur(16px);
+          border-bottom: 1px solid rgba(99,102,241,0.15);
+        }
+
+        .hero-glow {
+          position: absolute;
+          border-radius: 50%;
+          pointer-events: none;
+          filter: blur(90px);
+        }
+
+        .stat-card {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 20px;
+          padding: 28px 24px;
+          transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        }
+        .stat-card:hover {
+          background: rgba(255,255,255,0.07);
+          border-color: rgba(99,102,241,0.3);
+          transform: translateY(-3px);
+        }
+
+        .feature-card {
+          background: #1e293b;
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 24px;
+          padding: 36px 32px;
+          transition: border-color 0.25s, transform 0.25s;
+        }
+        .feature-card:hover {
+          border-color: rgba(99,102,241,0.4);
+          transform: translateY(-4px);
+        }
+
+        .btn-primary {
+          background: #6366f1;
+          color: #fff;
+          border: none;
+          border-radius: 14px;
+          padding: 16px 32px;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background 0.2s, transform 0.15s;
+          font-family: inherit;
+        }
+        .btn-primary:hover { background: #5254cc; }
+        .btn-primary:active { transform: scale(0.97); }
+
+        .btn-ghost {
+          background: rgba(255,255,255,0.05);
+          color: #cbd5e1;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          padding: 16px 32px;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background 0.2s;
+          font-family: inherit;
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.09); }
+
+        .module-chip {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 16px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #94a3b8;
+          transition: border-color 0.2s, color 0.2s;
+        }
+        .module-chip:hover { border-color: rgba(99,102,241,0.3); color: #c7d2fe; }
+
+        .light-section {
+          background: #f8fafc;
+          color: #0f172a;
+        }
+        .light-section .section-label { color: #6366f1; }
+        .light-section .section-title { color: #0f172a; }
+        .light-section .section-sub { color: #64748b; }
+
+        .cred-card {
+          background: #1e293b;
+          border: 1px solid rgba(99,102,241,0.2);
+          border-radius: 20px;
+          padding: 28px;
+        }
+
+        .pulse-dot {
+          width: 8px; height: 8px;
+          background: #10b981;
+          border-radius: 50%;
+          animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+          50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+        }
+
+        .mockup-bar { width: 100%; height: 36px; background: #1e293b; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; padding: 0 16px; gap: 8px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        @media (max-width: 768px) {
+          .hero-btns { flex-direction: column; }
+          .stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .demo-grid { grid-template-columns: 1fr !important; }
+          .hero-title { font-size: clamp(36px, 10vw, 64px) !important; }
+        }
+      `}</style>
+
+      {/* NAV */}
+      <nav className={`nav-blur${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: '0 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 36, height: 36, background: '#6366f1', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🏪</div>
+            <span style={{ fontWeight: 900, fontSize: 15, letterSpacing: '-0.02em', fontStyle: 'italic', textTransform: 'uppercase', color: '#f8fafc' }}>StockPilot</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/login')} className="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 px-4 py-2 transition-colors">
-              Iniciar Sesión
-            </button>
-            <button onClick={() => navigate('/register')} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 transition-all active:scale-95">
-              Probar Ahora
-            </button>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button className="btn-ghost" style={{ padding: '10px 20px' }} onClick={() => navigate('/login')}>Iniciar sesión</button>
+            <button className="btn-primary" style={{ padding: '10px 20px' }} onClick={() => navigate('/register')}>Probar ahora</button>
           </div>
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="relative pt-40 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        <div className="absolute top-20 left-[-10%] w-[40%] h-[60%] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-rose-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+      <section style={{ position: 'relative', paddingTop: 160, paddingBottom: 100, textAlign: 'center', overflow: 'hidden' }}>
+        <div className="hero-glow" style={{ width: 500, height: 400, background: 'rgba(99,102,241,0.15)', top: -80, left: '50%', transform: 'translateX(-50%)' }} />
+        <div className="hero-glow" style={{ width: 300, height: 300, background: 'rgba(167,139,250,0.08)', top: 200, right: '10%' }} />
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center animate-fade-in origin-top">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] mb-8">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-            </span>
-            StockPilot 2026 — Prototipo Funcional v3.0
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 100, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 32 }}>
+            <div className="pulse-dot" />
+            <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a5b4fc' }}>Desplegado en Railway · v3.0</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black text-slate-800 tracking-tighter leading-tight mb-8">
-            El sistema operativo para <br className="hidden md:block"/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-500 italic pr-4">
-              tu inventario inteligente
-            </span>
+          <h1 className="hero-title" style={{ fontSize: 'clamp(42px, 7vw, 80px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 24 }}>
+            El sistema operativo<br />
+            <span style={{ color: '#818cf8' }}>para tu inventario</span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-lg md:text-xl text-slate-500 font-medium mb-10 leading-relaxed">
-            Abandona las hojas de cálculo caóticas. StockPilot te ofrece control de inventario en tiempo real, predicciones impulsadas por IA y analítica financiera para tu negocio.
+          <p style={{ fontSize: 18, color: '#94a3b8', fontWeight: 500, maxWidth: 580, margin: '0 auto 40px', lineHeight: 1.65 }}>
+            Control de inventario en tiempo real, predicciones con IA y analítica financiera. Diseñado para microempresas de víveres en Bogotá.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button onClick={() => navigate('/register')} className="w-full sm:w-auto px-8 py-5 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95">
-              Registrar mi Tienda
-            </button>
-            <button onClick={() => document.getElementById('demo').scrollIntoView({ behavior: 'smooth' })} className="w-full sm:w-auto px-8 py-5 bg-white text-slate-700 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-95">
-              Explorar Demo &rarr;
-            </button>
+          <div className="hero-btns" style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <button className="btn-primary" onClick={() => navigate('/register')}>Registrar mi tienda →</button>
+            <button className="btn-ghost" onClick={() => document.getElementById('demo').scrollIntoView({ behavior: 'smooth' })}>Explorar demo</button>
           </div>
         </div>
 
-        {/* Mockup */}
-        <div className="max-w-5xl mx-auto mt-20 px-6 animate-scale-in" style={{ animationDelay: '0.2s' }}>
-          <div className="relative rounded-[2.5rem] p-2 bg-gradient-to-b from-indigo-100 to-white shadow-[0_20px_50px_-12px_rgba(99,102,241,0.2)] group transition-all duration-700 hover:shadow-[0_30px_60px_-15px_rgba(99,102,241,0.4)] hover:-translate-y-2">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-[2.5rem] blur opacity-30 group-hover:opacity-60 transition-opacity duration-1000"></div>
-            <div className="relative bg-[#f8fafc] rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner flex flex-col h-[480px]">
-              <div className="h-12 bg-white border-b border-slate-100 flex items-center px-6 gap-3 shrink-0">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-rose-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-                </div>
-                <div className="ml-4 px-4 py-1.5 bg-slate-50/80 rounded-lg text-[10px] text-slate-500 font-bold w-full max-w-sm border border-slate-100 flex items-center gap-2">
-                  <span className="opacity-50">🔒</span> stockpilot.up.railway.app/dashboard
-                </div>
-              </div>
-              <div className="flex-1 flex overflow-hidden">
-                <div className="w-48 bg-white border-r border-slate-100 p-4 hidden sm:flex flex-col gap-1 shrink-0">
-                  <div className="flex items-center gap-2 mb-6 px-2">
-                    <span className="text-indigo-600 text-lg">🏪</span>
-                    <span className="font-black italic text-slate-800 tracking-tighter text-xs uppercase">StockPilot</span>
-                  </div>
-                  <div className="px-3 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm"><span>📊</span> Vista General</div>
-                  <div className="px-3 py-2 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><span>📦</span> Catálogo</div>
-                  <div className="px-3 py-2 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><span>💰</span> Ventas</div>
-                  <div className="px-3 py-2 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><span>🤖</span> Proveedores AI</div>
-                  <div className="px-3 py-2 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mt-auto border-t border-slate-50 pt-4"><span>👤</span> Mi Perfil</div>
-                </div>
-                <div className="flex-1 p-6 flex flex-col gap-6 overflow-hidden bg-slate-50/50">
-                  <div className="grid grid-cols-3 gap-4 shrink-0">
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
-                        <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-sm shadow-inner">💰</div>
-                        <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">+14.5%</span>
-                      </div>
-                      <div className="mt-2">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Ventas Mensuales</p>
-                        <p className="text-lg font-black tracking-tighter text-slate-800">$45,250</p>
-                      </div>
-                    </div>
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-full -z-0"></div>
-                      <div className="flex justify-between items-start relative z-10">
-                        <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center text-sm shadow-inner">🤖</div>
-                        <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">Activo</span>
-                      </div>
-                      <div className="mt-2 relative z-10">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Copiloto IA</p>
-                        <p className="text-lg font-black tracking-tighter text-indigo-600">3 Órdenes</p>
-                      </div>
-                    </div>
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
-                        <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-sm shadow-inner">🚨</div>
-                        <span className="text-[8px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">Urgente</span>
-                      </div>
-                      <div className="mt-2">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Stock Crítico</p>
-                        <p className="text-lg font-black tracking-tighter text-rose-600">12 Ítems</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
-                    <div className="flex justify-between items-center mb-6 shrink-0">
-                      <div>
-                        <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Flujo de Inventario vs Ventas</h4>
-                        <p className="text-[8px] font-bold text-slate-400 tracking-widest mt-0.5">Proyección últimos 7 días</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-indigo-500"></div><span className="text-[8px] font-black text-slate-400 uppercase">Proyección IA</span></div>
-                        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-slate-200"></div><span className="text-[8px] font-black text-slate-400 uppercase">Real</span></div>
-                      </div>
-                    </div>
-                    <div className="flex-1 flex items-end gap-1 sm:gap-2 px-2 relative z-10 min-h-0 border-b border-slate-100/50 pb-2">
-                      {[30, 45, 25, 60, 40, 75, 50, 85, 65, 95, 80, 100].map((height, i) => (
-                        <div key={i} className="flex-1 flex justify-center items-end h-full gap-[1px]">
-                          <div className="w-full h-full flex items-end opacity-60"><div className="w-full rounded-t-[2px] bg-slate-200" style={{ height: `${height * 0.7}%` }}></div></div>
-                          <div className="w-full h-full flex items-end"><div className="w-full rounded-t-[2px] bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.4)]" style={{ height: `${height}%` }}></div></div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-3 shrink-0 flex flex-col gap-2">
-                      <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 bg-slate-200 rounded-lg flex items-center justify-center text-[10px]">📦</div>
-                          <div>
-                            <div className="text-[9px] font-black text-slate-700 uppercase">Bebida Energizan...</div>
-                            <div className="text-[8px] font-bold text-slate-400">Restock Sugerido: 50ud</div>
-                          </div>
-                        </div>
-                        <div className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-100">Aprobar Orden</div>
-                      </div>
-                      <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 bg-slate-200 rounded-lg flex items-center justify-center text-[10px]">📦</div>
-                          <div>
-                            <div className="text-[9px] font-black text-slate-700 uppercase">Leche Deslactos...</div>
-                            <div className="text-[8px] font-bold text-slate-400">Alerta de Vencimiento Cercano</div>
-                          </div>
-                        </div>
-                        <div className="text-[9px] font-black text-rose-600 bg-rose-50 px-2 py-1 rounded-md border border-rose-100">Revisar Stock</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        {/* Dashboard Mockup */}
+        <div style={{ maxWidth: 900, margin: '72px auto 0', padding: '0 24px', position: 'relative', zIndex: 1 }}>
+          <div style={{ background: '#1e293b', borderRadius: 24, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+            <div className="mockup-bar">
+              <div className="dot" style={{ background: '#f87171' }} />
+              <div className="dot" style={{ background: '#fbbf24' }} />
+              <div className="dot" style={{ background: '#34d399' }} />
+              <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 6, height: 20, marginLeft: 12, display: 'flex', alignItems: 'center', paddingLeft: 12 }}>
+                <span style={{ fontSize: 10, color: '#475569', fontWeight: 700 }}>🔒 stockpilot.up.railway.app/dashboard</span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* MÉTRICAS */}
-      <section className="py-20 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)' }}>
-        <div className="absolute top-0 left-[20%] w-[300px] h-[300px] bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none"></div>
-        <div className="absolute bottom-0 right-[20%] w-[300px] h-[300px] bg-purple-500/10 blur-[100px] rounded-full pointer-events-none"></div>
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-16">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 mb-4">Eficiencia Comprobada</p>
-            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter">El retorno que tu negocio necesita</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            <StatCard number="90%" label="Precisión IA" sublabel="En predicción de quiebres" />
-            <StatCard number="25%" label="Más Rentable" sublabel="Eliminando merma excedente" />
-            <StatCard number="24/7" label="Control Auditado" sublabel="Trazabilidad total de IA" />
-            <StatCard number="3x" label="ROI Garantizado" sublabel="Retorno primer trimestre" />
-          </div>
-        </div>
-      </section>
-
-      {/* ACCESO AL DEMO */}
-      <section id="demo" className="py-24 bg-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-50/80 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] mb-6">
-              🔬 Prototipo Funcional — v3.0
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-800 tracking-tighter italic uppercase mb-6">
-              Acceso al Demo
-            </h2>
-            <p className="max-w-xl mx-auto text-slate-500 font-bold">
-              Sistema desplegado y operativo en Railway. Explora cada módulo con las credenciales de prueba o registra tu propia tienda.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 items-start">
-            {/* Tarjeta principal */}
-            <div className="md:col-span-2 bg-slate-900 p-8 rounded-[2.5rem] border border-indigo-500/30 shadow-2xl shadow-indigo-500/10">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-lg shadow-indigo-500/30">🚀</div>
-                <div>
-                  <h3 className="text-white font-black text-lg uppercase italic tracking-tighter">Todo incluido</h3>
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Módulos disponibles ahora mismo</p>
+            <div style={{ display: 'flex', height: 380 }}>
+              {/* Sidebar */}
+              <div style={{ width: 180, background: '#0f172a', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '0 8px' }}>
+                  <span style={{ fontSize: 16 }}>🏪</span>
+                  <span style={{ fontWeight: 900, fontSize: 11, letterSpacing: '-0.01em', fontStyle: 'italic', textTransform: 'uppercase' }}>StockPilot</span>
                 </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-                {[
-                  '📊 Dashboard con analítica en tiempo real',
-                  '🤖 Copiloto IA (GPT-4o-mini)',
-                  '🚨 Motor de alertas automático (ROP)',
-                  '🚚 Gestión de proveedores con órdenes',
-                  '💰 POS y registro de ventas',
-                  '📑 Reportes exportables',
-                  '📦 Catálogo con tipos de producto',
-                  '🔍 Auditoría de decisiones IA',
-                  '🧪 Simulador de escenarios financieros',
-                  '👥 Roles Administrador / Colaborador',
-                ].map((f, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[9px] font-black">✓</span>
-                    <span className="text-slate-300 text-[11px] font-bold leading-snug">{f}</span>
+                {[['📊','Vista General', true], ['💰','Ventas', false], ['📦','Catálogo', false], ['🚨','Monitor Alertas', false], ['🔧','Proveedores', false]].map(([ico, label, active]) => (
+                  <div key={label} style={{ padding: '9px 12px', borderRadius: 10, background: active ? '#6366f1' : 'transparent', color: active ? '#fff' : '#64748b', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>{ico}</span>{label}
                   </div>
                 ))}
               </div>
-              <button onClick={() => navigate('/register')} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:-translate-y-1 shadow-lg shadow-indigo-500/20">
-                Registrar mi tienda →
-              </button>
-            </div>
-
-            {/* Columna derecha */}
-            <div className="flex flex-col gap-5">
-              {/* Credenciales */}
-              <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-6">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-5">🔑 Credenciales Demo</p>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1.5">Administrador</p>
-                    <p className="text-xs font-bold text-slate-700">Usuario: <span className="font-black">Carlos Admin</span></p>
-                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">Contraseña: consultar al autor</p>
+              {/* Content */}
+              <div style={{ flex: 1, background: '#f8fafc', padding: '24px 20px', overflow: 'hidden' }}>
+                <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#1e293b', marginBottom: 4, fontStyle: 'italic' }}>Vista General</p>
+                <p style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>Resumen actual de tu negocio</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+                  {[['Productos','18','#1e293b','Catálogo'], ['Valor Inventario','$2.3M','#6366f1','Inventario'], ['Alertas','3','#ef4444','URGENTE'], ['Ventas Hoy','$354K','#10b981','Hoy']].map(([label, val, color, sub]) => (
+                    <div key={label} style={{ background: '#fff', borderRadius: 14, padding: '12px 14px', border: '1px solid #f1f5f9', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                      <p style={{ fontSize: 8, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{label}</p>
+                      <p style={{ fontSize: 18, fontWeight: 900, color, letterSpacing: '-0.03em', fontStyle: 'italic', marginBottom: 2 }}>{val}</p>
+                      <p style={{ fontSize: 8, color, fontWeight: 800, textTransform: 'uppercase' }}>{sub}</p>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background: '#0f172a', borderRadius: 16, padding: '16px 18px', color: '#fff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 32, height: 32, background: '#6366f1', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🚀</div>
+                    <div>
+                      <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: '-0.01em' }}>Consejero IA</p>
+                      <p style={{ fontSize: 8, color: '#a5b4fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Recomendaciones inteligentes</p>
+                    </div>
                   </div>
-                  <div className="border-t border-slate-100 pt-4">
-                    <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1.5">Colaborador</p>
-                    <p className="text-xs font-bold text-slate-700">Usuario: <span className="font-black">María</span></p>
-                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">Contraseña: consultar al autor</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {[['Arroz Roa 5kg', 'ALTA DEMANDA', '+42 ud sugeridas'], ['Aceite Girasol 1L', 'BAJA ROTACIÓN', 'Revisar stock']].map(([prod, tag, action]) => (
+                      <div key={prod} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <p style={{ fontSize: 9, fontWeight: 900, color: '#a5b4fc', textTransform: 'uppercase', marginBottom: 4 }}>{prod}</p>
+                        <span style={{ fontSize: 8, fontWeight: 800, background: tag.includes('ALTA') ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)', color: tag.includes('ALTA') ? '#34d399' : '#f87171', padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase' }}>{tag}</span>
+                        <p style={{ fontSize: 8, color: '#64748b', marginTop: 6, fontWeight: 700 }}>{action}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
+      {/* MÉTRICAS REALES */}
+      <section data-section="stats" style={{ padding: '80px 24px', position: 'relative' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div className={`reveal${isVisible('stats') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Construido con criterio de ingeniería</p>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic' }}>Lo que hay dentro</h2>
+          </div>
+          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+            {[
+              ['15', 'Módulos funcionales', 'Desde autenticación hasta retroalimentación IA'],
+              ['83', 'Requerimientos', '65 funcionales + 18 no funcionales implementados'],
+              ['100%', 'Cobertura QA', '56 casos de prueba ejecutados al cierre'],
+              ['5', 'Sprints Scrum', '10 semanas de desarrollo con entregas verificadas'],
+            ].map(([num, label, sub], i) => (
+              <div key={label} className={`stat-card reveal${isVisible('stats') ? ' visible' : ''} reveal-delay-${i+1}`}>
+                <p style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: 900, letterSpacing: '-0.04em', fontStyle: 'italic', color: '#818cf8', marginBottom: 8 }}>{num}</p>
+                <p style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#e2e8f0', marginBottom: 6 }}>{label}</p>
+                <p style={{ fontSize: 11, color: '#475569', fontWeight: 500, lineHeight: 1.5 }}>{sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section data-section="features" style={{ padding: '80px 24px', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div className={`reveal${isVisible('features') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Arquitectura modular</p>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Tres capas de inteligencia</h2>
+            <p style={{ fontSize: 16, color: '#64748b', maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>Cada capa resuelve un problema real del tendero bogotano.</p>
+          </div>
+          <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            {[
+              { icon: '🤖', color: '#818cf8', title: 'Copiloto IA (GPT-4o-mini)', desc: 'Analiza el inventario y genera recomendaciones de reabastecimiento en lenguaje natural, con guardrails por clasificación ABC y auditoría completa de cada decisión del modelo.', tag: 'Motor predictivo' },
+              { icon: '📊', color: '#34d399', title: 'Analítica en tiempo real', desc: 'Dashboard con valor del inventario, ventas del día, proyección de agotamiento por producto y nivel de servicio. Actualizado en cada transacción registrada.', tag: 'Centro analítico' },
+              { icon: '🔍', color: '#f472b6', title: 'Auditoría transparente', desc: 'Cada decisión de la IA queda registrada con su prompt, respuesta y ajuste aplicado. La retroalimentación adaptativa mejora las sugerencias con cada ciclo.', tag: 'Trazabilidad total' },
+            ].map(({ icon, color, title, desc, tag }, i) => (
+              <div key={title} className={`feature-card reveal${isVisible('features') ? ' visible' : ''} reveal-delay-${i+1}`}>
+                <div style={{ width: 52, height: 52, background: `${color}18`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 20 }}>{icon}</div>
+                <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color, marginBottom: 12, display: 'block' }}>{tag}</span>
+                <h3 style={{ fontSize: 17, fontWeight: 900, letterSpacing: '-0.02em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 12, color: '#f1f5f9' }}>{title}</h3>
+                <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.7, fontWeight: 500 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* MÓDULOS */}
+      <section data-section="modules" style={{ padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div className={`reveal${isVisible('modules') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 48 }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Todo incluido</p>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic' }}>15 módulos operativos</h2>
+          </div>
+          <div className={`reveal${isVisible('modules') ? ' visible' : ''} reveal-delay-2`} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+            {[
+              ['🔐', 'Autenticación y roles'],
+              ['📦', 'Gestión de productos'],
+              ['💰', 'Registro de ventas'],
+              ['📋', 'Control de movimientos'],
+              ['🏪', 'Gestión multi-tienda'],
+              ['🧠', 'Motor de predicción IA'],
+              ['🛒', 'Órdenes de compra'],
+              ['🚨', 'Alertas inteligentes'],
+              ['📊', 'Dashboard analítico'],
+              ['📄', 'Reportes y exportación'],
+              ['🚚', 'Gestión de proveedores'],
+              ['👥', 'Gestión de colaboradores'],
+              ['🧪', 'Simulador de escenarios'],
+              ['🔄', 'Retroalimentación IA'],
+              ['📧', 'Automatización semanal'],
+            ].map(([ico, label]) => (
+              <div key={label} className="module-chip">
+                <span style={{ fontSize: 15 }}>{ico}</span>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DEMO */}
+      <section id="demo" data-section="demo" style={{ padding: '80px 24px', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div className={`reveal${isVisible('demo') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Sistema desplegado</p>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Acceso al demo</h2>
+            <p style={{ fontSize: 16, color: '#64748b', maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>Sistema operativo en Railway con base de datos PostgreSQL persistente.</p>
+          </div>
+          <div className="demo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            {/* Credenciales */}
+            <div className={`cred-card reveal${isVisible('demo') ? ' visible' : ''} reveal-delay-1`}>
+              <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 24 }}>Credenciales de prueba</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 14, padding: '18px 20px' }}>
+                  <p style={{ fontSize: 9, fontWeight: 900, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10 }}>Administrador</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>Usuario: <span style={{ color: '#fff', fontWeight: 900 }}>Carlos Admin</span></p>
+                  <p style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>Contraseña: consultar al autor</p>
+                </div>
+                <div style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 14, padding: '18px 20px' }}>
+                  <p style={{ fontSize: 9, fontWeight: 900, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10 }}>Colaborador</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>Usuario: <span style={{ color: '#fff', fontWeight: 900 }}>María</span></p>
+                  <p style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>Contraseña: consultar al autor</p>
+                </div>
+              </div>
+            </div>
+            {/* CTA */}
+            <div className={`reveal${isVisible('demo') ? ' visible' : ''} reveal-delay-2`} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ flex: 1, background: '#6366f1', borderRadius: 20, padding: '32px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>Registra tu tienda</p>
+                  <h3 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', fontStyle: 'italic', textTransform: 'uppercase', lineHeight: 1.2, marginBottom: 16 }}>Empieza a operar en minutos</h3>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, fontWeight: 500 }}>Crea tu tienda, carga tus productos y deja que la IA empiece a sugerir pedidos basados en tu ritmo de ventas real.</p>
+                </div>
+                <button onClick={() => navigate('/register')} style={{ marginTop: 24, background: '#fff', color: '#4f46e5', border: 'none', borderRadius: 12, padding: '14px 24px', fontSize: 11, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.2s' }}>
+                  Registrar mi tienda →
+                </button>
+              </div>
               {/* Roadmap */}
-              <div className="bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6">
-                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-5">🗺 Roadmap v4</p>
-                <div className="space-y-3">
-                  {[
-                    'Multi-sucursal con panel maestro',
-                    'Planes de suscripción',
-                    'API pública para integraciones',
-                    'App móvil nativa',
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-2.5">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-400 flex items-center justify-center text-[9px]">→</span>
-                      <span className="text-xs font-bold text-indigo-700">{item}</span>
+              <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px 28px' }}>
+                <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Roadmap v4</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {['Panel maestro multi-sucursal', 'Planes de suscripción', 'API pública para integraciones', 'App móvil nativa'].map(item => (
+                    <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 14, color: '#6366f1' }}>→</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8' }}>{item}</span>
                     </div>
                   ))}
                 </div>
@@ -278,88 +425,42 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section id="features" className="py-24 bg-slate-50 relative">
-        <div className="max-w-7xl mx-auto px-6 text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-black text-slate-800 tracking-tighter italic uppercase">
-            Solución de Grado Empresarial
-          </h2>
-          <p className="mt-4 text-slate-500 font-bold mx-auto max-w-2xl">
-            Equipa a tus colaboradores con las mismas herramientas que usan las grandes cadenas.
-          </p>
-        </div>
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
-          <FeatureCard icon="🤖" title="Predicción IA" desc="Copiloto de riesgos impulsado por GPT-4o-mini que diagnostica stock crítico, sugiere órdenes de compra y genera estrategias de promoción antes de que pierdas ventas." color="indigo" />
-          <FeatureCard icon="📊" title="Analítica en Tiempo Real" desc="Dashboard financiero con ventas del día, valor de inventario, margen promedio y proyección de pérdidas por vencimiento, todo actualizado en cada transacción." color="emerald" />
-          <FeatureCard icon="🔍" title="Auditoría Transparente" desc="Cada decisión de la IA queda registrada con su razón, los datos que analizó y el ajuste que aplicó. Trazabilidad completa para justificar cada orden de compra." color="rose" />
-        </div>
-      </section>
-
       {/* CTA FINAL */}
-      <section className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)' }}>
-        <div className="absolute top-[50%] left-[50%] w-[600px] h-[600px] bg-indigo-500/15 blur-[150px] rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
-          <div className="w-20 h-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-lg shadow-indigo-500/30">🚀</div>
-          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-tight mb-6">
-            Haz que tu inventario <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 italic pr-4">trabaje para ti.</span>
+      <section data-section="cta" style={{ padding: '100px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div className="hero-glow" style={{ width: 600, height: 400, background: 'rgba(99,102,241,0.12)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
+        <div className={`reveal${isVisible('cta') ? ' visible' : ''}`} style={{ maxWidth: 640, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ width: 72, height: 72, background: '#6366f1', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, margin: '0 auto 32px' }}>🚀</div>
+          <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 20, lineHeight: 1.1 }}>
+            Haz que tu inventario<br />
+            <span style={{ color: '#818cf8' }}>trabaje para ti.</span>
           </h2>
-          <p className="text-slate-400 font-medium text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            La transformación digital de tu negocio empieza aquí. Crea tu tienda y empieza a operar en minutos.
+          <p style={{ fontSize: 16, color: '#64748b', marginBottom: 40, lineHeight: 1.65, fontWeight: 500 }}>
+            La transformación digital de tu negocio empieza con datos. Crea tu tienda y empieza a tomar decisiones basadas en tu inventario real.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button onClick={() => navigate('/register')} className="w-full sm:w-auto px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/30 hover:-translate-y-1 transition-all active:scale-95">
-              Acceder al Demo
-            </button>
-            <button onClick={() => navigate('/login')} className="w-full sm:w-auto px-10 py-5 bg-white/5 text-white border border-white/10 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all active:scale-95">
-              Ya tengo cuenta
-            </button>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="btn-primary" onClick={() => navigate('/register')}>Acceder al demo</button>
+            <button className="btn-ghost" onClick={() => navigate('/login')}>Ya tengo cuenta</button>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-slate-900 border-t border-slate-800 pt-16 pb-8 text-center text-slate-500">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="w-12 h-12 bg-slate-800 text-white rounded-xl flex items-center justify-center text-2xl mx-auto mb-6">🏪</div>
-          <h3 className="text-2xl font-black text-white tracking-tighter italic uppercase mb-2">StockPilot</h3>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-12">Software de Gestión de Inventario con IA</p>
-          <div className="flex flex-col md:flex-row justify-center items-center gap-6 border-t border-slate-800 pt-8">
-            <p className="text-xs">© 2026 StockPilot. Proyecto de grado — Ingeniería de Software.</p>
-            <div className="flex gap-4">
-              <span className="text-xs hover:text-white cursor-pointer transition-colors">Términos</span>
-              <span className="text-xs hover:text-white cursor-pointer transition-colors">Privacidad</span>
-              <span className="text-xs hover:text-white cursor-pointer transition-colors">Contacto</span>
-            </div>
-          </div>
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
+          <div style={{ width: 32, height: 32, background: '#1e293b', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🏪</div>
+          <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: '-0.01em', fontStyle: 'italic', textTransform: 'uppercase' }}>StockPilot</span>
         </div>
+        <p style={{ fontSize: 11, color: '#334155', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Práctica de Ingeniería IV · Universidad Central · 2026</p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
+          {['Términos', 'Privacidad', 'Contacto'].map(link => (
+            <span key={link} style={{ fontSize: 12, color: '#334155', cursor: 'pointer', transition: 'color 0.2s', fontWeight: 600 }}
+              onMouseEnter={e => e.target.style.color = '#94a3b8'}
+              onMouseLeave={e => e.target.style.color = '#334155'}
+            >{link}</span>
+          ))}
+        </div>
+        <p style={{ fontSize: 11, color: '#1e293b', marginTop: 20 }}>© 2026 StockPilot</p>
       </footer>
-
-    </div>
-  );
-};
-
-const StatCard = ({ number, label, sublabel }) => (
-  <div className="text-center p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-    <p className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-2">{number}</p>
-    <p className="text-sm font-black text-indigo-400 uppercase tracking-widest">{label}</p>
-    <p className="text-[10px] font-bold text-slate-500 mt-1">{sublabel}</p>
-  </div>
-);
-
-const FeatureCard = ({ icon, title, desc, color }) => {
-  const colors = {
-    indigo: 'bg-indigo-50 border-indigo-100 text-indigo-600',
-    emerald: 'bg-emerald-50 border-emerald-100 text-emerald-600',
-    rose: 'bg-rose-50 border-rose-100 text-rose-600'
-  };
-  return (
-    <div className="p-8 rounded-[2rem] border border-slate-100 bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
-      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-sm ${colors[color]} group-hover:scale-110 transition-transform`}>
-        {icon}
-      </div>
-      <h3 className="text-xl font-black text-slate-800 tracking-tight mb-3">{title}</h3>
-      <p className="text-slate-500 font-medium leading-relaxed">{desc}</p>
     </div>
   );
 };
