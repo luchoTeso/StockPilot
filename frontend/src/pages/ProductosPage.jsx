@@ -421,9 +421,9 @@ const ProductosPage = () => {
       )}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-6 md:pb-8">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Tus Productos</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Tus Productos</h2>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Listado completo de lo que vendes</p>
         </div>
         <div>
@@ -436,20 +436,20 @@ const ProductosPage = () => {
       </div>
 
       {/* Top Bar (Filtros) */}
-      <div className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-wrap gap-4">
-          <input type="text" placeholder="Buscar código o nombre..." value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} className="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none w-full md:w-auto" />
-          <CustomSelect 
-            value={filtroCategoria} 
+      <div className="bg-white p-3 sm:p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+          <input type="text" placeholder="Buscar código o nombre..." value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} className="w-full sm:flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none" />
+          <CustomSelect
+            value={filtroCategoria}
             onChange={val => setFiltroCategoria(val)}
             placeholder="Todas las categorías"
             options={[
               { value: '', label: 'Todas las categorías' },
               ...categorias.map(c => ({ value: c, label: c }))
             ]}
-            className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800 min-w-[200px]"
+            className="w-full sm:flex-1 sm:min-w-[160px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
           />
-          <CustomSelect 
-            value={filtroEstado} 
+          <CustomSelect
+            value={filtroEstado}
             onChange={val => setFiltroEstado(val)}
             placeholder="Estado: Todos"
             options={[
@@ -457,7 +457,7 @@ const ProductosPage = () => {
               { value: 'Disponible', label: 'Operativo' },
               { value: 'Inactivo', label: 'Suspendido' }
             ]}
-            className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800 min-w-[200px]"
+            className="w-full sm:flex-1 sm:min-w-[140px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
           />
       </div>
 
@@ -467,12 +467,12 @@ const ProductosPage = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
-                <th className="p-8">Producto</th>
-                <th className="p-8">Categoría</th>
-                <th className="p-8 text-center whitespace-nowrap">En Bodega</th>
-                <th className="p-8 text-center">Estado</th>
-                <th className="p-8 text-center">Registro</th>
-                <th className="p-8 text-center">Acciones</th>
+                <th className="p-4 md:p-8">Producto</th>
+                <th className="p-4 md:p-8">Categoría</th>
+                <th className="p-4 md:p-8 text-center">En Bodega</th>
+                <th className="p-4 md:p-8 text-center">Estado</th>
+                <th className="p-4 md:p-8 text-center">Registro</th>
+                <th className="p-4 md:p-8 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">

@@ -120,7 +120,7 @@ const TiendasPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Mi Tienda</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Mi Tienda</h2>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Centro de Gestión Comercial y Usuarios</p>
         </div>
       </div>
@@ -140,18 +140,18 @@ const TiendasPage = () => {
         <div className="space-y-8">
           
           {/* Tarjeta Principal Tienda */}
-          <div className="bg-white p-8 lg:p-10 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
+          <div className="bg-white p-4 sm:p-6 lg:p-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
             {/* Elemento Decorativo Fondo */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
 
             <div className="relative z-10">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-8 mb-8 gap-6">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-5 md:pb-8 mb-5 md:mb-8 gap-4 md:gap-6">
                 <div className="flex items-center gap-5">
                   <div className="w-20 h-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center shadow-lg shadow-indigo-200 text-4xl shrink-0 transform -rotate-3 group-hover:rotate-0 transition-transform">
                     🏪
                   </div>
                   <div>
-                    <h3 className="text-3xl lg:text-4xl font-black text-slate-800 tracking-tighter italic mb-1">
+                    <h3 className="text-xl sm:text-2xl lg:text-4xl font-black text-slate-800 tracking-tighter italic mb-1">
                       {tienda.nombre_establecimiento}
                     </h3>
                     <div className="flex items-center gap-3">
@@ -182,7 +182,7 @@ const TiendasPage = () => {
               </div>
 
               {/* Grid de Información Tienda */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                 
                 {/* Datos Generales */}
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors">

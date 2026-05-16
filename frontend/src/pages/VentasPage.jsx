@@ -169,9 +169,9 @@ const VentasPage = () => {
     <div className="animate-fade-in pb-12 space-y-8 font-outfit">
       
       {/* Header Premium (Floating Style) */}
-      <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-xl shadow-indigo-500/5 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 mt-2">
+      <div className="bg-white/40 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-white/20 shadow-xl shadow-indigo-500/5 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-8 mt-2">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase leading-none">Ventas <span className="text-indigo-600">Historial</span></h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter italic uppercase leading-none">Ventas <span className="text-indigo-600">Historial</span></h2>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
             Registro maestro de transacciones
@@ -195,7 +195,7 @@ const VentasPage = () => {
           { label: 'Venta Promedio', value: `$${statsRender.ventaPromedio.toLocaleString('es-CO', {maximumFractionDigits:0})}`, icon: '🧾', color: 'text-amber-500', bg: 'bg-amber-50' },
           { label: 'Variedad Vendida', value: statsRender.productosUnicos, icon: '🔄', color: 'text-rose-500', bg: 'bg-rose-50' }
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 flex items-center gap-6 transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-100 group">
+          <div key={i} className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-xl border border-slate-100 flex items-center gap-4 md:gap-6 transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-100 group">
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0 transition-transform group-hover:scale-110 ${stat.bg}`}>
               {stat.icon}
             </div>
@@ -212,31 +212,31 @@ const VentasPage = () => {
       </div>
 
       {/* Buscador y Filtros */}
-      <div className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-wrap gap-4">
-        <div className="flex-1 min-w-[200px]">
-          <CustomDatePicker 
-            value={filtroFecha} 
-            onChange={v => setFiltroFecha(v)} 
-            placeholder="Filtrar por fecha..." 
+      <div className="bg-white p-3 sm:p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+        <div className="w-full sm:flex-1 sm:min-w-[180px]">
+          <CustomDatePicker
+            value={filtroFecha}
+            onChange={v => setFiltroFecha(v)}
+            placeholder="Filtrar por fecha..."
             align="left-flyout"
           />
         </div>
-        <input 
-          type="text" 
-          placeholder="Buscar producto por nombre..." 
-          value={filtroProducto} 
-          onChange={e => setFiltroProducto(e.target.value)} 
-          className="flex-[2] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800 min-w-[200px]" 
+        <input
+          type="text"
+          placeholder="Buscar producto por nombre..."
+          value={filtroProducto}
+          onChange={e => setFiltroProducto(e.target.value)}
+          className="w-full sm:flex-[2] sm:min-w-[180px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800"
         />
-        <CustomSelect 
-          value={filtroCategoria} 
+        <CustomSelect
+          value={filtroCategoria}
           onChange={val => setFiltroCategoria(val)}
           placeholder="Todas las categorías"
           options={[
             { value: '', label: 'Todas las categorías' },
             ...categorias.map(c => ({ value: c, label: c }))
           ]}
-          className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800 min-w-[200px] flex-1"
+          className="w-full sm:flex-1 sm:min-w-[180px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
         />
       </div>
 
@@ -246,12 +246,12 @@ const VentasPage = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
-                <th className="p-8">Producto</th>
-                <th className="p-8">Categoría</th>
-                <th className="p-8 text-center">Unidades</th>
-                <th className="p-8 text-right">Precio</th>
-                <th className="p-8 text-right">Total</th>
-                <th className="p-8 text-center">Fecha</th>
+                <th className="p-4 md:p-8">Producto</th>
+                <th className="p-4 md:p-8">Categoría</th>
+                <th className="p-4 md:p-8 text-center">Unidades</th>
+                <th className="p-4 md:p-8 text-right">Precio</th>
+                <th className="p-4 md:p-8 text-right">Total</th>
+                <th className="p-4 md:p-8 text-center">Fecha</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">

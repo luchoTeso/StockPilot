@@ -126,12 +126,12 @@ const DashboardPage = () => {
   return (
     <div className="animate-fade-in space-y-6 pb-20">
       <header className="mb-10">
-        <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Vista General</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Vista General</h1>
         <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1 decoration-indigo-200 underline underline-offset-8">Resumen Actual de tu Negocio</p>
       </header>
 
       {/* Métricas Principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Productos */}
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Productos</p>
@@ -174,12 +174,12 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Asistente Estratégico IA */}
-        <section className="lg:col-span-2 bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden border border-white/5">
+        <section className="lg:col-span-2 bg-slate-900 rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 text-white shadow-2xl relative overflow-hidden border border-white/5">
           <div className="absolute top-0 right-0 p-6 opacity-10 text-9xl">🤖</div>
           <div className="relative z-10 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6 md:mb-8">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-indigo-600 rounded-3xl flex items-center justify-center text-2xl">🚀</div>
                 <div>
@@ -301,11 +301,11 @@ const DashboardPage = () => {
           </div>
 
           {loadingPromos ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {[1, 2, 3].map(i => <div key={i} className="h-56 bg-white/5 rounded-[2rem] animate-pulse"></div>)}
             </div>
           ) : promotions.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-fr">
               {promotions.map((promo, idx) => (
                 <div key={idx} className="bg-white/5 border border-white/10 p-6 rounded-[2rem] hover:bg-white/10 transition-all flex flex-col group h-full">
                   <div className="flex justify-between items-start mb-4">

@@ -91,7 +91,7 @@ const AlertasPage = () => {
             <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl shadow-inner border border-rose-100">
               🚨
             </div>
-            <h1 className="text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Centro de Alertas</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Centro de Alertas</h1>
           </div>
           <p className="text-sm font-bold text-slate-600">
             Monitoreo constante e inteligente de stock bajo, excesos o problemas en ventas.
@@ -113,7 +113,7 @@ const AlertasPage = () => {
       <div className="flex flex-wrap gap-4 z-10 relative">
         <button
           onClick={() => setFilter('todas')}
-          className={`flex-1 min-w-[120px] p-4 rounded-2xl border-2 transition-all ${filter === 'todas' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
+          className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'todas' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-80 mb-1">Todas</p>
           <p className="text-3xl font-black">{stats.total}</p>
@@ -121,7 +121,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('critico')}
-          className={`flex-1 min-w-[120px] p-4 rounded-2xl border-2 transition-all ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-rose-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
+          className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-rose-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1">🚨 Críticas</p>
           <p className="text-3xl font-black">{stats.critico}</p>
@@ -129,7 +129,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('advertencia')}
-          className={`flex-1 min-w-[120px] p-4 rounded-2xl border-2 transition-all ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-amber-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
+          className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-amber-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1">⚠️ Advertencias</p>
           <p className="text-3xl font-black">{stats.advertencia}</p>
@@ -137,7 +137,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('info')}
-          className={`flex-1 min-w-[120px] p-4 rounded-2xl border-2 transition-all ${filter === 'info' ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-blue-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'}`}
+          className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'info' ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-blue-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1">ℹ️ Sobrestock</p>
           <p className="text-3xl font-black">{stats.info}</p>
@@ -156,7 +156,7 @@ const AlertasPage = () => {
           </div>
         ) : (
           filteredAlertas.map(alerta => (
-            <div key={alerta.id_alerta} className={`p-6 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all hover:shadow-xl ${SeveridadColors[alerta.severidad]}`}>
+            <div key={alerta.id_alerta} className={`p-4 sm:p-6 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 transition-all hover:shadow-xl ${SeveridadColors[alerta.severidad]}`}>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-xl">{SeveridadIcon[alerta.severidad]}</span>
