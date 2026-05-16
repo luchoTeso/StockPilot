@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Navigate } from 'react-router-dom';
 import CustomSelect from '../components/CustomSelect';
+import { ShieldOff, Lock, Eye, EyeOff, Save, UserPlus, Users, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 
 const RegistroTendederoPage = () => {
   const { user } = useAuth();
@@ -45,7 +46,7 @@ const RegistroTendederoPage = () => {
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] animate-fade-in text-center font-outfit">
-        <div className="text-[100px] mb-6 drop-shadow-xl animate-bounce-slow">🚫</div>
+        <div className="mb-6 flex justify-center text-rose-400"><ShieldOff size={80} /></div>
         <h2 className="text-4xl font-black text-rose-600 tracking-tighter uppercase italic mb-4">Acceso Denegado</h2>
         <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-rose-100 max-w-md">
           <p className="text-slate-500 font-medium mb-2">Sección Restringida</p>
@@ -189,7 +190,7 @@ const RegistroTendederoPage = () => {
                 </div>
 
                 <div className="bg-indigo-50/50 p-4 border border-indigo-100 rounded-[2rem] space-y-4">
-                  <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center">🔐 Datos para Ingresar al Sistema</h4>
+                  <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center flex items-center justify-center gap-1"><Lock size={10} /> Datos para Ingresar al Sistema</h4>
                   
                   <div>
                     <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Nombre de Usuario <span className="text-rose-500">*</span></label>
@@ -201,8 +202,8 @@ const RegistroTendederoPage = () => {
                       <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Contraseña de Acceso <span className="text-rose-500">*</span></label>
                       <div className="relative">
                         <input required minLength="8" type={showPassword ? 'text' : 'password'} value={formData.contrasena} onChange={e => setFormData({...formData, contrasena: e.target.value})} className="w-full p-4 pr-12 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Mínimo 8 dígitos" />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-2xl drop-shadow-sm hover:scale-110 transition-transform">
-                          {showPassword ? '🙈' : '👁️'}
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors">
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
                     </div>
@@ -211,7 +212,8 @@ const RegistroTendederoPage = () => {
 
                 <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
                   <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'}`}>
-                    <span>{editMode ? '💾' : '🚀'}</span> {isSubmitting ? 'GUARDANDO...' : (editMode ? 'GUARDAR CAMBIOS' : 'CREAR ACCESO')}
+                    {editMode ? <Save size={14} /> : <UserPlus size={14} />}
+                    {isSubmitting ? 'GUARDANDO...' : (editMode ? 'GUARDAR CAMBIOS' : 'CREAR ACCESO')}
                   </button>
                   {editMode && (
                     <button type="button" onClick={cancelEdit} className="w-full p-4 rounded-2xl text-slate-500 bg-slate-100 hover:bg-slate-200 text-[10px] font-black uppercase tracking-[0.2em] transition-colors">
@@ -229,7 +231,7 @@ const RegistroTendederoPage = () => {
           
           <div className="flex items-center justify-between bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-               👥 Equipo Registrado
+               <Users size={18} className="text-indigo-500" /> Equipo Registrado
              </h3>
              <div className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-inner">
                {tendederos.length} PERSONAS
@@ -279,11 +281,11 @@ const RegistroTendederoPage = () => {
                         </td>
                         <td className="p-6 pr-8">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Información">
-                              ✏️
+                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Información">
+                              <Pencil size={16} />
                             </button>
-                            <button onClick={() => eliminarTendedero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
-                              🗑️
+                            <button onClick={() => eliminarTendedero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </td>
@@ -301,8 +303,8 @@ const RegistroTendederoPage = () => {
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4 font-outfit">
           <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden transform animate-scale-in border border-white">
             <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-rose-100 bg-rose-50' : 'border-amber-100 bg-amber-50'}`}>
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-rose-100 text-rose-600 shadow-rose-200' : 'bg-amber-100 text-amber-600 shadow-amber-200'}`}>
-                 {modalConfig.type === 'danger' ? '🗑️' : '⚠️'}
+              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-rose-100 text-rose-600 shadow-rose-200' : 'bg-amber-100 text-amber-600 shadow-amber-200'}`}>
+                 {modalConfig.type === 'danger' ? <Trash2 size={32} /> : <AlertTriangle size={32} />}
               </div>
               <h3 className={`text-2xl font-black tracking-tighter italic uppercase ${modalConfig.type === 'danger' ? 'text-rose-600' : 'text-amber-600'}`}>
                 {modalConfig.title}
