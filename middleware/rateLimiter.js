@@ -1,21 +1,47 @@
 const rateLimit = require('express-rate-limit');
 
-// Limitador de velocidad global (Protección contra DDoS y raspado de datos)
+// Clave por sesión de usuario (si está logueado) o por IP como fallback.
+// Evita que múltiples vendedores de la misma red compartan el mismo contador.
+const keyBySession = (req) => {
+    return req.session?.userId
+        ? `user_${req.session.userId}`
+        : `ip_${req.ip}`;
+};
+
+// Limitador global: operaciones normales de la app (ventas, inventario, dashboard, etc.)
+// 600 peticiones por 15 min por usuario — suficiente para un vendedor muy activo.
 const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 150, // Límite de 150 peticiones por ventana de tiempo por IP
+    windowMs: 15 * 60 * 1000,
+    max: 600,
+    keyGenerator: keyBySession,
     message: {
         success: false,
-        error: "Has realizado demasiadas peticiones. Por favor, inténtalo de nuevo en 15 minutos."
+        error: "Has realizado demasiadas peticiones. Por favor, inténtalo de nuevo en unos minutos."
     },
-    standardHeaders: true, // Retornar info del límite en headers (RateLimit-Limit)
-    legacyHeaders: false, // Desactivar headers X-RateLimit-*
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => req.path.startsWith('/api/login') || req.path.startsWith('/api/registro'),
 });
 
-// Limitador específico para Login y Registro (Protección contra Fuerza Bruta)
+// Limitador para rutas de IA (costosas en tiempo y recursos del servidor).
+// Más restrictivo que el global pero por usuario, no por IP.
+const aiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+    keyGenerator: keyBySession,
+    message: {
+        success: false,
+        error: "Has realizado muchas consultas a la IA. Espera unos minutos antes de continuar."
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Limitador para Login y Registro (Protección contra Fuerza Bruta).
+// Este sí usa IP porque el usuario aún no tiene sesión.
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 10, // Solo 10 intentos de login/registro permitidos por IP cada 15 minutos
+    windowMs: 15 * 60 * 1000,
+    max: 10,
     message: {
         success: false,
         error: "Demasiados intentos de acceso fallidos desde esta red. Por seguridad, el acceso ha sido bloqueado por 15 minutos."
@@ -24,4 +50,4 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-module.exports = { globalLimiter, authLimiter };
+module.exports = { globalLimiter, authLimiter, aiLimiter };

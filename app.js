@@ -14,7 +14,7 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 // const { createBackup } = require('./utils/backup'); (Obsoleto en Postgres)
-const { globalLimiter, authLimiter } = require('./middleware/rateLimiter');
+const { globalLimiter, authLimiter, aiLimiter } = require('./middleware/rateLimiter');
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
@@ -62,9 +62,6 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// 🛡️ SEGURIDAD: Límite de peticiones global (DDoS Protection)
-app.use('/api/', globalLimiter);
-
 // Configuración del servidor
 app.use(cors({
     origin: allowedOrigins,
@@ -94,6 +91,9 @@ app.use(session({
     }
 }));
 
+// 🛡️ SEGURIDAD: Límite de peticiones (aplicado después de session para identificar por usuario)
+app.use('/api/', globalLimiter);
+
 // 🛡️ SEGURIDAD: Límite drástico en endpoints críticos (Fuerza Bruta)
 app.use('/api/login', authLimiter);
 app.use('/api/registro', authLimiter);
@@ -102,7 +102,7 @@ app.use('/api/reset-password', authLimiter);
 
 // Usar rutas
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/ia', aiRoutes);
+app.use('/api/ia', aiLimiter, aiRoutes);
 app.use('/', authRoutes);
 app.use('/', storeRoutes);
 app.use('/', productRoutes);
