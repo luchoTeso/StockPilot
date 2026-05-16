@@ -5,6 +5,7 @@ import Tooltip from '../components/Tooltip';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { SYNC_EVENTS, subscribeToSync } from '../utils/stockSync';
+import { Bot, Rocket, AlertCircle, TrendingUp, DollarSign, Target, Clock, Zap, BarChart2 } from 'lucide-react';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -177,11 +178,11 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Asistente Estratégico IA */}
         <section className="lg:col-span-2 bg-slate-900 rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 text-white shadow-2xl relative overflow-hidden border border-white/5">
-          <div className="absolute top-0 right-0 p-6 opacity-10 text-9xl">🤖</div>
+          <div className="absolute top-0 right-0 p-6 opacity-10 text-indigo-400"><Bot size={96} /></div>
           <div className="relative z-10 h-full flex flex-col">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6 md:mb-8">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-indigo-600 rounded-3xl flex items-center justify-center text-2xl">🚀</div>
+                <div className="w-14 h-14 bg-indigo-600 rounded-3xl flex items-center justify-center"><Rocket size={24} /></div>
                 <div>
                   <h2 className="text-2xl font-black tracking-tighter uppercase italic">Consejero IA</h2>
                   <p className="text-[9px] text-indigo-300 font-black uppercase tracking-widest mt-1">Recomendaciones Inteligentes</p>
@@ -238,8 +239,8 @@ const DashboardPage = () => {
 
         {/* Estado del Inventario */}
         <section className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 self-start">
-          <h2 className="text-slate-800 font-black text-xs uppercase tracking-[0.3em] mb-8 border-b border-slate-50 pb-4">
-            🚨 Estado del Inventario
+          <h2 className="text-slate-800 font-black text-xs uppercase tracking-[0.3em] mb-8 border-b border-slate-50 pb-4 flex items-center gap-2">
+            <AlertCircle size={14} className="text-rose-500" /> Estado del Inventario
           </h2>
           <div className="space-y-6">
             <div 
@@ -264,7 +265,7 @@ const DashboardPage = () => {
               onClick={() => navigate('/analitica-visual')}
               className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 cursor-pointer relative overflow-hidden group hover:scale-[1.02] transition-transform"
             >
-              <div className="absolute -top-1 -right-1 p-4 opacity-5 text-4xl group-hover:scale-125 transition-transform text-indigo-600">📈</div>
+              <div className="absolute -top-1 -right-1 p-4 opacity-5 group-hover:scale-125 transition-transform text-indigo-600"><BarChart2 size={40} /></div>
               <h4 className="text-xl font-black italic tracking-tighter uppercase mb-4 text-slate-800">Centro<br/><span className="text-indigo-600">Analítico</span></h4>
               <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">Ver Detalles →</span>
             </div>
@@ -272,7 +273,7 @@ const DashboardPage = () => {
 
             {/* Margen Promedio (Movido a Sidebar & Convertido a Blanco) */}
             <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-150 transition-transform text-slate-800">💰</div>
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-150 transition-transform text-slate-800"><DollarSign size={40} /></div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate relative z-10">Margen de Ganancia</p>
               <div className="flex items-end justify-between mt-2 gap-2 relative z-10">
                 <p className="text-3xl font-black text-slate-800 tracking-tighter">
@@ -292,10 +293,10 @@ const DashboardPage = () => {
 
       {/* Oportunidades de Promoción IA */}
       <section className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden border border-white/5">
-        <div className="absolute top-0 right-0 p-6 opacity-5 text-9xl">💰</div>
+        <div className="absolute top-0 right-0 p-6 opacity-5 text-indigo-400"><DollarSign size={96} /></div>
         <div className="relative z-10">
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 bg-indigo-600 rounded-3xl flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(99,102,241,0.3)]">🎯</div>
+            <div className="w-14 h-14 bg-indigo-600 rounded-3xl flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.3)]"><Target size={24} /></div>
             <div>
               <h2 className="text-2xl font-black tracking-tighter uppercase italic">Estrategias de Venta</h2>
               <p className="text-[9px] text-indigo-300 font-black uppercase tracking-widest mt-1">Sugerencias para optimizar la rotación e ingresos</p>
@@ -313,11 +314,11 @@ const DashboardPage = () => {
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">PROPUESTA IA</span>
-                      <span className="text-[9px] font-black bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/20 inline-block w-fit uppercase tabular-nums">
-                        🎯 {promo.type === 'discount' ? 'Descuento Directo' : (promo.type === 'liquidation' ? 'Liquidación' : promo.type)}
+                      <span className="text-[9px] font-black bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/20 inline-flex items-center gap-1 w-fit uppercase tabular-nums">
+                        <Target size={9} /> {promo.type === 'discount' ? 'Descuento Directo' : (promo.type === 'liquidation' ? 'Liquidación' : promo.type)}
                       </span>
                     </div>
-                    <span className="text-[9px] font-black bg-white/10 px-2 py-0.5 rounded text-indigo-100/60">⏱️ {promo.duration_days}d</span>
+                    <span className="text-[9px] font-black bg-white/10 px-2 py-0.5 rounded text-indigo-100/60 flex items-center gap-1"><Clock size={9} /> {promo.duration_days}d</span>
                   </div>
                   <h3 className="text-xl font-black tracking-tighter leading-tight italic uppercase text-white mb-2">
                     {promo.type === 'combo' && promo.complementary_name 
@@ -339,7 +340,10 @@ const DashboardPage = () => {
                       disabled={applyingStrategy === promo.id}
                       className="w-full py-4 rounded-xl bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-lg active:scale-95"
                     >
-                      {applyingStrategy === promo.id ? '⚡ PROCESANDO...' : '🎯 Activar Oferta'}
+                      {applyingStrategy === promo.id
+                        ? <span className="flex items-center justify-center gap-1"><Zap size={12} /> Procesando...</span>
+                        : <span className="flex items-center justify-center gap-1"><Target size={12} /> Activar Oferta</span>
+                      }
                     </button>
                   </div>
                 </div>
@@ -359,7 +363,7 @@ const DashboardPage = () => {
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
           <div className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="bg-indigo-600 p-8 text-white relative">
-               <div className="absolute top-0 right-0 p-8 opacity-10 text-6xl">🎯</div>
+               <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={64} /></div>
                <h3 className="text-2xl font-black tracking-tighter uppercase italic">Activar Promoción</h3>
                <p className="text-[10px] font-black text-indigo-100 uppercase tracking-widest mt-1">Detalles de la Sugerencia</p>
             </div>
@@ -395,7 +399,7 @@ const DashboardPage = () => {
                   disabled={applyingStrategy}
                   className="flex-[1.5] bg-white text-slate-900 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-xl disabled:opacity-50"
                  >
-                   {applyingStrategy ? 'Procesando...' : '🔥 Ejecutar Ahora'}
+                   {applyingStrategy ? 'Procesando...' : 'Ejecutar Ahora'}
                  </button>
                </div>
             </div>
