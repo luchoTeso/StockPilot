@@ -27,11 +27,11 @@ const Sidebar = () => {
     { to: "/dashboard", text: "Vista general", icon: "📊" },
     { to: "/ventas", text: "Ventas", icon: "💰" },
     { to: "/productos", text: "Catálogo", icon: "📦" },
-    { to: "/movimientos", text: "Movimientos", icon: "🔄" },
     { to: "/tiendas", text: "Mi Tienda", icon: "🏪" }
   ];
 
   if (user?.rol === 'Administrador') {
+    links.push({ to: "/movimientos", text: "Movimientos", icon: "🔄" });
     links.push({ to: "/proveedores", text: "Proveedores AI", icon: "🚚" });
   }
 

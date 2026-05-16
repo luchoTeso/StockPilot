@@ -129,6 +129,7 @@ class InventoryMovement {
             JOIN Productos p ON p.id_producto = ms.id_producto
             LEFT JOIN Usuarios u ON u.id_usuario = ms.id_usuario
             WHERE ms.id_tienda = ?
+            AND ms.observacion NOT LIKE 'Venta #%'
         `;
         const params = [storeId];
 

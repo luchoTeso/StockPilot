@@ -48,6 +48,15 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// Rutas exclusivas para Administrador
+const AdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user || user.rol !== 'Administrador') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
+
 // Ruta especial para el flujo forzado
 const ForceChangeRoute = ({ children }) => {
   const { user } = useAuth();
@@ -102,7 +111,7 @@ function App() {
             <Route path="/analitica-visual" element={<AnalyticsDashboardPage />} />
             <Route path="/analisis-detallado" element={<AnalisisDetalladoPage />} />
             <Route path="/ventas" element={<VentasPage />} />
-            <Route path="/movimientos" element={<MovimientosPage />} />
+            <Route path="/movimientos" element={<AdminRoute><MovimientosPage /></AdminRoute>} />
             <Route path="/productos" element={<ProductosPage />} />
             <Route path="/tiendas" element={<TiendasPage />} />
             <Route path="/proveedores" element={<ProveedoresPage />} />
