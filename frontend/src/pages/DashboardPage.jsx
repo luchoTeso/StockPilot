@@ -259,7 +259,8 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <div 
+            {user?.rol === 'Administrador' && (
+            <div
               onClick={() => navigate('/analitica-visual')}
               className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 cursor-pointer relative overflow-hidden group hover:scale-[1.02] transition-transform"
             >
@@ -267,6 +268,7 @@ const DashboardPage = () => {
               <h4 className="text-xl font-black italic tracking-tighter uppercase mb-4 text-slate-800">Centro<br/><span className="text-indigo-600">Analítico</span></h4>
               <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">Ver Detalles →</span>
             </div>
+            )}
 
             {/* Margen Promedio (Movido a Sidebar & Convertido a Blanco) */}
             <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 relative overflow-hidden group">
