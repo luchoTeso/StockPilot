@@ -23,28 +23,24 @@ const Sidebar = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Vendor links (visible to all)
   const links = [
     { to: "/dashboard", text: "Vista general", icon: "📊" },
     { to: "/ventas", text: "Ventas", icon: "💰" },
     { to: "/productos", text: "Catálogo", icon: "📦" },
-    { to: "/tiendas", text: "Mi Tienda", icon: "🏪" }
+    { to: "/alertas", text: "Monitor Alertas", icon: "🚨" },
+    { to: "/tiendas", text: "Mi Tienda", icon: "🏪" },
   ];
 
+  // Admin-only links
   if (user?.rol === 'Administrador') {
     links.push({ to: "/movimientos", text: "Movimientos", icon: "🔄" });
     links.push({ to: "/proveedores", text: "Proveedores AI", icon: "🚚" });
-  }
-
-  // --- Analítica e IA ---
-  links.push({ to: "/alertas", text: "Monitor Alertas", icon: "🚨" });
-  links.push({ to: "/analitica-visual", text: "Analítica Visual", icon: "📉", id: "nav-analitica-visual" });
-  links.push({ to: "/reportes", text: "Generar Reportes", icon: "📑" });
-  links.push({ to: "/simulador", text: "Simulador AI", icon: "🧪", id: "nav-simulador" });
-
-  if (user?.rol === 'Administrador') {
+    links.push({ to: "/analitica-visual", text: "Analítica Visual", icon: "📉", id: "nav-analitica-visual" });
+    links.push({ to: "/simulador", text: "Simulador AI", icon: "🧪", id: "nav-simulador" });
+    links.push({ to: "/reportes", text: "Generar Reportes", icon: "📑" });
     links.push({ to: "/auditoria", text: "Auditoría AI", icon: "🔍" });
     links.push({ to: "/aprendizaje", text: "Aprendizaje AI", icon: "🧠" });
-    // --- Configuración ---
     links.push({ to: "/registro-tendedero", text: "Colaboradores", icon: "👥", id: "nav-registro-tendedero" });
   }
 

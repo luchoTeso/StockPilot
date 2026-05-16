@@ -108,20 +108,21 @@ function App() {
           {/* Rutas Privadas con Layout del Dashboard */}
           <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/analitica-visual" element={<AnalyticsDashboardPage />} />
-            <Route path="/analisis-detallado" element={<AnalisisDetalladoPage />} />
             <Route path="/ventas" element={<VentasPage />} />
-            <Route path="/movimientos" element={<AdminRoute><MovimientosPage /></AdminRoute>} />
             <Route path="/productos" element={<ProductosPage />} />
-            <Route path="/tiendas" element={<TiendasPage />} />
-            <Route path="/proveedores" element={<ProveedoresPage />} />
             <Route path="/alertas" element={<AlertasPage />} />
-            <Route path="/reportes" element={<ReportesPage />} />
+            <Route path="/tiendas" element={<TiendasPage />} />
             <Route path="/perfil" element={<ProfilePage />} />
-            <Route path="/registro-tendedero" element={<RegistroTendederoPage />} />
-            <Route path="/auditoria" element={<AuditoriaPage />} />
-            <Route path="/simulador" element={<SimuladorPage />} />
-            <Route path="/aprendizaje" element={<AprendizajePage />} />
+            {/* Rutas exclusivas de Administrador */}
+            <Route path="/movimientos" element={<AdminRoute><MovimientosPage /></AdminRoute>} />
+            <Route path="/proveedores" element={<AdminRoute><ProveedoresPage /></AdminRoute>} />
+            <Route path="/analitica-visual" element={<AdminRoute><AnalyticsDashboardPage /></AdminRoute>} />
+            <Route path="/analisis-detallado" element={<AdminRoute><AnalisisDetalladoPage /></AdminRoute>} />
+            <Route path="/simulador" element={<AdminRoute><SimuladorPage /></AdminRoute>} />
+            <Route path="/reportes" element={<AdminRoute><ReportesPage /></AdminRoute>} />
+            <Route path="/auditoria" element={<AdminRoute><AuditoriaPage /></AdminRoute>} />
+            <Route path="/aprendizaje" element={<AdminRoute><AprendizajePage /></AdminRoute>} />
+            <Route path="/registro-tendedero" element={<AdminRoute><RegistroTendederoPage /></AdminRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>
