@@ -215,6 +215,19 @@ const suppliersController = {
       }
 
       await client.query('COMMIT');
+
+      // Auditoría IA: registrar consulta de proveedor (id_orden != NULL → filtro "desde_proveedores")
+      try {
+        const datosBase = JSON.stringify(carrito_final.map(i => ({ id: i.id_producto, producto: i.nombre, calculo_base: i.calculo_base })));
+        const sugerenciaJson = JSON.stringify(carrito_final.map(i => ({ id: i.id_producto, ajuste_ia: i.ajuste_ia, sugerencia_final: i.sugerencia_final, razon_ia: i.razon_ia })));
+        await db.runAsync(
+          'INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia, fecha_auditoria) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
+          [tiendaId, ordenId, 'Orden Inteligente Proveedor v1.0', datosBase, sugerenciaJson, `Orden #${ordenId} — Riesgo: ${evaluacion_riesgo?.nivel || 'N/A'}`, 'Generación de orden de compra inteligente']
+        );
+      } catch (auditErr) {
+        console.error('⚠️ Auditoría IA proveedor omitida:', auditErr.message);
+      }
+
       res.json({ success: true, message: 'Orden Inteligente creada', orden_id: ordenId });
 
     } catch (e) {
