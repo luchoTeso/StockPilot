@@ -20,10 +20,9 @@ class DashboardController {
             `;
             const valorRecord = await db.getAsync(valorQuery, [tiendaId]);
 
-            // 3. Alertas Stock (Avanzadas)
+            // 3. Alertas Stock — se regeneran en background para no bloquear la carga del dashboard
             const Alert = require('../models/Alert');
-            // Auto-generar cada vez que alguien visita el dashboard (temporal hasta poner un cron)
-            await Alert.generate(tiendaId);
+            Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas en dashboard:', e));
             const alertasStats = await Alert.getStats(tiendaId);
 
             // 4. Ventas Recientes (Últimas 30 días de datos detectados en la BD para evitar ceros por desfase temporal)

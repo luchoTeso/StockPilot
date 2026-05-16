@@ -10,6 +10,7 @@
 const Sale = require('../models/Sale');
 const Product = require('../models/Product');
 const db = require('../config/database');
+const Alert = require('../models/Alert');
 
 /**
  * Sale Controller
@@ -141,6 +142,9 @@ class SaleController {
 
                 await client.query('COMMIT');
                 res.json({ success: true, message: "Venta procesada y stock actualizado" });
+
+                // Regenerar alertas en background sin bloquear la respuesta
+                Alert.generate(id_tienda).catch(e => console.error('Error regenerando alertas post-venta:', e));
 
             } catch (txError) {
                 await client.query('ROLLBACK');

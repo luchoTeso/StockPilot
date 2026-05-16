@@ -11,9 +11,9 @@ const AlertasPage = () => {
   const [filter, setFilter] = useState('todas'); // 'todas', 'critico', 'advertencia', 'info'
   const toast = useToast();
 
-  const fetchAlertas = async () => {
+  const fetchAlertas = async (showSpinner = true) => {
     try {
-      setLoading(true);
+      if (showSpinner) setLoading(true);
       const [alertasRes, statsRes, sessionRes] = await Promise.all([
         axios.get('/api/alertas'),
         axios.get('/api/alertas/stats'),
@@ -29,12 +29,14 @@ const AlertasPage = () => {
     } catch (e) {
       toast.error('Error cargando el panel de alertas');
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAlertas();
+    fetchAlertas(true);
+    const interval = setInterval(() => fetchAlertas(false), 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleGenerate = async () => {
