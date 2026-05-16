@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
+import { Store, Eye, EyeOff, ArrowLeft, User, Phone, Mail, Lock, Building2, MapPin } from 'lucide-react';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ const RegisterPage = () => {
 
   const navigate = useNavigate();
   const toast = useToast();
-  const { login } = useAuth(); // Asumiendo que queremos loguearlo tras registro exitoso
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +34,6 @@ const RegisterPage = () => {
 
     setIsLoading(true);
     try {
-      // Usando el endpoint real del backend con prefijo /api
       await axios.post('/api/registro', {
         name: formData.nombres,
         username: formData.usuario,
@@ -42,12 +42,11 @@ const RegisterPage = () => {
         password: formData.contrasena,
         store_name: formData.store_name,
         store_address: formData.store_address,
-        gender: 'No especificado', // Opcional en este flujo rápido
-        id: formData.celular // Fallback para ID requerido en BD vieja
+        gender: 'No especificado',
+        id: formData.celular
       });
-      
+
       toast.success('¡Tienda y Cuenta creadas exitosamente! Bienvenido.');
-      // Auto-login después de registro
       await login(formData.usuario, formData.contrasena, 'Administrador');
       navigate('/dashboard');
     } catch (error) {
@@ -58,29 +57,47 @@ const RegisterPage = () => {
     }
   };
 
+  const InputField = ({ label, required, icon: Icon, children }) => (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+        {Icon && <Icon size={10} />}
+        {label} {required && <span className="text-rose-400">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+
+  const inputClass = "w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all text-slate-800 placeholder:text-slate-300 placeholder:font-normal";
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black font-outfit p-6 relative overflow-hidden">
-      
-      {/* Fondo Decorativo */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+    <div
+      className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)' }}
+    >
+      {/* Orbes decorativos */}
+      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-15%] left-[-10%] w-[400px] h-[400px] bg-violet-500/15 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute top-[50%] left-[50%] w-[300px] h-[300px] bg-sky-500/10 rounded-full blur-[80px] pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
 
       <div className="w-full max-w-[500px] animate-fade-in relative z-10 my-10">
         <div className="bg-white p-10 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-200 relative overflow-hidden">
-          
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-teal-500 to-indigo-500"></div>
-          
-          <button 
+
+          {/* Barra de acento superior */}
+          <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600"></div>
+
+          {/* Botón volver */}
+          <button
             onClick={() => navigate('/')}
             className="absolute top-8 left-8 text-slate-400 hover:text-indigo-600 transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
             title="Volver al Inicio"
           >
-            &larr;
+            <ArrowLeft size={18} />
           </button>
 
+          {/* Header */}
           <div className="text-center mb-10 mt-6">
-            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner border border-emerald-100">
-               🏢
+            <div className="w-16 h-16 bg-slate-900 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-slate-200 hover:scale-105 transition-transform cursor-default">
+              <Store size={28} />
             </div>
             <h1 className="text-3xl font-black text-slate-800 tracking-tighter italic uppercase">
               Crear Cuenta
@@ -91,124 +108,135 @@ const RegisterPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre Completo <span className="text-rose-400">*</span></label>
-              <input 
-                type="text" 
-                value={formData.nombres} 
-                onChange={e => setFormData({...formData, nombres: e.target.value})} 
-                required 
-                placeholder="Ej. Juan Pérez" 
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
+
+            <InputField label="Nombre Completo" required icon={User}>
+              <input
+                type="text"
+                value={formData.nombres}
+                onChange={e => setFormData({ ...formData, nombres: e.target.value })}
+                required
+                placeholder="Ej. Juan Pérez"
+                className={inputClass}
               />
-            </div>
+            </InputField>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usuario <span className="text-rose-400">*</span></label>
-                <input 
-                  type="text" 
-                  value={formData.usuario} 
-                  onChange={e => setFormData({...formData, usuario: e.target.value.toLowerCase()})} 
-                  required 
-                  placeholder="juanp" 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
+              <InputField label="Usuario" required>
+                <input
+                  type="text"
+                  value={formData.usuario}
+                  onChange={e => setFormData({ ...formData, usuario: e.target.value.toLowerCase() })}
+                  required
+                  placeholder="juanp"
+                  className={inputClass}
                 />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Celular <span className="text-rose-400">*</span></label>
-                <input 
-                  type="text" 
-                  value={formData.celular} 
-                  onChange={e => setFormData({...formData, celular: e.target.value})} 
-                  required 
-                  placeholder="3001234567" 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
+              </InputField>
+              <InputField label="Celular" required icon={Phone}>
+                <input
+                  type="text"
+                  value={formData.celular}
+                  onChange={e => setFormData({ ...formData, celular: e.target.value })}
+                  required
+                  placeholder="3001234567"
+                  className={inputClass}
                 />
-              </div>
+              </InputField>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico <span className="text-rose-400">*</span></label>
-              <input 
-                type="email" 
-                value={formData.correo} 
-                onChange={e => setFormData({...formData, correo: e.target.value})} 
-                required 
-                placeholder="juan@empresa.com" 
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
+            <InputField label="Correo Electrónico" required icon={Mail}>
+              <input
+                type="email"
+                value={formData.correo}
+                onChange={e => setFormData({ ...formData, correo: e.target.value })}
+                required
+                placeholder="juan@empresa.com"
+                className={inputClass}
               />
-            </div>
+            </InputField>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest ml-1 mt-4 block border-t border-slate-100 pt-4">Datos del Negocio</label>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre de Tienda <span className="text-rose-400">*</span></label>
-                <input 
-                  type="text" 
-                  value={formData.store_name} 
-                  onChange={e => setFormData({...formData, store_name: e.target.value})} 
-                  required 
-                  placeholder="Ej. MiniMarket Central" 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
-                />
+            {/* Sección negocio */}
+            <div className="border-t border-slate-100 pt-5">
+              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                <Building2 size={11} />
+                Datos del Negocio
+              </p>
+              <div className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="Nombre de Tienda" required>
+                    <input
+                      type="text"
+                      value={formData.store_name}
+                      onChange={e => setFormData({ ...formData, store_name: e.target.value })}
+                      required
+                      placeholder="Ej. MiniMarket Central"
+                      className={inputClass}
+                    />
+                  </InputField>
+                  <InputField label="Dirección (Opcional)" icon={MapPin}>
+                    <input
+                      type="text"
+                      value={formData.store_address}
+                      onChange={e => setFormData({ ...formData, store_address: e.target.value })}
+                      placeholder="Calle 123..."
+                      className={inputClass}
+                    />
+                  </InputField>
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Dirección (Opcional)</label>
-                <input 
-                  type="text" 
-                  value={formData.store_address} 
-                  onChange={e => setFormData({...formData, store_address: e.target.value})} 
-                  placeholder="Calle 123..." 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
-                />
-              </div>
             </div>
 
-            <div className="space-y-1 relative">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Contraseña <span className="text-rose-400">*</span></label>
+            <InputField label="Contraseña" required icon={Lock}>
               <div className="relative">
-                <input 
-                  type={showPassword ? 'text' : 'password'} 
-                  value={formData.contrasena} 
-                  onChange={e => setFormData({...formData, contrasena: e.target.value})} 
-                  required 
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.contrasena}
+                  onChange={e => setFormData({ ...formData, contrasena: e.target.value })}
+                  required
                   minLength={8}
-                  placeholder="••••••••" 
-                  className="w-full p-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
+                  placeholder="••••••••"
+                  className={`${inputClass} pr-12`}
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xl opacity-50 hover:opacity-100 transition-opacity">
-                  {showPassword ? '🙈' : '👁️'}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-            </div>
+            </InputField>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Confirmar Contraseña <span className="text-rose-400">*</span></label>
-              <input 
-                type={showPassword ? 'text' : 'password'} 
-                value={formData.confirmarContrasena} 
-                onChange={e => setFormData({...formData, confirmarContrasena: e.target.value})} 
-                required 
+            <InputField label="Confirmar Contraseña" required icon={Lock}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={formData.confirmarContrasena}
+                onChange={e => setFormData({ ...formData, confirmarContrasena: e.target.value })}
+                required
                 minLength={8}
-                placeholder="••••••••" 
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all text-slate-800" 
+                placeholder="••••••••"
+                className={inputClass}
               />
-            </div>
+            </InputField>
 
-            <button type="submit" disabled={isLoading} className="w-full py-5 bg-emerald-500 hover:bg-emerald-600 border border-emerald-400 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200/50 mt-6 active:scale-95 transition-all disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-6 active:scale-95 transition-all disabled:opacity-50"
+            >
               {isLoading ? 'Registrando y encriptando...' : 'Crear mi Negocio'}
             </button>
           </form>
 
           <div className="mt-8 text-center border-t border-slate-100 pt-8">
-             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-               ¿Ya abriste tu negocio? <button onClick={() => navigate('/login')} className="text-indigo-600 font-black hover:underline decoration-2 underline-offset-4 ml-1">Inicia Sesión</button>
-             </p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              ¿Ya abriste tu negocio?{' '}
+              <button
+                onClick={() => navigate('/login')}
+                className="text-indigo-600 font-black hover:underline decoration-2 underline-offset-4 ml-1"
+              >
+                Inicia Sesión
+              </button>
+            </p>
           </div>
 
         </div>
