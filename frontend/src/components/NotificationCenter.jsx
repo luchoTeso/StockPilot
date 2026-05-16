@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Bell, Package, Calendar, ShieldCheck, Zap } from 'lucide-react';
 
 const NotificationCenter = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -136,7 +137,7 @@ const NotificationCenter = () => {
                 className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all active:scale-90 shadow-lg border-2 ${isOpen ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-200 shadow-slate-200/50'}`}
                 title="Centro de Alertas"
             >
-                <span className={`text-xl ${isOpen ? 'brightness-200' : 'drop-shadow-sm'}`}>🔔</span>
+                <Bell size={20} />
                 {stats.total > 0 && (
                     <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-[10px] font-black text-white rounded-full border-2 shadow-md ${isOpen ? 'border-indigo-600' : 'border-white'} ${stats.critico > 0 ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`}>
                         {stats.total > 9 ? '+9' : stats.total}
@@ -182,8 +183,8 @@ const NotificationCenter = () => {
                                             className="p-5 hover:bg-white hover:shadow-inner transition-all cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
                                         >
                                             <div className="flex gap-4">
-                                                <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center text-lg shadow-sm ${getSeverityStyles(alert.severidad)}`}>
-                                                    {alert.tipo.includes('vencimiento') ? '📅' : '📦'}
+                                                <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getSeverityStyles(alert.severidad)}`}>
+                                                    {alert.tipo.includes('vencimiento') ? <Calendar size={18} /> : <Package size={18} />}
                                                 </div>
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between items-start">

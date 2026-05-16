@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import NotificationCenter from '../components/NotificationCenter';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { useSidebar } from '../context/SidebarContext';
+import { Store, Menu, X } from 'lucide-react';
 
 const DashboardLayout = () => {
   const { toggleSidebar, isOpen, isCollapsed } = useSidebar();
@@ -15,18 +16,20 @@ const DashboardLayout = () => {
       {/* 📱 Mobile Top Bar (Only < 768px) */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-[150] flex items-center justify-between px-6 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-lg shadow-md">🏪</div>
+          <div className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shadow-md">
+            <Store size={16} />
+          </div>
           <span className="font-black text-slate-800 tracking-tighter uppercase text-sm italic underline decoration-indigo-500 underline-offset-4">StockPilot</span>
         </div>
         <div className="flex items-center gap-4">
           <div className="mt-1">
             <NotificationCenter />
           </div>
-          <button 
+          <button
             onClick={toggleSidebar}
             className="w-10 h-10 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center border border-slate-200 active:scale-95 transition-transform"
           >
-            {isOpen ? '✕' : '☰'}
+            {isOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
