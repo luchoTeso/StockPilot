@@ -3,6 +3,7 @@ import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useToast } from '../context/ToastContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { Brain, BarChart2, Lightbulb, TrendingUp, ClipboardList, Inbox, Package, CheckCircle2, X, Flame } from 'lucide-react';
 
 const AprendizajePage = () => {
     const { addToast } = useToast();
@@ -86,9 +87,9 @@ const AprendizajePage = () => {
 
     const getVerdict = (factor) => {
         const f = parseFloat(factor);
-        if (Math.abs(f - 1.0) <= 0.15) return { label: 'Predicción acertada', icon: '✅', desc: 'Lo sugerido estuvo muy cerca de lo vendido' };
-        if (f < 0.85) return { label: 'Se sugirió de más', icon: '📦', desc: 'Se recomendó comprar más de lo que se vendió' };
-        return { label: 'Se sugirió de menos', icon: '🔥', desc: 'La demanda superó lo que se recomendó comprar' };
+        if (Math.abs(f - 1.0) <= 0.15) return { label: 'Predicción acertada', icon: CheckCircle2, desc: 'Lo sugerido estuvo muy cerca de lo vendido' };
+        if (f < 0.85) return { label: 'Se sugirió de más', icon: Package, desc: 'Se recomendó comprar más de lo que se vendió' };
+        return { label: 'Se sugirió de menos', icon: Flame, desc: 'La demanda superó lo que se recomendó comprar' };
     };
 
     const globalAccuracy = factorToAccuracy(metrics.global.promedio);
@@ -120,7 +121,7 @@ const AprendizajePage = () => {
                         <div className="flex-1 max-w-2xl">
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="w-9 h-9 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-300 border border-indigo-400/20 shadow-lg shadow-indigo-500/10">
-                                    🧠
+                                    <Brain size={18} />
                                 </span>
                                 <span className="text-[10px] font-bold text-indigo-300/90 uppercase tracking-[0.25em]">Aprendizaje Inteligente</span>
                             </div>
@@ -156,7 +157,7 @@ const AprendizajePage = () => {
                                 className="bg-indigo-500 hover:bg-indigo-400 text-white py-3.5 px-6 rounded-2xl font-bold text-xs tracking-wider transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.97] flex items-center justify-center gap-2.5 border border-indigo-400/30"
                             >
                                 <span>Evaluar una orden</span>
-                                <span>📊</span>
+                                <BarChart2 size={14} />
                             </button>
                         </div>
                     </div>
@@ -168,7 +169,7 @@ const AprendizajePage = () => {
 
                 {/* ── Explicación rápida ── */}
                 <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 flex items-start gap-4">
-                    <span className="text-2xl mt-0.5">💡</span>
+                    <Lightbulb size={22} className="mt-0.5 text-indigo-500 shrink-0" />
                     <div>
                         <p className="font-bold text-indigo-800 text-sm mb-1">¿Cómo funciona?</p>
                         <p className="text-indigo-700/80 text-xs leading-relaxed">
@@ -183,7 +184,7 @@ const AprendizajePage = () => {
                 <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-3">
                         <div>
-                            <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-1">📈 Evolución del Acierto</h2>
+                            <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-1 flex items-center gap-2"><TrendingUp size={18} /> Evolución del Acierto</h2>
                             <p className="text-xs font-medium text-slate-400">Cómo ha mejorado (o empeorado) la precisión del sistema mes a mes</p>
                         </div>
                         <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2">
@@ -215,7 +216,7 @@ const AprendizajePage = () => {
                             </ResponsiveContainer>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-slate-300">
-                                <span className="text-4xl mb-3">📊</span>
+                                <BarChart2 size={40} className="mb-3" />
                                 <p className="font-bold text-sm">Aún no hay datos suficientes</p>
                                 <p className="text-xs mt-1">Evalúa al menos 2 órdenes en meses diferentes para ver la gráfica</p>
                             </div>
@@ -225,7 +226,7 @@ const AprendizajePage = () => {
 
                 {/* ── Tabla completa de productos ── */}
                 <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
-                    <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-2">📋 Rendimiento por Producto</h2>
+                    <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-2 flex items-center gap-2"><ClipboardList size={18} /> Rendimiento por Producto</h2>
                     <p className="text-xs font-medium text-slate-400 mb-6">Qué tan bien acertó el sistema para cada producto que evaluaste</p>
                     
                     {/* Leyenda de colores */}
@@ -254,7 +255,7 @@ const AprendizajePage = () => {
                                 <div key={prod.id_producto} className={`flex flex-col sm:flex-row sm:justify-between sm:items-center p-5 rounded-2xl border ${color.border} ${color.bg} gap-3`}>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span>{verdict.icon}</span>
+                                            {(() => { const Icon = verdict.icon; return <Icon size={16} />; })()}
                                             <p className="font-black text-slate-800 text-sm">{prod.nombre_producto}</p>
                                         </div>
                                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-7">{verdict.label} · {prod.evaluaciones} {prod.evaluaciones === 1 ? 'evaluación' : 'evaluaciones'}</p>
@@ -270,7 +271,7 @@ const AprendizajePage = () => {
                             );
                         }) : (
                             <div className="p-10 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
-                                <span className="text-3xl block mb-3">📭</span>
+                                <Inbox size={36} className="block mb-3 mx-auto" />
                                 <p className="font-bold text-sm">No hay productos evaluados todavía</p>
                                 <p className="text-xs mt-1">Usa el botón "Evaluar una orden" para comenzar a medir la precisión</p>
                             </div>
@@ -287,14 +288,14 @@ const AprendizajePage = () => {
                         <div className="p-8 bg-indigo-600 text-white flex justify-between items-start">
                             <div>
                                 <h3 className="text-xl font-black tracking-tighter uppercase italic flex items-center gap-2">
-                                    📊 Evaluar Precisión
+                                    <BarChart2 size={20} /> Evaluar Precisión
                                 </h3>
                                 <p className="text-[11px] font-medium opacity-90 mt-2 leading-relaxed">
                                     Selecciona una orden antigua para que el sistema compare lo que sugirió comprar vs. lo que realmente se vendió desde entonces.
                                 </p>
                             </div>
-                            <button onClick={() => setModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-indigo-500 hover:bg-white hover:text-indigo-600 rounded-xl transition-colors font-bold text-lg shrink-0 ml-4">
-                                &times;
+                            <button onClick={() => setModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-indigo-500 hover:bg-white hover:text-indigo-600 rounded-xl transition-colors shrink-0 ml-4">
+                                <X size={16} />
                             </button>
                         </div>
 
@@ -392,7 +393,7 @@ const AprendizajePage = () => {
                             ) : (
                                 <div className="space-y-5">
                                     <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-5 rounded-2xl text-center">
-                                        <p className="font-black text-sm uppercase tracking-wide">✅ Evaluación Completada</p>
+                                        <p className="font-black text-sm uppercase tracking-wide flex items-center justify-center gap-1"><CheckCircle2 size={14} /> Evaluación Completada</p>
                                         <p className="text-xs font-medium mt-1 opacity-80">El sistema ha registrado estos resultados para mejorar futuras sugerencias</p>
                                     </div>
 

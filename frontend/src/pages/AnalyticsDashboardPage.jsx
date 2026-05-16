@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { BarChart2, Brain, ArrowLeft, CheckCircle2, AlertTriangle, Microscope } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
   ComposedChart, Cell, PieChart, Pie, AreaChart, Area, Line,
@@ -161,11 +162,11 @@ const AnalyticsDashboardPage = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div className="flex items-center gap-5">
           <button onClick={() => navigate('/dashboard')} className="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 rounded-2xl transition-all shadow-sm active:scale-95">
-             <span className="text-xl font-bold text-slate-700">←</span>
+             <ArrowLeft size={18} className="text-slate-700" />
           </button>
           <div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-lg shadow-inner border border-indigo-200">📊</div>
+              <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shadow-inner border border-indigo-200"><BarChart2 size={20} /></div>
               <h2 className="text-3xl font-black text-slate-800 tracking-tighter italic uppercase">Centro Analítico</h2>
             </div>
             <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1 ml-[52px]">Inteligencia de Datos y Patrones Estratégicos</p>
@@ -176,7 +177,7 @@ const AnalyticsDashboardPage = () => {
             onClick={() => navigate('/aprendizaje')}
             className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-colors shadow-sm"
           >
-            <span>🧠</span>
+            <Brain size={14} />
             <span>Ver Aprendizaje IA</span>
           </button>
           
@@ -347,7 +348,10 @@ const AnalyticsDashboardPage = () => {
             })}
             <div className="pt-4 border-t border-slate-100">
               <p className="text-[9px] text-slate-500 font-bold text-center uppercase tracking-widest">
-                {riskData[0].value === 0 ? '✅ Sin productos en riesgo crítico' : `⚠️ ${riskData[0].value} producto(s) requieren intervención inmediata`}
+                {riskData[0].value === 0
+                  ? <span className="flex items-center justify-center gap-1"><CheckCircle2 size={10} /> Sin productos en riesgo crítico</span>
+                  : <span className="flex items-center justify-center gap-1"><AlertTriangle size={10} /> {riskData[0].value} producto(s) requieren intervención inmediata</span>
+                }
               </p>
             </div>
           </div>
@@ -385,7 +389,7 @@ const AnalyticsDashboardPage = () => {
               </ResponsiveContainer>
             ) : (
               <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100 flex flex-col items-center gap-3 w-full px-4">
-                <div className="text-3xl grayscale opacity-50">🔬</div>
+                <div className="grayscale opacity-50 flex justify-center"><Microscope size={36} /></div>
                 <div>
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest px-2">Esperando Datos Estratégicos</p>
                   <p className="text-[10px] text-slate-400 font-medium italic mt-1 leading-tight">
