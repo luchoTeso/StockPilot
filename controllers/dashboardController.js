@@ -6,8 +6,8 @@ class DashboardController {
         try {
             const tiendaId = req.session.tiendaId;
             
-            // 1. Total Artículos (Stock físico)
-            const articulosQuery = `SELECT SUM(cantidad) as total FROM Productos WHERE id_tienda = ?`;
+            // 1. Total Artículos (número de productos distintos en catálogo)
+            const articulosQuery = `SELECT COUNT(*) as total FROM Productos WHERE id_tienda = ? AND estado = 'Disponible'`;
             const articulos = await db.getAsync(articulosQuery, [tiendaId]);
 
             // 2. Valor Inventario y Rentabilidad (Precio de venta * cantidad)
