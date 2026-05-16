@@ -216,7 +216,18 @@ const ProveedoresPage = () => {
         estado_deseado: riskData.nivel === 'Bajo' ? 'Aprobada' : 'Pendiente'
       });
       if (res.data.success) {
-        toast.success(`Orden registrada (${res.data.orden_id})`);
+        const ordenId = res.data.orden_id;
+        if (riskData.nivel === 'Bajo') {
+          try {
+            await axios.post(`/api/ordenes/${ordenId}/enviar-proveedor`);
+            toast.success(`Orden #${ordenId} aprobada y enviada al proveedor automáticamente.`);
+          } catch {
+            toast.success(`Orden #${ordenId} creada y aprobada.`);
+            toast.warning('No se pudo enviar el email. Verifica que el proveedor tenga correo registrado.');
+          }
+        } else {
+          toast.success(`Orden #${ordenId} enviada a revisión.`);
+        }
         setShowOrderModal(false);
         fetchHistory();
       }
@@ -559,7 +570,7 @@ const ProveedoresPage = () => {
                         : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'
                     }`}
                   >
-                    {isSubmitting ? 'Guardando...' : (riskEval?.nivel === 'Bajo' ? 'Confirmar Pedido' : 'Enviar a Revisión')}
+                    {isSubmitting ? 'Procesando...' : (riskEval?.nivel === 'Bajo' ? '✓ Aprobar y Enviar al Proveedor' : 'Enviar a Revisión')}
                   </button>
                 </>
               )}
