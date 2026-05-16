@@ -3,11 +3,14 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Tooltip from '../components/Tooltip';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { SYNC_EVENTS, subscribeToSync } from '../utils/stockSync';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAuth();
+  const storeKey = user?.tiendaId ?? 'default';
   const [stats, setStats] = useState({
     totalArticulos: 0,
     valorInventario: 0,
@@ -28,16 +31,16 @@ const DashboardPage = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // 0. Cargar caché previo para una respuesta INSTANTÁNEA (Optimistic UI)
-      const cachedStats = localStorage.getItem('stockpilot_stats');
-      const cachedPromos = localStorage.getItem('stockpilot_promos');
-      const cachedRecs = localStorage.getItem('stockpilot_recs');
-      
+      // 0. Caché aislado por tienda para evitar filtración de datos entre negocios
+      const cachedStats = localStorage.getItem(`stockpilot_stats_${storeKey}`);
+      const cachedPromos = localStorage.getItem(`stockpilot_promos_${storeKey}`);
+      const cachedRecs = localStorage.getItem(`stockpilot_recs_${storeKey}`);
+
       if (cachedStats) setStats(JSON.parse(cachedStats));
       if (cachedPromos) setPromotions(JSON.parse(cachedPromos));
       if (cachedRecs) setRecommendations(JSON.parse(cachedRecs));
 
-      // Si hay caché, quitamos el loading principal para que el usuario pueda ver datos de inmediato
+      // Si hay caché de esta tienda, quitamos el loading para respuesta inmediata
       if (cachedStats || cachedPromos) {
         setLoading(false);
         setLoadingPromos(false);
@@ -49,15 +52,15 @@ const DashboardPage = () => {
         axios.get('/api/ia/promotions').catch(() => ({ data: { promotions: [] } }))
       ]);
 
-      // Guardar en estados y en localStorage para la próxima vez
+      // Guardar en caché con clave de tienda
       setStats(statsRes.data);
-      localStorage.setItem('stockpilot_stats', JSON.stringify(statsRes.data));
-      
+      localStorage.setItem(`stockpilot_stats_${storeKey}`, JSON.stringify(statsRes.data));
+
       setRecommendations(aiRes.data.recommendations || []);
-      localStorage.setItem('stockpilot_recs', JSON.stringify(aiRes.data.recommendations || []));
+      localStorage.setItem(`stockpilot_recs_${storeKey}`, JSON.stringify(aiRes.data.recommendations || []));
 
       setPromotions(promoRes.data.promotions || []);
-      localStorage.setItem('stockpilot_promos', JSON.stringify(promoRes.data.promotions || []));
+      localStorage.setItem(`stockpilot_promos_${storeKey}`, JSON.stringify(promoRes.data.promotions || []));
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -70,21 +73,18 @@ const DashboardPage = () => {
   useEffect(() => {
     fetchDashboardData();
 
-    // Suscribirse a eventos de sincronización (Punto 2: Tiempo Real)
     const unsubscribe = subscribeToSync((event) => {
-      // Refrescar si hay ventas, cambios de stock o de producto
       if (
-        event.type === SYNC_EVENTS.SALE_COMPLETED || 
-        event.type === SYNC_EVENTS.STOCK_UPDATED || 
+        event.type === SYNC_EVENTS.SALE_COMPLETED ||
+        event.type === SYNC_EVENTS.STOCK_UPDATED ||
         event.type === SYNC_EVENTS.PRODUCT_MODIFIED
       ) {
-        // En el dashboard, refrescamos todo el estado (pero sin el loading inicial para no molestar)
         fetchDashboardData();
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [storeKey]); // re-ejecutar si cambia la tienda activa
 
   const handleApplyStrategy = (promo) => {
     setSelectedPromo(promo);
