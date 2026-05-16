@@ -57,6 +57,7 @@ const AuditoriaPage = () => {
   };
 
   return (
+    <>
     <div className="animate-fade-in pb-12 font-outfit">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
@@ -195,9 +196,11 @@ const AuditoriaPage = () => {
         )}
       </div>
 
-      {/* Modal Detalle */}
-      {detailModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4" onClick={() => setDetailModal(null)}>
+    </div>
+
+    {/* Modal Detalle — fuera del div animado para que fixed cubra todo el viewport */}
+    {detailModal && (
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4" onClick={() => setDetailModal(null)}>
           <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-violet-50 rounded-t-[2.5rem]">
@@ -303,7 +306,7 @@ const AuditoriaPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

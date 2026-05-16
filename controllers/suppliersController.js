@@ -218,8 +218,8 @@ const suppliersController = {
 
       // Auditoría IA: registrar consulta de proveedor (id_orden != NULL → filtro "desde_proveedores")
       try {
-        const datosBase = JSON.stringify(carrito_final.map(i => ({ id: i.id_producto, producto: i.nombre, calculo_base: i.calculo_base })));
-        const sugerenciaJson = JSON.stringify(carrito_final.map(i => ({ id: i.id_producto, ajuste_ia: i.ajuste_ia, sugerencia_final: i.sugerencia_final, razon_ia: i.razon_ia })));
+        const datosBase = JSON.stringify(carrito_final.map(i => ({ product: i.nombre, base: i.calculo_base })));
+        const sugerenciaJson = JSON.stringify(carrito_final.map(i => ({ product: i.nombre, adjustment: i.ajuste_ia, final: i.sugerencia_final, reason: i.razon_ia })));
         await db.runAsync(
           'INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia, fecha_auditoria) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
           [tiendaId, ordenId, 'Orden Inteligente Proveedor v1.0', datosBase, sugerenciaJson, `Orden #${ordenId} — Riesgo: ${evaluacion_riesgo?.nivel || 'N/A'}`, 'Generación de orden de compra inteligente']
