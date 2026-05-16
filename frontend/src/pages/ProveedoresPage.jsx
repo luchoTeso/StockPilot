@@ -16,6 +16,7 @@ const ProveedoresPage = () => {
   
   const [smartCart, setSmartCart] = useState(null); // Data if AI has been invoked
   const [riskEval, setRiskEval] = useState(null);
+  const [isForecastLoading, setIsForecastLoading] = useState(false);
   const [isConsultingAI, setIsConsultingAI] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -83,18 +84,21 @@ const ProveedoresPage = () => {
   };
 
   const handleOpenForecast = async (proveedor) => {
+    setSelectedSupplier(proveedor);
+    setSmartCart(null);
+    setRiskEval(null);
+    setForecastData([]);
+    setIsForecastLoading(true);
+    setShowOrderModal(true);
     try {
-      setSelectedSupplier(proveedor);
-      setSmartCart(null);
-      setRiskEval(null);
-      setShowOrderModal(true);
-      
       const res = await axios.get(`/api/proveedores/${proveedor.id_proveedor}/forecast`);
       if (res.data.success) {
         setForecastData(res.data.recomendaciones_matematicas);
       }
     } catch (e) {
       toast.error('Error calculando la demanda base');
+    } finally {
+      setIsForecastLoading(false);
     }
   };
 
@@ -486,7 +490,13 @@ const ProveedoresPage = () => {
                       </tr>
                     ))}
                     {(smartCart || forecastData).length === 0 && (
-                      <tr><td colSpan="6" className="p-8 text-center text-sm font-bold text-slate-400 italic uppercase tracking-widest">Preparando lista sugerida...</td></tr>
+                      <tr>
+                        <td colSpan="6" className="p-8 text-center text-sm font-bold text-slate-400 italic uppercase tracking-widest">
+                          {isForecastLoading
+                            ? '⏳ Calculando recomendaciones...'
+                            : '✅ Todos los productos tienen stock suficiente o no hay productos vinculados a este proveedor.'}
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
