@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 
@@ -198,9 +199,9 @@ const AuditoriaPage = () => {
 
     </div>
 
-    {/* Modal Detalle — fuera del div animado para que fixed cubra todo el viewport */}
-    {detailModal && (
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4" onClick={() => setDetailModal(null)}>
+    {/* Modal Detalle — portal directo a document.body para evitar stacking context del sidebar */}
+    {detailModal && createPortal(
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4" onClick={() => setDetailModal(null)}>
           <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-violet-50 rounded-t-[2.5rem]">
@@ -265,10 +266,9 @@ const AuditoriaPage = () => {
                           const itemBase = Array.isArray(datosBase) ? datosBase[i] : datosBase;
                           const baseVal = s.base || itemBase?.base || itemBase?.precio || s.originalPrice || '---';
                           
-                          // Lógica de nombre + ID
-                          const name = s.product || s.productName || itemBase?.product || itemBase?.nombre_producto || 'Producto';
+                          const name = s.product || s.productName || itemBase?.product || itemBase?.nombre_producto || null;
                           const id = s.id || s.id_producto || itemBase?.id || itemBase?.id_producto || '';
-                          const displayName = id ? `${name} (ID: ${id})` : name;
+                          const displayName = name || (id ? `Producto #${id}` : 'Producto');
                           
                           return (
                             <tr key={i} className="hover:bg-white transition-colors">
@@ -304,8 +304,9 @@ const AuditoriaPage = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div>,
+      document.body
+    )}
     </>
   );
 };
