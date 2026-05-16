@@ -126,9 +126,9 @@ const TiendasPage = () => {
                       {tienda.nombre_establecimiento}
                     </h3>
                     <div className="flex items-center gap-3">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border ${isActivo ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full mr-2 ${isActivo ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'}`}></span>
-                        ESTADO: {tienda.estado || 'INACTIVA'}
+                      <span className="inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border bg-emerald-50 text-emerald-600 border-emerald-100">
+                        <span className="w-1.5 h-1.5 rounded-full mr-2 bg-emerald-500"></span>
+                        ACTIVA
                       </span>
                     </div>
                   </div>
