@@ -149,7 +149,7 @@ const NotificationCenter = () => {
                 <div
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
-                    className="fixed top-20 right-4 sm:top-24 sm:right-12 w-[calc(100vw-2rem)] sm:w-96 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-indigo-100/50 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-4 duration-300 origin-top-right scale-100"
+                    className="fixed top-16 right-4 sm:top-20 sm:right-12 w-[calc(100vw-2rem)] sm:w-96 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-indigo-100/50 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-4 duration-300 origin-top-right flex flex-col max-h-[calc(100vh-5rem)]"
                 >
                     <div className="p-5 border-b border-indigo-50 flex items-center justify-between bg-gradient-to-r from-indigo-50/50 to-white">
                         <h3 className="font-black text-slate-800 text-[10px] uppercase tracking-[0.2em] italic">Notificaciones Activas</h3>
@@ -158,7 +158,7 @@ const NotificationCenter = () => {
                         </span>
                     </div>
 
-                    <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto scrollbar-premium">
+                    <div className="flex-1 overflow-y-auto scrollbar-premium min-h-0">
                         {loading && alerts.length === 0 ? (
                             <div className="p-12 text-center">
                                 <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
