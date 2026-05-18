@@ -38,13 +38,23 @@ class AuthController {
                 });
             }
 
+            // Bloquear segundo login: si ya hay sesión activa y no se fuerza, rechazar
+            const { force } = req.body;
+            if (user.session_id && !force) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Ya hay una sesión activa para este usuario en otro dispositivo.',
+                    code: 'SESSION_ACTIVE'
+                });
+            }
+
             req.session.userId = user.id_usuario;
             req.session.tiendaId = user.id_tienda;
             req.session.rol = user.rol;
             req.session.nombres = user.nombres;
             req.session.cambio_clave_forzoso = user.cambio_clave_forzoso === 1;
 
-            // Bloquear sesión concurrente: Guardar el ID de la sesión actual en la DB
+            // Registrar la sesión activa en la BD (sobreescribe si se forzó el acceso)
             await User.setCurrentSession(user.id_usuario, req.sessionID);
 
             console.log('Sesión establecida correctamente. Enviando respuesta...');

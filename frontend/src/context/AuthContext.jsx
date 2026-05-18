@@ -55,16 +55,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (identificador, password, rol) => {
+  const login = async (identificador, password, rol, force = false) => {
     try {
-      const res = await axios.post('/api/login', { login: identificador, password, rol });
+      const res = await axios.post('/api/login', { login: identificador, password, rol, force });
       if (res.data.success) {
         await checkSession();
       } else {
         throw new Error(res.data.error || 'Error de inicio de sesión');
       }
     } catch (err) {
-      throw new Error(err.response?.data?.error || err.message || 'Error de conexión');
+      const apiError = err.response?.data;
+      if (apiError?.code === 'SESSION_ACTIVE') {
+        const sessionError = new Error(apiError.error);
+        sessionError.code = 'SESSION_ACTIVE';
+        throw sessionError;
+      }
+      throw new Error(apiError?.error || err.message || 'Error de conexión');
     }
   };
 

@@ -592,7 +592,8 @@ const ProveedoresPage = () => {
           <div className="h-40 bg-white rounded-3xl animate-pulse"></div>
         ) : (
           <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-            <table className="w-full text-left">
+            <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[860px]">
               <thead>
                 <tr className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <th className="p-5">Fecha</th>
@@ -663,6 +664,7 @@ const ProveedoresPage = () => {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

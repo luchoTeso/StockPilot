@@ -8,20 +8,26 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('');
   const [error, setError] = useState('');
+  const [sessionConflict, setSessionConflict] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const isConcurrent = new URLSearchParams(location.search).get('reason') === 'concurrent';
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, force = false) => {
     e.preventDefault();
     setError('');
+    setSessionConflict(false);
     try {
-      await login(identificador, password, rol);
+      await login(identificador, password, rol, force);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Error al iniciar sesión');
+      if (err.code === 'SESSION_ACTIVE') {
+        setSessionConflict(true);
+      } else {
+        setError(err.message || 'Error al iniciar sesión');
+      }
     }
   };
 
@@ -42,15 +48,28 @@ const LoginPage = () => {
             <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2 font-outfit">Gestión Inteligente de Inventario</p>
           </div>
 
-          {isConcurrent && !error && (
+          {isConcurrent && !error && !sessionConflict && (
             <div className="bg-amber-50 border border-amber-100 text-amber-600 p-4 rounded-xl mb-8 text-[10px] font-black uppercase tracking-widest text-center animate-pulse">
-              🛡️ Sesión cerrada: Se ha iniciado sesión en otro dispositivo.
+              Sesión cerrada: Se ha iniciado sesión en otro dispositivo.
+            </div>
+          )}
+
+          {sessionConflict && (
+            <div className="bg-amber-50 border border-amber-200 p-5 rounded-xl mb-6 text-center space-y-3">
+              <p className="text-amber-700 text-[10px] font-black uppercase tracking-widest">Ya hay una sesión activa para este usuario</p>
+              <p className="text-amber-600 text-[10px] font-bold">Alguien ya inició sesión en otro dispositivo. ¿Deseas cerrar esa sesión y entrar aquí?</p>
+              <button
+                onClick={(e) => handleSubmit(e, true)}
+                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
+              >
+                Cerrar otra sesión e ingresar aquí
+              </button>
             </div>
           )}
 
           {error && (
             <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl mb-8 text-[10px] font-black uppercase tracking-widest text-center">
-              ⚠️ {error}
+              {error}
             </div>
           )}
 
