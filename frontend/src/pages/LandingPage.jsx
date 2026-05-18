@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import { Store, Rocket, Bot, BarChart2, Search } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -191,7 +192,7 @@ const LandingPage = () => {
       <nav className={`nav-blur${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: '0 24px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 36, height: 36, background: '#6366f1', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🏪</div>
+            <div style={{ width: 36, height: 36, background: '#6366f1', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Store size={18} /></div>
             <span style={{ fontWeight: 900, fontSize: 15, letterSpacing: '-0.02em', fontStyle: 'italic', textTransform: 'uppercase', color: '#f8fafc' }}>StockPilot</span>
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
@@ -322,12 +323,12 @@ const LandingPage = () => {
           </div>
           <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
             {[
-              { icon: '🤖', color: '#818cf8', title: 'Copiloto IA (GPT-4o-mini)', desc: 'Analiza el inventario y genera recomendaciones de reabastecimiento en lenguaje natural, con guardrails por clasificación ABC y auditoría completa de cada decisión del modelo.', tag: 'Motor predictivo' },
-              { icon: '📊', color: '#34d399', title: 'Analítica en tiempo real', desc: 'Dashboard con valor del inventario, ventas del día, proyección de agotamiento por producto y nivel de servicio. Actualizado en cada transacción registrada.', tag: 'Centro analítico' },
-              { icon: '🔍', color: '#f472b6', title: 'Auditoría transparente', desc: 'Cada decisión de la IA queda registrada con su prompt, respuesta y ajuste aplicado. La retroalimentación adaptativa mejora las sugerencias con cada ciclo.', tag: 'Trazabilidad total' },
+              { icon: <Bot size={24} />, color: '#818cf8', title: 'Copiloto IA (GPT-4o-mini)', desc: 'Analiza el inventario y genera recomendaciones de reabastecimiento en lenguaje natural, con guardrails por clasificación ABC y auditoría completa de cada decisión del modelo.', tag: 'Motor predictivo' },
+              { icon: <BarChart2 size={24} />, color: '#34d399', title: 'Analítica en tiempo real', desc: 'Dashboard con valor del inventario, ventas del día, proyección de agotamiento por producto y nivel de servicio. Actualizado en cada transacción registrada.', tag: 'Centro analítico' },
+              { icon: <Search size={24} />, color: '#f472b6', title: 'Auditoría transparente', desc: 'Cada decisión de la IA queda registrada con su prompt, respuesta y ajuste aplicado. La retroalimentación adaptativa mejora las sugerencias con cada ciclo.', tag: 'Trazabilidad total' },
             ].map(({ icon, color, title, desc, tag }, i) => (
               <div key={title} className={`feature-card reveal${isVisible('features') ? ' visible' : ''} reveal-delay-${i+1}`}>
-                <div style={{ width: 52, height: 52, background: `${color}18`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 20 }}>{icon}</div>
+                <div style={{ width: 52, height: 52, background: `${color}18`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>{icon}</div>
                 <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color, marginBottom: 12, display: 'block' }}>{tag}</span>
                 <h3 style={{ fontSize: 17, fontWeight: 900, letterSpacing: '-0.02em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 12, color: '#f1f5f9' }}>{title}</h3>
                 <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.7, fontWeight: 500 }}>{desc}</p>
@@ -429,7 +430,7 @@ const LandingPage = () => {
       <section data-section="cta" style={{ padding: '100px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div className="hero-glow" style={{ width: 600, height: 400, background: 'rgba(99,102,241,0.12)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
         <div className={`reveal${isVisible('cta') ? ' visible' : ''}`} style={{ maxWidth: 640, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ width: 72, height: 72, background: '#6366f1', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, margin: '0 auto 32px' }}>🚀</div>
+          <div style={{ width: 72, height: 72, background: '#6366f1', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px' }}><Rocket size={32} /></div>
           <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 20, lineHeight: 1.1 }}>
             Haz que tu inventario<br />
             <span style={{ color: '#818cf8' }}>trabaje para ti.</span>
@@ -447,7 +448,7 @@ const LandingPage = () => {
       {/* FOOTER */}
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
-          <div style={{ width: 32, height: 32, background: '#1e293b', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🏪</div>
+          <div style={{ width: 32, height: 32, background: '#1e293b', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Store size={16} /></div>
           <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: '-0.01em', fontStyle: 'italic', textTransform: 'uppercase' }}>StockPilot</span>
         </div>
         <p style={{ fontSize: 11, color: '#334155', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Práctica de Ingeniería IV · Universidad Central · 2026</p>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
 import axios from 'axios';
+import { Mail, KeyRound, Sparkles } from 'lucide-react';
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: Correo, 2: Código, 3: Nueva Clave
@@ -115,8 +116,8 @@ const ForgotPasswordPage = () => {
           </button>
 
           <div className="text-center mb-10 mt-6">
-            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner border border-indigo-100">
-               {step === 1 ? '📩' : step === 2 ? '🔐' : '✨'}
+            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-indigo-100">
+               {step === 1 ? <Mail size={36} /> : step === 2 ? <KeyRound size={36} /> : <Sparkles size={36} />}
             </div>
             <h1 className="text-3xl font-black text-slate-800 tracking-tighter italic uppercase">
               {step === 1 ? 'Recuperación' : step === 2 ? 'Verificación' : 'Nueva Clave'}

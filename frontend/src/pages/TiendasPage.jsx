@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Store, Pencil, ClipboardList, Phone, Calendar, Mail, Smartphone, MapPin, Save } from 'lucide-react';
 
 const TiendasPage = () => {
   const { user } = useAuth();
@@ -103,7 +104,7 @@ const TiendasPage = () => {
         </div>
       ) : !tienda ? (
         <div className="bg-white p-12 rounded-[2.5rem] text-center shadow-xl border border-slate-100 flex flex-col items-center justify-center gap-4">
-          <div className="text-6xl mb-2">🏪</div>
+          <div className="mb-2 text-slate-400"><Store size={56} /></div>
           <h3 className="text-2xl font-black text-slate-800 tracking-tighter italic">Perfil Inexistente</h3>
           <p className="text-slate-500 font-medium max-w-md mx-auto">No se encontró información de la sucursal vinculada a esta sesión corporativa de StockPilot.</p>
         </div>
@@ -118,8 +119,8 @@ const TiendasPage = () => {
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-5 md:pb-8 mb-5 md:mb-8 gap-4 md:gap-6">
                 <div className="flex items-center gap-5">
-                  <div className="w-20 h-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center shadow-lg shadow-indigo-200 text-4xl shrink-0 transform -rotate-3 group-hover:rotate-0 transition-transform">
-                    🏪
+                  <div className="w-20 h-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0 transform -rotate-3 group-hover:rotate-0 transition-transform">
+                    <Store size={36} />
                   </div>
                   <div>
                     <h3 className="text-xl sm:text-2xl lg:text-4xl font-black text-slate-800 tracking-tighter italic mb-1">
@@ -140,7 +141,7 @@ const TiendasPage = () => {
                       className="flex-1 md:flex-none flex items-center justify-center gap-2 p-4 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95"
                       onClick={abrirModalEdit}
                     >
-                      <span>✏️</span> EDITAR PERFIL
+                      <Pencil size={16} /> EDITAR PERFIL
                     </button>
                   </div>
                 )}
@@ -152,7 +153,7 @@ const TiendasPage = () => {
                 {/* Datos Generales */}
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors">
                   <h4 className="flex items-center gap-3 text-slate-800 font-black text-xs uppercase tracking-widest border-b border-white pb-3 mb-4">
-                    <span className="p-2 bg-indigo-100 text-indigo-600 rounded-lg text-lg">📋</span> IDENTIDAD COMERCIAL
+                    <span className="p-2 bg-indigo-100 text-indigo-600 rounded-lg"><ClipboardList size={18} /></span> IDENTIDAD COMERCIAL
                   </h4>
                   <div className="space-y-4">
                     <div>
@@ -173,7 +174,7 @@ const TiendasPage = () => {
                 {/* Contacto */}
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors">
                   <h4 className="flex items-center gap-3 text-slate-800 font-black text-xs uppercase tracking-widest border-b border-white pb-3 mb-4">
-                    <span className="p-2 bg-indigo-100 text-indigo-600 rounded-lg text-lg">📞</span> CONTACTO DIRECTO
+                    <span className="p-2 bg-indigo-100 text-indigo-600 rounded-lg"><Phone size={18} /></span> CONTACTO DIRECTO
                   </h4>
                   <div className="space-y-4">
                     <div>
@@ -193,8 +194,8 @@ const TiendasPage = () => {
 
                 {/* Fundación */}
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex flex-col items-center justify-center text-center gap-4 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors">
-                  <div className="w-16 h-16 bg-white border border-slate-100 rounded-full flex items-center justify-center text-3xl shadow-sm">
-                    📅
+                  <div className="w-16 h-16 bg-white border border-slate-100 rounded-full flex items-center justify-center shadow-sm text-slate-500">
+                    <Calendar size={28} />
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 text-center">Fecha de Apertura</p>
@@ -232,12 +233,12 @@ const TiendasPage = () => {
                       <div className="space-y-1 text-xs">
                         {u.correo && (
                           <p className="flex items-center gap-2 text-slate-500 font-medium truncate" title={u.correo}>
-                            <span>✉️</span> <span className="truncate">{u.correo}</span>
+                            <Mail size={14} /> <span className="truncate">{u.correo}</span>
                           </p>
                         )}
                         {u.celular && (
                           <p className="flex items-center gap-2 text-slate-500 font-medium">
-                            <span>📱</span> {u.celular}
+                            <Smartphone size={14} /> {u.celular}
                           </p>
                         )}
                       </div>
@@ -259,7 +260,7 @@ const TiendasPage = () => {
             {/* Header Modal */}
             <div className="flex justify-between items-center p-6 lg:p-8 border-b border-slate-100 bg-slate-50/50">
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl">✏️</div>
+                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center"><Pencil size={20} /></div>
                  <div>
                    <h3 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase">Modificar Perfil</h3>
                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Actualización de datos maestros</p>
@@ -288,7 +289,7 @@ const TiendasPage = () => {
                 </div>
 
                 <div className="md:col-span-2 pt-4 border-t border-slate-100">
-                   <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-4">📍 Datos de Ubicación</h4>
+                   <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-1"><MapPin size={12} /> Datos de Ubicación</h4>
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
@@ -314,7 +315,7 @@ const TiendasPage = () => {
                   Descartar
                 </button>
                 <button type="submit" disabled={editLoading} className="px-8 py-4 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50">
-                  {editLoading ? 'Sincronizando...' : 'Guadar Perfil 💾'}
+                  {editLoading ? 'Sincronizando...' : <><Save size={14} /> Guardar Perfil</>}
                 </button>
               </div>
             </form>

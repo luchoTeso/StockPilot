@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
+import { Clock, Save, Plus, BarChart2, Search, Download, Pencil, Trash2, AlertTriangle, FileText, Mail } from 'lucide-react';
 
 const ReportesPage = () => {
   const toast = useToast();
@@ -288,7 +289,7 @@ const ReportesPage = () => {
 
                 {['Ventas', 'Financiero', 'Operativo', 'Inventario'].includes(formData.tipo) && (
                   <div className="bg-indigo-50/50 p-4 border border-indigo-100 rounded-[2rem] space-y-4">
-                    <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center">⏳ Periodo Evaluado</h4>
+                    <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center flex items-center justify-center gap-1"><Clock size={12} /> Periodo Evaluado</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-1">Corte Inicial</label>
@@ -324,7 +325,7 @@ const ReportesPage = () => {
 
                 <div className="flex flex-col gap-3 pt-4 pb-2">
                   <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'}`}>
-                    <span>{editMode ? '💾' : '➕'}</span> {isSubmitting ? 'GUARDANDO...' : (editMode ? 'ACTUALIZAR REPORTE' : 'CREAR REPORTE')}
+                    {editMode ? <Save size={14} /> : <Plus size={14} />} {isSubmitting ? 'GUARDANDO...' : (editMode ? 'ACTUALIZAR REPORTE' : 'CREAR REPORTE')}
                   </button>
                   {editMode && (
                     <button type="button" onClick={handleCancelEdit} className="w-full p-4 rounded-2xl text-slate-500 bg-slate-100 hover:bg-slate-200 text-[10px] font-black uppercase tracking-[0.2em] transition-colors">
@@ -343,8 +344,8 @@ const ReportesPage = () => {
                
                <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-xl shadow-sm border border-indigo-100">
-                      📄
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shadow-sm border border-indigo-100 text-indigo-600">
+                      <FileText size={20} />
                     </div>
                     <h4 className="text-slate-800 font-black text-lg tracking-tighter italic uppercase">Auditoría de Merma</h4>
                   </div>
@@ -374,7 +375,7 @@ const ReportesPage = () => {
                     }}
                     className="w-full py-3 mt-3 bg-white text-indigo-600 border-2 border-indigo-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 hover:border-indigo-400 transition-all active:scale-95 flex items-center justify-center gap-3"
                   >
-                    📧 ENVIAR RESUMEN AHORA
+                    <Mail size={14} /> ENVIAR RESUMEN AHORA
                   </button>
                </div>
             </div>
@@ -387,7 +388,7 @@ const ReportesPage = () => {
           {/* Cabecera y Filtros de Tabla */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm gap-4">
              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-               📊 Archivos Generados
+               <BarChart2 size={18} /> Archivos Generados
              </h3>
              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                <div className="w-full sm:w-48 z-10 form-control-premium text-sm">
@@ -405,7 +406,7 @@ const ReportesPage = () => {
                  />
                </div>
                <div className="relative w-full sm:w-64">
-                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">🔍</div>
+                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><Search size={16} /></div>
                  <input 
                    type="text" 
                    placeholder="Buscar reporte..." 
@@ -458,16 +459,16 @@ const ReportesPage = () => {
                         </td>
                         <td className="p-6 pr-8">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => descargarReporteExcel(r)} className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Exportar XLSX">
-                              ⏬
+                            <button onClick={() => descargarReporteExcel(r)} className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Exportar XLSX">
+                              <Download size={18} />
                             </button>
                             {isAdmin && (
                               <>
-                                <button onClick={() => handleEditClick(r)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Reporte">
-                                  ✏️
+                                <button onClick={() => handleEditClick(r)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Reporte">
+                                  <Pencil size={18} />
                                 </button>
-                                <button onClick={() => eliminarReporte(r.id)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center text-lg transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Reporte">
-                                  🗑️
+                                <button onClick={() => eliminarReporte(r.id)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Reporte">
+                                  <Trash2 size={18} />
                                 </button>
                               </>
                             )}
@@ -487,8 +488,8 @@ const ReportesPage = () => {
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4 font-outfit">
           <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden transform animate-scale-in border border-white">
             <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-rose-100 bg-rose-50' : 'border-amber-100 bg-amber-50'}`}>
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-rose-100 text-rose-600 shadow-rose-200' : 'bg-amber-100 text-amber-600 shadow-amber-200'}`}>
-                 {modalConfig.type === 'danger' ? '🗑️' : '⚠️'}
+              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-rose-100 text-rose-600 shadow-rose-200' : 'bg-amber-100 text-amber-600 shadow-amber-200'}`}>
+                 {modalConfig.type === 'danger' ? <Trash2 size={36} /> : <AlertTriangle size={36} />}
               </div>
               <h3 className={`text-2xl font-black tracking-tighter italic uppercase ${modalConfig.type === 'danger' ? 'text-rose-600' : 'text-amber-600'}`}>
                 {modalConfig.title}

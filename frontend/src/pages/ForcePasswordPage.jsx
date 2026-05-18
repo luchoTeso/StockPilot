@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Navigate } from 'react-router-dom';
+import { Hand, Eye, EyeOff } from 'lucide-react';
 
 const ForcePasswordPage = () => {
   const { user, logout } = useAuth();
@@ -56,8 +57,8 @@ const ForcePasswordPage = () => {
 
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-10 md:p-12 rounded-[3.5rem] shadow-2xl w-full max-w-lg z-10 animate-fade-in relative text-center">
         
-        <div className="w-24 h-24 bg-white/10 rounded-[2.5rem] flex items-center justify-center text-4xl mb-8 mx-auto shadow-inner border border-white/10 backdrop-blur-md animate-bounce-slow">
-            👋
+        <div className="w-24 h-24 bg-white/10 rounded-[2.5rem] flex items-center justify-center mb-8 mx-auto shadow-inner border border-white/10 backdrop-blur-md animate-bounce-slow">
+            <Hand size={40} />
         </div>
 
         <h1 className="text-4xl font-black text-white tracking-tighter italic uppercase mb-2">¡Bienvenido!</h1>
@@ -82,7 +83,7 @@ const ForcePasswordPage = () => {
                 onClick={() => setShowPassword(!showPassword)} 
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
@@ -106,7 +107,7 @@ const ForcePasswordPage = () => {
               disabled={isSubmitting}
               className="w-full bg-indigo-500 hover:bg-indigo-400 text-white p-5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(99,102,241,0.4)] disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98] drop-shadow-lg"
             >
-              {isSubmitting ? 'VERIFICANDO...' : 'EMPEZAR A TRABAJAR 🚀'}
+              {isSubmitting ? 'VERIFICANDO...' : 'EMPEZAR A TRABAJAR'}
             </button>
           </div>
           

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
+import { User, Lock } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
@@ -143,8 +144,8 @@ const ProfilePage = () => {
               {profileData.foto_url ? (
                 <img src={profileData.foto_url} alt="Perfil" className="w-full h-full object-cover rounded-[2rem] shadow-lg border-4 border-white" />
               ) : (
-                <div className="w-full h-full bg-slate-100 rounded-[2rem] flex items-center justify-center text-5xl shadow-inner group-hover:bg-slate-200 transition-colors">
-                  {profileData.genero === 'Femenino' ? '👩‍💼' : '👨‍💼'}
+                <div className="w-full h-full bg-slate-100 rounded-[2rem] flex items-center justify-center shadow-inner group-hover:bg-slate-200 transition-colors">
+                  <User size={56} className="text-slate-400" />
                 </div>
               )}
               <div className="absolute inset-0 bg-slate-900/40 rounded-[2rem] opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
@@ -167,7 +168,7 @@ const ProfilePage = () => {
             className="w-full p-6 bg-slate-50 border border-slate-200 rounded-[2rem] flex items-center justify-between group hover:bg-white hover:shadow-lg transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">🔒</div>
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><Lock size={20} /></div>
               <div className="text-left">
                 <p className="text-xs font-black text-slate-800 uppercase tracking-tighter">Seguridad</p>
                 <p className="text-[9px] text-slate-400 font-bold uppercase">Actualizar Clave</p>
