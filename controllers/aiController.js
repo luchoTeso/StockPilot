@@ -459,9 +459,10 @@ const aiController = {
             - EXTENSIÓN: Entre 35 y 50 palabras.
             - DURACIÓN: Sugiere una duración lógica en 'duration_days'.
             - COMBOS: Si es 'combo', identifica un producto afín y pon su nombre en 'complementary_name'.
+            - COBERTURA OBLIGATORIA: Debes generar exactamente UNA sugerencia por CADA producto del array. No puedes omitir ninguno.
             - Responde ÚNICAMENTE JSON: { "promotions": [ { "id": ID, "type": "TIPO", "title": "Título corto", "reason": "Justificación profesional fluida", "duration_days": 15, "complementary_name": "Nombre o null", "discount": 15 } ] }`
           },
-          { role: "user", content: `Sugiere promociones para estos productos: ${JSON.stringify(candidates)}` }
+          { role: "user", content: `Genera una estrategia promocional para CADA uno de estos ${candidates.length} productos (uno por uno, sin omitir ninguno): ${JSON.stringify(candidates)}` }
         ],
         response_format: { type: "json_object" }
       });
