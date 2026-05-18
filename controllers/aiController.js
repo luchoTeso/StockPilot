@@ -403,9 +403,22 @@ const aiController = {
       const candidates = rows.filter(r => {
         const trend = r.velocity_30d > 0.01 ? (r.velocity_7d / r.velocity_30d) : 0.5;
         const isLowTurnover = trend < 0.7 && r.stock > 10;
-        const isNearExpiry = r.fecha_vencimiento && (new Date(r.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24) < 30;
-        const isOverstock = r.stock > 50 && r.velocity_30d < 1; // Simplificado para el prompt
+        const diasParaVencer = r.fecha_vencimiento
+          ? (new Date(r.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24)
+          : null;
+        const isNearExpiry = diasParaVencer !== null && diasParaVencer < 30;
+        const isOverstock = r.stock > 50 && r.velocity_30d < 1;
         return isLowTurnover || isNearExpiry || isOverstock;
+      }).sort((a, b) => {
+        // Productos con vencimiento próximo primero (más urgente arriba)
+        // Los que no tienen fecha de vencimiento van al final
+        const diasA = a.fecha_vencimiento
+          ? (new Date(a.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24)
+          : 9999;
+        const diasB = b.fecha_vencimiento
+          ? (new Date(b.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24)
+          : 9999;
+        return diasA - diasB;
       }).slice(0, 10);
 
       if (candidates.length === 0) {
