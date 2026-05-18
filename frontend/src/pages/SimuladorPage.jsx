@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { useSidebar } from '../context/SidebarContext';
 import CustomSelect from '../components/CustomSelect';
+import { FlaskConical, Package } from 'lucide-react';
 
 const SimuladorPage = () => {
   const [products, setProducts] = useState([]);
@@ -163,8 +164,8 @@ const SimuladorPage = () => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-xl shadow-indigo-200">
-              🧪
+            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-200">
+              <FlaskConical size={22} />
             </div>
             <div>
               <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Simulador de Escenarios</h1>
@@ -181,7 +182,7 @@ const SimuladorPage = () => {
           disabled={simulatedData.activeCount === 0}
           className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
         >
-          <span>📦</span> Convertir en Orden Real
+          <Package size={16} /> Convertir en Orden Real
         </button>
       </div>
 

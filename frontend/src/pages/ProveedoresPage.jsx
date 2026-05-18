@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { useSidebar } from '../context/SidebarContext';
+import { Building2, Plus, Pencil, Trash2, Package, Loader2, CheckCircle2, Sparkles, ScrollText, Mail, Banknote, AlertTriangle, Zap, Wallet } from 'lucide-react';
 
 const ProveedoresPage = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -245,7 +246,7 @@ const ProveedoresPage = () => {
         mensaje_personalizado: emailMessage || ''
       });
       if (res.data.success) {
-        toast.success(`✅ ${res.data.message}`);
+        toast.success(res.data.message);
         setEmailMessage('');
         // Actualizar localmente para feedback inmediato
         setOrdenesHistory(prev => prev.map(o => o.id_orden === ordenId ? { ...o, estado: 'Enviada' } : o));
@@ -275,7 +276,7 @@ const ProveedoresPage = () => {
     try {
       const res = await axios.post(`/api/proveedores/ordenes/${paymentData.ordenId}/pay`, { monto: amountNum });
       if (res.data.success) {
-        toast.success(`✨ Pago de $${amountNum.toLocaleString()} registrado con éxito.`);
+        toast.success(`Pago de $${amountNum.toLocaleString()} registrado con éxito.`);
         setShowPaymentModal(false);
         fetchHistory();
         fetchProveedores();
@@ -357,8 +358,8 @@ const ProveedoresPage = () => {
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-indigo-500/10 blur-[50px] rounded-full pointer-events-none"></div>
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-inner border border-indigo-200">
-              🏢
+            <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shadow-inner border border-indigo-200">
+              <Building2 size={20} />
             </div>
             <h1 className="text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Red de Proveedores</h1>
           </div>
@@ -371,7 +372,7 @@ const ProveedoresPage = () => {
           onClick={() => handleOpenSupplierModal()}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95 z-20"
         >
-          <span>➕</span> Registrar Proveedor
+          <Plus size={14} /> Registrar Proveedor
         </button>
       </div>
 
@@ -386,24 +387,24 @@ const ProveedoresPage = () => {
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase leading-none">{p.nombre_empresa}</h3>
                   <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => handleOpenSupplierModal(p)} 
-                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 hover:shadow-sm hover:shadow-indigo-100 transition-all active:scale-90" 
+                    <button
+                      onClick={() => handleOpenSupplierModal(p)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 hover:shadow-sm hover:shadow-indigo-100 transition-all active:scale-90"
                       title="Editar Proveedor"
                     >
-                        ✏️
+                        <Pencil size={14} />
                     </button>
-                    <button 
-                      onClick={() => setSupplierToDelete(p)} 
-                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:shadow-sm hover:shadow-rose-100 transition-all active:scale-90" 
+                    <button
+                      onClick={() => setSupplierToDelete(p)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:shadow-sm hover:shadow-rose-100 transition-all active:scale-90"
                       title="Eliminar Proveedor"
                     >
-                        🗑️
+                        <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
                 <p className="text-sm font-bold text-slate-500 flex items-center gap-2 mt-1">
-                  📦 {p.productos_vinculados} Productos Vinculados
+                  <Package size={14} /> {p.productos_vinculados} Productos Vinculados
                 </p>
                 <div className="mt-3 p-3 bg-rose-50 border border-rose-100 rounded-xl">
                   <p className="text-[9px] font-black text-rose-400 uppercase tracking-widest">Deuda Pendiente</p>
@@ -525,8 +526,8 @@ const ProveedoresPage = () => {
                       <tr>
                         <td colSpan="6" className="p-8 text-center text-sm font-bold text-slate-400 italic uppercase tracking-widest">
                           {isForecastLoading
-                            ? '⏳ Calculando recomendaciones...'
-                            : '✅ Todos los productos tienen stock suficiente o no hay productos vinculados a este proveedor.'}
+                            ? <span className="flex items-center justify-center gap-2"><Loader2 size={14} className="animate-spin" /> Calculando recomendaciones...</span>
+                            : <span className="flex items-center justify-center gap-2"><CheckCircle2 size={14} /> Todos los productos tienen stock suficiente o no hay productos vinculados a este proveedor.</span>}
                         </td>
                       </tr>
                     )}
@@ -552,8 +553,8 @@ const ProveedoresPage = () => {
                     disabled={isConsultingAI || forecastData.length === 0}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
                   >
-                    {isConsultingAI ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : '✨'}
-                    {isConsultingAI ? 'Pensando...' : 'Optimizar con IA ✨'}
+                    {isConsultingAI ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Sparkles size={14} />}
+                    {isConsultingAI ? 'Pensando...' : 'Optimizar con IA'}
                   </button>
                 </div>
               ) : (
@@ -583,7 +584,7 @@ const ProveedoresPage = () => {
       {/* HISTORY PANEL */}
       <div className="relative z-10 pt-10 border-t border-slate-100">
         <div className="flex items-center gap-2 mb-6">
-          <span className="text-2xl">📜</span>
+          <ScrollText size={24} className="text-slate-700" />
           <h2 className="text-2xl font-black text-slate-800 uppercase italic tracking-tighter">Historial de Órdenes a Proveedores</h2>
         </div>
         
@@ -627,7 +628,7 @@ const ProveedoresPage = () => {
                         o.estado === 'Enviada' ? 'bg-indigo-50 text-indigo-600' : 
                         'bg-amber-50 text-amber-600'
                       }`}>
-                        {o.estado === 'Enviada' ? '📧 Enviada' : o.estado}
+                        {o.estado === 'Enviada' ? <span className="flex items-center gap-1"><Mail size={12} /> Enviada</span> : o.estado}
                       </span>
                     </td>
                     <td className="p-5">
@@ -641,11 +642,11 @@ const ProveedoresPage = () => {
                     </td>
                     <td className="p-5 text-right flex items-center justify-end gap-4">
                       {o.saldo_pendiente > 0 && (
-                        <button 
+                        <button
                           onClick={() => handleRegisterPayment(o.id_orden, o.presupuesto_total, o.monto_pagado)}
-                          className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-widest border-b border-emerald-200"
+                          className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-widest border-b border-emerald-200 flex items-center gap-1"
                         >
-                          💸 Pagar
+                          <Banknote size={12} /> Pagar
                         </button>
                       )}
                       <button 
@@ -692,7 +693,7 @@ const ProveedoresPage = () => {
               </div>
               <div className={`rounded-xl p-3 border ${showHistoryDetail.estado === 'Aprobada' ? 'bg-emerald-50 border-emerald-200' : showHistoryDetail.estado === 'Rechazada' ? 'bg-rose-50 border-rose-200' : showHistoryDetail.estado === 'Enviada' ? 'bg-indigo-50 border-indigo-200' : 'bg-amber-50 border-amber-200'}`}>
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estado</p>
-                <p className={`text-sm font-black mt-1 ${showHistoryDetail.estado === 'Aprobada' ? 'text-emerald-600' : showHistoryDetail.estado === 'Rechazada' ? 'text-rose-600' : showHistoryDetail.estado === 'Enviada' ? 'text-indigo-600' : 'text-amber-600'}`}>{showHistoryDetail.estado === 'Enviada' ? '📧 Enviada' : showHistoryDetail.estado}</p>
+                <p className={`text-sm font-black mt-1 flex items-center gap-1 ${showHistoryDetail.estado === 'Aprobada' ? 'text-emerald-600' : showHistoryDetail.estado === 'Rechazada' ? 'text-rose-600' : showHistoryDetail.estado === 'Enviada' ? 'text-indigo-600' : 'text-amber-600'}`}>{showHistoryDetail.estado === 'Enviada' ? <><Mail size={14} /> Enviada</> : showHistoryDetail.estado}</p>
               </div>
             </div>
 
@@ -717,7 +718,7 @@ const ProveedoresPage = () => {
             {(showHistoryDetail.estado === 'Pendiente' || showHistoryDetail.estado === 'Borrador') && (
               <div className="p-5 border-t border-slate-100 bg-amber-50/50 flex gap-3 justify-end items-center">
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest mr-auto flex items-center gap-2">
-                  ⚠️ Esta orden requiere su aprobación
+                  <AlertTriangle size={14} /> Esta orden requiere su aprobación
                 </span>
                 <button
                   onClick={async () => {
@@ -772,9 +773,9 @@ const ProveedoresPage = () => {
                     className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSendingEmail ? (
-                      <><span className="animate-spin">⏳</span> Enviando correo...</>
+                      <><Loader2 size={16} className="animate-spin" /> Enviando correo...</>
                     ) : (
-                      <>📧 Enviar Orden al Proveedor por Email</>
+                      <><Mail size={16} /> Enviar Orden al Proveedor por Email</>
                     )}
                   </button>
                 </div>
@@ -782,7 +783,7 @@ const ProveedoresPage = () => {
             )}
             {showHistoryDetail.estado === 'Enviada' && (
               <div className="p-4 border-t border-indigo-100 bg-indigo-50 text-center">
-                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">📧 Orden enviada al proveedor por correo electrónico</span>
+                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center justify-center gap-2"><Mail size={12} /> Orden enviada al proveedor por correo electrónico</span>
               </div>
             )}
             {showHistoryDetail.estado === 'Rechazada' && (
@@ -848,8 +849,8 @@ const ProveedoresPage = () => {
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setSupplierToDelete(null)}></div>
           <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative z-20 animate-scale-in border border-rose-100 overflow-hidden">
              <div className="p-8 text-center space-y-6">
-                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto border-2 border-rose-100 shadow-inner">
-                  ⚠️
+                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border-2 border-rose-100 shadow-inner">
+                  <AlertTriangle size={32} />
                 </div>
                 <div>
                    <h3 className="text-2xl font-black text-slate-800 tracking-tight uppercase italic">¿Confirmas la baja?</h3>
@@ -885,7 +886,7 @@ const ProveedoresPage = () => {
             
             {/* Header Fijo */}
             <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-8 text-white relative shrink-0">
-               <div className="absolute top-0 right-0 p-6 opacity-10 text-6xl select-none pointer-events-none">💸</div>
+               <div className="absolute top-0 right-0 p-6 opacity-10 select-none pointer-events-none"><Banknote size={56} /></div>
                <h3 className="text-2xl font-black tracking-tighter uppercase italic leading-none">Registrar Pago</h3>
                <p className="text-[10px] font-black text-emerald-100 uppercase tracking-widest mt-2 opacity-80">Orden de Compra #{paymentData.ordenId}</p>
             </div>
@@ -917,14 +918,14 @@ const ProveedoresPage = () => {
                   disabled={isPaying}
                   className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  ⚡ LIQUIDAR DEUDA TOTAL: ${(paymentData.total - paymentData.currentPaid).toLocaleString()}
+                  <Zap size={14} /> LIQUIDAR DEUDA TOTAL: ${(paymentData.total - paymentData.currentPaid).toLocaleString()}
                 </button>
                 <button 
                   onClick={() => confirmPayment(manualAmount)}
                   disabled={isPaying}
                   className="w-full py-4 bg-white border-2 border-slate-200 text-slate-600 hover:border-emerald-600 hover:text-emerald-600 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 font-bold"
                 >
-                  {isPaying ? <div className="w-4 h-4 border-2 border-slate-300 border-t-emerald-600 rounded-full animate-spin"></div> : '💰'}
+                  {isPaying ? <div className="w-4 h-4 border-2 border-slate-300 border-t-emerald-600 rounded-full animate-spin"></div> : <Wallet size={16} />}
                   {isPaying ? 'PROCESANDO...' : 'PROCESAR ABONO MANUAL'}
                 </button>
                 <button 

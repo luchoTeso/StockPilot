@@ -8,6 +8,7 @@ import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
 import Tooltip from '../components/Tooltip';
 import { SYNC_EVENTS, emitSyncEvent, subscribeToSync } from '../utils/stockSync';
+import { AlertCircle, AlertTriangle, Plus, DollarSign, Package, Lock, Settings, Pause, CheckCircle2, Trash2 } from 'lucide-react';
 
 const ProductosPage = () => {
   const { user } = useAuth();
@@ -165,14 +166,14 @@ const ProductosPage = () => {
         setAlert({
           show: true,
           isCritical: true,
-          title: '🚨 ¡Atención! Productos agotándose',
+          title: '¡Atención! Productos agotándose',
           message: `${criticos.length} producto(s) a punto de agotarse y ${bajos.length} que deberías pedir ya.`
         });
       } else {
         setAlert({
           show: true,
           isCritical: false,
-          title: '⚠️ REVISA TU INVENTARIO',
+          title: 'REVISA TU INVENTARIO',
           message: `${bajos.length} producto(s) se están agotando, deberías ir pensando en comprar más.`
         });
       }
@@ -400,8 +401,8 @@ const ProductosPage = () => {
           onClick={() => navigate('/alertas')}
           className={`group relative flex flex-col md:flex-row items-center gap-6 p-8 rounded-[2.5rem] mb-10 shadow-2xl border backdrop-blur-xl animate-fade-in cursor-pointer hover:shadow-indigo-500/10 transition-all transform hover:-translate-y-1 ${alert.isCritical ? 'bg-rose-50/80 border-rose-100 text-rose-800' : 'bg-amber-50/80 border-amber-100 text-amber-800'}`}
         >
-          <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-lg border-2 ${alert.isCritical ? 'bg-rose-100 border-white text-rose-600 animate-bounce' : 'bg-amber-100 border-white text-amber-600 rotate-12'}`}>
-            {alert.isCritical ? '🚨' : '⚠️'}
+          <div className={`w-16 h-16 rounded-3xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-rose-100 border-white text-rose-600 animate-bounce' : 'bg-amber-100 border-white text-amber-600 rotate-12'}`}>
+            {alert.isCritical ? <AlertCircle size={32} /> : <AlertTriangle size={32} />}
           </div>
           <div className="flex-1 text-center md:text-left">
             <h4 className="text-xl font-black uppercase tracking-tighter italic mb-1">{alert.title}</h4>
@@ -429,7 +430,7 @@ const ProductosPage = () => {
         <div>
           {isAdmin && (
             <button onClick={() => handleOpenModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95">
-              <span>➕</span> Registrar Producto
+              <Plus size={14} /> Registrar Producto
             </button>
           )}
         </div>
@@ -517,8 +518,8 @@ const ProductosPage = () => {
                         <div className="flex items-center justify-center gap-2">
                           {isActive ? (
                             <>
-                              <button onClick={() => registrarVenta(p)} className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95" title="Registrar Venta Directa">💲</button>
-                              <button onClick={() => abrirModalStock(p)} className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95" title="Ingresar Stock">📦</button>
+                              <button onClick={() => registrarVenta(p)} className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95" title="Registrar Venta Directa"><DollarSign size={16} /></button>
+                              <button onClick={() => abrirModalStock(p)} className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95" title="Ingresar Stock"><Package size={16} /></button>
                               
                               {isAdmin && (
                                 <>
@@ -638,7 +639,7 @@ const ProductosPage = () => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">Stock Inicial</label>
                   <input required type="number" min="0" disabled={editMode} value={formData.cantidad} onChange={e => setFormData({...formData, cantidad: e.target.value})} className={`w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-lg font-black text-emerald-700 outline-none transition-all ${editMode ? 'opacity-50 cursor-not-allowed' : 'focus:border-emerald-500'}`} placeholder="0" />
-                  {editMode && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase mt-1 inline-block">🔒 Protegido. Usar botón de agregar inventario.</span>}
+                  {editMode && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase mt-1 inline-flex items-center gap-1"><Lock size={10} /> Protegido. Usar botón de agregar inventario.</span>}
                 </div>
               </div>
 
@@ -647,7 +648,7 @@ const ProductosPage = () => {
                 <div className="mb-8">
                   <details className="group">
                     <summary className="flex items-center gap-2 cursor-pointer select-none py-3 px-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-indigo-200 transition-all">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">⚙️ Configuración de Alertas</span>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1"><Settings size={12} /> Configuración de Alertas</span>
                       <span className="ml-auto text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                     </summary>
                     <div className="mt-4 p-5 bg-indigo-50/30 border border-indigo-100 rounded-2xl space-y-5">
@@ -656,7 +657,7 @@ const ProductosPage = () => {
                       </p>
                       
                       <div className="space-y-2">
-                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">📦 Proveedor Principal (Opcional)</label>
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1"><Package size={12} /> Proveedor Principal (Opcional)</label>
                           <CustomSelect 
                             value={formData.id_proveedor} 
                             onChange={val => setFormData({...formData, id_proveedor: val})}
@@ -726,7 +727,7 @@ const ProductosPage = () => {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-md shadow-2xl animate-scale-in overflow-hidden">
             <div className="p-6 bg-indigo-600 text-white">
-              <h3 className="text-2xl font-black tracking-tighter uppercase italic flex items-center gap-2">💲 Venta Exprés</h3>
+              <h3 className="text-2xl font-black tracking-tighter uppercase italic flex items-center gap-2"><DollarSign size={22} /> Venta Exprés</h3>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mt-1">Caja Rápida</p>
             </div>
             <form onSubmit={submitVenta} className="p-6">
@@ -777,7 +778,7 @@ const ProductosPage = () => {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl animate-scale-in overflow-hidden">
             <div className="p-8 bg-emerald-500 text-white text-center">
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 backdrop-blur-sm">📦</div>
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm"><Package size={32} /></div>
               <h3 className="text-2xl font-black tracking-tighter uppercase italic">Agregar Inventario</h3>
             </div>
             <form onSubmit={submitAgregarStock} className="p-8">
@@ -810,8 +811,8 @@ const ProductosPage = () => {
       {toggleModalOpen && toggleProducto && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl animate-scale-in p-8 text-center">
-             <div className={`w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-6 shadow-xl ${toggleProducto.estado === 'Disponible' ? 'bg-amber-100 text-amber-500 shadow-amber-100/50' : 'bg-emerald-100 text-emerald-500 shadow-emerald-100/50'}`}>
-                {toggleProducto.estado === 'Disponible' ? '⏸️' : '✅'}
+             <div className={`w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-xl ${toggleProducto.estado === 'Disponible' ? 'bg-amber-100 text-amber-500 shadow-amber-100/50' : 'bg-emerald-100 text-emerald-500 shadow-emerald-100/50'}`}>
+                {toggleProducto.estado === 'Disponible' ? <Pause size={36} /> : <CheckCircle2 size={36} />}
              </div>
              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Estado del Producto</h3>
              <p className="text-xs font-bold text-slate-500 mb-8 border-b border-slate-100 pb-8">
@@ -832,7 +833,7 @@ const ProductosPage = () => {
       {eliminarModalOpen && eliminarProductoSel && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl animate-scale-in p-8 text-center border-4 border-rose-100">
-             <div className="w-20 h-20 rounded-3xl bg-rose-100 text-rose-600 shadow-xl shadow-rose-100/50 mx-auto flex items-center justify-center text-4xl mb-6">🗑️</div>
+             <div className="w-20 h-20 rounded-3xl bg-rose-100 text-rose-600 shadow-xl shadow-rose-100/50 mx-auto flex items-center justify-center mb-6"><Trash2 size={36} /></div>
              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Eliminar Producto</h3>
              <p className="text-xs font-bold text-slate-500 mb-6">Vas a eliminar permanentemente este producto. Esta acción <span className="text-rose-600 font-black uppercase underline decoration-2 underline-offset-2">no se puede deshacer</span>.</p>
              <div className="bg-rose-50 text-rose-700 font-black p-4 rounded-2xl border border-rose-100 mb-8 uppercase line-clamp-2">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Rocket, BarChart2, Clock } from 'lucide-react';
 
 const AnalisisDetalladoPage = () => {
   const [data, setData] = useState([]);
@@ -28,7 +29,7 @@ const AnalisisDetalladoPage = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div className="flex items-center gap-6">
           <button onClick={() => navigate('/dashboard')} className="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl transition-all shadow-sm active:scale-95">
-             <span className="text-xl font-bold text-slate-800">←</span>
+             <ArrowLeft size={20} className="text-slate-800" />
           </button>
           <div>
             <h2 className="text-3xl font-black text-slate-800 tracking-tighter italic uppercase">Detalle de Productos</h2>
@@ -95,17 +96,17 @@ const AnalisisDetalladoPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
          <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-all">
-            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">🚀</div>
+            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><Rocket size={20} /></div>
             <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-3">Ritmo de Ventas</h4>
             <p className="text-xs text-slate-500 font-bold leading-relaxed">Cuánto se está vendiendo al día (en promedio), adaptándose automáticamente a cambios rápidos para que nunca quedes sin producto.</p>
          </div>
          <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-all">
-            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors">📊</div>
+            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors"><BarChart2 size={20} /></div>
             <h4 className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-3">Ganancia Principal</h4>
             <p className="text-xs text-slate-500 font-bold leading-relaxed">Clasificamos tus productos para mostrarte cuáles te dejan la mayor rentabilidad (Tus estrellas Tipo A).</p>
          </div>
          <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-all">
-            <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:bg-rose-500 group-hover:text-white transition-colors">⏳</div>
+            <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-rose-500 group-hover:text-white transition-colors"><Clock size={20} /></div>
             <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-3">Alertas de Agotamiento</h4>
             <p className="text-xs text-slate-500 font-bold leading-relaxed">Te avisamos cuando tu stock está tan bajo que no te alcanzará mientras esperas al camión del proveedor.</p>
          </div>
