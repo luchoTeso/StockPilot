@@ -495,6 +495,48 @@ const aiController = {
         };
       }).filter(p => p !== null);
 
+      // Fallback: cubrir candidatos que la IA omitió con reglas deterministas
+      const coveredIds = new Set(promotions.map(p => p.id));
+      for (const product of candidates) {
+        if (coveredIds.has(product.id)) continue;
+
+        const diasParaVencer = product.fecha_vencimiento
+          ? (new Date(product.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24)
+          : null;
+
+        let type, discount, reason, duration_days;
+
+        if (diasParaVencer !== null && diasParaVencer <= 10) {
+          type = 'liquidacion'; discount = 25; duration_days = Math.max(3, Math.floor(diasParaVencer));
+          reason = `Vence en ${Math.round(diasParaVencer)} días y al ritmo actual no se agotará. Una liquidación urgente permite recuperar capital antes de la pérdida total del inventario.`;
+        } else if (diasParaVencer !== null && diasParaVencer <= 30) {
+          type = 'descuento'; discount = 15; duration_days = 7;
+          reason = `Con vencimiento próximo en ${Math.round(diasParaVencer)} días, un descuento moderado acelera la rotación y evita pérdidas por producto no vendido a tiempo.`;
+        } else if (product.stock > 50) {
+          type = 'combo'; discount = 10; duration_days = 14;
+          reason = `El alto nivel de stock genera capital inmovilizado. Un combo estratégico incentiva la compra conjunta y mejora la rotación sin sacrificar demasiado margen.`;
+        } else {
+          type = 'descuento'; discount = 15; duration_days = 10;
+          reason = `La baja rotación reciente de este producto sugiere que un descuento puntual puede reactivar la demanda y liberar espacio en estantería para productos de mayor salida.`;
+        }
+
+        const discountedPrice = Math.round(product.precio * (1 - discount / 100));
+        promotions.push({
+          id: product.id,
+          type,
+          title: product.nombre,
+          reason,
+          duration_days,
+          complementary_name: null,
+          discount,
+          productName: product.nombre,
+          originalPrice: product.precio,
+          discountedPrice,
+          impact: Math.round(product.stock * discountedPrice),
+          isCritical: diasParaVencer !== null && diasParaVencer <= 10
+        });
+      }
+
       // 5. Guardar en memoria y BD
       aiCache_v3[cacheKey] = { dataHash: currentHash, recommendations: promotions, timestamp: new Date() };
       dbCacheSet(cacheKey, currentHash, promotions);
