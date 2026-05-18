@@ -351,7 +351,7 @@ const ProveedoresPage = () => {
   };
 
   return (
-    <div className="p-8 pb-32 max-w-7xl mx-auto space-y-8 animate-fade-in font-outfit">
+    <div className="pb-32 space-y-8 animate-fade-in font-outfit">
       
       {/* HEADER PREMIUM */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 relative">
