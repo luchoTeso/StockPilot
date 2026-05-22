@@ -1,16 +1,6 @@
 require('dotenv').config();
-const nodemailer = require('nodemailer');
-
-// Configuración del Transporter para enviar correos
-// Utiliza variables de entorno para evitar hardcodear credenciales en el código fuente
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // Por defecto configurado para Gmail empresarial
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS 
-        // Nota: Para Gmail, 'pass' debe ser una 'Contraseña de Aplicación' (App Password)
-    }
-});
+// Usa el transporter centralizado: Resend en producción, Gmail SMTP en desarrollo
+const transporter = require('../config/mailer');
 
 class Mailer {
     /**
