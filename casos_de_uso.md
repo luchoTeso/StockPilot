@@ -188,7 +188,7 @@
 
 ---
 
-### CU-02.3 — Gestionar Tiendas
+### CU-02.3 — Gestionar Establecimiento
 
 | Campo              | Detalle                                          |
 | ------------------ | ------------------------------------------------ |
@@ -198,12 +198,16 @@
 
 **Flujo Principal:**
 
-1. El administrador navega al módulo "Tiendas".
-2. Visualiza las sucursales registradas.
-3. Puede crear nueva sucursal, editar datos o cambiar la tienda activa.
-4. Los datos (productos, ventas, alertas) se segregan por la tienda seleccionada.
+1. El administrador navega al módulo "Establecimiento".
+2. Visualiza los datos del negocio registrado: nombre, dirección, razón social, documento, ciudad y celular de contacto.
+3. Puede editar cualquiera de esos campos y guardar los cambios.
+4. Todos los datos del sistema (productos, ventas, alertas, reportes) operan aislados dentro del contexto de este establecimiento.
 
-**Postcondiciones:** Tienda creada/editada; contexto de datos segregado.
+**Flujos Alternativos:**
+
+- **FA-1:** Campos inválidos o vacíos → El sistema muestra error de validación sin guardar.
+
+**Postcondiciones:** Datos del establecimiento actualizados; aislamiento de datos garantizado por sesión.
 
 ---
 

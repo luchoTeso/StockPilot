@@ -57,12 +57,12 @@
 
 ---
 
-### Módulo 5: Gestión Multi-Tienda
+### Módulo 5: Gestión del Establecimiento
 
 | ID     | Descripción                                                                                                                                                              | Prioridad | Estado |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------ |
-| RF-018 | El sistema debe soportar múltiples tiendas/sucursales por organización                                                                                                   | Alta      | ✅     |
-| RF-019 | Los datos (productos, ventas, alertas, reportes) deben estar segregados por tienda                                                                                       | Alta      | ✅     |
+| RF-018 | El sistema debe permitir al administrador consultar y actualizar los datos del establecimiento registrado (nombre, dirección, razón social, documento, ciudad y celular de contacto) | Alta      | ✅     |
+| RF-019 | Los datos de cada cuenta (productos, ventas, alertas, reportes) deben estar completamente aislados entre establecimientos, sin interferencia entre negocios distintos    | Alta      | ✅     |
 
 ---
 

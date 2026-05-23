@@ -1,88 +1,33 @@
-#  **![][image1]**
+# **![][image1]**
 
-***StockPilot: Sistema Web de Gestión de Inventarios con Inteligencia Artificial Predictiva para Microempresas de Distribución en Bogotá*** 
+***StockPilot: Sistema Web de Gestión de Inventarios con Inteligencia Artificial Predictiva para Microempresas de Distribución de víveres en Bogotá*** 
 
 Elizabeth Pérez González  
 Luis Alberto Diuche Peña
 
 Universidad Central  
 Facultad de Ingeniería y Ciencias Básicas  
-Departamento de Ingeniería Sistemas  
+Departamento de Ingeniería de Sistemas  
 Bogotá, Colombia  
 2026
 
 **Tabla de contenido**
 
-Contenido  
-[**1.Introducción**	3](#1.introducción)
+# 
 
-[**2\. El problema**	4](#2.-el-problema)
-
-[**Planteamiento del Problema**	9](#heading=h.yk0ffji10jk6)
-
-[**Diagrama de Ishikawa**	15](#diagrama-de-ishikawa)
-
-[**3\. Justificación**	15](#3.-justificación)
-
-[**4.Estado del Arte**	16](#4.estado-del-arte)
-
-[**5\. PREGUNTA GENERADORA**	22](#5.-pregunta-generadora)
-
-[**6\. OBJETIVOS DEL PROYECTO**	22](#6.-objetivos-del-proyecto)
-
-[**Objetivo general**	22](#objetivo-general)
-
-[**Objetivos Específicos**	22](#objetivos-específicos)
-
-[**7\. Marco Referencial**	23](#7.-marco-referencial)
-
-[**7.1 Marco teórico**	23](#7.1-marco-teórico)
-
-[**7.2. Marco Legal**	29](#7.2.-marco-legal)
-
-[**7.3.  Marco Ambiental**	30](#7.3.-marco-ambiental)
-
-[**8\. METODOLOGÍA**	31](#8.-metodología)
-
-[Herramientas de Apoyo	34](#heading=h.n5kv8vi9qndx)
-
-[Validación Continua y Retroalimentación	35](#heading=h.9ymlrn68rc0x)
-
-[**9\. DESARROLLO**	35](#9.-desarrollo)
-
-[**9.2 Definición de Requerimientos**	35](#heading=h.e7xdp6cwap13)
-
-[**9.3 Casos de Uso**	39](#heading=h.ca8yth9jjicr)
-
-[**9.5 Diagramas UML**	40](#heading=h.inquwwa5l0ih)
-
-[**9.6 Diseño de Base de Datos**	41](#heading=h.w1ub8o76yfbm)
-
-[**9.7 Arquitectura del Sistema**	41](#heading=h.1z4jfy24h6y2)
-
-[**9.8 Desarrollo del Prototipo**	42](#heading=h.qbphwvzgtn0i)
-
-[**10\. Propuesta de solución**	43](#10.-conclusiones)
-
-[**11\. Conclusiones**	44](#11.-recomendaciones-y-trabajo-futuro)
-
-[**12\. Anexos**	45](#12.-anexos)
-
-[**13\. Referencias**	47](#13.-referencias)
-
-## **1.Introducción**  {#1.introducción}
+# **Introducción** 
 
 La gestión de inventarios constituye uno de los pilares fundamentales de la administración de operaciones en cualquier actividad comercial. Desde sus primeras formalizaciones matemáticas a comienzos del siglo XX, cuando Ford W. Harris propuso en 1913 el modelo de Cantidad Económica de Pedido (EOQ) y R.H. Wilson lo popularizó en 1934, esta disciplina ha evolucionado continuamente como respuesta a la creciente complejidad de los mercados y a la necesidad de tomar decisiones más precisas con información limitada (Wilson, 1934). Durante décadas, sin embargo, las herramientas derivadas de estos modelos permanecieron reservadas para grandes empresas con capacidad de inversión en sistemas especializados, dejando al margen al vasto universo del comercio minorista informal y las microempresas.
 
 En América Latina, y particularmente en Colombia, el comercio minorista de proximidad —representado por las tiendas de barrio, minimercados y distribuidoras de víveres— constituye el canal dominante de abastecimiento alimentario urbano. Existen aproximadamente 500,000 tiendas de barrio en Colombia, que representan el 40% del comercio nacional y generan empleo para cerca de 575,000 personas (Napse, 2024). Una familia colombiana visita estos establecimientos en promedio cada cuatro días, lo que evidencia su arraigo cultural y su papel estructural en la economía cotidiana (Fenalco, citado en Reyes, 2021). A escala regional, se estiman más de 3.7 millones de tiendas de barrio en Latinoamérica, responsables del 50% de todas las ventas de alimentos en la región (Mahaal, 2024).
 
-No obstante su relevancia económica y social, estas unidades operan históricamente con métodos de gestión analógicos: libretas de anotaciones, hojas de cálculo o simplemente la memoria del propietario. El perfil sociodemográfico del tendero colombiano —edad promedio entre 40 y 44 años, con un 52% de establecimientos atendidos por mujeres en estratos socioeconómicos 1, 2 y 3 (Fenalco, citado en Reyes, 2021)— introduce barreras específicas para la adopción de herramientas tecnológicas, incluso cuando estas están disponibles y son económicamente accesibles. Esta brecha entre la disponibilidad de soluciones y su adopción real configura el núcleo del problema que aborda el presente proyecto.
+No obstante, su relevancia económica y social, estas unidades operan históricamente con métodos de gestión analógicos: libretas de anotaciones, hojas de cálculo o simplemente la memoria del propietario. El perfil sociodemográfico del tendero colombiano —edad promedio entre 40 y 44 años, con un 52% de establecimientos atendidos por mujeres en estratos socioeconómicos 1, 2 y 3 (Fenalco, citado en Reyes, 2021)— introduce barreras específicas para la adopción de herramientas tecnológicas, incluso cuando estas están disponibles y son económicamente accesibles. Esta brecha entre la disponibilidad de soluciones y su adopción real configura el núcleo del problema que aborda el presente proyecto.
 
 En el contexto bogotano, esta problemática adquiere una dimensión crítica. Bogotá concentra el 24.7% del total de empresas activas del país (MinCIT, 2023), y el 91.9% de su tejido empresarial corresponde a microempresas (Alcaldía Mayor de Bogotá, 2024). De las aproximadamente 40,000 a 50,000 microempresas dedicadas a la distribución de víveres en la ciudad (DANE, 2022), la gran mayoría enfrenta pérdidas recurrentes por deterioro de productos, desabastecimiento de artículos de alta rotación y compras de emergencia a precios inflados, todo ello como consecuencia directa de la ausencia de sistemas de información que les permitan tomar decisiones basadas en datos.
 
 Las tecnologías de la información y las comunicaciones (TIC) han demostrado ser un habilitador crítico para la modernización de estos negocios. El desarrollo de aplicaciones web accesibles desde dispositivos móviles, combinado con la disponibilidad de modelos de inteligencia artificial a través de APIs de consumo por demanda, ha abierto una ventana de oportunidad para dotar a los microempresarios de herramientas de análisis que antes estaban reservadas exclusivamente para grandes corporaciones. En este contexto, el presente proyecto propone el diseño e implementación de StockPilot, una aplicación web de gestión inteligente de inventarios orientada específicamente a microempresas de distribución de víveres en Bogotá, que integra algoritmos clásicos de gestión de inventarios con un copiloto de inteligencia artificial para la generación de recomendaciones de reabastecimiento en lenguaje natural.
 
-## **2\. El problema** {#2.-el-problema}
+## **El problema**
 
 ¿Cuál es el problema?
 
@@ -122,15 +67,17 @@ Al proveedor, el costo es la ineficiencia logística y la cartera irregular. Los
 
 Al cliente, el costo es la pérdida de tiempo y la necesidad de desplazarse más lejos para conseguir lo que necesita, lo que en barrios periféricos de Bogotá tiene un costo real en transporte y tiempo, especialmente para adultos mayores y personas sin movilidad propia (DANE, 2022).
 
+Adicionalmente, el uso de herramientas y métodos manuales incrementa estos problemas, el 86% de las microempresas utiliza métodos manuales, generando errores de registro en 3 de cada 10 transacciones. Esta falta de precisión también de da en el seguimiento de caducidad de los productos (El 28% de los productos perecederos (frutas, verduras, lácteos) se deteriora antes de la venta por almacenamiento inadecuado y falta de rotación), errores de registro en 3 de cada 10 transacciones, excesos de productos de baja rotación (como enlatados). Esta falta de precisión en los datos de entrada invalida cualquier intento de análisis posterior, careciendo de métricas objetivas como la velocidad de venta (unidades/día) o la clasificación ABC del inventario que lo hacen ineficiente, insostenible y costoso.
+
 **Formulación del Problema**
 
 ¿De qué manera las deficiencias en la administración y gestión de inventarios afectan la viabilidad económica, la eficiencia operativa y la competitividad de las microempresas de distribución de víveres en Bogotá, y cuáles son los factores determinantes que contribuyen a esta problemática? 
 
-## **Diagrama de Ishikawa** {#diagrama-de-ishikawa}
+## **Diagrama de Ishikawa**
 
 ![][image2]
 
-## **3\. Justificación** {#3.-justificación}
+##  **Justificación**
 
 **Relevancia — ¿Por qué es importante resolver este problema?**
 
@@ -152,7 +99,7 @@ Si se resuelve el problema mediante la implementación de StockPilot, se esperan
 
 De persistir la situación actual, las microempresas de víveres continuarán operando con márgenes decrecientes, acelerando su tasa de cierre y la consecuente pérdida de empleos informales que sostienen a miles de familias bogotanas. La brecha tecnológica frente a las cadenas organizadas seguirá ampliándose, concentrando progresivamente el mercado minorista en actores con capacidad de inversión propia en tecnología. El 76% de las microempresas que hoy no ha adoptado ni siquiera la herramienta digital más básica (Centro Nacional de Consultoría / iNNpulsa, 2024\) permanecerá en una gestión completamente reactiva, sin capacidad de anticipar ni el desabastecimiento ni el vencimiento, perpetuando un ciclo de pérdidas evitables que compromete su supervivencia a mediano plazo.
 
-## **4.Estado del Arte** {#4.estado-del-arte}
+## **Estado del Arte**
 
 * **1990-2009 — Los orígenes: automatización fuera del alcance de las microempresas**
 
@@ -190,17 +137,17 @@ De persistir la situación actual, las microempresas de víveres continuarán op
 
   El panorama descrito evidencia que existe un ecosistema dinámico de soluciones para el control de inventario en el canal tradicional, pero que ninguna de ellas resuelve de forma integral las necesidades específicas de las microempresas de distribución de víveres en Bogotá: herramienta accesible económicamente, que funcione con conectividad limitada, que no requiera capacitación técnica avanzada, y que incorpore inteligencia predictiva para anticipar el desabastecimiento y el vencimiento. Esta brecha es la que justifica la pregunta generadora del presente proyecto y el desarrollo de StockPilot como propuesta de solución contextualizada para este segmento.
 
-## **5\. PREGUNTA GENERADORA**	 {#5.-pregunta-generadora}
+  1. ## **5\. PREGUNTA GENERADORA**	
 
 ¿De qué manera las deficiencias en la administración y gestión de inventarios afectan la viabilidad económica, la eficiencia operativa y la competitividad de las microempresas de distribución de víveres en Bogotá, y cuáles son los factores determinantes que contribuyen a esta problemática? 
 
-## **6\. OBJETIVOS DEL PROYECTO**  {#6.-objetivos-del-proyecto}
+2. ## **6\. OBJETIVOS DEL PROYECTO** 
 
-### **Objetivo general** {#objetivo-general}
+   1. ### **Objetivo general**
 
 Construir una aplicación web de gestión inteligente de inventarios con componentes de inteligencia artificial predictiva, orientada a reducir las pérdidas por vencimiento y desabastecimiento en microempresas de distribución de víveres en Bogotá.  
 
-### **Objetivos Específicos** {#objetivos-específicos}
+2. ### **Objetivos Específicos**
 
 * Diagnosticar las principales falencias en la gestión de inventarios de las microempresas de distribución de víveres en Bogotá, identificando sus causas, actores afectados e impacto económico.  
 * Diseñar la arquitectura del sistema, los requerimientos funcionales y no funcionales, y los modelos de datos que soporten una solución tecnológica adaptada al contexto operativo de las microempresas objetivo.  
@@ -208,9 +155,9 @@ Construir una aplicación web de gestión inteligente de inventarios con compone
 * Validar el funcionamiento del sistema mediante un plan de pruebas funcionales y no funcionales que verifique el cumplimiento de los requerimientos definidos.  
 * Evaluar la viabilidad técnica, operativa y comercial de la solución mediante métricas de calidad del sistema y un plan de negocio que identifique el modelo de sostenibilidad del producto.
 
-## **7\. Marco Referencial** {#7.-marco-referencial}
+  3. ## **7\. Marco Referencial**
 
-### **7.1 Marco teórico** {#7.1-marco-teórico}
+     1. ### **7.1 Marco teórico**
 
 El presente proyecto se fundamenta en cinco cuerpos teóricos que, integrados, sustentan el diseño e implementación de la solución: la teoría clásica de gestión de inventarios, los modelos de predicción de demanda, el modelo de aceptación tecnológica, los modelos de lenguaje de gran escala aplicados a decisiones de negocio, y los patrones de diseño de software orientado a objetos.
 
@@ -248,7 +195,7 @@ El diseño del sistema aplica dos patrones formales documentados por Gamma et al
 
 *Patrón Factory Method:* Define una interfaz para crear objetos pero delega la decisión de qué clase concreta instanciar a las subclases. En el sistema, este patrón gestiona los tres tipos de producto (perecedero, no perecedero, digital), cada uno con reglas de validación, generación de alertas y cálculo de velocidad diferentes. El Factory Method permite agregar nuevos tipos de producto sin modificar el controlador existente, siguiendo el principio de responsabilidad única (SRP).
 
-### **7.2. Marco Legal** {#7.2.-marco-legal}
+2. ### **7.2. Marco Legal**
 
 * El proyecto se desarrolla en el marco jurídico colombiano vigente. A continuación se presentan las normas aplicables y su relación directa con el sistema:
 
@@ -263,7 +210,7 @@ El diseño del sistema aplica dos patrones formales documentados por Gamma et al
 | NIIF para PYMES (IASB, 2023\) | Las Normas Internacionales de Información Financiera guían la gestión de activos como los inventarios. Los reportes del sistema siguen los principios de estas normas adaptados al contexto de microempresas. |
 | Resolución INVIMA | El 15% de las microempresas del sector ha recibido sanciones por manejo inadecuado de alimentos (Invima, 2023). El módulo de alertas de vencimiento del sistema contribuye a prevenir estas infracciones. |
 
-### **7.3.  Marco Ambiental** {#7.3.-marco-ambiental}
+  3. ### **7.3.  Marco Ambiental**
 
 * El proyecto considera la dimensión ambiental desde dos perspectivas complementarias: el impacto de la operación del sistema y el impacto positivo derivado de la solución al problema.
 
@@ -275,9 +222,9 @@ El diseño del sistema aplica dos patrones formales documentados por Gamma et al
 
 * **Promoción de la economía circular:** La gestión eficiente del inventario puede facilitar la adopción de prácticas circulares, como la redistribución de productos cercanos a su vencimiento entre microempresas del mismo sector o la reducción de excedentes mediante pedidos mejor calibrados (Cortés Jiménez & Henao Zapata, 2021).
 
-* **Impacto de la operación del sistema:** El sistema es una aplicación web de bajo consumo energético. Al ejecutarse sobre Node.js con SQLite embebido, no requiere infraestructura de servidores dedicados para su operación inicial, pudiendo desplegarse en servicios de computación en la nube con modalidad de pago por uso, lo que minimiza el consumo energético en reposo. El sistema de caché implementado evita llamadas redundantes a la API de OpenAI, reduciendo la huella computacional de las consultas repetidas con los mismos datos de entrada.
+* **Impacto de la operación del sistema:** El sistema es una aplicación web de bajo consumo energético. Al ejecutarse sobre Node.js con PostgreSQL como motor relacional desplegado en Railway, aprovecha la modalidad de pago por uso de la nube, lo que minimiza el consumo energético en reposo. El sistema de caché implementado evita llamadas redundantes a la API de OpenAI, reduciendo la huella computacional de las consultas repetidas con los mismos datos de entrada.
 
-## **8\. METODOLOGÍA** {#8.-metodología}
+  4. ## **8\. METODOLOGÍA**
 
 El desarrollo de StockPilot requería una metodología que permitiera gestionar la incertidumbre inherente a la integración de tecnologías emergentes —modelos de lenguaje de gran escala, motores predictivos de demanda— con un dominio operativo complejo y cambiante. Por ello se adoptó Scrum, el marco de trabajo ágil definido por Sutherland (2014), que organiza el desarrollo en iteraciones cortas y verificables denominadas sprints, con entrega de valor incremental al final de cada ciclo.  
 Justificación de la metodología  
@@ -294,7 +241,7 @@ El proyecto se organizó en 5 sprints de dos semanas cada uno, para un total de 
 Módulos desarrollados: Autenticación y Gestión de Usuarios (Módulo 1), Gestión de Productos (Módulo 2), Gestión de Ventas (Módulo 3), Control de Movimientos (Módulo 4\)  
 Requerimientos cubiertos: RF-001 a RF-017, RF-061, RF-062  
 **Sprint 2**  
-Módulos desarrollados: Gestión Multi-Tienda (Módulo 5), Alertas Inteligentes (Módulo 8), Dashboard Inteligente y Centro Analítico (Módulo 9), Gestión de Proveedores (Módulo 11\)  
+Módulos desarrollados: Gestión del Establecimiento (Módulo 5), Alertas Inteligentes (Módulo 8), Dashboard Inteligente y Centro Analítico (Módulo 9), Gestión de Proveedores (Módulo 11\)  
 Requerimientos cubiertos: RF-018, RF-019, RF-033 a RF-043, RF-048, RF-049, RF-063  
 **Sprint 3**  
 Módulos desarrollados: Motor de Predicción de Demanda IA (Módulo 6), Compras Sugeridas y Órdenes Inteligentes (Módulo 7\)  
@@ -314,7 +261,7 @@ El proceso de desarrollo se apoyó en las siguientes herramientas: GitHub con or
 
 Cada requerimiento fue marcado como implementado únicamente después de verificar su criterio de aceptación en un entorno funcional con datos representativos. Los defectos identificados en cada sprint fueron corregidos antes de avanzar al siguiente ciclo, garantizando que el sistema acumulara funcionalidad verificada. Al cierre del Sprint 5, el 100% de los 83 requerimientos documentados alcanzó estado implementado, confirmando la cobertura completa del alcance definido en el backlog.
 
-## **9\. DESARROLLO** {#9.-desarrollo}
+5. ## **9\. DESARROLLO**
 
 El desarrollo de StockPilot se llevó a cabo siguiendo la metodología ágil Scrum en 5 sprints de dos semanas, con entregas funcionales verificadas al cierre de cada ciclo. A continuación, se describe el proceso completo: desde la definición de requerimientos y los artefactos de diseño, hasta la arquitectura implementada, el stack tecnológico y el detalle de cada sprint.
 
@@ -324,7 +271,7 @@ El sistema se estructura en 15 módulos funcionales que cubren el ciclo completo
 
 **Módulo 1 — Autenticación y Gestión de Usuarios**
 
-Permite el acceso seguro al sistema con control de roles y sesiones. Cubre inicio de sesión con usuario, contraseña y rol operativo (Administrador o Colaborador); registro de nuevos usuarios con datos personales y del negocio; recuperación de contraseña con código de 6 dígitos por correo; protección de rutas privadas; actualización de perfil con foto en Base64; almacenamiento de contraseñas con bcrypt (10 salt rounds); invalidación automática de sesión anterior al detectar login desde nuevo dispositivo; y cambio de contraseña obligatorio en el primer acceso de usuarios Colaborador (RF-001 a RF-006, RF-061, RF-062).
+Permite el acceso seguro al sistema con control de roles y sesiones. Cubre inicio de sesión con usuario, contraseña y rol operativo (Administrador o Colaborador); registro de nuevos usuarios con datos personales y del negocio; recuperación de contraseña con código de 6 dígitos por correo; protección de rutas privadas; actualización de perfil con foto en Base64; almacenamiento de contraseñas con bcrypt (10 salt rounds); control de sesiones concurrentes con prioridad al primer dispositivo conectado: un segundo intento de login es bloqueado con código SESSION\_ACTIVE y solo desplaza la sesión activa si el usuario lo confirma explícitamente; y cambio de contraseña obligatorio en el primer acceso de usuarios Colaborador (RF-001 a RF-006, RF-061, RF-062).
 
 **Módulo 2 — Gestión de Productos**
 
@@ -338,9 +285,9 @@ Permite el registro de ventas asociando productos, cantidades y precios unitario
 
 Registra entradas y salidas de stock con trazabilidad completa: fecha, tipo de movimiento, cantidad, observación y usuario responsable. Actualiza el stock del producto en tiempo real tras cada movimiento registrado (RF-016, RF-017).
 
-**Módulo 5 — Gestión Multi-Tienda**
+**Módulo 5 — Gestión del Establecimiento**
 
-Soporta múltiples tiendas o sucursales por organización, con segregación completa de datos (productos, ventas, alertas, reportes) por tienda, permitiendo que un mismo sistema sirva a negocios con más de un punto de venta (RF-018, RF-019).
+Permite al administrador consultar y actualizar los datos del establecimiento registrado en el sistema: nombre, dirección, razón social, documento, ciudad y celular de contacto. Garantiza además el aislamiento completo de datos por cuenta: cada negocio opera con su propio inventario, ventas, alertas y reportes sin interferencia entre establecimientos. La gestión de múltiples sucursales bajo una misma organización está planificada como funcionalidad futura (RF-018, RF-019).
 
 **Módulo 6 — Motor de Predicción de Demanda**
 
@@ -376,7 +323,7 @@ Permite al usuario ajustar el parámetro "días de cobertura deseada" mediante u
 
 **Módulo 14 — Retroalimentación IA y Aprendizaje Continuo**
 
-Compara las cantidades sugeridas por la IA con las ventas reales posteriores y calcula un factor de precisión por producto (ventas\_reales / cantidad\_sugerida), con período adaptativo de max(lead\_time × 2, 14\) días. Persiste el factor en la tabla Feedback\_IA y lo aplica como multiplicador en las siguientes sugerencias, limitado entre 0.2 y 3.0. Muestra un dashboard de Aprendizaje con nivel de acierto global, gráfica de evolución mensual y tabla de rendimiento por producto. Incluye análisis de productos con tendencia bajista o vencimiento próximo para generar sugerencias de promoción comercial (descuento, combo, 2x1, liquidación) mediante IA (RF-055 a RF-057, RF-065).
+Compara las cantidades sugeridas por la IA con las ventas reales posteriores y calcula un factor de precisión por producto (ventas\_reales / cantidad\_sugerida), con período adaptativo de max(lead\_time × 2, 14\) días. Persiste el factor en la tabla Feedback\_IA y lo aplica como multiplicador en las siguientes sugerencias, limitado entre 0.2 y 3.0. Muestra un dashboard de Aprendizaje con nivel de acierto global, gráfica de evolución mensual y tabla de rendimiento por producto. Incluye análisis de productos con tendencia bajista, sobrestock o vencimiento próximo para generar sugerencias de promoción comercial (descuento, combo, 2x1, liquidación) mediante IA, priorizando los candidatos con vencimiento más urgente y aplicando un fallback determinístico que garantiza cobertura del 100% de los candidatos independientemente del comportamiento del modelo (RF-055 a RF-057, RF-065).
 
 **Módulo 15 — Automatización y Comunicación Proactiva**
 
@@ -384,7 +331,7 @@ Envía automáticamente cada lunes a las 8:00 AM un correo HTML responsive a los
 
 **Requerimientos No Funcionales**
 
-Los 18 requerimientos no funcionales implementados cubren cinco dimensiones: rendimiento (carga del Dashboard en menos de 3 segundos, consultas CRUD en menos de 500ms, caché MD5 para evitar llamadas redundantes a la API de OpenAI); seguridad (bcrypt, sesiones server-side, protección de rutas, guardrails de IA, control de sesiones concurrentes); usabilidad (interfaz responsive desde 375px hasta 1920px, feedback visual con toasts, validación client-side); disponibilidad y compatibilidad (Chrome, Edge y Firefox en últimas 2 versiones, reinicio automático sin pérdida de datos); y mantenibilidad (patrón MVC, migraciones incrementales, log de auditoría de IA).
+Los 18 requerimientos no funcionales implementados cubren seis dimensiones: rendimiento (carga del Dashboard en menos de 3 segundos, consultas CRUD en menos de 500ms, caché MD5 para evitar llamadas redundantes a la API de OpenAI); seguridad (bcrypt, sesiones server-side, protección de rutas, guardrails de IA, control de sesiones concurrentes con prioridad al primer dispositivo); usabilidad (interfaz responsive desde 375px hasta 1920px, feedback visual con toasts, validación client-side); disponibilidad y compatibilidad (Chrome, Edge y Firefox en últimas 2 versiones, reinicio automático sin pérdida de datos); mantenibilidad (patrón MVC, migraciones incrementales, log de auditoría de IA); e interoperabilidad (registro en consola del resultado de cada envío de correo automatizado, y generación de reportes PDF con formato de moneda COP y codificación compatible con español).
 
 **9.2 Casos de Uso**
 
@@ -414,131 +361,131 @@ Se desarrollaron los siguientes diagramas UML para guiar el diseño técnico y d
 
 La arquitectura de StockPilot se fundamenta en el patrón Modelo-Vista-Controlador (MVC), complementado con el patrón creacional Factory Method para la gestión de tipos de producto, tal como se describió en el Marco Teórico (sección 7.1).
 
-La implementación adopta una arquitectura desacoplada de dos capas: un backend API REST y un frontend SPA (Single Page Application) independiente. La capa de Modelo está compuesta por los archivos de la carpeta /models, que encapsulan toda la lógica de acceso a la base de datos SQLite mediante el driver sqlite3 y las consultas SQL parametrizadas. La capa de Controlador corresponde a los archivos de la carpeta /controllers, que reciben las solicitudes HTTP desde las rutas definidas en /routes, invocan la lógica del modelo correspondiente y retornan respuestas en formato JSON al cliente. La capa de Vista es responsabilidad exclusiva del frontend React, organizado en /pages, /components y /layouts, que consume la API REST mediante Axios y gestiona la navegación con react-router-dom.
+La implementación adopta una arquitectura desacoplada de dos capas: un backend API REST y un frontend SPA (Single Page Application) independiente. La capa de Modelo está compuesta por los archivos de la carpeta /models, que encapsulan toda la lógica de acceso a la base de datos PostgreSQL mediante el driver pg (node-postgres) y las consultas SQL parametrizadas. La capa de Controlador corresponde a los archivos de la carpeta /controllers, que reciben las solicitudes HTTP desde las rutas definidas en /routes, invocan la lógica del modelo correspondiente y retornan respuestas en formato JSON al cliente. La capa de Vista es responsabilidad exclusiva del frontend React, organizado en /pages, /components y /layouts, que consume la API REST mediante Axios y gestiona la navegación con react-router-dom.
 
 El patrón Factory Method se aplica en el módulo de productos a través de cinco archivos en /models/products: una clase base ProductBase con métodos comunes, y tres clases concretas (PerishableProduct, NonPerishableProduct, DigitalProduct) que heredan de ella y sobrescriben los métodos de validación de vencimiento, cálculo de alertas y estimación de velocidad. Una clase ProductFactory centraliza la instanciación según el tipo de producto, eliminando estructuras condicionales del flujo principal.
 
-### **Stack Tecnológico**
+**Stack Tecnológico**
 
-### **Backend**
+**Backend**
 
-### **Tecnología:** Node.js \+ Express 4
+**Tecnología:** Node.js \+ Express 4
 
-### **Justificación:** API REST con modelo asíncrono no bloqueante eficiente para múltiples peticiones concurrentes
+**Justificación:** API REST con modelo asíncrono no bloqueante eficiente para múltiples peticiones concurrentes
 
-### **Frontend**
+**Frontend**
 
-### **Tecnología:** React 19 \+ Vite \+ TailwindCSS 4
+**Tecnología:** React 19 \+ Vite \+ TailwindCSS 4
 
-### **Justificación:** SPA desacoplada con recarga en caliente, utilidades CSS sin transpilación adicional
+**Justificación:** SPA desacoplada con recarga en caliente, utilidades CSS sin transpilación adicional
 
-### **Gráficas**
+**Gráficas**
 
-### **Tecnología:** Recharts
+**Tecnología:** Recharts
 
-### **Justificación:** Librería de visualización declarativa integrada nativamente con React
+**Justificación:** Librería de visualización declarativa integrada nativamente con React
 
-### **Comunicación**
+**Comunicación**
 
-### **Tecnología:** Axios \+ CORS
+1. ### **Tecnología:** Axios \+ CORS
 
-### **Justificación:** Cliente HTTP para consumo de la API REST con soporte de credenciales de sesión
+   2. ### **Justificación:** Cliente HTTP para consumo de la API REST con soporte de credenciales de sesión
 
-### **Base de datos**
+      3. ### **Base de datos**
 
-### **Tecnología:** SQLite 3 (driver sqlite3)
+      4. ### **Tecnología:** PostgreSQL 15 (driver pg / node-postgres) — desplegado en Railway
 
-### **Justificación:** Embebida, sin servidor externo, reduce barrera de despliegue en etapa de prototipo
+      5. ### **Justificación:** Motor relacional robusto con soporte de concurrencia, transacciones ACID y despliegue gestionado en la nube
 
-### **IA generativa**
+      6. ### **IA generativa**
 
-### **Tecnología:** OpenAI GPT-4o-mini API
+      7. ### **Tecnología:** OpenAI GPT-4o-mini API
 
-### **Justificación:** Capacidad de razonamiento contextual con costo por llamada accesible
+      8. ### **Justificación:** Capacidad de razonamiento contextual con costo por llamada accesible
 
-### **Exportación**
+      9. ### **Exportación**
 
-### **Tecnología:** ExcelJS (XLSX) \+ PDFKit (PDF)
+      10. ### **Tecnología:** ExcelJS (XLSX) \+ PDFKit (PDF)
 
-### **Justificación:** Librerías maduras para generación de reportes en formatos estándar
+      11. ### **Justificación:** Librerías maduras para generación de reportes en formatos estándar
 
-### **Automatización**
+      12. ### **Automatización**
 
-### **Tecnología:** node-cron \+ Nodemailer
+      13. ### **Tecnología:** node-cron \+ Nodemailer
 
-### **Justificación:** Cron jobs nativos en Node.js para envíos programados sin dependencias externas
+      14. ### **Justificación:** Cron jobs nativos en Node.js para envíos programados sin dependencias externas
 
-### **Seguridad HTTP**
+      15. ### **Seguridad HTTP**
 
-### **Tecnología:** Helmet \+ express-rate-limit
+      16. ### **Tecnología:** Helmet \+ express-rate-limit
 
-### **Justificación:** Cabeceras de seguridad y protección contra abuso de endpoints (DDoS)
+      17. ### **Justificación:** Cabeceras de seguridad y protección contra abuso de endpoints (DDoS)
 
-### **Testing unitario**
+      18. ### **Testing unitario**
 
-### **Tecnología:** Vitest
+      19. ### **Tecnología:** Vitest
 
-### **Justificación:** Framework de pruebas nativo para proyectos Node.js con soporte de cobertura
+      20. ### **Justificación:** Framework de pruebas nativo para proyectos Node.js con soporte de cobertura
 
-### **Testing E2E**
+      21. ### **Testing E2E**
 
-### **Tecnología:** Playwright
+      22. ### **Tecnología:** Playwright
 
-### **Justificación:** Automatización de navegador para verificación de flujos críticos de usuario
+      23. ### **Justificación:** Automatización de navegador para verificación de flujos críticos de usuario
 
-### **Control de versiones**
+      24. ### **Control de versiones**
 
-### **Tecnología:** Git \+ GitHub (ramas por módulo)
+      25. ### **Tecnología:** Git \+ GitHub (ramas por módulo)
 
-### **Justificación:** Trazabilidad de cambios y colaboración estructurada por funcionalidad
+      26. ### **Justificación:** Trazabilidad de cambios y colaboración estructurada por funcionalidad
 
-### **IDE**
+      27. ### **IDE**
 
-### **Tecnología:** Visual Studio Code
+      28. ### **Tecnología:** Visual Studio Code
 
-### **Justificación:** Entorno liviano con soporte nativo para Node.js y extensiones de productividad
+      29. ### **Justificación:** Entorno liviano con soporte nativo para Node.js y extensiones de productividad
 
-### **9.6 Diseño de Base de Datos**
+      30. ### **9.6 Diseño de Base de Datos**
 
-### Se diseñó una base de datos relacional en SQLite con un modelo entidad-relación normalizado. Las tablas principales del esquema son: usuarios, tiendas, productos, ventas, detalle\_ventas, movimientos, alertas, proveedores, ordenes\_compra, detalle\_ordenes, Auditoria\_IA, Feedback\_IA y reportes. El modelo garantiza integridad referencial mediante claves foráneas entre todas las entidades relacionadas, y soporta migraciones incrementales sin pérdida de datos existentes (RNF-014).
+      31. ### Se diseñó una base de datos relacional en PostgreSQL con un modelo entidad-relación normalizado. Las tablas principales del esquema son: usuarios, tiendas, productos, ventas, detalle\_ventas, movimientos, alertas, proveedores, ordenes\_compra, detalle\_ordenes, Auditoria\_IA, Feedback\_IA, Cache\_IA, Historial\_Precios y reportes. El modelo garantiza integridad referencial mediante claves foráneas entre todas las entidades relacionadas, y soporta migraciones incrementales sin pérdida de datos existentes (RNF-014).
 
-### **VER ANEXO 7 — MODELO ENTIDAD-RELACIÓN**
+      32. ### **VER ANEXO 7 — MODELO ENTIDAD-RELACIÓN**
 
-### **9.7 Detalle de Sprints**
+      33. ### **9.7 Detalle de Sprints**
 
-### **Sprint 1 — Fundamentos del sistema (Semanas 1-2)**
+      34. ### **Sprint 1 — Fundamentos del sistema (Semanas 1-2)**
 
-### El objetivo de este sprint fue establecer la base completa sobre la que se construirían todos los módulos posteriores. Se implementó el módulo de Autenticación con registro de usuarios, inicio de sesión por rol, recuperación de contraseña con código de 6 dígitos, protección de rutas privadas, control de sesiones concurrentes (RF-001 a RF-006, RF-061, RF-062) y los requerimientos de seguridad asociados (RNF-004 a RNF-006, RNF-016). Simultáneamente se implementó el CRUD completo de Productos con todos sus atributos operativos, la clasificación ABC dinámica y las alertas de vencimiento (RF-007 a RF-011), el registro de Ventas con descuento automático de inventario (RF-012 a RF-015), y el Control de Movimientos con trazabilidad completa (RF-016, RF-017). Al cierre del sprint se inicializó el esquema completo de la base de datos y se verificó la estructura MVC con las rutas, controladores y modelos de los cuatro módulos entregados.
+      35. ### El objetivo de este sprint fue establecer la base completa sobre la que se construirían todos los módulos posteriores. Se implementó el módulo de Autenticación con registro de usuarios, inicio de sesión por rol, recuperación de contraseña con código de 6 dígitos, protección de rutas privadas, control de sesiones concurrentes con prioridad al primer dispositivo (bloqueando el segundo login hasta confirmación explícita del usuario) (RF-001 a RF-006, RF-061, RF-062) y los requerimientos de seguridad asociados (RNF-004 a RNF-006, RNF-016). Simultáneamente se implementó el CRUD completo de Productos con todos sus atributos operativos, la clasificación ABC dinámica y las alertas de vencimiento (RF-007 a RF-011), el registro de Ventas con descuento automático de inventario (RF-012 a RF-015), y el Control de Movimientos con trazabilidad completa (RF-016, RF-017). Al cierre del sprint se inicializó el esquema completo de la base de datos y se verificó la estructura MVC con las rutas, controladores y modelos de los cuatro módulos entregados.
 
-### **Sprint 2 — Analítica, alertas y proveedores (Semanas 3-4)**
+      36. ### **Sprint 2 — Analítica, alertas y proveedores (Semanas 3-4)**
 
-### El objetivo fue construir las capas de visibilidad del negocio: lo que el propietario ve y consulta. Se implementó la Gestión Multi-Tienda con segregación completa de datos (RF-018, RF-019), el módulo de Alertas Inteligentes con los cuatro tipos de alerta (stock crítico, advertencia, vencimiento y sobrestock) y filtrado por severidad (RF-033 a RF-037), el Dashboard Inteligente con métricas en tiempo real y el Centro Analítico con proyecciones de agotamiento y nivel de servicio (RF-038 a RF-043), y la Gestión de Proveedores con CRUD completo y vinculación con productos (RF-048, RF-049, RF-063). Se verificaron los requerimientos de rendimiento (RNF-001, RNF-002) y usabilidad (RNF-008, RNF-009).
+      37. ### El objetivo fue construir las capas de visibilidad del negocio: lo que el propietario ve y consulta. Se implementó la Gestión del Establecimiento con segregación completa de datos (RF-018, RF-019), el módulo de Alertas Inteligentes con los cuatro tipos de alerta (stock crítico, advertencia, vencimiento y sobrestock) y filtrado por severidad (RF-033 a RF-037), el Dashboard Inteligente con métricas en tiempo real y el Centro Analítico con proyecciones de agotamiento y nivel de servicio (RF-038 a RF-043), y la Gestión de Proveedores con CRUD completo y vinculación con productos (RF-048, RF-049, RF-063). Se verificaron los requerimientos de rendimiento (RNF-001, RNF-002) y usabilidad (RNF-008, RNF-009).
 
-### **Sprint 3 — Motor de IA y órdenes inteligentes (Semanas 5-6)**
+      38. ### **Sprint 3 — Motor de IA y órdenes inteligentes (Semanas 5-6)**
 
-### El objetivo fue implementar el diferenciador central del sistema: la inteligencia predictiva. Se desarrolló el Motor de Predicción de Demanda completo: velocidades ponderadas, identificación de tendencias, proyección de agotamiento, cálculo de ROP e integración con la API de OpenAI GPT-4o-mini con guardrails ABC y log de auditoría (RF-020 a RF-026). Sobre este motor se construyó el módulo de Compras Sugeridas y Órdenes Inteligentes con edición manual de cantidades, evaluación de riesgo y persistencia de órdenes confirmadas (RF-027 a RF-032). Se implementó el sistema de caché MD5 para evitar llamadas redundantes a la API (RNF-003) y los guardrails de seguridad de IA (RNF-007).
+      39. ### El objetivo fue implementar el diferenciador central del sistema: la inteligencia predictiva. Se desarrolló el Motor de Predicción de Demanda completo: velocidades ponderadas, identificación de tendencias, proyección de agotamiento, cálculo de ROP e integración con la API de OpenAI GPT-4o-mini con guardrails ABC y log de auditoría (RF-020 a RF-026). Sobre este motor se construyó el módulo de Compras Sugeridas y Órdenes Inteligentes con edición manual de cantidades, evaluación de riesgo y persistencia de órdenes confirmadas (RF-027 a RF-032). Se implementó el sistema de caché MD5 para evitar llamadas redundantes a la API (RNF-003) y los guardrails de seguridad de IA (RNF-007).
 
-### **Sprint 4 — Simulador, aprendizaje IA y colaboradores (Semanas 7-8)**
+      40. ### **Sprint 4 — Simulador, aprendizaje IA y colaboradores (Semanas 7-8)**
 
-### El objetivo fue completar los módulos avanzados de inteligencia y la gestión del equipo. Se implementó el Simulador de Escenarios de Compra con slider de días de cobertura, presupuesto máximo y algoritmo greedy de priorización ABC (RF-052 a RF-054). Se desarrolló el módulo de Retroalimentación IA con cálculo del factor de precisión por producto, persistencia en Feedback\_IA, aplicación como multiplicador en sugerencias futuras y dashboard de Aprendizaje con evolución mensual (RF-055 a RF-057, RF-065). Se implementó el módulo de Registro y Gestión de Colaboradores con control de acceso exclusivo para el rol Administrador (RF-050, RF-051). Se verificaron los requerimientos de mantenibilidad (RNF-013 a RNF-015).
+      41. ### El objetivo fue completar los módulos avanzados de inteligencia y la gestión del equipo. Se implementó el Simulador de Escenarios de Compra con slider de días de cobertura, presupuesto máximo y algoritmo greedy de priorización ABC (RF-052 a RF-054). Se desarrolló el módulo de Retroalimentación IA con cálculo del factor de precisión por producto, persistencia en Feedback\_IA, aplicación como multiplicador en sugerencias futuras y dashboard de Aprendizaje con evolución mensual (RF-055 a RF-057, RF-065). Se implementó el módulo de Registro y Gestión de Colaboradores con control de acceso exclusivo para el rol Administrador (RF-050, RF-051). Se verificaron los requerimientos de mantenibilidad (RNF-013 a RNF-015).
 
-### **Sprint 5 — Reportes, automatización y plan de pruebas (Semanas 9-10)**
+      42. ### **Sprint 5 — Reportes, automatización y plan de pruebas (Semanas 9-10)**
 
-### El objetivo fue completar el sistema con los módulos de comunicación proactiva y ejecutar el plan de pruebas completo. Se implementó el módulo de Reportes y Exportación con generación de XLSX mediante ExcelJS y PDF de auditoría de merma mediante PDFKit (RF-044 a RF-047, RF-058). Se desarrolló el módulo de Automatización con cron job de resumen semanal por correo (node-cron \+ Nodemailer), envío manual desde la interfaz y alerta sonora en tiempo real con diferenciación de tonos (RF-059, RF-060, RF-064). Se completó la verificación de los requerimientos de compatibilidad y disponibilidad (RNF-011, RNF-012, RNF-017, RNF-018). Se ejecutó el plan de pruebas completo documentado en la sección 9.8.
+      43. ### El objetivo fue completar el sistema con los módulos de comunicación proactiva y ejecutar el plan de pruebas completo. Se implementó el módulo de Reportes y Exportación con generación de XLSX mediante ExcelJS y PDF de auditoría de merma mediante PDFKit (RF-044 a RF-047, RF-058). Se desarrolló el módulo de Automatización con cron job de resumen semanal por correo (node-cron \+ Nodemailer), envío manual desde la interfaz y alerta sonora en tiempo real con diferenciación de tonos (RF-059, RF-060, RF-064). Se completó la verificación de los requerimientos de compatibilidad y disponibilidad (RNF-011, RNF-012, RNF-017, RNF-018). Se ejecutó el plan de pruebas completo documentado en la sección 9.8.
 
-### **9.8 Plan de Pruebas**
+      44. ### **9.8 Plan de Pruebas**
 
-### El plan de pruebas se diseñó para verificar el cumplimiento de los 83 requerimientos implementados, organizando los casos de prueba en dos categorías: funcionales y no funcionales.
+      45. ### El plan de pruebas se diseñó para verificar el cumplimiento de los 83 requerimientos implementados, organizando los casos de prueba en dos categorías: funcionales y no funcionales.
 
-### Las **pruebas funcionales** verificaron el comportamiento correcto de cada flujo de usuario definido en los requerimientos: creación, edición y eliminación de registros en todos los módulos CRUD; flujo completo de venta con descuento automático de inventario; generación de alertas ante condiciones de stock crítico, advertencia y vencimiento; generación de sugerencias de compra por la IA con validación de guardrails ABC; conversión de simulación a orden de compra; envío de orden de compra por correo al proveedor; y activación del resumen semanal automático y manual.
+      46. ### Las **pruebas funcionales** verificaron el comportamiento correcto de cada flujo de usuario definido en los requerimientos: creación, edición y eliminación de registros en todos los módulos CRUD; flujo completo de venta con descuento automático de inventario; generación de alertas ante condiciones de stock crítico, advertencia y vencimiento; generación de sugerencias de compra por la IA con validación de guardrails ABC; conversión de simulación a orden de compra; envío de orden de compra por correo al proveedor; y activación del resumen semanal automático y manual.
 
-### Las **pruebas no funcionales** verificaron: tiempos de carga del Dashboard inferiores a 3 segundos; tiempos de respuesta de operaciones CRUD inferiores a 500ms; correcto funcionamiento del sistema de caché MD5 sin llamadas redundantes a la API; hash bcrypt de contraseñas verificable en base de datos; invalidación de sesión concurrente con notificación al dispositivo afectado; visualización correcta en Chrome, Edge y Firefox; y adaptación responsive de la interfaz en pantallas de 375px, 768px y 1920px de ancho.
+      47. ### Las **pruebas no funcionales** verificaron: tiempos de carga del Dashboard inferiores a 3 segundos; tiempos de respuesta de operaciones CRUD inferiores a 500ms; correcto funcionamiento del sistema de caché MD5 sin llamadas redundantes a la API; hash bcrypt de contraseñas verificable en base de datos; bloqueo de sesión concurrente con retorno de SESSION_ACTIVE, presentación del aviso de conflicto al segundo dispositivo, y notificación al dispositivo desplazado únicamente cuando el usuario confirma el forzado; visualización correcta en Chrome, Edge y Firefox; y adaptación responsive de la interfaz en pantallas de 375px, 768px y 1920px de ancho.
 
-### Al cierre del Sprint 5, el 100% de los casos de prueba ejecutados arrojó resultado satisfactorio, confirmando que el sistema cumple la totalidad de los requerimientos definidos en el backlog.
+      48. ### Al cierre del Sprint 5, el 100% de los casos de prueba ejecutados arrojó resultado satisfactorio, confirmando que el sistema cumple la totalidad de los requerimientos definidos en el backlog.
 
-### **VER ANEXO 8 — REQUERIMIENTOS COMPLETOS DEL SISTEMA** 
+      49. ### **VER ANEXO 8 — REQUERIMIENTOS COMPLETOS DEL SISTEMA** 
 
-### **10\. Conclusiones** {#10.-conclusiones}
+      50. ### **10\. Conclusiones**
 
 * El desarrollo de StockPilot permitió comprobar que es posible construir un sistema de gestión de inventario inteligente, funcional y accesible para microempresas, integrando análisis predictivo e inteligencia artificial generativa dentro de un stack tecnológico moderno, desacoplado y de bajo costo de despliegue. Las siguientes conclusiones sintetizan los aprendizajes más significativos obtenidos a lo largo de las cinco iteraciones del proyecto.  
 * La metodología ágil Scrum demostró ser la estrategia más adecuada para un proyecto de esta naturaleza. La división del desarrollo en cinco sprints de dos semanas permitió validar cada módulo de forma incremental, detectar inconsistencias entre el diseño y la implementación en etapas tempranas, y ajustar el alcance sin comprometer la integridad del sistema. Al cierre del Sprint 5, el 100% de los 83 requerimientos definidos en el backlog fueron implementados y verificados satisfactoriamente, lo que confirma que la planificación por ciclos cortos favorece la entrega de valor continuo y reduce el riesgo de desviaciones tardías.  
@@ -550,11 +497,11 @@ El patrón Factory Method se aplica en el módulo de productos a través de cinc
 * La incorporación de una suite de pruebas con Vitest para lógica de negocio y Playwright para flujos E2E confirmó que la verificación automatizada es indispensable en sistemas con múltiples módulos interdependientes. Los tests de polimorfismo de productos, matemática de inventario, métricas de retroalimentación IA y sanitización de entradas detectaron regresiones en etapas tempranas y proveyeron evidencia objetiva del cumplimiento de los requerimientos, más allá de la verificación manual.  
 * Finalmente, el proceso completo de diseño, implementación y verificación de StockPilot confirmó que los ingenieros de sistemas tienen la capacidad de construir soluciones tecnológicas de alto impacto para problemas reales de las microempresas colombianas, aplicando de forma integrada los conocimientos de ingeniería de software, bases de datos, arquitectura de sistemas e inteligencia artificial adquiridos a lo largo de la formación académica.
 
-### **11\. Recomendaciones y trabajo futuro** {#11.-recomendaciones-y-trabajo-futuro}
+  51. ### **11\. Recomendaciones y trabajo futuro**
 
 1. Con base en los resultados obtenidos durante el desarrollo y las limitaciones identificadas en la etapa de pruebas, se formulan las siguientes recomendaciones para la evolución del sistema en versiones posteriores.
 
-2. **Migración a una base de datos cliente-servidor.** SQLite fue una elección justificada para la etapa de prototipo por su facilidad de despliegue, pero presenta limitaciones de concurrencia cuando múltiples usuarios acceden simultáneamente en entornos de producción con alto volumen de transacciones. Se recomienda migrar a PostgreSQL como motor relacional en una siguiente versión, manteniendo el esquema normalizado existente y aprovechando las migraciones incrementales ya implementadas.
+2. **Implementación de réplicas y alta disponibilidad en PostgreSQL.** El sistema ya utiliza PostgreSQL como motor relacional desplegado en Railway, lo que resuelve las limitaciones de concurrencia de un motor embebido. Como siguiente paso, se recomienda configurar réplicas de lectura para distribuir la carga de consultas analíticas (Centro Analítico, reportes) sin afectar el rendimiento de las escrituras transaccionales, y activar backups automáticos programados para garantizar la recuperación ante fallos en entornos de producción con múltiples tiendas activas.
 
 3. **Implementación de PWA (Progressive Web App).** Dado que el frontend ya es una SPA con React 19, se recomienda extenderla como PWA añadiendo un Service Worker y un manifiesto de aplicación. Esto permitiría a los propietarios de microempresas instalar StockPilot directamente desde el navegador en sus dispositivos móviles, acceder a funcionalidades básicas en modo offline y recibir notificaciones push de alertas críticas sin depender exclusivamente del resumen semanal por correo.
 
@@ -570,7 +517,7 @@ El patrón Factory Method se aplica en el módulo de productos a través de cinc
 
 9. **Evaluación formal de calidad bajo estándares ISO/IEC 25010\.** Como trabajo futuro en la Práctica V, se recomienda ejecutar una evaluación sistemática del sistema bajo el modelo de calidad ISO/IEC 25010, midiendo las características de funcionalidad, fiabilidad, usabilidad, eficiencia de desempeño, mantenibilidad y portabilidad mediante métricas cuantificables, con el fin de identificar brechas de calidad y sustentar la viabilidad comercial del producto ante potenciales inversores o aliados estratégicos.
 
-## **12\. Anexos** {#12.-anexos}
+   6. ## **12\. Anexos**
 
 **ANEXO 1 DIAGRAMAS DE SECUENCIA**
 
@@ -592,19 +539,17 @@ El patrón Factory Method se aplica en el módulo de productos a través de cinc
 
 [**Diagrama de clases.png**](https://drive.google.com/file/d/1hKHGdziWHXJxYC_yuTvFw16KBSjfeC4X/view)
 
-**ANEXO 6 DIAGRAMAS DE ACTIVIDADES**
+**ANEXO 6 PLAN DE PRUEBAS**
 
-[**Diagramas Actividades Casos de uso**](https://docs.google.com/document/d/1gkQPq2XybfR5sKbzBQxhLAidGlqDsheOgQHVcYGH2aM/edit?tab=t.0#heading=h.i91flo5rtq6g)
+[**Plan de pruebas funcionales y no funcionales**](https://docs.google.com/document/d/1gkQPq2XybfR5sKbzBQxhLAidGlqDsheOgQHVcYGH2aM/edit?tab=t.0#heading=h.i91flo5rtq6g)
 
 **ANEXO 7 MODELO ENTIDAD RELACIÓN**
 
-[**Modelo Entidad Relación.png**](https://drive.google.com/file/d/12z3PSsOPZY420FqkYDZQ-53oinbjy1bn/view)
+[**https://drive.google.com/file/d/1XJmRoNuvCwuBqeMuJc5EjawkBhycmHP4/view**](https://drive.google.com/file/d/1XJmRoNuvCwuBqeMuJc5EjawkBhycmHP4/view)
 
 **ANEXO 8 REQUERIMIENTOS**
 
-[**Requerimientos del Proyecto.xlsx**](https://docs.google.com/spreadsheets/d/1RbyAagRW6IrH87mTsr-zfNviQG3n2UzD/edit?usp=drive_link&ouid=104653081000645995313&rtpof=true&sd=true)
-
-[**Requerimientos del Proyecto.docx**](https://docs.google.com/document/d/1a4avn4Lks9CCY8XXhUDwXcuXblRYQn5U/edit?usp=drive_link&ouid=104653081000645995313&rtpof=true&sd=true)
+[**https://docs.google.com/document/d/166e03s5SjrAumHCUIbXrvjLLMdKQwDZM/edit?usp=sharing\&ouid=104653081000645995313\&rtpof=true\&sd=true**](https://docs.google.com/document/d/166e03s5SjrAumHCUIbXrvjLLMdKQwDZM/edit?usp=sharing&ouid=104653081000645995313&rtpof=true&sd=true) 
 
 **ANEXO 9 CASOS DE USO**
 
@@ -622,7 +567,9 @@ El patrón Factory Method se aplica en el módulo de productos a través de cinc
 
 [**https://github.com/luchoTeso/StockPilot.git**](https://github.com/luchoTeso/StockPilot.git)
 
-## **13\. Referencias** {#13.-referencias}
+7. ## **13\. Referencias**
+
+   
 
 Acevedo, L. (2022, 22 de septiembre). *Diseño de herramienta ofimática para el control de los inventarios en microempresas del sector comercial* \[Tesis de grado\]. Universidad Tecnológica de Santander. [http://repositorio.uts.edu.co:8080/xmlui/handle/123456789/10298](http://repositorio.uts.edu.co:8080/xmlui/handle/123456789/10298)
 
