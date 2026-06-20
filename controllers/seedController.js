@@ -29,7 +29,7 @@ class SeedController {
             console.error('Error ejecutando seeder:', error);
             res.status(500).json({
                 success: false,
-                error: 'Error al cargar datos de prueba: ' + error.message
+                error: 'Error al cargar datos de prueba'
             });
         }
     }

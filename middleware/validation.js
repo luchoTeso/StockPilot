@@ -62,9 +62,9 @@ function validateRegister(req, res, next) {
         return res.status(400).json({ success: false, error: 'Formato de correo electrónico inválido' });
     }
 
-    // Validar longitud de contraseña
-    if (password.length < 4) {
-        return res.status(400).json({ success: false, error: 'La contraseña debe tener al menos 4 caracteres' });
+    // Validar longitud de contraseña (OWASP A04: mínimo 8 caracteres)
+    if (password.length < 8) {
+        return res.status(400).json({ success: false, error: 'La contraseña debe tener al menos 8 caracteres' });
     }
 
     next();

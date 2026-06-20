@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const ProductFactory = require('../models/products/ProductFactory');
+const { safeError, verifyProductOwnership } = require('../utils/securityUtils');
 
 class ProductController {
     static async getProducts(req, res) {
@@ -16,16 +17,17 @@ class ProductController {
     static async getProduct(req, res) {
         try {
             const productId = req.params.id;
+            const tiendaId = req.session.tiendaId;
             const producto = await Product.findById(productId);
             
-            if (!producto) {
+            if (!producto || producto.id_tienda !== tiendaId) {
                 return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
             
             res.json(producto);
         } catch (error) {
             console.error('Error obteniendo producto:', error);
-            res.status(500).json({ success: false, error: 'Error al obtener producto' });
+            res.status(500).json({ success: false, error: safeError(error, 'Error al obtener producto') });
         }
     }
 
@@ -52,13 +54,20 @@ class ProductController {
             res.json({ success: true, message: "Producto registrado correctamente" });
         } catch (error) {
             console.error('Error creando producto:', error);
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, error: safeError(error, 'Error al crear producto') });
         }
     }
 
     static async updateProduct(req, res) {
         try {
             const productId = req.params.id;
+            const tiendaId = req.session.tiendaId;
+
+            // 🛡️ IDOR: Verificar que el producto pertenece a la tienda del usuario
+            const ownership = await verifyProductOwnership(productId, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+            }
             
             // Incluso al actualizar, usamos la fábrica para validar las reglas del tipo de producto
             const productInstance = ProductFactory.create(req.body);
@@ -77,14 +86,21 @@ class ProductController {
             res.json({ success: true, message: "Producto actualizado correctamente" });
         } catch (error) {
             console.error('Error actualizando producto:', error);
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, error: safeError(error, 'Error al actualizar producto') });
         }
     }
 
     static async addStock(req, res) {
         try {
             const productId = req.params.id;
+            const tiendaId = req.session.tiendaId;
             const { cantidad } = req.body;
+
+            // 🛡️ IDOR: Verificar propiedad
+            const ownership = await verifyProductOwnership(productId, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+            }
 
             const success = await Product.addStock(productId, parseInt(cantidad));
             
@@ -95,14 +111,21 @@ class ProductController {
             res.json({ success: true, message: "Stock agregado correctamente" });
         } catch (error) {
             console.error('Error agregando stock:', error);
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, error: safeError(error, 'Error al agregar stock') });
         }
     }
 
     static async toggleProductStatus(req, res) {
         try {
             const productId = req.params.id;
+            const tiendaId = req.session.tiendaId;
             const estado = req.originalUrl.includes('inhabilitar') ? 'Inactivo' : 'Disponible';
+
+            // 🛡️ IDOR: Verificar propiedad
+            const ownership = await verifyProductOwnership(productId, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+            }
 
             const success = await Product.toggleStatus(productId, estado);
             
@@ -114,13 +137,21 @@ class ProductController {
             res.json({ success: true, message: `Producto ${action} correctamente` });
         } catch (error) {
             console.error('Error cambiando estado de producto:', error);
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, error: safeError(error, 'Error al cambiar estado del producto') });
         }
     }
 
     static async deleteProduct(req, res) {
         try {
             const productId = req.params.id;
+            const tiendaId = req.session.tiendaId;
+
+            // 🛡️ IDOR: Verificar propiedad
+            const ownership = await verifyProductOwnership(productId, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+            }
+
             const success = await Product.delete(productId);
             
             if (!success) {
@@ -130,7 +161,7 @@ class ProductController {
             res.json({ success: true, message: "Producto eliminado" });
         } catch (error) {
             console.error('Error eliminando producto:', error);
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, error: safeError(error, 'Error al eliminar producto') });
         }
     }
 }

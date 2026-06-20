@@ -5,6 +5,7 @@
  */
 
 const db = require('../config/database');
+const { safeError } = require('../utils/securityUtils');
 
 const feedbackController = {
   /**
@@ -107,7 +108,7 @@ const feedbackController = {
 
     } catch (e) {
       console.error(e);
-      res.status(500).json({ success: false, error: e.message });
+      res.status(500).json({ success: false, error: safeError(e, 'Error evaluando orden') });
     }
   },
 
@@ -177,7 +178,7 @@ const feedbackController = {
       });
     } catch (e) {
       console.error(e);
-      res.status(500).json({ success: false, error: e.message });
+      res.status(500).json({ success: false, error: safeError(e, 'Error obteniendo métricas de precisión') });
     }
   },
 
@@ -201,7 +202,7 @@ const feedbackController = {
       res.json({ success: true, data: ordenes });
     } catch (e) {
       console.error(e);
-      res.status(500).json({ success: false, error: e.message });
+      res.status(500).json({ success: false, error: safeError(e, 'Error obteniendo órdenes evaluables') });
     }
   },
   /* v8 ignore stop */

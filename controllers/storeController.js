@@ -1,11 +1,12 @@
 // controllers/storeController.js
 const Store = require('../models/Store');
 const User = require('../models/User');
+const { safeError, verifyStoreOwnership } = require('../utils/securityUtils');
 
 class StoreController {
     static async getStoreInfo(req, res) {
         try {
-            const usuarioId = req.session.userId || 13;
+            const usuarioId = req.session.userId;
 
             if (!usuarioId) {
                 return res.status(401).json({ success: false, error: "Usuario no autenticado" });
@@ -49,6 +50,11 @@ class StoreController {
             const storeId = parseInt(req.params.id);
             if (!storeId) {
                 return res.status(400).json({ success: false, error: "ID inválido" });
+            }
+
+            // 🛡️ IDOR: Verificar que la tienda es la del usuario
+            if (!verifyStoreOwnership(storeId, req.session.tiendaId)) {
+                return res.status(403).json({ success: false, error: "No autorizado para esta tienda" });
             }
 
             const { nombre_establecimiento, direccion, documento, razon_social, celular, ciudad } = req.body;
@@ -101,6 +107,11 @@ class StoreController {
                 return res.status(400).json({ success: false, error: "ID inválido" });
             }
 
+            // 🛡️ IDOR: Verificar que la tienda es la del usuario
+            if (!verifyStoreOwnership(storeId, req.session.tiendaId)) {
+                return res.status(403).json({ success: false, error: "No autorizado para esta tienda" });
+            }
+
             const result = await Store.toggleStatus(storeId);
             
             if (!result.success) {
@@ -114,7 +125,7 @@ class StoreController {
             });
         } catch (error) {
             console.error('Error cambiando estado de tienda:', error);
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, error: safeError(error, 'Error interno del servidor') });
         }
     }
 }

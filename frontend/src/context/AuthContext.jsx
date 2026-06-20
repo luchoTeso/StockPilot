@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.get('/api/logout');
+      await axios.post('/api/logout');
       setUser(null);
     } catch (err) {
       console.error('Error al cerrar sesión', err);

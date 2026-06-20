@@ -7,7 +7,7 @@ const router = express.Router();
 router.post('/api/login', sanitizeBody, validateLogin, AuthController.login);
 router.post('/api/registro', sanitizeBody, validateRegister, AuthController.register);
 router.get('/api/session-info', AuthController.getSessionInfo);
-router.get('/api/logout', AuthController.logout);
+router.post('/api/logout', AuthController.logout);
 
 // Rutas de Perfil
 router.get('/api/perfil', AuthController.getProfile);

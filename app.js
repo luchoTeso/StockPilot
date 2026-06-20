@@ -13,6 +13,7 @@ const session = require('express-session');
 const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
+const { logger, requestLogger } = require('./utils/logger');
 // const { createBackup } = require('./utils/backup'); (Obsoleto en Postgres)
 const { globalLimiter, authLimiter, aiLimiter } = require('./middleware/rateLimiter');
 
@@ -47,7 +48,7 @@ const allowedOrigins = process.env.CORS_ORIGIN
 
 console.log('📍 Origins permitidos:', allowedOrigins);
 
-// 🛡️ SEGURIDAD: Configuración de Helmet (Cabeceras de respuesta seguras)
+// 🛡️ SEGURIDAD: Configuración de Helmet (Cabeceras de respuesta seguras — OWASP A05)
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -59,8 +60,29 @@ app.use(helmet({
             connectSrc: ["'self'", ...allowedOrigins]
         }
     },
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    // 🛡️ HSTS: Forzar HTTPS durante 1 año + incluir subdominios
+    hsts: {
+        maxAge: 31536000, // 1 año en segundos
+        includeSubDomains: true,
+        preload: true
+    },
+    // 🛡️ Referrer-Policy explícito
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 }));
+
+// 🛡️ SEGURIDAD: Permissions-Policy (restringir APIs del navegador)
+app.use((req, res, next) => {
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    next();
+});
+
+// 🛡️ SEGURIDAD: Cache-Control para respuestas de API (no cachear datos sensibles)
+app.use('/api/', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    next();
+});
 
 // Configuración del servidor
 app.use(cors({
@@ -69,6 +91,9 @@ app.use(cors({
 }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
+
+// 🛡️ LOGGING: Registrar todas las peticiones HTTP (OWASP A09)
+app.use(requestLogger);
 
 const pgSession = require('connect-pg-simple')(session);
 const db = require('./config/database');
@@ -137,8 +162,8 @@ app.use((req, res) => {
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
-    // Solo logueamos el error completo en el servidor
-    console.error('❌ ERROR GLOBAL:', err);
+    // Logging estructurado del error
+    logger.error({ err, url: req.originalUrl, method: req.method }, '❌ ERROR GLOBAL');
 
     // En producción, silenciamos detalles técnicos peligrosos
     const isProd = process.env.NODE_ENV === 'production';
@@ -153,7 +178,7 @@ app.use((err, req, res, next) => {
 
 // Manejo de rechazos no controlados
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ RECHAZO NO MANEJADO en:', promise, 'razón:', reason);
+    logger.fatal({ reason }, '❌ RECHAZO NO MANEJADO');
 });
 
 // ✅ ARRANQUE RESILIENTE PARA WINDOWS + NODEMON

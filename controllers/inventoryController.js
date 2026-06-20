@@ -1,6 +1,7 @@
 // controllers/inventoryController.js
 const InventoryMovement = require('../models/InventoryMovement');
 const Product = require('../models/Product');
+const { safeError, verifyProductOwnership } = require('../utils/securityUtils');
 
 class InventoryController {
     /**
@@ -26,7 +27,7 @@ class InventoryController {
             res.json({ success: true, message: 'Entrada registrada', data: result });
         } catch (error) {
             console.error('Error registrando entrada:', error);
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, error: safeError(error, 'Error registrando entrada') });
         }
     }
 
@@ -53,7 +54,7 @@ class InventoryController {
             res.json({ success: true, message: 'Salida registrada', data: result });
         } catch (error) {
             console.error('Error registrando salida:', error);
-            res.status(400).json({ success: false, error: error.message });
+            res.status(400).json({ success: false, error: safeError(error, 'Error registrando salida') });
         }
     }
 
@@ -80,7 +81,7 @@ class InventoryController {
             res.json({ success: true, message: 'Ajuste registrado', data: result });
         } catch (error) {
             console.error('Error registrando ajuste:', error);
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, error: safeError(error, 'Error registrando ajuste') });
         }
     }
 
@@ -111,6 +112,14 @@ class InventoryController {
     static async getProductHistory(req, res) {
         try {
             const productId = req.params.id;
+            const tiendaId = req.session.tiendaId;
+
+            // 🛡️ IDOR: Verificar que el producto pertenece a la tienda del usuario
+            const ownership = await verifyProductOwnership(productId, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+            }
+
             const movimientos = await InventoryMovement.findByProduct(productId);
             res.json({ success: true, data: movimientos });
         } catch (error) {

@@ -111,10 +111,10 @@ const AlertasPage = () => {
       </div>
 
       {/* TABS E INDICADORES (RESUMEN AVANZADO) */}
-      <div className="flex flex-wrap gap-4 z-10 relative">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 z-10 relative">
         <button
           onClick={() => setFilter('todas')}
-          className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'todas' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
+          className={`w-full p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'todas' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-80 mb-1">Todas</p>
           <p className="text-3xl font-black">{stats.total}</p>
@@ -122,7 +122,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('critico')}
-          className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-rose-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
+          className={`w-full p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-rose-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><AlertCircle size={10} /> Críticas</p>
           <p className="text-3xl font-black">{stats.critico}</p>
@@ -130,7 +130,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('advertencia')}
-          className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-amber-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
+          className={`w-full p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-amber-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><AlertTriangle size={10} /> Advertencias</p>
           <p className="text-3xl font-black">{stats.advertencia}</p>
@@ -138,7 +138,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('info')}
-          className={`flex-1 min-w-[80px] p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'info' ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-blue-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'}`}
+          className={`w-full p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'info' ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-blue-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><Info size={10} /> Sobrestock</p>
           <p className="text-3xl font-black">{stats.info}</p>

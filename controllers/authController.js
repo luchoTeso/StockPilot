@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Store = require('../models/Store');
 const crypto = require('crypto'); // Para generar tokens aleatorios
 const Mailer = require('../utils/mailer'); // Servicio de envíos de correo
+const { safeError } = require('../utils/securityUtils');
 
 class AuthController {
     static async login(req, res) {
@@ -72,7 +73,7 @@ class AuthController {
             console.error('❌ ERROR FATAL EN LOGIN:', error);
             res.status(500).json({ 
                 success: false, 
-                error: 'Error interno del servidor: ' + error.message 
+                error: safeError(error, 'Error interno del servidor') 
             });
         }
     }
@@ -156,7 +157,7 @@ class AuthController {
 
             res.status(500).json({ 
                 success: false, 
-                error: 'Error en el registro: ' + error.message 
+                error: safeError(error, 'Error en el registro') 
             });
         }
     }
@@ -325,6 +326,12 @@ class AuthController {
     static async resetPasswordWithCode(req, res) {
         try {
             const { email, code, newPassword } = req.body;
+
+            // 🛡️ Validar longitud mínima de contraseña (OWASP A04)
+            if (!newPassword || newPassword.length < 8) {
+                return res.status(400).json({ success: false, error: 'La contraseña debe tener al menos 8 caracteres' });
+            }
+
             const user = await User.verifyResetToken(email, code);
             
             if (!user) {

@@ -12,6 +12,7 @@ const { OpenAI } = require('openai');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { safeError } = require('../utils/securityUtils');
 
 // Inicializar cliente OpenAI con la clave del entorno
 const openai = new OpenAI({
@@ -348,7 +349,7 @@ const aiController = {
 
       res.json({ success: true, data: finalData });
     } catch (e) {
-      res.status(500).json({ success: false, error: e.message });
+      res.status(500).json({ success: false, error: safeError(e, 'Error en análisis de inventario') });
     }
   },
 
@@ -561,7 +562,7 @@ const aiController = {
 
     } catch (error) {
       console.error('Error promotion suggestions:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: safeError(error, 'Error generando sugerencias de promoción') });
     }
   },
 
@@ -582,7 +583,7 @@ const aiController = {
       
       res.json({ success: true, alerts });
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: safeError(e, 'Error obteniendo alertas') });
     }
   },
 
@@ -664,7 +665,7 @@ const aiController = {
 
     } catch (error) {
       console.error('Error aplicando estrategia IA:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: safeError(error, 'Error aplicando estrategia') });
     }
   },
 
@@ -696,7 +697,7 @@ const aiController = {
 
       res.json({ success: true, trend });
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: safeError(e, 'Error obteniendo tendencia de precios') });
     }
   }
 };
