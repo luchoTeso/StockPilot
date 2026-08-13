@@ -3,7 +3,7 @@ const { OpenAI } = require('openai');
 const transporter = require('../config/mailer');
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY || 'dummy_key_to_prevent_crash_on_startup'
 });
 
 const suppliersController = {

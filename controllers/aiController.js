@@ -14,9 +14,9 @@ const fs = require('fs');
 const path = require('path');
 const { safeError } = require('../utils/securityUtils');
 
-// Inicializar cliente OpenAI con la clave del entorno
+// Inicializar cliente OpenAI con la clave del entorno o una clave falsa para evitar crasheos al arrancar sin la variable
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY || 'dummy_key_to_prevent_crash_on_startup'
 });
 
 // Ruta legada para auditoría de archivos (se mantiene por compatibilidad)
