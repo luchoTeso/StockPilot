@@ -6,7 +6,7 @@
     "start": "node app.js",
     "dev": "npx nodemon app.js",
     "build": "npm run build:frontend",
-    "build:frontend": "cd frontend && npm install && npm run build",
+    "build:frontend": "cd frontend && npm install --include=dev && npm run build",
     "migrate": "node scripts/migrate.js",
     "seed": "node database/seed_test_data.js",
     "test": "vitest run",
