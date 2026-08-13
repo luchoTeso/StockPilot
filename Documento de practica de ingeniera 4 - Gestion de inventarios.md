@@ -222,7 +222,7 @@ El diseño del sistema aplica dos patrones formales documentados por Gamma et al
 
 * **Promoción de la economía circular:** La gestión eficiente del inventario puede facilitar la adopción de prácticas circulares, como la redistribución de productos cercanos a su vencimiento entre microempresas del mismo sector o la reducción de excedentes mediante pedidos mejor calibrados (Cortés Jiménez & Henao Zapata, 2021).
 
-* **Impacto de la operación del sistema:** El sistema es una aplicación web de bajo consumo energético. Al ejecutarse sobre Node.js con PostgreSQL como motor relacional desplegado en Railway, aprovecha la modalidad de pago por uso de la nube, lo que minimiza el consumo energético en reposo. El sistema de caché implementado evita llamadas redundantes a la API de OpenAI, reduciendo la huella computacional de las consultas repetidas con los mismos datos de entrada.
+* **Impacto de la operación del sistema:** El sistema es una aplicación web de bajo consumo energético. Al ejecutarse sobre Node.js con PostgreSQL como motor relacional desplegado en Render (usando Neon DB), aprovecha la modalidad de pago por uso de la nube, lo que minimiza el consumo energético en reposo. El sistema de caché implementado evita llamadas redundantes a la API de OpenAI, reduciendo la huella computacional de las consultas repetidas con los mismos datos de entrada.
 
   4. ## **8\. METODOLOGÍA**
 
@@ -393,7 +393,7 @@ El patrón Factory Method se aplica en el módulo de productos a través de cinc
 
       3. ### **Base de datos**
 
-      4. ### **Tecnología:** PostgreSQL 15 (driver pg / node-postgres) — desplegado en Railway
+      4. ### **Tecnología:** PostgreSQL 16 (driver pg / node-postgres) — desplegado en Render / Neon
 
       5. ### **Justificación:** Motor relacional robusto con soporte de concurrencia, transacciones ACID y despliegue gestionado en la nube
 
@@ -501,7 +501,7 @@ El patrón Factory Method se aplica en el módulo de productos a través de cinc
 
 1. Con base en los resultados obtenidos durante el desarrollo y las limitaciones identificadas en la etapa de pruebas, se formulan las siguientes recomendaciones para la evolución del sistema en versiones posteriores.
 
-2. **Implementación de réplicas y alta disponibilidad en PostgreSQL.** El sistema ya utiliza PostgreSQL como motor relacional desplegado en Railway, lo que resuelve las limitaciones de concurrencia de un motor embebido. Como siguiente paso, se recomienda configurar réplicas de lectura para distribuir la carga de consultas analíticas (Centro Analítico, reportes) sin afectar el rendimiento de las escrituras transaccionales, y activar backups automáticos programados para garantizar la recuperación ante fallos en entornos de producción con múltiples tiendas activas.
+2. **Implementación de réplicas y alta disponibilidad en PostgreSQL.** El sistema ya utiliza PostgreSQL como motor relacional desplegado en Neon/Render, lo que resuelve las limitaciones de concurrencia de un motor embebido. Como siguiente paso, se recomienda configurar réplicas de lectura para distribuir la carga de consultas analíticas (Centro Analítico, reportes) sin afectar el rendimiento de las escrituras transaccionales, y activar backups automáticos programados para garantizar la recuperación ante fallos en entornos de producción con múltiples tiendas activas.
 
 3. **Implementación de PWA (Progressive Web App).** Dado que el frontend ya es una SPA con React 19, se recomienda extenderla como PWA añadiendo un Service Worker y un manifiesto de aplicación. Esto permitiría a los propietarios de microempresas instalar StockPilot directamente desde el navegador en sus dispositivos móviles, acceder a funcionalidades básicas en modo offline y recibir notificaciones push de alertas críticas sin depender exclusivamente del resumen semanal por correo.
 

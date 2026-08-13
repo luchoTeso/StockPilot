@@ -210,7 +210,7 @@ const LandingPage = () => {
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 100, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 32 }}>
             <div className="pulse-dot" />
-            <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a5b4fc' }}>Desplegado en Railway · v3.0</span>
+            <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a5b4fc' }}>Desplegado en Render · v3.0</span>
           </div>
 
           <h1 className="hero-title" style={{ fontSize: 'clamp(42px, 7vw, 80px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 24 }}>
@@ -236,7 +236,7 @@ const LandingPage = () => {
               <div className="dot" style={{ background: '#fbbf24' }} />
               <div className="dot" style={{ background: '#34d399' }} />
               <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 6, height: 20, marginLeft: 12, display: 'flex', alignItems: 'center', paddingLeft: 12 }}>
-                <span style={{ fontSize: 10, color: '#475569', fontWeight: 700 }}>🔒 stockpilot.up.railway.app/dashboard</span>
+                <span style={{ fontSize: 10, color: '#475569', fontWeight: 700 }}>🔒 stockpilot.onrender.com/dashboard</span>
               </div>
             </div>
             <div style={{ display: 'flex', height: 380 }}>
@@ -378,7 +378,7 @@ const LandingPage = () => {
           <div className={`reveal${isVisible('demo') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 56 }}>
             <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Sistema desplegado</p>
             <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Acceso al demo</h2>
-            <p style={{ fontSize: 16, color: '#64748b', maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>Sistema operativo en Railway con base de datos PostgreSQL persistente.</p>
+            <p style={{ fontSize: 16, color: '#64748b', maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>Sistema operativo en Render con base de datos PostgreSQL persistente.</p>
           </div>
           <div className="demo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             {/* Credenciales */}

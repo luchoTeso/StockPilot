@@ -2,7 +2,7 @@
 
 Sistema integral de gestión de inventario para tiendas y microempresas colombianas, con módulo de Inteligencia Artificial para predicción de reabastecimiento, alertas logísticas automáticas y analítica financiera en tiempo real.
 
-**Desplegado en producción:** [stockpilot.up.railway.app](https://stockpilot.up.railway.app) *(Railway — redeploy automático en cada push a `main`)*
+**Desplegado en producción:** [Enlace a Render] *(Render — redeploy automático en cada push a `main`)*
 
 ---
 
@@ -12,7 +12,7 @@ Sistema integral de gestión de inventario para tiendas y microempresas colombia
 |:-----|:-----------|:------------|
 | **Frontend** | React 19 + Vite + TailwindCSS | SPA con gráficas interactivas (Recharts) |
 | **Backend** | Node.js + Express 4 | API REST con arquitectura MVC |
-| **Base de Datos** | PostgreSQL 16 (Railway) | Base de datos relacional en producción |
+| **Base de Datos** | PostgreSQL 16 (Neon) | Base de datos relacional en producción |
 | **IA** | OpenAI GPT-4o-mini | Motor de sugerencias de reabastecimiento y promociones |
 | **Email** | Resend | Envío de notificaciones y órdenes de compra |
 | **Sesiones** | connect-pg-simple | Sesiones persistidas en PostgreSQL |
@@ -135,7 +135,7 @@ Ingresa a **http://localhost:5173**.
 
 ## Usuarios de Prueba
 
-> Estos usuarios existen en el entorno de producción (Railway) para demo.
+> Estos usuarios existen en el entorno de producción (Render) para demo.
 
 | Usuario | Contraseña | Rol |
 |:--------|:-----------|:----|
@@ -170,11 +170,11 @@ npm run test:coverage
 
 ---
 
-## Despliegue en Railway
+## Despliegue en Render
 
-El proyecto usa despliegue continuo: cada `git push` a `main` redespliega automáticamente en Railway.
+El proyecto usa despliegue continuo: cada `git push` a `main` redespliega automáticamente en Render.
 
-**Variables de entorno requeridas en Railway:**
+**Variables de entorno requeridas en Render:**
 
 ```
 DATABASE_URL        → provista automáticamente por el plugin de PostgreSQL
