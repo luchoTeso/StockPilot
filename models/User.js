@@ -63,11 +63,11 @@ class User {
         return await db.allAsync(query, [storeId]);
     }
 
-    static async findTendederosByStore(storeId) {
+    static async findTenderosByStore(storeId) {
         const query = `
             SELECT id_usuario, nombres, genero, correo, celular, usuario
             FROM Usuarios
-            WHERE rol = 'Tendedero' AND id_tienda = ?
+            WHERE rol = 'Tendero' AND id_tienda = ?
             ORDER BY id_usuario
         `;
         return await db.allAsync(query, [storeId]);
@@ -101,7 +101,7 @@ class User {
     static async delete(userId, storeId) {
         const query = `
             DELETE FROM Usuarios 
-            WHERE id_usuario = ? AND id_tienda = ? AND rol = 'Tendedero'
+            WHERE id_usuario = ? AND id_tienda = ? AND rol = 'Tendero'
         `;
         const result = await db.runAsync(query, [userId, storeId]);
         return result.changes > 0;

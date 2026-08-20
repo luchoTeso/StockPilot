@@ -117,25 +117,25 @@ const LoginPage = () => {
                 {/* Opción Colaborador */}
                 <button
                   type="button"
-                  onClick={() => setRol('Tendedero')}
+                  onClick={() => setRol('Tendero')}
                   className={`group p-5 rounded-[2.5rem] border-2 transition-all duration-300 flex flex-col items-center gap-3 ${
-                    rol === 'Tendedero'
+                    rol === 'Tendero'
                       ? 'border-indigo-600 bg-indigo-50 shadow-md ring-4 ring-indigo-100/50'
                       : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
                   }`}
                 >
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
-                    rol === 'Tendedero' ? 'bg-indigo-600 text-white -rotate-3 shadow-lg shadow-indigo-200' : 'bg-slate-200 text-slate-700 group-hover:text-indigo-600 group-hover:bg-indigo-50'
+                    rol === 'Tendero' ? 'bg-indigo-600 text-white -rotate-3 shadow-lg shadow-indigo-200' : 'bg-slate-200 text-slate-700 group-hover:text-indigo-600 group-hover:bg-indigo-50'
                   }`}>
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className={`text-[11px] font-black uppercase tracking-tight ${rol === 'Tendedero' ? 'text-indigo-700' : 'text-slate-800'}`}>
+                    <p className={`text-[11px] font-black uppercase tracking-tight ${rol === 'Tendero' ? 'text-indigo-700' : 'text-slate-800'}`}>
                       Colaborador
                     </p>
-                    <p className={`text-[9px] font-bold uppercase tracking-tighter ${rol === 'Tendedero' ? 'text-indigo-500' : 'text-slate-500'}`}>
+                    <p className={`text-[9px] font-bold uppercase tracking-tighter ${rol === 'Tendero' ? 'text-indigo-500' : 'text-slate-500'}`}>
                       Operación Equipo
                     </p>
                   </div>

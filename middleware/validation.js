@@ -38,7 +38,7 @@ function validateLogin(req, res, next) {
         return res.status(400).json({ success: false, error: 'Faltan campos obligatorios' });
     }
 
-    const rolesValidos = ['Administrador', 'Tendedero'];
+    const rolesValidos = ['Administrador', 'Tendero'];
     if (!rolesValidos.includes(rol)) {
         return res.status(400).json({ success: false, error: 'Rol no válido' });
     }

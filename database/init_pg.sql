@@ -244,7 +244,7 @@ VALUES (1, 'Supermercado Central', 'Cra 12 # 8-90', 2018, 'Activo')
 ON CONFLICT (id_tienda) DO NOTHING;
 
 INSERT INTO Usuarios (id_usuario, nombres, genero, correo, celular, rol, usuario, contrasena, id_tienda)
-VALUES (1, 'Carlos Pérez', 'Masculino', 'carlos@mail.com', '3001234567', 'Tendedero', 'carlos', '$2b$10$5QFG27VJIG2OmYFHDAc8u.Wjt4IeZW6j30grtaep43RcxIKhp0S2G', 1)
+VALUES (1, 'Carlos Pérez', 'Masculino', 'carlos@mail.com', '3001234567', 'Tendero', 'carlos', '$2b$10$5QFG27VJIG2OmYFHDAc8u.Wjt4IeZW6j30grtaep43RcxIKhp0S2G', 1)
 ON CONFLICT (id_usuario) DO NOTHING;
 
 -- ==========================================

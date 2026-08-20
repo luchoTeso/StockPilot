@@ -9,7 +9,7 @@ import TiendasPage from './pages/TiendasPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import AnalisisDetalladoPage from './pages/AnalisisDetalladoPage';
-import RegistroTendederoPage from './pages/RegistroTendederoPage';
+import RegistroTenderoPage from './pages/RegistroTenderoPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import LandingPage from './pages/LandingPage';
 import RegisterPage from './pages/RegisterPage';
@@ -122,7 +122,7 @@ function App() {
             <Route path="/reportes" element={<AdminRoute><ReportesPage /></AdminRoute>} />
             <Route path="/auditoria" element={<AdminRoute><AuditoriaPage /></AdminRoute>} />
             <Route path="/aprendizaje" element={<AdminRoute><AprendizajePage /></AdminRoute>} />
-            <Route path="/registro-tendedero" element={<AdminRoute><RegistroTendederoPage /></AdminRoute>} />
+            <Route path="/registro-tendero" element={<AdminRoute><RegistroTenderoPage /></AdminRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>

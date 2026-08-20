@@ -173,7 +173,7 @@ VALUES
 -- admin1: contraseña 'admin123'
 INSERT OR IGNORE INTO Usuarios (id_usuario, nombres, genero, correo, celular, rol, usuario, contrasena, id_tienda)
 VALUES
-(1, 'Carlos Pérez', 'Masculino', 'carlos@mail.com', '3001234567', 'Tendedero', 'carlos',
+(1, 'Carlos Pérez', 'Masculino', 'carlos@mail.com', '3001234567', 'Tendero', 'carlos',
  '$2b$10$5QFG27VJIG2OmYFHDAc8u.Wjt4IeZW6j30grtaep43RcxIKhp0S2G', 1),
 (2, 'Admin Tienda 1', 'Masculino', 'admin1@mail.com', '3009876543', 'Administrador', 'admin1',
  '$2b$10$ZCD660po.viRBuTzzuxMQuK.oaoOe4HyZJ0NiH6ea0Xharb0H.jGK', 1);

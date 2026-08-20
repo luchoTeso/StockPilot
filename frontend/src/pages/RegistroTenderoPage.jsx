@@ -6,12 +6,12 @@ import { Navigate } from 'react-router-dom';
 import CustomSelect from '../components/CustomSelect';
 import { ShieldOff, Lock, Eye, EyeOff, Save, UserPlus, Users, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 
-const RegistroTendederoPage = () => {
+const RegistroTenderoPage = () => {
   const { user } = useAuth();
   const toast = useToast();
   const isAdmin = user?.rol === 'Administrador';
 
-  const [tendederos, setTendederos] = useState([]);
+  const [tenderos, setTenderos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Form
@@ -39,7 +39,7 @@ const RegistroTendederoPage = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      cargarTendederos();
+      cargarTenderos();
     }
   }, [isAdmin]);
 
@@ -56,13 +56,13 @@ const RegistroTendederoPage = () => {
     );
   }
 
-  const cargarTendederos = async () => {
+  const cargarTenderos = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/tendedero');
-      setTendederos(Array.isArray(data) ? data : []);
+      const { data } = await axios.get('/api/tendero');
+      setTenderos(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Error cargando tendederos', err);
+      console.error('Error cargando tenderos', err);
     } finally {
       setLoading(false);
     }
@@ -96,11 +96,11 @@ const RegistroTendederoPage = () => {
       if (editMode) {
         const payload = { ...formData };
         delete payload.contrasena; 
-        const { data } = await axios.put(`/api/tendedero/${formData.id_usuario}`, payload);
+        const { data } = await axios.put(`/api/tendero/${formData.id_usuario}`, payload);
         toast.success(data.message || 'Datos de acceso actualizados');
         cancelEdit();
       } else {
-        const { data } = await axios.post('/api/tendedero', formData);
+        const { data } = await axios.post('/api/tendero', formData);
         toast.success('Nuevo colaborador registrado con éxito');
         setFormData({
           id_usuario: '', nombres: '', genero: '', correo: '', celular: '', usuario: '', contrasena: ''
@@ -114,15 +114,15 @@ const RegistroTendederoPage = () => {
     }
   };
 
-  const eliminarTendedero = (id) => {
+  const eliminarTendero = (id) => {
     openModal(
       'Eliminar Acceso al Sistema',
       '¿Estás seguro de eliminar a esta persona de tu equipo de trabajo? No podrá volver a ingresar al sistema.',
       async () => {
         try {
-          await axios.delete(`/api/tendedero/${id}`);
+          await axios.delete(`/api/tendero/${id}`);
           toast.success('Miembro del equipo eliminado');
-          cargarTendederos();
+          cargarTenderos();
         } catch (err) {
           toast.error('Error al suspender operador');
         }
@@ -234,7 +234,7 @@ const RegistroTendederoPage = () => {
                <Users size={18} className="text-indigo-500" /> Equipo Registrado
              </h3>
              <div className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-inner">
-               {tendederos.length} PERSONAS
+               {tenderos.length} PERSONAS
              </div>
           </div>
 
@@ -253,10 +253,10 @@ const RegistroTendederoPage = () => {
                 <tbody className="text-sm divide-y divide-slate-50">
                   {loading ? (
                     <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Cargando perfiles del equipo...</td></tr>
-                  ) : tendederos.length === 0 ? (
+                  ) : tenderos.length === 0 ? (
                     <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Aún no has registrado a nadie en tu equipo</td></tr>
                   ) : (
-                    tendederos.map(t => (
+                    tenderos.map(t => (
                       <tr key={t.id_usuario} className="hover:bg-slate-50 transition-colors group">
                         <td className="p-6 pl-8 flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg text-white font-black shadow-lg shrink-0 ${t.genero === 'Femenino' ? 'bg-rose-400 shadow-rose-200' : 'bg-indigo-400 shadow-indigo-200'}`}>
@@ -284,7 +284,7 @@ const RegistroTendederoPage = () => {
                             <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Información">
                               <Pencil size={16} />
                             </button>
-                            <button onClick={() => eliminarTendedero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
+                            <button onClick={() => eliminarTendero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -341,4 +341,4 @@ const RegistroTendederoPage = () => {
   );
 };
 
-export default RegistroTendederoPage;
+export default RegistroTenderoPage;

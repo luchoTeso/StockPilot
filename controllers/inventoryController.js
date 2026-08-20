@@ -10,9 +10,16 @@ class InventoryController {
     static async registerEntry(req, res) {
         try {
             const { id_producto, cantidad, observacion } = req.body;
+            const tiendaId = req.session.tiendaId;
 
             if (!id_producto || !cantidad || cantidad <= 0) {
                 return res.status(400).json({ success: false, error: 'Producto y cantidad (positiva) son requeridos' });
+            }
+
+            // 🛡️ IDOR: Verificar que el producto pertenece a la tienda del usuario
+            const ownership = await verifyProductOwnership(id_producto, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
 
             const result = await InventoryMovement.create({
@@ -21,7 +28,7 @@ class InventoryController {
                 cantidad: parseInt(cantidad),
                 observacion: observacion || 'Entrada de mercancía',
                 id_usuario: req.session.userId,
-                id_tienda: req.session.tiendaId,
+                id_tienda: tiendaId,
             });
 
             res.json({ success: true, message: 'Entrada registrada', data: result });
@@ -37,9 +44,16 @@ class InventoryController {
     static async registerExit(req, res) {
         try {
             const { id_producto, cantidad, observacion } = req.body;
+            const tiendaId = req.session.tiendaId;
 
             if (!id_producto || !cantidad || cantidad <= 0) {
                 return res.status(400).json({ success: false, error: 'Producto y cantidad (positiva) son requeridos' });
+            }
+
+            // 🛡️ IDOR: Verificar que el producto pertenece a la tienda del usuario
+            const ownership = await verifyProductOwnership(id_producto, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
 
             const result = await InventoryMovement.create({
@@ -48,7 +62,7 @@ class InventoryController {
                 cantidad: parseInt(cantidad),
                 observacion: observacion || 'Salida manual',
                 id_usuario: req.session.userId,
-                id_tienda: req.session.tiendaId,
+                id_tienda: tiendaId,
             });
 
             res.json({ success: true, message: 'Salida registrada', data: result });
@@ -64,9 +78,16 @@ class InventoryController {
     static async registerAdjustment(req, res) {
         try {
             const { id_producto, cantidad, observacion } = req.body;
+            const tiendaId = req.session.tiendaId;
 
             if (!id_producto || cantidad === undefined || cantidad === null) {
                 return res.status(400).json({ success: false, error: 'Producto y cantidad son requeridos' });
+            }
+
+            // 🛡️ IDOR: Verificar que el producto pertenece a la tienda del usuario
+            const ownership = await verifyProductOwnership(id_producto, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
 
             const result = await InventoryMovement.create({
@@ -75,7 +96,7 @@ class InventoryController {
                 cantidad: parseInt(cantidad),
                 observacion: observacion || 'Ajuste por conteo físico',
                 id_usuario: req.session.userId,
-                id_tienda: req.session.tiendaId,
+                id_tienda: tiendaId,
             });
 
             res.json({ success: true, message: 'Ajuste registrado', data: result });

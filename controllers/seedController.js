@@ -19,10 +19,6 @@ class SeedController {
                     ventas: result.ventas,
                     itemsVenta: result.items,
                     movimientos: result.movimientos,
-                },
-                credenciales: {
-                    admin: { usuario: 'admin', contrasena: 'admin123' },
-                    tendero: { usuario: 'tendero1', contrasena: '1234' },
                 }
             });
         } catch (error) {

@@ -45,7 +45,7 @@ const Sidebar = () => {
     links.push({ to: "/reportes",           text: "Generar Reportes", icon: FileText });
     links.push({ to: "/auditoria",          text: "Auditoría AI",     icon: ScanSearch });
     links.push({ to: "/aprendizaje",        text: "Aprendizaje AI",   icon: Brain });
-    links.push({ to: "/registro-tendedero", text: "Colaboradores",    icon: Users,           id: "nav-registro-tendedero" });
+    links.push({ to: "/registro-tendero", text: "Colaboradores",    icon: Users,           id: "nav-registro-tendero" });
   }
 
   links.push({ to: "/perfil", text: "Mi Perfil", icon: User });

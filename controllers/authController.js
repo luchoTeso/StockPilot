@@ -282,8 +282,8 @@ class AuthController {
                 return res.json({ success: true, message: 'Si el correo existe, se ha enviado un código' });
             }
 
-            // Generar código de 6 dígitos
-            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            // 🛡️ OWASP A02: Generar código de 6 dígitos con CSPRNG (no Math.random)
+            const code = crypto.randomInt(100000, 999999).toString();
             const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
 
             await User.setResetToken(user.id_usuario, code, expires);

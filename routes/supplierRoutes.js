@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const suppliersController = require('../controllers/suppliersController');
 const { requireLogin } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/validation');
 
 // --- ADMINISTRACIÓN DE PROVEEDORES (CRUD) ---
 router.get('/api/proveedores', requireLogin, suppliersController.getAll);
-router.post('/api/proveedores', requireLogin, suppliersController.create);
-router.put('/api/proveedores/:id', requireLogin, suppliersController.update);
+router.post('/api/proveedores', requireLogin, sanitizeBody, suppliersController.create);
+router.put('/api/proveedores/:id', requireLogin, sanitizeBody, suppliersController.update);
 router.delete('/api/proveedores/:id', requireLogin, suppliersController.delete);
 
 // --- COMPRAS INTELIGENTES (CO-PILOTO IA) ---

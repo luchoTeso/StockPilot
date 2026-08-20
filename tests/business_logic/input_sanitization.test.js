@@ -68,7 +68,7 @@ describe('Middleware de Validación (validation.js)', () => {
     function evaluarLogin(body) {
       const { login, password, rol } = body || {};
       if (!login || !password || !rol) return 'campos_faltantes';
-      const rolesValidos = ['Administrador', 'Tendedero'];
+      const rolesValidos = ['Administrador', 'Tendero'];
       if (!rolesValidos.includes(rol)) return 'rol_invalido';
       return 'pass';
     }
@@ -93,8 +93,8 @@ describe('Middleware de Validación (validation.js)', () => {
       expect(evaluarLogin({ login: 'admin', password: '1234', rol: 'Hacker' })).toBe('rol_invalido');
     });
 
-    it('Debería aceptar el rol Tendedero', () => {
-      expect(evaluarLogin({ login: 'user', password: 'abc', rol: 'Tendedero' })).toBe('pass');
+    it('Debería aceptar el rol Tendero', () => {
+      expect(evaluarLogin({ login: 'user', password: 'abc', rol: 'Tendero' })).toBe('pass');
     });
   });
 
