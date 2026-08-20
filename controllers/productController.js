@@ -1,8 +1,122 @@
 const Product = require('../models/Product');
 const ProductFactory = require('../models/products/ProductFactory');
 const { safeError, verifyProductOwnership } = require('../utils/securityUtils');
+const ExcelJS = require('exceljs');
+const stream = require('stream');
 
 class ProductController {
+    static async bulkUpload(req, res) {
+        try {
+            const tiendaId = req.session.tiendaId;
+            if (!req.file) {
+                return res.status(400).json({ success: false, error: 'No se subió ningún archivo' });
+            }
+
+            const workbook = new ExcelJS.Workbook();
+            const originalName = req.file.originalname.toLowerCase();
+            
+            if (originalName.endsWith('.csv')) {
+                const bufferStream = new stream.PassThrough();
+                bufferStream.end(req.file.buffer);
+                await workbook.csv.read(bufferStream);
+            } else if (originalName.endsWith('.xlsx')) {
+                await workbook.xlsx.load(req.file.buffer);
+            } else {
+                return res.status(400).json({ success: false, error: 'Formato no soportado. Usa .csv o .xlsx' });
+            }
+
+            const worksheet = workbook.worksheets[0];
+            if (!worksheet) return res.status(400).json({ success: false, error: 'El archivo está vacío' });
+
+            let headerRow = null;
+            let colIndexes = {};
+            
+            worksheet.eachRow((row, rowNumber) => {
+                if (!headerRow && row.hasValues) {
+                    headerRow = row;
+                    row.eachCell((cell, colNumber) => {
+                        const val = cell.value ? cell.value.toString().trim().toLowerCase() : '';
+                        if (val.includes('codigo') || val.includes('código') || val === 'sku') colIndexes.codigo = colNumber;
+                        if (val.includes('nombre') || val.includes('descripcion') || val.includes('descripción')) colIndexes.nombre = colNumber;
+                        if (val.includes('precio') || val === 'pvp') colIndexes.precio = colNumber;
+                        if (val.includes('costo') || val === 'valor unitario') colIndexes.costo_compra = colNumber;
+                        if (val.includes('cantidad') || val === 'stock') colIndexes.cantidad = colNumber;
+                        if (val.includes('categoria') || val.includes('categoría')) colIndexes.categoria = colNumber;
+                    });
+                }
+            });
+
+            if (!colIndexes.codigo || !colIndexes.nombre) {
+                return res.status(400).json({ success: false, error: 'El archivo debe contener columnas para "Código" y "Nombre"' });
+            }
+
+            let successCount = 0;
+            let warnings = [];
+            const promises = [];
+
+            worksheet.eachRow((row, rowNumber) => {
+                if (row === headerRow) return;
+
+                const codigo = row.getCell(colIndexes.codigo)?.value?.toString().trim();
+                const nombre = row.getCell(colIndexes.nombre)?.value?.toString().trim();
+                const precio = parseFloat(row.getCell(colIndexes.precio)?.value) || 0;
+                const costo_compra = parseFloat(row.getCell(colIndexes.costo_compra)?.value) || 0;
+                const cantidad = parseInt(row.getCell(colIndexes.cantidad)?.value) || 0;
+                const categoria = row.getCell(colIndexes.categoria)?.value?.toString().trim() || 'General';
+
+                if (!codigo || !nombre) {
+                    warnings.push(`Fila ${rowNumber}: Ignorada. Falta Código o Nombre.`);
+                    return;
+                }
+
+                if (precio < 0 || costo_compra < 0 || cantidad < 0) {
+                     warnings.push(`Fila ${rowNumber}: Ignorada. Valores numéricos negativos.`);
+                     return;
+                }
+
+                try {
+                    const productInstance = ProductFactory.create({
+                        codigo,
+                        nombre_producto: nombre,
+                        precio,
+                        costo_compra,
+                        cantidad,
+                        categoria,
+                        tipo_producto: 'General',
+                        id_tienda: tiendaId
+                    });
+
+                    const validation = productInstance.validate();
+                    if (!validation.valid) {
+                        warnings.push(`Fila ${rowNumber}: ${validation.error}`);
+                        return;
+                    }
+
+                    promises.push(Product.create(productInstance.toDBRecord()).then(() => {
+                        successCount++;
+                    }).catch(err => {
+                        warnings.push(`Fila ${rowNumber}: Error al guardar (${err.message})`);
+                    }));
+                } catch (err) {
+                    warnings.push(`Fila ${rowNumber}: Error (${err.message})`);
+                }
+            });
+
+            await Promise.allSettled(promises);
+
+            res.json({
+                success: true,
+                message: 'Carga masiva completada',
+                processed: successCount,
+                warnings: warnings
+            });
+
+        } catch (error) {
+            console.error('Error en carga masiva:', error);
+            res.status(500).json({ success: false, error: safeError(error, 'Error interno procesando el archivo') });
+        }
+    }
+
     static async getProducts(req, res) {
         try {
             const tiendaId = req.session.tiendaId;

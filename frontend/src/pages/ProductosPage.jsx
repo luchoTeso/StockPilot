@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,7 @@ import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
 import Tooltip from '../components/Tooltip';
 import { SYNC_EVENTS, emitSyncEvent, subscribeToSync } from '../utils/stockSync';
-import { AlertCircle, AlertTriangle, Plus, DollarSign, Package, Lock, Settings, Pause, CheckCircle2, Trash2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Plus, DollarSign, Package, Lock, Settings, Pause, CheckCircle2, Trash2, UploadCloud } from 'lucide-react';
 
 const ProductosPage = () => {
   const { user } = useAuth();
@@ -109,6 +109,10 @@ const ProductosPage = () => {
   const [eliminarProductoSel, setEliminarProductoSel] = useState(null);
   const [eliminarLoading, setEliminarLoading] = useState(false);
 
+  // Upload
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const fileInputRef = useRef(null);
+
   useEffect(() => {
     cargarProductos();
     fetchProveedores();
@@ -127,6 +131,34 @@ const ProductosPage = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setUploadLoading(true);
+    try {
+      const res = await axios.post('/api/productos/bulk', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data.success) {
+        toast.success(`Se importaron ${res.data.processed} productos`);
+        if (res.data.warnings && res.data.warnings.length > 0) {
+          console.warn("Advertencias de carga masiva:", res.data.warnings);
+          toast.error(`Se omitieron ${res.data.warnings.length} filas incompletas. (Revise la consola)`);
+        }
+        cargarProductos();
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Error subiendo archivo');
+    } finally {
+      setUploadLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const fetchProveedores = async () => {
     try {
@@ -427,11 +459,27 @@ const ProductosPage = () => {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Tus Productos</h2>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Listado completo de lo que vendes</p>
         </div>
-        <div>
+        <div className="flex gap-2">
           {isAdmin && (
-            <button onClick={() => handleOpenModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95">
-              <Plus size={14} /> Registrar Producto
-            </button>
+            <>
+              <input 
+                type="file" 
+                accept=".csv, .xlsx" 
+                style={{ display: 'none' }} 
+                ref={fileInputRef} 
+                onChange={handleFileUpload} 
+              />
+              <button 
+                onClick={() => fileInputRef.current?.click()} 
+                disabled={uploadLoading}
+                className={`bg-white hover:bg-slate-50 text-indigo-600 border border-indigo-100 py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 active:scale-95 ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <UploadCloud size={14} /> {uploadLoading ? 'Cargando...' : 'Importar'}
+              </button>
+              <button onClick={() => handleOpenModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95">
+                <Plus size={14} /> Registrar Producto
+              </button>
+            </>
           )}
         </div>
       </div>
