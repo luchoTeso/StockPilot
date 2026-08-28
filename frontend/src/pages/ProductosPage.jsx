@@ -8,7 +8,10 @@ import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
 import Tooltip from '../components/Tooltip';
 import { SYNC_EVENTS, emitSyncEvent, subscribeToSync } from '../utils/stockSync';
-import { AlertCircle, AlertTriangle, Plus, DollarSign, Package, Lock, Settings, Pause, CheckCircle2, Trash2, UploadCloud } from 'lucide-react';
+import useBarcodeScanner from '../hooks/useBarcodeScanner';
+import CameraScannerModal from '../components/CameraScannerModal';
+import { fetchProductFromOpenFoodFacts } from '../utils/openFoodFacts';
+import { AlertCircle, AlertTriangle, Plus, DollarSign, Package, Lock, Settings, Pause, CheckCircle2, Trash2, UploadCloud, ScanBarcode } from 'lucide-react';
 
 const ProductosPage = () => {
   const { user } = useAuth();
@@ -27,6 +30,9 @@ const ProductosPage = () => {
 
   // Alerta Global de Stock
   const [alert, setAlert] = useState({ show: false, title: '', message: '', isCritical: false });
+
+  // Escáner de Cámara
+  const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
 
   // Modal Agregar / Editar
   const [modalOpen, setModalOpen] = useState(false);
@@ -159,6 +165,52 @@ const ProductosPage = () => {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
+  const handleBarcodeScan = async (code) => {
+    if (!code) return;
+    
+    // Si ya estamos editando/creando un producto y el modal está abierto,
+    // podríamos autocompletar el campo de código si estuviera vacío, pero por ahora
+    // cerramos modales y abrimos uno nuevo para evitar conflictos de estado.
+    if (modalOpen && !editMode) return; 
+    
+    const existingProduct = productos.find(p => p.codigo === code);
+    
+    if (existingProduct) {
+      registrarVenta(existingProduct);
+      toast.success(`Producto encontrado: ${existingProduct.nombre_producto}`);
+    } else {
+      toast.info('Buscando detalles del producto...');
+      const apiData = await fetchProductFromOpenFoodFacts(code);
+      
+      setFormData({
+        id_producto: '',
+        codigo: code,
+        nombre_producto: apiData ? apiData.nombre_producto : '',
+        categoria: apiData ? apiData.categoria : '',
+        subcategoria: '',
+        tipo_producto: '',
+        precio_unitario: '',
+        cantidad: '',
+        stock_minimo: '5',
+        stock_seguridad: '0',
+        lead_time: '3',
+        fecha_vencimiento: '',
+        id_proveedor: ''
+      });
+      
+      setEditMode(false);
+      setModalOpen(true);
+      
+      if (apiData) {
+        toast.success('¡Datos autocompletados mágicamente!');
+      } else {
+        toast.info('Producto nuevo. Por favor ingresa los detalles.');
+      }
+    }
+  };
+
+  useBarcodeScanner(handleBarcodeScan);
 
   const fetchProveedores = async () => {
     try {
@@ -475,6 +527,9 @@ const ProductosPage = () => {
                 className={`bg-white hover:bg-slate-50 text-indigo-600 border border-indigo-100 py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 active:scale-95 ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <UploadCloud size={14} /> {uploadLoading ? 'Cargando...' : 'Importar'}
+              </button>
+              <button onClick={() => setCameraScannerOpen(true)} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 py-3 px-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 active:scale-95 hidden sm:flex">
+                <ScanBarcode size={14} /> Escanear
               </button>
               <button onClick={() => handleOpenModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95">
                 <Plus size={14} /> Registrar Producto
@@ -897,6 +952,12 @@ const ProductosPage = () => {
           </div>
         </div>
       )}
+      {/* Cámara Scanner */}
+      <CameraScannerModal 
+        isOpen={cameraScannerOpen} 
+        onClose={() => setCameraScannerOpen(false)} 
+        onScan={handleBarcodeScan} 
+      />
     </div>
   );
 };
