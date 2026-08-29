@@ -39,9 +39,10 @@ class AuthController {
                 });
             }
 
-            // Bloquear segundo login: si ya hay sesión activa y no se fuerza, rechazar
+            // Bloquear segundo login: solo para roles distintos a Administrador
+            // Permitimos múltiples sesiones para administradores por comodidad del equipo.
             const { force } = req.body;
-            if (user.session_id && !force) {
+            if (user.rol !== 'Administrador' && user.session_id && !force) {
                 return res.status(409).json({
                     success: false,
                     error: 'Ya hay una sesión activa para este usuario en otro dispositivo.',

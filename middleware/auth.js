@@ -3,6 +3,8 @@ const User = require('../models/User');
 
 function evaluarAcceso(session, isSessionValid) {
   if (!session || !session.userId) return 'no_auth';
+  // Permitir múltiples sesiones concurrentes para Administradores
+  if (session.rol === 'Administrador') return 'pass';
   if (!isSessionValid) return 'concurrent';
   return 'pass';
 }
