@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -23,24 +23,30 @@ const TiendasPage = () => {
     ciudad: ''
   });
 
-  const cargarTienda = async () => {
+  const cargarTienda = useCallback(async (signal = null) => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/tienda');
+      const { data } = await axios.get('/api/tienda', { ...(signal && { signal }) });
+      if (signal && signal.aborted) return;
       if (data.tienda) {
         setTienda(data.tienda);
         setUsuarios(data.usuarios || []);
       }
     } catch (err) {
+      if (axios.isCancel(err) || (signal && signal.aborted)) return;
       console.error('Error al cargar la tienda', err);
     } finally {
-      setLoading(false);
+      if (!signal || !signal.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
 
   useEffect(() => {
-    cargarTienda();
-  }, []);
+    const controller = new AbortController();
+    cargarTienda(controller.signal);
+    return () => controller.abort();
+  }, [cargarTienda]);
 
   const abrirModalEdit = () => {
     setFormData({
@@ -112,7 +118,7 @@ const TiendasPage = () => {
         <div className="space-y-8">
           
           {/* Tarjeta Principal Tienda */}
-          <div className="bg-white p-4 sm:p-6 lg:p-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
+          <div className="bg-white p-4 sm:p-6 lg:p-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group hover:shadow-2xl transition-shadow duration-500">
             {/* Elemento Decorativo Fondo */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
 
@@ -138,7 +144,7 @@ const TiendasPage = () => {
                 {user?.rol === 'Administrador' && (
                   <div className="flex flex-wrap gap-3 w-full md:w-auto">
                     <button 
-                      className="flex-1 md:flex-none flex items-center justify-center gap-2 p-4 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 p-4 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors transition-shadow transition-transform active:scale-95"
                       onClick={abrirModalEdit}
                     >
                       <Pencil size={16} /> EDITAR PERFIL
@@ -218,7 +224,7 @@ const TiendasPage = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {usuarios.map((u, i) => (
-                  <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-200 transition-all duration-300 group flex items-start gap-5">
+                  <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-200 transition-colors transition-shadow transition-transform duration-300 group flex items-start gap-5">
                     
                     <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-2xl tracking-tighter border border-indigo-100 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                        {(u.nombres || '?')[0].toUpperCase()}
@@ -274,18 +280,18 @@ const TiendasPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 <div className="md:col-span-2 space-y-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Nombre Comercial <span className="text-rose-500 text-sm">*</span></label>
-                  <input required name="nombre_establecimiento" value={formData.nombre_establecimiento} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Tienda Central..." />
+                  <label htmlFor="nombre_establecimiento" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Nombre Comercial <span className="text-rose-500 text-sm">*</span></label>
+                  <input id="nombre_establecimiento" required name="nombre_establecimiento" value={formData.nombre_establecimiento} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Tienda Central..." />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Razón Social</label>
-                  <input name="razon_social" value={formData.razon_social} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Mi Tienda S.A.S" />
+                  <label htmlFor="razon_social" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Razón Social</label>
+                  <input id="razon_social" name="razon_social" value={formData.razon_social} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Mi Tienda S.A.S" />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">NIT / ID Tributario</label>
-                  <input name="documento" value={formData.documento} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. 900.123.456-7" />
+                  <label htmlFor="documento" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">NIT / ID Tributario</label>
+                  <input id="documento" name="documento" value={formData.documento} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. 900.123.456-7" />
                 </div>
 
                 <div className="md:col-span-2 pt-4 border-t border-slate-100">
@@ -293,18 +299,18 @@ const TiendasPage = () => {
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Dirección Físca <span className="text-rose-500 text-sm">*</span></label>
-                  <input required name="direccion" value={formData.direccion} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Avenida Siempre Viva 123..." />
+                  <label htmlFor="direccion" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Dirección Físca <span className="text-rose-500 text-sm">*</span></label>
+                  <input id="direccion" required name="direccion" value={formData.direccion} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Avenida Siempre Viva 123..." />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Ciudad Sede</label>
-                  <input name="ciudad" value={formData.ciudad} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Requerido para logística" />
+                  <label htmlFor="ciudad" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Ciudad Sede</label>
+                  <input id="ciudad" name="ciudad" value={formData.ciudad} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Requerido para logística" />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Celular / Teléfono</label>
-                  <input name="celular" value={formData.celular} onChange={handleInputChange} type="tel" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="+57 300 000 0000" />
+                  <label htmlFor="celular" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Celular / Teléfono</label>
+                  <input id="celular" name="celular" value={formData.celular} onChange={handleInputChange} type="tel" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="+57 300 000 0000" />
                 </div>
 
               </div>
@@ -314,7 +320,7 @@ const TiendasPage = () => {
                 <button type="button" onClick={() => setEditModalOpen(false)} className="px-8 py-4 rounded-2xl bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 transition-colors">
                   Descartar
                 </button>
-                <button type="submit" disabled={editLoading} className="px-8 py-4 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50">
+                <button type="submit" disabled={editLoading} className="px-8 py-4 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50">
                   {editLoading ? 'Sincronizando...' : <><Save size={14} /> Guardar Perfil</>}
                 </button>
               </div>

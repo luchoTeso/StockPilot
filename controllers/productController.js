@@ -149,10 +149,18 @@ class ProductController {
         try {
             const tiendaId = req.session.tiendaId;
             
-            // Usamos la fábrica para crear la instancia correcta del producto
-            // Esto cumple con el patrón Factory Method y permite extensibilidad lógica
+            const {
+                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
+                frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
+                id_proveedor
+            } = req.body;
+
             const productInstance = ProductFactory.create({
-                ...req.body,
+                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
+                frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
+                id_proveedor,
                 id_tienda: tiendaId
             });
 
@@ -183,8 +191,19 @@ class ProductController {
                 return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
             
-            // Incluso al actualizar, usamos la fábrica para validar las reglas del tipo de producto
-            const productInstance = ProductFactory.create(req.body);
+            const {
+                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
+                frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
+                id_proveedor
+            } = req.body;
+
+            const productInstance = ProductFactory.create({
+                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
+                frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
+                id_proveedor
+            });
             const validation = productInstance.validate();
             
             if (!validation.valid) {

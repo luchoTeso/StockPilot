@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
@@ -24,26 +24,32 @@ const SimuladorPage = () => {
   const toast = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  const fetchInitialData = async () => {
+  const fetchInitialData = useCallback(async (signal = null) => {
     try {
       setLoading(true);
       const [prodRes, provRes] = await Promise.all([
-        axios.get('/api/ia/snapshot'),
-        axios.get('/api/proveedores')
+        axios.get('/api/ia/snapshot', { ...(signal && { signal }) }),
+        axios.get('/api/proveedores', { ...(signal && { signal }) })
       ]);
+      if (signal && signal.aborted) return;
       
       if (prodRes.data.success) setProducts(prodRes.data.data);
       if (provRes.data.success) setProveedores(provRes.data.data);
     } catch (e) {
+      if (axios.isCancel(e) || (signal && signal.aborted)) return;
       toast.error('Error cargando datos del simulador');
     } finally {
-      setLoading(false);
+      if (!signal || !signal.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchInitialData(controller.signal);
+    return () => controller.abort();
+  }, [fetchInitialData]);
 
   // Lógica de Simulación Reactiva
   const simulatedData = useMemo(() => {
@@ -180,7 +186,7 @@ const SimuladorPage = () => {
         <button 
           onClick={() => setShowConvertModal(true)}
           disabled={simulatedData.activeCount === 0}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+          className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-emerald-200 transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-3"
         >
           <Package size={16} /> Convertir en Orden Real
         </button>
@@ -195,10 +201,11 @@ const SimuladorPage = () => {
           {/* Slider Cobertura */}
           <div className="space-y-6">
             <div className="flex justify-between items-end">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Días de Cobertura Deseada</label>
+              <label htmlFor="days" className="text-xs font-black text-slate-500 uppercase tracking-widest">Días de Cobertura Deseada</label>
               <span className="text-3xl font-black text-indigo-600">{days} <span className="text-sm text-slate-400">días</span></span>
             </div>
             <input 
+              id="days"
               type="range" 
               min="7" 
               max="90" 
@@ -217,15 +224,16 @@ const SimuladorPage = () => {
           {/* Input Presupuesto */}
           <div className="space-y-6">
             <div className="flex justify-between items-end">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Presupuesto Máximo de Compra</label>
+              <label htmlFor="budget" className="text-xs font-black text-slate-500 uppercase tracking-widest">Presupuesto Máximo de Compra</label>
             </div>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
               <input 
+                id="budget"
                 type="number"
                 value={budget}
                 onChange={(e) => setBudget(parseInt(e.target.value) || 0)}
-                className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-2xl text-slate-800 focus:border-indigo-500 outline-none transition-all"
+                className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-2xl text-slate-800 focus:border-indigo-500 outline-none transition-colors transition-shadow"
               />
             </div>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
@@ -260,7 +268,7 @@ const SimuladorPage = () => {
             </div>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
               <div 
-                className={`h-full transition-all duration-1000 ${simulatedData.totalCost > budget ? 'bg-rose-400' : 'bg-emerald-400'}`}
+                className={`h-full transition-colors duration-1000 ${simulatedData.totalCost > budget ? 'bg-rose-400' : 'bg-emerald-400'}`}
                 style={{ width: `${Math.min(100, (simulatedData.totalCost / (budget || 1)) * 100)}%` }}
               ></div>
             </div>
@@ -293,7 +301,7 @@ const SimuladorPage = () => {
               {simulatedData.items.map(p => (
                 <tr 
                   key={p.id_producto} 
-                  className={`group transition-all duration-300 ${
+                  className={`group transition-colors duration-300 ${
                     !p.activeInSim 
                       ? 'opacity-75 bg-slate-50/40 grayscale-[0.5]' 
                       : 'bg-white border-l-4 border-l-emerald-500 shadow-[2px_0_15px_rgba(0,0,0,0.05)] relative z-10 scale-[1.01]'
@@ -302,6 +310,7 @@ const SimuladorPage = () => {
                   <td className="p-6 text-center">
                     <input 
                       type="checkbox" 
+                      aria-label={`Incluir ${p.nombre}`}
                       checked={p.activeInSim && !p.isExcludedManual}
                       onChange={() => toggleManualExclusion(p.id_producto)}
                       className="w-5 h-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
@@ -341,7 +350,7 @@ const SimuladorPage = () => {
                     </div>
                   </td>
                   <td className="p-6 text-center">
-                    <div className={`inline-block px-4 py-2 rounded-xl border-2 font-black text-lg transition-all ${
+                    <div className={`inline-block px-4 py-2 rounded-xl border-2 font-black text-lg transition-colors ${
                       p.needed > 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 'border-slate-100 bg-slate-50 text-slate-300'
                     }`}>
                       {p.needed} <span className="text-[10px] uppercase">ud</span>
@@ -371,7 +380,7 @@ const SimuladorPage = () => {
                 <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Confirmar Ejecución</h2>
                 <p className="text-xs font-bold text-slate-400">Selecciona el proveedor para procesar la orden.</p>
               </div>
-              <button onClick={() => setShowConvertModal(false)} className="text-2xl text-slate-300 hover:text-rose-500 transition-colors">×</button>
+              <button onClick={() => setShowConvertModal(false)} aria-label="Cerrar modal" className="text-2xl text-slate-300 hover:text-rose-500 transition-colors">×</button>
             </div>
 
             <div className="space-y-6">
@@ -387,8 +396,8 @@ const SimuladorPage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Seleccionar Proveedor</label>
-                <div className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus-within:border-indigo-500 transition-all">
+                <span className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Seleccionar Proveedor</span>
+                <div className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus-within:border-indigo-500 transition-colors">
                   <CustomSelect 
                     value={selectedSupplierId}
                     onChange={(val) => setSelectedSupplierId(val)}
@@ -408,14 +417,14 @@ const SimuladorPage = () => {
                 <button 
                   onClick={handleConvertToOrder}
                   disabled={isSubmitting || !selectedSupplierId}
-                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-indigo-200 transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                 >
                   {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : '✓'} 
                   Confirmar y Crear Orden
                 </button>
                 <button 
                   onClick={() => setShowConvertModal(false)}
-                  className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all"
+                  className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-colors"
                 >
                   Cancelar
                 </button>

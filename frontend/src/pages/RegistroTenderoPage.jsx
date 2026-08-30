@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -37,11 +37,29 @@ const RegistroTenderoPage = () => {
     setModalOpen(true);
   };
 
-  useEffect(() => {
-    if (isAdmin) {
-      cargarTenderos();
+  const cargarTenderos = useCallback(async (signal) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get('/api/tendero', { ...(signal && { signal }) });
+      if (signal && signal.aborted) return;
+      setTenderos(Array.isArray(data) ? data : []);
+    } catch (err) {
+      if (axios.isCancel(err) || (signal && signal.aborted)) return;
+      console.error('Error cargando tenderos', err);
+    } finally {
+      if (!signal || !signal.aborted) {
+        setLoading(false);
+      }
     }
-  }, [isAdmin]);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    if (isAdmin) {
+      cargarTenderos(controller.signal);
+    }
+    return () => controller.abort();
+  }, [isAdmin, cargarTenderos]);
 
   if (!isAdmin) {
     return (
@@ -55,18 +73,6 @@ const RegistroTenderoPage = () => {
       </div>
     );
   }
-
-  const cargarTenderos = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get('/api/tendero');
-      setTenderos(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error cargando tenderos', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEditClick = (t) => {
     setEditMode(true);
@@ -106,7 +112,7 @@ const RegistroTenderoPage = () => {
           id_usuario: '', nombres: '', genero: '', correo: '', celular: '', usuario: '', contrasena: ''
         });
       }
-      cargarTendederos();
+      cargarTenderos();
     } catch (err) {
       toast.error(`${err.response?.data?.error || err.message}`);
     } finally {
@@ -156,17 +162,17 @@ const RegistroTenderoPage = () => {
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Nombres Completos <span className="text-rose-500">*</span></label>
-                  <input required type="text" value={formData.nombres} onChange={e => setFormData({...formData, nombres: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Carlos Mendoza..." />
+                  <label htmlFor="nombres" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Nombres Completos <span className="text-rose-500">*</span></label>
+                  <input id="nombres" required type="text" value={formData.nombres} onChange={e => setFormData({...formData, nombres: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Carlos Mendoza..." />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Celular <span className="text-rose-500">*</span></label>
-                    <input required type="tel" value={formData.celular} onChange={e => setFormData({...formData, celular: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="+57 320..." />
+                    <label htmlFor="celular" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Celular <span className="text-rose-500">*</span></label>
+                    <input id="celular" required type="tel" value={formData.celular} onChange={e => setFormData({...formData, celular: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="+57 320..." />
                   </div>
                   <div className="z-10 relative">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Género <span className="text-rose-500">*</span></label>
+                    <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Género <span className="text-rose-500">*</span></span>
                     <div className="h-14">
                        <CustomSelect 
                          value={formData.genero} 
@@ -185,24 +191,24 @@ const RegistroTenderoPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Correo Corporativo <span className="text-rose-500">*</span></label>
-                  <input required type="email" value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="colaborador@stockpilot.com" />
+                  <label htmlFor="correo" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Correo Corporativo <span className="text-rose-500">*</span></label>
+                  <input id="correo" required type="email" value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="colaborador@stockpilot.com" />
                 </div>
 
                 <div className="bg-indigo-50/50 p-4 border border-indigo-100 rounded-[2rem] space-y-4">
                   <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center flex items-center justify-center gap-1"><Lock size={10} /> Datos para Ingresar al Sistema</h4>
                   
                   <div>
-                    <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Nombre de Usuario <span className="text-rose-500">*</span></label>
-                    <input required type="text" value={formData.usuario} onChange={e => setFormData({...formData, usuario: e.target.value})} className="w-full p-4 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Ej. cx.mendoza" />
+                    <label htmlFor="usuario" className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Nombre de Usuario <span className="text-rose-500">*</span></label>
+                    <input id="usuario" required type="text" value={formData.usuario} onChange={e => setFormData({...formData, usuario: e.target.value})} className="w-full p-4 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Ej. cx.mendoza" />
                   </div>
 
                   {!editMode && (
                     <div>
-                      <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Contraseña de Acceso <span className="text-rose-500">*</span></label>
+                      <label htmlFor="contrasena" className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Contraseña de Acceso <span className="text-rose-500">*</span></label>
                       <div className="relative">
-                        <input required minLength="8" type={showPassword ? 'text' : 'password'} value={formData.contrasena} onChange={e => setFormData({...formData, contrasena: e.target.value})} className="w-full p-4 pr-12 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Mínimo 8 dígitos" />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors">
+                        <input id="contrasena" required minLength="8" type={showPassword ? 'text' : 'password'} value={formData.contrasena} onChange={e => setFormData({...formData, contrasena: e.target.value})} className="w-full p-4 pr-12 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Mínimo 8 dígitos" />
+                        <button type="button" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors">
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
@@ -211,7 +217,7 @@ const RegistroTenderoPage = () => {
                 </div>
 
                 <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'}`}>
+                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'}`}>
                     {editMode ? <Save size={14} /> : <UserPlus size={14} />}
                     {isSubmitting ? 'GUARDANDO...' : (editMode ? 'GUARDAR CAMBIOS' : 'CREAR ACCESO')}
                   </button>
@@ -281,10 +287,10 @@ const RegistroTenderoPage = () => {
                         </td>
                         <td className="p-6 pr-8">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Información">
+                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Información">
                               <Pencil size={16} />
                             </button>
-                            <button onClick={() => eliminarTendero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
+                            <button onClick={() => eliminarTendero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -325,7 +331,7 @@ const RegistroTenderoPage = () => {
                   setModalOpen(false);
                   if (modalConfig.onConfirm) modalConfig.onConfirm();
                 }}
-                className={`flex-1 px-4 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all hover:-translate-y-1 active:scale-95 ${
+                className={`flex-1 px-4 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-transform transition-shadow hover:-translate-y-1 active:scale-95 ${
                   modalConfig.type === 'danger' 
                     ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-200' 
                     : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'

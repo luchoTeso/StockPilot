@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useToast } from '../context/ToastContext';
@@ -23,13 +23,14 @@ const AprendizajePage = () => {
     const [evalResult, setEvalResult] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    const loadMetrics = async () => {
+    const loadMetrics = useCallback(async (signal) => {
         try {
             setLoading(true);
             const [resMetrics, resOrders] = await Promise.all([
-                axios.get('/api/feedback/metrics', { withCredentials: true }),
-                axios.get('/api/feedback/orders/evaluable', { withCredentials: true })
+                axios.get('/api/feedback/metrics', { withCredentials: true, ...(signal && { signal }) }),
+                axios.get('/api/feedback/orders/evaluable', { withCredentials: true, ...(signal && { signal }) })
             ]);
+            if (signal && signal.aborted) return;
 
             if (resMetrics.data.success) {
                 setMetrics(resMetrics.data.data);
@@ -38,16 +39,21 @@ const AprendizajePage = () => {
                 setEvaluableOrders(resOrders.data.data);
             }
         } catch (error) {
+            if (axios.isCancel(error) || (signal && signal.aborted)) return;
             console.error(error);
             addToast('Error al cargar métricas de IA', 'error');
         } finally {
-            setLoading(false);
+            if (!signal || !signal.aborted) {
+                setLoading(false);
+            }
         }
-    };
+    }, [addToast]);
 
     useEffect(() => {
-        loadMetrics();
-    }, []);
+        const controller = new AbortController();
+        loadMetrics(controller.signal);
+        return () => controller.abort();
+    }, [loadMetrics]);
 
     const handleEvaluate = async (e) => {
         e.preventDefault();
@@ -154,7 +160,7 @@ const AprendizajePage = () => {
                             </div>
                             <button 
                                 onClick={() => { setEvalResult(null); setOrderId(''); setIsDropdownOpen(false); setModalOpen(true); }}
-                                className="bg-indigo-500 hover:bg-indigo-400 text-white py-3.5 px-6 rounded-2xl font-bold text-xs tracking-wider transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.97] flex items-center justify-center gap-2.5 border border-indigo-400/30"
+                                className="bg-indigo-500 hover:bg-indigo-400 text-white py-3.5 px-6 rounded-2xl font-bold text-xs tracking-wider transition-colors transition-shadow transition-transform shadow-lg shadow-indigo-500/20 active:scale-[0.97] flex items-center justify-center gap-2.5 border border-indigo-400/30"
                             >
                                 <span>Evaluar una orden</span>
                                 <BarChart2 size={14} />
@@ -263,7 +269,7 @@ const AprendizajePage = () => {
                                     <div className="flex items-center gap-4 ml-7 sm:ml-0">
                                         {/* Barra de progreso visual */}
                                         <div className="w-32 h-2.5 bg-white/80 rounded-full overflow-hidden border border-slate-200/50">
-                                            <div className={`h-full rounded-full ${color.bar} transition-all`} style={{ width: `${accuracy}%` }}></div>
+                                            <div className={`h-full rounded-full ${color.bar} transition-colors`} style={{ width: `${accuracy}%` }}></div>
                                         </div>
                                         <span className={`text-lg font-black ${color.text} min-w-[50px] text-right`}>{accuracy}%</span>
                                     </div>
@@ -283,7 +289,7 @@ const AprendizajePage = () => {
             {/* ───── MODAL DE EVALUACIÓN ───── */}
             {modalOpen && createPortal(
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setModalOpen(false)}></div>
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setModalOpen(false)} role="presentation" aria-hidden="true"></div>
                     <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl animate-scale-in relative z-10 flex flex-col overflow-hidden max-h-[90vh]">
                         <div className="p-8 bg-indigo-600 text-white flex justify-between items-start">
                             <div>
@@ -294,7 +300,7 @@ const AprendizajePage = () => {
                                     Selecciona una orden antigua para que el sistema compare lo que sugirió comprar vs. lo que realmente se vendió desde entonces.
                                 </p>
                             </div>
-                            <button onClick={() => setModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-indigo-500 hover:bg-white hover:text-indigo-600 rounded-xl transition-colors shrink-0 ml-4">
+                            <button onClick={() => setModalOpen(false)} aria-label="Cerrar modal" className="w-8 h-8 flex items-center justify-center bg-indigo-500 hover:bg-white hover:text-indigo-600 rounded-xl transition-colors shrink-0 ml-4">
                                 <X size={16} />
                             </button>
                         </div>
@@ -303,15 +309,16 @@ const AprendizajePage = () => {
                             {!evalResult ? (
                                 <form onSubmit={handleEvaluate} className="space-y-6">
                                     <div>
-                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                                        <label htmlFor="eval-order-select" className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">
                                             Orden de compra a evaluar
                                         </label>
                                         <div className="relative">
                                             {/* Select Custom Premium */}
                                             <button
                                                 type="button"
+                                                id="eval-order-select"
                                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                                className={`w-full text-left p-4 bg-slate-50 border rounded-2xl text-sm transition-all focus:outline-none focus:ring-4 focus:ring-indigo-500/10 flex justify-between items-center group shadow-sm
+                                                className={`w-full text-left p-4 bg-slate-50 border rounded-2xl text-sm transition-colors transition-shadow focus:outline-none focus:ring-4 focus:ring-indigo-500/10 flex justify-between items-center group shadow-sm
                                                     ${isDropdownOpen ? 'border-indigo-400 bg-white ring-4 ring-indigo-500/10' : 'border-slate-200 hover:border-indigo-300 hover:bg-white'}
                                                 `}
                                             >
@@ -337,7 +344,7 @@ const AprendizajePage = () => {
                                             {isDropdownOpen && (
                                                 <>
                                                     {/* Overlay invisible para cerrar al hacer clic afuera */}
-                                                    <div className="fixed inset-0 z-[115]" onClick={() => setIsDropdownOpen(false)}></div>
+                                                    <div className="fixed inset-0 z-[115]" onClick={() => setIsDropdownOpen(false)} role="presentation" aria-hidden="true"></div>
                                                     
                                                     <div className="absolute z-[120] w-full mt-2 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[1.25rem] shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-56 overflow-y-auto scrollbar-premium py-2 animate-scale-in origin-top">
                                                         <div className="px-3 pb-2 pt-1 border-b border-slate-50">
@@ -356,7 +363,7 @@ const AprendizajePage = () => {
                                                                         setOrderId(ord.id_orden);
                                                                         setIsDropdownOpen(false);
                                                                     }}
-                                                                    className={`w-full text-left px-5 py-3.5 text-sm transition-all border-b border-slate-50/50 last:border-0 hover:bg-slate-50 group flex items-center justify-between
+                                                                    className={`w-full text-left px-5 py-3.5 text-sm transition-colors border-b border-slate-50/50 last:border-0 hover:bg-slate-50 group flex items-center justify-between
                                                                         ${orderId === ord.id_orden ? 'bg-indigo-50 hover:bg-indigo-50/80 before:absolute before:left-0 before:w-1 before:h-8 before:bg-indigo-500 before:rounded-r-full relative' : ''}
                                                                     `}
                                                                 >
@@ -385,7 +392,7 @@ const AprendizajePage = () => {
                                     <button 
                                         type="submit" 
                                         disabled={evalLoading || !orderId}
-                                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+                                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50"
                                     >
                                         {evalLoading ? 'Analizando ventas reales...' : 'Comparar sugerencia vs. realidad'}
                                     </button>
@@ -444,7 +451,7 @@ const AprendizajePage = () => {
                                             setOrderId('');
                                             setModalOpen(false);
                                         }}
-                                        className="w-full mt-2 py-4 bg-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95"
+                                        className="w-full mt-2 py-4 bg-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-colors transition-transform active:scale-95"
                                     >
                                         Cerrar
                                     </button>

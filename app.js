@@ -57,6 +57,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "blob:"],
+            mediaSrc: ["'self'", "blob:"],
             connectSrc: ["'self'", ...allowedOrigins]
         }
     },
@@ -73,7 +74,8 @@ app.use(helmet({
 
 // 🛡️ SEGURIDAD: Permissions-Policy (restringir APIs del navegador)
 app.use((req, res, next) => {
-    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    // Se permite la cámara para la funcionalidad de escaneo de QR/Barcode en Producción
+    res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(), payment=()');
     next();
 });
 

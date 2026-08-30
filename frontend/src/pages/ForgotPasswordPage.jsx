@@ -132,18 +132,19 @@ const ForgotPasswordPage = () => {
             <form onSubmit={handleSendCode} className="space-y-6 animate-scale-in origin-bottom">
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
+                <label htmlFor="email" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
                 <input 
+                  id="email"
                   type="email" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
                   required 
                   placeholder="ejemplo@stockpilot.com" 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-all text-slate-800" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors text-slate-800" 
                 />
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl mt-4 active:scale-95 transition-all disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl mt-4 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50">
                 {isLoading ? 'Procesando...' : 'Recuperar mi Cuenta'}
               </button>
             </form>
@@ -165,17 +166,18 @@ const ForgotPasswordPage = () => {
                   <input
                     key={idx}
                     id={`code-${idx}`}
+                    aria-label={`Dígito ${idx + 1}`}
                     type="text"
                     maxLength={1}
                     value={digit}
                     onChange={(e) => handleCodeChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-xl text-xl text-center font-black text-indigo-600 focus:border-indigo-600 focus:bg-indigo-50 outline-none transition-all"
+                    className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-xl text-xl text-center font-black text-indigo-600 focus:border-indigo-600 focus:bg-indigo-50 outline-none transition-colors"
                   />
                 ))}
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 mt-8 active:scale-95 transition-all disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 mt-8 active:scale-95 transition-colors transition-transform disabled:opacity-50">
                 {isLoading ? 'Validando Token...' : 'Confirmar Identidad'}
               </button>
             </form>
@@ -185,32 +187,34 @@ const ForgotPasswordPage = () => {
           {step === 3 && (
             <form onSubmit={handleResetPassword} className="space-y-6 animate-scale-in origin-bottom">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nueva Contraseña</label>
+                <label htmlFor="new-password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nueva Contraseña</label>
                 <input 
+                  id="new-password"
                   type="password" 
                   value={password} 
                   onChange={e => setPassword(e.target.value)} 
                   required 
                   placeholder="••••••••" 
                   minLength={6}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-all text-slate-800" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors text-slate-800" 
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Confirmar Contraseña</label>
+                <label htmlFor="confirm-password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Confirmar Contraseña</label>
                 <input 
+                  id="confirm-password"
                   type="password" 
                   value={confirmPassword} 
                   onChange={e => setConfirmPassword(e.target.value)} 
                   required 
                   placeholder="••••••••" 
                   minLength={6}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-all text-slate-800" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors text-slate-800" 
                 />
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 mt-4 active:scale-95 transition-all disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 mt-4 active:scale-95 transition-colors transition-transform disabled:opacity-50">
                 {isLoading ? 'Asegurando credenciales...' : 'Restaurar mi Acceso'}
               </button>
             </form>

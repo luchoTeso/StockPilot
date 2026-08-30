@@ -60,7 +60,7 @@ const LoginPage = () => {
               <p className="text-amber-600 text-[10px] font-bold">Alguien ya inició sesión en otro dispositivo. ¿Deseas cerrar esa sesión y entrar aquí?</p>
               <button
                 onClick={(e) => handleSubmit(e, true)}
-                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
+                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors active:scale-95"
               >
                 Cerrar otra sesión e ingresar aquí
               </button>
@@ -75,29 +75,29 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usuario o Correo</label>
-              <input type="text" value={identificador} onChange={e => setIdentificador(e.target.value)} required placeholder="tu@correo.com o usuario" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-all" />
+              <label htmlFor="identificador" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usuario o Correo</label>
+              <input id="identificador" type="text" value={identificador} onChange={e => setIdentificador(e.target.value)} required placeholder="tu@correo.com o usuario" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors" />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-all" />
+              <label htmlFor="password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
+              <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors" />
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nivel de Acceso</label>
+              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nivel de Acceso</span>
               <div className="grid grid-cols-2 gap-3">
                 {/* Opción Administrador */}
                 <button
                   type="button"
                   onClick={() => setRol('Administrador')}
-                  className={`group p-5 rounded-[2.5rem] border-2 transition-all duration-300 flex flex-col items-center gap-3 ${
+                  className={`group p-5 rounded-[2.5rem] border-2 transition-colors duration-300 flex flex-col items-center gap-3 ${
                     rol === 'Administrador'
                       ? 'border-indigo-600 bg-indigo-50 shadow-md ring-4 ring-indigo-100/50'
                       : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors transition-transform duration-300 ${
                     rol === 'Administrador' ? 'bg-indigo-600 text-white rotate-3 shadow-lg shadow-indigo-200' : 'bg-slate-200 text-slate-700 group-hover:text-indigo-600 group-hover:bg-indigo-50'
                   }`}>
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -118,13 +118,13 @@ const LoginPage = () => {
                 <button
                   type="button"
                   onClick={() => setRol('Tendero')}
-                  className={`group p-5 rounded-[2.5rem] border-2 transition-all duration-300 flex flex-col items-center gap-3 ${
+                  className={`group p-5 rounded-[2.5rem] border-2 transition-colors duration-300 flex flex-col items-center gap-3 ${
                     rol === 'Tendero'
                       ? 'border-indigo-600 bg-indigo-50 shadow-md ring-4 ring-indigo-100/50'
                       : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors transition-transform duration-300 ${
                     rol === 'Tendero' ? 'bg-indigo-600 text-white -rotate-3 shadow-lg shadow-indigo-200' : 'bg-slate-200 text-slate-700 group-hover:text-indigo-600 group-hover:bg-indigo-50'
                   }`}>
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -143,7 +143,7 @@ const LoginPage = () => {
               </div>
             </div>
 
-            <button type="submit" className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 transition-all">
+            <button type="submit" className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 transition-transform transition-colors">
               Ingresar a mi Negocio
             </button>
           </form>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback } from 'react';
 
 const SidebarContext = createContext();
 
@@ -9,20 +9,22 @@ export const SidebarProvider = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Cerrar sidebar al cambiar de ruta en móviles
-  const toggleSidebar = () => setIsOpen(!isOpen);
-  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
-  const closeSidebar = () => setIsOpen(false);
+  const toggleSidebar = useCallback(() => setIsOpen(prev => !prev), []);
+  const toggleCollapse = useCallback(() => setIsCollapsed(prev => !prev), []);
+  const closeSidebar = useCallback(() => setIsOpen(false), []);
+
+  const value = useMemo(() => ({
+    isOpen, 
+    setIsOpen, 
+    isCollapsed, 
+    setIsCollapsed,
+    toggleSidebar,
+    toggleCollapse,
+    closeSidebar
+  }), [isOpen, isCollapsed, toggleSidebar, toggleCollapse, closeSidebar]);
 
   return (
-    <SidebarContext.Provider value={{ 
-      isOpen, 
-      setIsOpen, 
-      isCollapsed, 
-      setIsCollapsed,
-      toggleSidebar,
-      toggleCollapse,
-      closeSidebar
-    }}>
+    <SidebarContext.Provider value={value}>
       {children}
     </SidebarContext.Provider>
   );

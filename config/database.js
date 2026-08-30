@@ -7,6 +7,8 @@ const pool = new Pool({
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+const bogotaDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' });
+
 /**
  * Traductor seguro de placeholders para PostgreSQL
  * Convierte '?' en '$1', '$2', etc., respetando comillas simples para evitar
@@ -102,7 +104,7 @@ const db = {
      * Retorna la fecha actual en formato YYYY-MM-DD ajustada a Bogotá
      */
     getBogotaDate: function() {
-        return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+        return bogotaDateFormatter.format(new Date());
     },
 
     /**

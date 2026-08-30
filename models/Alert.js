@@ -36,7 +36,7 @@ class Alert {
     // Neutralizar horas
     hoy.setHours(0,0,0,0);
 
-    for (const prod of productos) {
+    const promesas = productos.map(async (prod) => {
       const v30 = prod.velocity_30d;
       const v7 = prod.velocity_7d;
       const leadTime = prod.lead_time || 3;
@@ -82,7 +82,9 @@ class Alert {
       if (Alert.determinarSobrestock(prod.cantidad, prod.stock_maximo, prod.clasificacion_abc, diasAgotamiento)) {
           await logAlert('sobrestock', 'info', `Capital estancado. Tienes ${prod.cantidad} unidades, históricamente es un producto Clase C y tienes inventario inmóvil para más de 2 meses.`);
       }
-    }
+    });
+
+    await Promise.all(promesas);
 
     return generadas;
   }

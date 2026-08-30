@@ -67,9 +67,10 @@ const ForcePasswordPage = () => {
         <form onSubmit={handleSubmit} className="space-y-6 text-left">
           
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em] ml-2 block">Nueva Contraseña Secreta</label>
+            <label htmlFor="new-password" className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em] ml-2 block">Nueva Contraseña Secreta</label>
             <div className="relative">
               <input
+                id="new-password"
                 required
                 type={showPassword ? 'text' : 'password'}
                 minLength={6}
@@ -81,6 +82,7 @@ const ForcePasswordPage = () => {
               <button 
                 type="button" 
                 onClick={() => setShowPassword(!showPassword)} 
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -89,8 +91,9 @@ const ForcePasswordPage = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em] ml-2 block">Repite tu Contraseña</label>
+            <label htmlFor="confirm-password" className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em] ml-2 block">Repite tu Contraseña</label>
             <input
+              id="confirm-password"
               required
               type={showPassword ? 'text' : 'password'}
               minLength={6}
@@ -105,7 +108,7 @@ const ForcePasswordPage = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-indigo-500 hover:bg-indigo-400 text-white p-5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(99,102,241,0.4)] disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98] drop-shadow-lg"
+              className="w-full bg-indigo-500 hover:bg-indigo-400 text-white p-5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(99,102,241,0.4)] disabled:opacity-50 transition-colors transition-transform hover:scale-[1.02] active:scale-[0.98] drop-shadow-lg"
             >
               {isSubmitting ? 'VERIFICANDO...' : 'EMPEZAR A TRABAJAR'}
             </button>

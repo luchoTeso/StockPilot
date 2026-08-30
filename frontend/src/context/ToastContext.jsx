@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
 
 const ToastContext = createContext();
@@ -6,6 +6,27 @@ const ToastContext = createContext();
 export const useToast = () => useContext(ToastContext);
 
 let toastId = 0;
+
+const icons = {
+  success: CheckCircle2,
+  error: XCircle,
+  warning: AlertTriangle,
+  info: Info,
+};
+
+const bgColors = {
+  success: 'linear-gradient(135deg, #10b981, #059669)',
+  error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+  warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+  info: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+};
+
+const titles = {
+  success: '¡Éxito!',
+  error: 'Error',
+  warning: 'Advertencia',
+  info: 'Información',
+};
 
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
@@ -30,33 +51,12 @@ export const ToastProvider = ({ children }) => {
     return id;
   }, [removeToast]);
 
-  const toast = {
+  const toast = useMemo(() => ({
     success: (msg) => addToast(msg, 'success'),
     error: (msg) => addToast(msg, 'error', 6000),
     warning: (msg) => addToast(msg, 'warning', 5000),
     info: (msg) => addToast(msg, 'info'),
-  };
-
-  const icons = {
-    success: CheckCircle2,
-    error: XCircle,
-    warning: AlertTriangle,
-    info: Info,
-  };
-
-  const bgColors = {
-    success: 'linear-gradient(135deg, #10b981, #059669)',
-    error: 'linear-gradient(135deg, #ef4444, #dc2626)',
-    warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    info: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-  };
-
-  const titles = {
-    success: '¡Éxito!',
-    error: 'Error',
-    warning: 'Advertencia',
-    info: 'Información',
-  };
+  }), [addToast]);
 
   return (
     <ToastContext.Provider value={toast}>
@@ -89,11 +89,9 @@ export const ToastProvider = ({ children }) => {
               gap: '14px',
               pointerEvents: 'auto',
               animation: t.exiting ? 'toastSlideOut 0.3s ease forwards' : 'toastSlideIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards',
-              cursor: 'pointer',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255,255,255,0.15)',
             }}
-            onClick={() => removeToast(t.id)}
           >
             {(() => { const Icon = icons[t.type]; return <Icon size={22} style={{ flexShrink: 0, marginTop: '2px' }} />; })()}
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -106,6 +104,7 @@ export const ToastProvider = ({ children }) => {
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); removeToast(t.id); }}
+              aria-label="Cerrar notificación"
               style={{
                 background: 'rgba(255,255,255,0.2)',
                 border: 'none',

@@ -21,8 +21,8 @@ const CustomTooltipPareto = ({ active, payload }) => {
   return (
     <div className="bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-700 min-w-[180px]">
       <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300 mb-2">{fullName}</p>
-      {payload.map((entry, i) => (
-        <div key={i} className="flex justify-between items-center gap-6 py-1">
+      {payload.map((entry) => (
+        <div key={entry.name} className="flex justify-between items-center gap-6 py-1">
           <span className="text-[10px] font-bold text-slate-300">{entry.name}</span>
           <span className="text-sm font-black" style={{ color: entry.color }}>
             {entry.name.includes('%') ? `${entry.value}%` : `$${entry.value?.toLocaleString()}`}
@@ -39,8 +39,8 @@ const CustomTooltipGeneric = ({ active, payload, label }) => {
   return (
     <div className="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700">
       <p className="text-[10px] font-black uppercase tracking-widest text-slate-300 mb-1">{fullName}</p>
-      {payload.map((entry, i) => (
-        <p key={i} className="text-sm font-black" style={{ color: entry.color || '#fff' }}>
+      {payload.map((entry) => (
+        <p key={entry.name} className="text-sm font-black" style={{ color: entry.color || '#fff' }}>
           {entry.value?.toLocaleString()} {entry.name}
         </p>
       ))}
@@ -57,15 +57,17 @@ const AnalyticsDashboardPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchData = async () => {
       try {
         setLoading(true);
         // allSettled: cada request falla de forma independiente sin bloquear las demás
         const [snapshotRes, statsRes, trendRes] = await Promise.allSettled([
-          axios.get('/api/ia/snapshot'),
-          axios.get('/api/dashboard/stats'),
-          axios.get('/api/ia/price-trend')
+          axios.get('/api/ia/snapshot', { signal: controller.signal }),
+          axios.get('/api/dashboard/stats', { signal: controller.signal }),
+          axios.get('/api/ia/price-trend', { signal: controller.signal })
         ]);
+        if (controller.signal.aborted) return;
         if (snapshotRes.status === 'fulfilled') setData(snapshotRes.value.data.data || []);
         if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
         if (trendRes.status === 'fulfilled') setPriceTrend(trendRes.value.data.trend || []);
@@ -73,12 +75,17 @@ const AnalyticsDashboardPage = () => {
         if (statsRes.status === 'rejected') console.error('stats error:', statsRes.reason);
         if (trendRes.status === 'rejected') console.error('price-trend error:', trendRes.reason);
       } catch (err) {
-        console.error('Error fetching analytics data:', err);
+        if (!axios.isCancel(err)) {
+          console.error('Error fetching analytics data:', err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     fetchData();
+    return () => controller.abort();
   }, [refreshKey]);
 
   // === DATA TRANSFORMS ===
@@ -161,7 +168,7 @@ const AnalyticsDashboardPage = () => {
       {/* ═══════════ HEADER ═══════════ */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div className="flex items-center gap-5">
-          <button onClick={() => navigate('/dashboard')} className="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 rounded-2xl transition-all shadow-sm active:scale-95">
+          <button onClick={() => navigate('/dashboard')} aria-label="Volver al dashboard" className="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 rounded-2xl transition-colors shadow-sm active:scale-95">
              <ArrowLeft size={18} className="text-slate-700" />
           </button>
           <div>
@@ -242,8 +249,8 @@ const AnalyticsDashboardPage = () => {
                 <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={10} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
                 <Tooltip content={<CustomTooltipPareto />} />
                 <Bar yAxisId="left" dataKey="revenue" name="Ingresos (30d)" radius={[6, 6, 0, 0]}>
-                  {paretoData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.category === 'A' ? '#6366f1' : entry.category === 'B' ? '#f59e0b' : '#94a3b8'} fillOpacity={0.85} />
+                  {paretoData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.category === 'A' ? '#6366f1' : entry.category === 'B' ? '#f59e0b' : '#94a3b8'} fillOpacity={0.85} />
                   ))}
                 </Bar>
                 <Line yAxisId="right" type="monotone" dataKey="cumulativePercent" name="% Acumulado" stroke="#10b981" strokeWidth={3} dot={{ r: 5, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} />
@@ -286,8 +293,8 @@ const AnalyticsDashboardPage = () => {
                       dataKey="value"
                       strokeWidth={0}
                     >
-                      {donutData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      {donutData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.fill} />
                       ))}
                     </Pie>
                     <Tooltip content={<CustomTooltipGeneric />} />
@@ -295,11 +302,11 @@ const AnalyticsDashboardPage = () => {
                 </ResponsiveContainer>
               </div>
               <div className="flex-1 space-y-4">
-                {donutData.map((item, i) => {
+                {donutData.map((item) => {
                   const total = donutData.reduce((s, d) => s + d.value, 0);
                   const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
                   return (
-                    <div key={i} className="flex items-center gap-4">
+                    <div key={item.name} className="flex items-center gap-4">
                       <div className="w-4 h-4 rounded-md shrink-0" style={{ backgroundColor: item.fill }}></div>
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
@@ -307,7 +314,7 @@ const AnalyticsDashboardPage = () => {
                           <span className="text-xs font-black" style={{ color: item.fill }}>{item.value} Productos ({pct}%)</span>
                         </div>
                         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, backgroundColor: item.fill }}></div>
+                          <div className="h-full rounded-full transition-colors duration-1000" style={{ width: `${pct}%`, backgroundColor: item.fill }}></div>
                         </div>
                       </div>
                     </div>
@@ -325,11 +332,11 @@ const AnalyticsDashboardPage = () => {
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Distribución por Nivel de Alerta</p>
           </div>
           <div className="px-8 py-6 space-y-5">
-            {riskData.map((item, i) => {
+            {riskData.map((item) => {
               const maxVal = Math.max(...riskData.map(r => r.value), 1);
               const pct = (item.value / maxVal) * 100;
               return (
-                <div key={i}>
+                <div key={item.name}>
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.fill }}></div>
@@ -339,7 +346,7 @@ const AnalyticsDashboardPage = () => {
                   </div>
                   <div className="h-4 bg-slate-50 rounded-lg overflow-hidden border border-slate-100">
                     <div 
-                      className="h-full rounded-lg transition-all duration-1000 ease-out" 
+                      className="h-full rounded-lg transition-colors duration-1000 ease-out" 
                       style={{ width: `${pct}%`, backgroundColor: item.fill, opacity: 0.75 }}
                     ></div>
                   </div>
@@ -432,8 +439,8 @@ const AnalyticsDashboardPage = () => {
                   <YAxis stroke="#64748b" fontSize={10} allowDecimals={false} />
                   <Tooltip content={<CustomTooltipGeneric />} />
                   <Bar dataKey="dias" name="Días Restantes" radius={[6, 6, 0, 0]}>
-                    {exhaustData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.dias < 5 ? '#f43f5e' : entry.dias < 15 ? '#fbbf24' : '#10b981'} fillOpacity={0.8} />
+                    {exhaustData.map((entry) => (
+                      <Cell key={entry.name} fill={entry.dias < 5 ? '#f43f5e' : entry.dias < 15 ? '#fbbf24' : '#10b981'} fillOpacity={0.8} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -464,7 +471,7 @@ const AnalyticsDashboardPage = () => {
                 <button
                   onClick={() => setRefreshKey(k => k + 1)}
                   disabled={loading}
-                  className="text-[9px] font-bold uppercase tracking-widest text-indigo-300 hover:text-white border border-indigo-700 hover:border-indigo-400 px-3 py-1 rounded-full transition-all disabled:opacity-40"
+                  className="text-[9px] font-bold uppercase tracking-widest text-indigo-300 hover:text-white border border-indigo-700 hover:border-indigo-400 px-3 py-1 rounded-full transition-colors disabled:opacity-40"
                 >
                   {loading ? 'Actualizando…' : '↻ Actualizar'}
                 </button>

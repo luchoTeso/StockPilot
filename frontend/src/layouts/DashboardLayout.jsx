@@ -27,6 +27,7 @@ const DashboardLayout = () => {
           </div>
           <button
             onClick={toggleSidebar}
+            aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
             className="w-10 h-10 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center border border-slate-200 active:scale-95 transition-transform"
           >
             {isOpen ? <X size={18} /> : <Menu size={18} />}
@@ -39,7 +40,7 @@ const DashboardLayout = () => {
 
       {/* Area de Contenido Principal (Con margen reactivo para el sidebar fijo) */}
       <main className={`
-        flex-grow relative min-h-screen transition-all duration-300 ease-in-out
+        flex-grow relative min-h-screen transition-[margin] duration-300 ease-in-out
         ${marginLeft}
         ${isOpen ? 'hidden md:flex' : 'flex'} flex-col
         pt-16 md:pt-0

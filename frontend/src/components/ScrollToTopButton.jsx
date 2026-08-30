@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  });
+};
+
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -17,13 +24,6 @@ const ScrollToTopButton = () => {
     return () => window.removeEventListener('scroll', toggleVisibility);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  };
-
   return (
     <button
       onClick={scrollToTop}
@@ -36,7 +36,7 @@ const ScrollToTopButton = () => {
         bg-indigo-600 hover:bg-indigo-700 text-white 
         rounded-full shadow-[0_10px_40px_-10px_rgba(79,70,229,0.5)]
         hover:shadow-[0_15px_50px_-10px_rgba(79,70,229,0.6)]
-        transition-all duration-500 ease-out transform
+        transition-transform transition-opacity transition-shadow transition-colors duration-500 ease-out transform
         hover:-translate-y-2 active:scale-90 group
         ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0 pointer-events-none'}
       `}

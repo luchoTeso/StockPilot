@@ -5,6 +5,16 @@ import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Store, Eye, EyeOff, ArrowLeft, User, Phone, Mail, Lock, Building2, MapPin } from 'lucide-react';
 
+const InputField = ({ label, id, required, icon: Icon, children }) => (
+  <div className="space-y-1.5">
+    <label htmlFor={id} className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+      {Icon && <Icon size={10} />}
+      {label} {required && <span className="text-rose-400">*</span>}
+    </label>
+    {children}
+  </div>
+);
+
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     nombres: '',
@@ -57,17 +67,9 @@ const RegisterPage = () => {
     }
   };
 
-  const InputField = ({ label, required, icon: Icon, children }) => (
-    <div className="space-y-1.5">
-      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-        {Icon && <Icon size={10} />}
-        {label} {required && <span className="text-rose-400">*</span>}
-      </label>
-      {children}
-    </div>
-  );
+  // InputField moved to top level
 
-  const inputClass = "w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all text-slate-800 placeholder:text-slate-300 placeholder:font-normal";
+  const inputClass = "w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-colors transition-shadow text-slate-800 placeholder:text-slate-300 placeholder:font-normal";
 
   return (
     <div
@@ -109,8 +111,10 @@ const RegisterPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            <InputField label="Nombre Completo" required icon={User}>
+            <InputField label="Nombre Completo" id="nombres" required icon={User}>
               <input
+                id="nombres"
+                aria-label="Nombre Completo"
                 type="text"
                 value={formData.nombres}
                 onChange={e => setFormData({ ...formData, nombres: e.target.value })}
@@ -121,8 +125,10 @@ const RegisterPage = () => {
             </InputField>
 
             <div className="grid grid-cols-2 gap-4">
-              <InputField label="Usuario" required>
+              <InputField label="Usuario" id="usuario" required>
                 <input
+                  id="usuario"
+                  aria-label="Usuario"
                   type="text"
                   value={formData.usuario}
                   onChange={e => setFormData({ ...formData, usuario: e.target.value.toLowerCase() })}
@@ -131,8 +137,10 @@ const RegisterPage = () => {
                   className={inputClass}
                 />
               </InputField>
-              <InputField label="Celular" required icon={Phone}>
+              <InputField label="Celular" id="celular" required icon={Phone}>
                 <input
+                  id="celular"
+                  aria-label="Celular"
                   type="text"
                   value={formData.celular}
                   onChange={e => setFormData({ ...formData, celular: e.target.value })}
@@ -143,8 +151,10 @@ const RegisterPage = () => {
               </InputField>
             </div>
 
-            <InputField label="Correo Electrónico" required icon={Mail}>
+            <InputField label="Correo Electrónico" id="correo" required icon={Mail}>
               <input
+                id="correo"
+                aria-label="Correo Electrónico"
                 type="email"
                 value={formData.correo}
                 onChange={e => setFormData({ ...formData, correo: e.target.value })}
@@ -162,8 +172,10 @@ const RegisterPage = () => {
               </p>
               <div className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
-                  <InputField label="Nombre de Tienda" required>
+                  <InputField label="Nombre de Tienda" id="store_name" required>
                     <input
+                      id="store_name"
+                      aria-label="Nombre de Tienda"
                       type="text"
                       value={formData.store_name}
                       onChange={e => setFormData({ ...formData, store_name: e.target.value })}
@@ -172,8 +184,10 @@ const RegisterPage = () => {
                       className={inputClass}
                     />
                   </InputField>
-                  <InputField label="Dirección (Opcional)" icon={MapPin}>
+                  <InputField label="Dirección (Opcional)" id="store_address" icon={MapPin}>
                     <input
+                      id="store_address"
+                      aria-label="Dirección (Opcional)"
                       type="text"
                       value={formData.store_address}
                       onChange={e => setFormData({ ...formData, store_address: e.target.value })}
@@ -185,9 +199,11 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            <InputField label="Contraseña" required icon={Lock}>
+            <InputField label="Contraseña" id="contrasena" required icon={Lock}>
               <div className="relative">
                 <input
+                  id="contrasena"
+                  aria-label="Contraseña"
                   type={showPassword ? 'text' : 'password'}
                   value={formData.contrasena}
                   onChange={e => setFormData({ ...formData, contrasena: e.target.value })}
@@ -198,6 +214,7 @@ const RegisterPage = () => {
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors"
                 >
@@ -206,8 +223,10 @@ const RegisterPage = () => {
               </div>
             </InputField>
 
-            <InputField label="Confirmar Contraseña" required icon={Lock}>
+            <InputField label="Confirmar Contraseña" id="confirmarContrasena" required icon={Lock}>
               <input
+                id="confirmarContrasena"
+                aria-label="Confirmar Contraseña"
                 type={showPassword ? 'text' : 'password'}
                 value={formData.confirmarContrasena}
                 onChange={e => setFormData({ ...formData, confirmarContrasena: e.target.value })}
@@ -221,7 +240,7 @@ const RegisterPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-6 active:scale-95 transition-all disabled:opacity-50"
+              className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-6 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50"
             >
               {isLoading ? 'Registrando y encriptando...' : 'Crear mi Negocio'}
             </button>

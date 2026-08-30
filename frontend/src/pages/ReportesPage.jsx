@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
@@ -32,28 +32,35 @@ const ReportesPage = () => {
     setModalOpen(true);
   };
 
-  useEffect(() => {
-    cargarUsuarioYReportes();
-  }, []);
-
-  const cargarUsuarioYReportes = async () => {
+  const cargarUsuarioYReportes = useCallback(async (signal = null) => {
     setLoading(true);
     try {
-      const { data: userData } = await axios.get('/api/session-info');
+      const { data: userData } = await axios.get('/api/session-info', { ...(signal && { signal }) });
+      if (signal && signal.aborted) return;
       if (userData) {
         setIsAdmin(userData.rol === 'Administrador');
         if (!formData.creador) {
           setFormData(prev => ({ ...prev, creador: userData.nombres }));
         }
       }
-      const { data } = await axios.get('/api/reportes');
+      const { data } = await axios.get('/api/reportes', { ...(signal && { signal }) });
+      if (signal && signal.aborted) return;
       setReportes(data);
     } catch (err) {
+      if (axios.isCancel(err) || (signal && signal.aborted)) return;
       console.error('Error', err);
     } finally {
-      setLoading(false);
+      if (!signal || !signal.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, [formData.creador]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    cargarUsuarioYReportes(controller.signal);
+    return () => controller.abort();
+  }, [cargarUsuarioYReportes]);
 
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return '---';
@@ -254,13 +261,13 @@ const ReportesPage = () => {
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Nombre del Reporte <span className="text-rose-500 text-sm">*</span></label>
-                  <input required type="text" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Balance Mensual..."/>
+                  <label htmlFor="titulo" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Nombre del Reporte <span className="text-rose-500 text-sm">*</span></label>
+                  <input id="titulo" required type="text" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Balance Mensual..."/>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Categoría <span className="text-rose-500 text-sm">*</span></label>
+                    <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Categoría <span className="text-rose-500 text-sm">*</span></span>
                     <div className="form-control-premium">
                       <CustomSelect 
                         value={formData.tipo} 
@@ -277,7 +284,7 @@ const ReportesPage = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Fecha del Reporte <span className="text-rose-500 text-sm">*</span></label>
+                    <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Fecha del Reporte <span className="text-rose-500 text-sm">*</span></span>
                     <CustomDatePicker 
                       value={formData.fecha_reporte} 
                       onChange={v => setFormData({...formData, fecha_reporte: v})} 
@@ -292,7 +299,7 @@ const ReportesPage = () => {
                     <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center flex items-center justify-center gap-1"><Clock size={12} /> Periodo Evaluado</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-1">Corte Inicial</label>
+                        <span className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-1">Corte Inicial</span>
                         <CustomDatePicker 
                           value={formData.fecha_inicio} 
                           onChange={v => setFormData({...formData, fecha_inicio: v})} 
@@ -301,7 +308,7 @@ const ReportesPage = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-1">Corte Final</label>
+                        <span className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-1">Corte Final</span>
                         <CustomDatePicker 
                           value={formData.fecha_fin} 
                           onChange={v => setFormData({...formData, fecha_fin: v})} 
@@ -314,17 +321,17 @@ const ReportesPage = () => {
                 )}
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Responsable <span className="text-rose-500 text-sm">*</span></label>
-                  <input required type="text" value={formData.creador} onChange={e => setFormData({...formData, creador: e.target.value})} className="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-500" readOnly/>
+                  <label htmlFor="creador" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Responsable <span className="text-rose-500 text-sm">*</span></label>
+                  <input id="creador" required type="text" value={formData.creador} onChange={e => setFormData({...formData, creador: e.target.value})} className="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-500" readOnly/>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Conclusiones o Notas</label>
-                  <textarea required rows="3" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:border-indigo-500 outline-none text-slate-800 resize-none hover:bg-white transition-colors" placeholder="Añade detalles relevantes o un resumen aquí..."></textarea>
+                  <label htmlFor="descripcion" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Conclusiones o Notas</label>
+                  <textarea id="descripcion" required rows="3" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:border-indigo-500 outline-none text-slate-800 resize-none hover:bg-white transition-colors" placeholder="Añade detalles relevantes o un resumen aquí..."></textarea>
                 </div>
 
                 <div className="flex flex-col gap-3 pt-4 pb-2">
-                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'}`}>
+                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'}`}>
                     {editMode ? <Save size={14} /> : <Plus size={14} />} {isSubmitting ? 'GUARDANDO...' : (editMode ? 'ACTUALIZAR REPORTE' : 'CREAR REPORTE')}
                   </button>
                   {editMode && (
@@ -340,7 +347,7 @@ const ReportesPage = () => {
             {/* Nuevo: Módulo de Auditoría de Mermas (Estética Armonizada) */}
             <div className="mt-8 bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 relative overflow-hidden group">
                {/* Elemento decorativo sutil */}
-               <div className="absolute -right-4 -top-4 w-32 h-32 bg-indigo-50 rounded-full blur-3xl group-hover:bg-indigo-100 transition-all opacity-50"></div>
+               <div className="absolute -right-4 -top-4 w-32 h-32 bg-indigo-50 rounded-full blur-3xl group-hover:bg-indigo-100 transition-colors opacity-50"></div>
                
                <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
@@ -356,7 +363,7 @@ const ReportesPage = () => {
                   
                   <button 
                     onClick={descargarReporteMerma}
-                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95 flex items-center justify-center gap-3"
+                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-colors transition-shadow transition-transform shadow-lg shadow-indigo-200 active:scale-95 flex items-center justify-center gap-3"
                   >
                     DESCARGAR REPORTE (PDF)
                   </button>
@@ -373,7 +380,7 @@ const ReportesPage = () => {
                         toast.error(err.response?.data?.error || 'Error al enviar el resumen. Revisa la configuración SMTP.');
                       }
                     }}
-                    className="w-full py-3 mt-3 bg-white text-indigo-600 border-2 border-indigo-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 hover:border-indigo-400 transition-all active:scale-95 flex items-center justify-center gap-3"
+                    className="w-full py-3 mt-3 bg-white text-indigo-600 border-2 border-indigo-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 hover:border-indigo-400 transition-colors transition-transform active:scale-95 flex items-center justify-center gap-3"
                   >
                     <Mail size={14} /> ENVIAR RESUMEN AHORA
                   </button>
@@ -459,15 +466,15 @@ const ReportesPage = () => {
                         </td>
                         <td className="p-6 pr-8">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => descargarReporteExcel(r)} className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Exportar XLSX">
+                            <button onClick={() => descargarReporteExcel(r)} aria-label="Exportar a Excel" className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Exportar XLSX">
                               <Download size={18} />
                             </button>
                             {isAdmin && (
                               <>
-                                <button onClick={() => handleEditClick(r)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Reporte">
+                                <button onClick={() => handleEditClick(r)} aria-label="Editar Reporte" className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Reporte">
                                   <Pencil size={18} />
                                 </button>
-                                <button onClick={() => eliminarReporte(r.id)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-all hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Reporte">
+                                <button onClick={() => eliminarReporte(r.id)} aria-label="Eliminar Reporte" className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Reporte">
                                   <Trash2 size={18} />
                                 </button>
                               </>
@@ -510,7 +517,7 @@ const ReportesPage = () => {
                   setModalOpen(false);
                   if (modalConfig.onConfirm) modalConfig.onConfirm();
                 }}
-                className={`flex-1 px-4 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all hover:-translate-y-1 active:scale-95 ${
+                className={`flex-1 px-4 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-transform transition-shadow hover:-translate-y-1 active:scale-95 ${
                   modalConfig.type === 'danger' 
                     ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-200' 
                     : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'

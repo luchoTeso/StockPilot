@@ -113,25 +113,26 @@ async function seed() {
         const provId = provResult.lastID;
 
         // 4. Productos
-        const productosData = getProductos(tiendaId);
-        const productIds = [];
-        for (const p of productosData) {
-            const res = await db.runAsync(
+        const productPromises = productosData.map(p => 
+            db.runAsync(
                 `INSERT INTO Productos (codigo, nombre_producto, categoria, subcategoria, tipo_producto, precio, cantidad, id_tienda, stock_minimo, stock_maximo, fecha_vencimiento, frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time, id_proveedor)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_producto`,
                 [p.codigo, p.nombre, p.categoria, p.subcategoria, p.tipo, p.precio, p.cantidad, tiendaId, p.stock_min, p.stock_max, p.vencimiento, p.frecuencia, p.costo, p.stock_seguridad, p.lead_time, provId]
-            );
-            productIds.push(res.lastID);
-        }
+            )
+        );
+        const resArray = await Promise.all(productPromises);
+        const productIds = resArray.map(r => r.lastID);
 
         // 5. Ventas e Historial
         const ventas = generateSalesData(productosData, tiendaId, adminId);
-        for (const v of ventas) {
+        const ventasPromises = ventas.map(async (v) => {
             const vRes = await db.runAsync('INSERT INTO Ventas (id_vendedor, id_tienda, fecha_salida, precio_total) VALUES (?, ?, ?, ?) RETURNING id_venta', [v.vendedorId, v.tiendaId, v.fecha, v.total]);
-            for (const item of v.items) {
-                await db.runAsync('INSERT INTO VentasProductos (id_venta, id_producto, cantidad) VALUES (?, ?, ?)', [vRes.lastID, productIds[item.productoIndex], item.cantidad]);
-            }
-        }
+            const itemPromises = v.items.map(item => 
+                db.runAsync('INSERT INTO VentasProductos (id_venta, id_producto, cantidad) VALUES (?, ?, ?)', [vRes.lastID, productIds[item.productoIndex], item.cantidad])
+            );
+            await Promise.all(itemPromises);
+        });
+        await Promise.all(ventasPromises);
 
         console.log('✅ Seeder completado con éxito.');
         process.exit(0);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import Tooltip from '../components/Tooltip';
@@ -27,27 +27,14 @@ const VentasPage = () => {
 
   const PAGE_SIZE = 100;
 
-  useEffect(() => {
-    cargarVentasIniciales();
-
-    // Suscribirse a eventos de sincronización (Punto 2: Tiempo Real)
-    const unsubscribe = subscribeToSync((event) => {
-      // Si se completa una venta en cualquier parte del APP, refrescamos el historial
-      if (event.type === SYNC_EVENTS.SALE_COMPLETED) {
-        cargarVentasIniciales();
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const cargarVentasIniciales = async () => {
+  const cargarVentasIniciales = useCallback(async (signal = null) => {
     setIsLoading(true);
     try {
       const [resVentas, resStats] = await Promise.all([
-        axios.get(`/api/ventas?limit=${PAGE_SIZE}&offset=0`),
-        axios.get('/api/ventas/stats')
+        axios.get(`/api/ventas?limit=${PAGE_SIZE}&offset=0`, { ...(signal && { signal }) }),
+        axios.get('/api/ventas/stats', { ...(signal && { signal }) })
       ]);
+      if (signal && signal.aborted) return;
 
       const dataVentas = resVentas.data.data || resVentas.data;
       const total = resVentas.data.total || dataVentas.length;
@@ -60,11 +47,32 @@ const VentasPage = () => {
       const cats = Array.from(new Set(dataVentas.map(v => v.categoria)));
       setCategorias(cats);
     } catch (error) {
+      if (axios.isCancel(error) || (signal && signal.aborted)) return;
       console.error('Error al cargar ventas iniciales', error);
     } finally {
-      setIsLoading(false);
+      if (!signal || !signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    cargarVentasIniciales(controller.signal);
+
+    // Suscribirse a eventos de sincronización (Punto 2: Tiempo Real)
+    const unsubscribe = subscribeToSync((event) => {
+      // Si se completa una venta en cualquier parte del APP, refrescamos el historial
+      if (event.type === SYNC_EVENTS.SALE_COMPLETED) {
+        cargarVentasIniciales(); // Sin signal, no hay problema si se desmonta
+      }
+    });
+
+    return () => {
+      controller.abort();
+      unsubscribe();
+    };
+  }, [cargarVentasIniciales]);
 
   const cargarMasVentas = async () => {
     if (isLoading || currentOffset >= totalVentasServer) return;
@@ -179,10 +187,10 @@ const VentasPage = () => {
           </p>
         </div>
         <div className="flex flex-wrap gap-4">
-          <button onClick={abrirTopVendidos} className="bg-white/10 backdrop-blur-md hover:bg-indigo-600 text-indigo-600 hover:text-white py-4 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100/20 border border-indigo-100 transition-all flex items-center gap-3 active:scale-95 group">
+          <button onClick={abrirTopVendidos} className="bg-white/10 backdrop-blur-md hover:bg-indigo-600 text-indigo-600 hover:text-white py-4 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100/20 border border-indigo-100 transition-colors transition-shadow transition-transform flex items-center gap-3 active:scale-95 group">
             <Trophy size={18} className="group-hover:rotate-12 transition-transform" /> Top Ventas
           </button>
-          <button onClick={exportarCSV} className="bg-emerald-500 hover:bg-emerald-600 text-white py-4 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-200/50 transition-all flex items-center gap-3 active:scale-95">
+          <button onClick={exportarCSV} className="bg-emerald-500 hover:bg-emerald-600 text-white py-4 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-200/50 transition-colors transition-shadow transition-transform flex items-center gap-3 active:scale-95">
              <Download size={18} /> Generar Reporte
           </button>
         </div>
@@ -195,7 +203,7 @@ const VentasPage = () => {
           { label: 'Productos Vendidos', value: statsRender.totalProductos.toLocaleString('es-CO'), icon: <Package size={28} />, color: 'text-indigo-600', bg: 'bg-indigo-50' },
           { label: 'Venta Promedio', value: `$${statsRender.ventaPromedio.toLocaleString('es-CO', {maximumFractionDigits:0})}`, icon: <Receipt size={28} />, color: 'text-amber-500', bg: 'bg-amber-50' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 md:p-8 shadow-xl border border-slate-100 flex items-center gap-6 transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-100 group">
+          <div key={i} className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 md:p-8 shadow-xl border border-slate-100 flex items-center gap-6 transition-shadow transition-transform hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-100 group">
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${stat.bg} ${stat.color}`}>
               {stat.icon}
             </div>
@@ -219,6 +227,7 @@ const VentasPage = () => {
         </div>
         <input
           type="text"
+          aria-label="Buscar producto por nombre"
           placeholder="Buscar producto por nombre..."
           value={filtroProducto}
           onChange={e => setFiltroProducto(e.target.value)}
@@ -259,7 +268,7 @@ const VentasPage = () => {
                 ventasFiltradas.map((v, idx) => {
                   const precioUnitario = v.precio_unitario || (v.precio_total / v.cantidad);
                   return (
-                    <tr key={v.id_venta ? `${v.id_venta}-${idx}` : idx} className="group transition-all hover:bg-indigo-50/30">
+                    <tr key={v.id_venta ? `${v.id_venta}-${idx}` : idx} className="group transition-colors hover:bg-indigo-50/30">
                        <td className="p-8">
                          <p className="font-black text-slate-800 text-sm group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{v.nombre_producto}</p>
                          <p className="text-[9px] font-bold text-slate-400 mt-1 tracking-widest uppercase">
@@ -301,7 +310,7 @@ const VentasPage = () => {
             <button 
               onClick={cargarMasVentas} 
               disabled={isLoading}
-              className="px-12 py-5 bg-white text-slate-600 hover:text-white border border-slate-100 hover:bg-slate-900 rounded-3xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl hover:shadow-slate-200 transition-all active:scale-95 disabled:opacity-50"
+              className="px-12 py-5 bg-white text-slate-600 hover:text-white border border-slate-100 hover:bg-slate-900 rounded-3xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl hover:shadow-slate-200 transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50"
             >
               {isLoading ? 'Sincronizando...' : 'Cargar Más Ventas'}
             </button>
@@ -318,7 +327,7 @@ const VentasPage = () => {
                  <h3 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic flex items-center gap-3"><Rocket size={28} /> Top Productos</h3>
                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-2">Los productos más vendidos de tu negocio</p>
               </div>
-              <button onClick={() => setModalMasVendidos(false)} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-2xl hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center text-2xl transition-all shadow-sm active:scale-95 ease-in-out">&times;</button>
+              <button onClick={() => setModalMasVendidos(false)} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-2xl hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center text-2xl transition-colors transition-shadow transition-transform shadow-sm active:scale-95 ease-in-out">&times;</button>
             </div>
             
             <div className="p-8 overflow-y-auto space-y-4">
@@ -329,9 +338,9 @@ const VentasPage = () => {
                  else if(idx === 2) positionColor = "bg-orange-100 text-orange-600 scale-105 shadow-md";
 
                  return (
-                  <div key={item.nombre} className="flex flex-col sm:flex-row justify-between items-center p-6 bg-slate-50 rounded-[2rem] border border-slate-100 gap-4 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group">
+                  <div key={item.nombre} className="flex flex-col sm:flex-row justify-between items-center p-6 bg-slate-50 rounded-[2rem] border border-slate-100 gap-4 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors group">
                     <div className="flex items-center gap-6 w-full sm:w-auto">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl italic tracking-tighter shrink-0 transition-all transform ${positionColor}`}>
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl italic tracking-tighter shrink-0 transition-colors transition-transform transform ${positionColor}`}>
                         #{idx + 1}
                       </div>
                       <div className="flex-1 min-w-0">

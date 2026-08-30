@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -27,21 +27,27 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async (signal = null) => {
     try {
-      const { data } = await axios.get('/api/perfil');
+      const { data } = await axios.get('/api/perfil', { ...(signal && { signal }) });
+      if (signal && signal.aborted) return;
       setProfileData(data.user);
       setEditForm(data.user);
     } catch (error) {
+      if (axios.isCancel(error) || (signal && signal.aborted)) return;
       toast.error('Error al cargar perfil');
     } finally {
-      setLoading(false);
+      if (!signal || !signal.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchProfile(controller.signal);
+    return () => controller.abort();
+  }, [fetchProfile]);
 
   const handleSaveProfile = async () => {
     try {
@@ -118,7 +124,7 @@ const ProfilePage = () => {
         {!isEditing ? (
           <button
             onClick={() => setIsEditing(true)}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-all"
+            className="bg-indigo-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-transform"
           >
             Editar Información
           </button>
@@ -134,12 +140,12 @@ const ProfilePage = () => {
         {/* Lado Izquierdo: Foto y Básico */}
         <div className="space-y-6">
           <div
-            className={`bg-white p-8 rounded-[2.5rem] shadow-xl border-2 text-center transition-all ${isDragging ? 'border-indigo-500 bg-indigo-50 border-dashed scale-105' : 'border-white'}`}
+            className={`bg-white p-8 rounded-[2.5rem] shadow-xl border-2 text-center transition-colors transition-transform ${isDragging ? 'border-indigo-500 bg-indigo-50 border-dashed scale-105' : 'border-white'}`}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
           >
-            <div className="relative group mx-auto w-32 h-32 mb-6 cursor-pointer" onClick={() => fileInputRef.current.click()}>
+            <button type="button" className="block relative group mx-auto w-32 h-32 mb-6 cursor-pointer" onClick={() => fileInputRef.current.click()} aria-label="Cambiar foto de perfil">
               <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFile(e.target.files[0])} accept="image/*" />
               {profileData.foto_url ? (
                 <img src={profileData.foto_url} alt="Perfil" className="w-full h-full object-cover rounded-[2rem] shadow-lg border-4 border-white" />
@@ -151,7 +157,7 @@ const ProfilePage = () => {
               <div className="absolute inset-0 bg-slate-900/40 rounded-[2rem] opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
                 <span className="text-[10px] font-black uppercase tracking-tighter">Cambiar</span>
               </div>
-            </div>
+            </button>
 
             <h2 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase">{profileData.nombres}</h2>
             <p className="text-indigo-600 text-sm font-bold">@{profileData.usuario}</p>
@@ -165,7 +171,7 @@ const ProfilePage = () => {
 
           <button
             onClick={() => setShowPassModal(true)}
-            className="w-full p-6 bg-slate-50 border border-slate-200 rounded-[2rem] flex items-center justify-between group hover:bg-white hover:shadow-lg transition-all"
+            className="w-full p-6 bg-slate-50 border border-slate-200 rounded-[2rem] flex items-center justify-between group hover:bg-white hover:shadow-lg transition-colors transition-shadow"
           >
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><Lock size={20} /></div>
@@ -184,9 +190,10 @@ const ProfilePage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nombres Completos</label>
+              <label htmlFor="edit-nombres" className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nombres Completos</label>
               {isEditing ? (
                 <input
+                  id="edit-nombres"
                   type="text"
                   value={editForm.nombres}
                   onChange={e => setEditForm({ ...editForm, nombres: e.target.value })}
@@ -198,14 +205,15 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nombre de Usuario</label>
+              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nombre de Usuario</span>
               <p className="text-base font-black text-slate-700 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60">@{profileData.usuario}</p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Correo Corporativo</label>
+              <label htmlFor="edit-correo" className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Correo Corporativo</label>
               {isEditing ? (
                 <input
+                  id="edit-correo"
                   type="email"
                   value={editForm.correo}
                   onChange={e => setEditForm({ ...editForm, correo: e.target.value })}
@@ -217,9 +225,10 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Número Celular</label>
+              <label htmlFor="edit-celular" className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Número Celular</label>
               {isEditing ? (
                 <input
+                  id="edit-celular"
                   type="text"
                   value={editForm.celular}
                   onChange={e => setEditForm({ ...editForm, celular: e.target.value })}
@@ -231,7 +240,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2 relative z-10">
-              <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Género</label>
+              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Género</span>
               {isEditing ? (
                 <div className="h-14">
                   <CustomSelect
@@ -253,7 +262,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nivel de Acceso</label>
+              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nivel de Acceso</span>
               <p className="text-base font-black text-slate-700 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60 italic">{profileData.rol}</p>
             </div>
           </div>
@@ -280,8 +289,9 @@ const ProfilePage = () => {
 
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Contraseña Actual</label>
+                <label htmlFor="current-password" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Contraseña Actual</label>
                 <input
+                  id="current-password"
                   type="password"
                   value={passData.currentPassword}
                   required
@@ -290,8 +300,9 @@ const ProfilePage = () => {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Nueva Contraseña</label>
+                <label htmlFor="new-password" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Nueva Contraseña</label>
                 <input
+                  id="new-password"
                   type="password"
                   value={passData.newPassword}
                   required
@@ -300,8 +311,9 @@ const ProfilePage = () => {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Confirmar Nueva</label>
+                <label htmlFor="confirm-password" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Confirmar Nueva</label>
                 <input
+                  id="confirm-password"
                   type="password"
                   value={passData.confirmPassword}
                   required

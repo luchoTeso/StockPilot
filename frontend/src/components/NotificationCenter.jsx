@@ -1,8 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Bell, Package, Calendar, ShieldCheck, Zap } from 'lucide-react';
+
+const getSeverityStyles = (severity) => {
+    switch (severity) {
+        case 'critico': return 'bg-rose-100 text-rose-600 border-rose-200';
+        case 'advertencia': return 'bg-amber-100 text-amber-600 border-amber-200';
+        default: return 'bg-indigo-100 text-indigo-600 border-indigo-200';
+    }
+};
 
 const NotificationCenter = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -75,13 +83,14 @@ const NotificationCenter = () => {
         tryPlayFile();
     };
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async (signal) => {
         try {
             setLoading(true);
             const [statsRes, alertsRes] = await Promise.all([
-                axios.get('/api/alertas/stats'),
-                axios.get('/api/alertas?limit=5')
+                axios.get('/api/alertas/stats', { ...(signal && { signal }) }),
+                axios.get('/api/alertas?limit=5', { ...(signal && { signal }) })
             ]);
+            if (signal && signal.aborted) return;
 
             if (statsRes.data.success) {
                 const newTotal = statsRes.data.stats.total;
@@ -95,17 +104,22 @@ const NotificationCenter = () => {
             }
             if (alertsRes.data.success) setAlerts(alertsRes.data.alerts.slice(0, 5));
         } catch (error) {
+            if (axios.isCancel(error) || (signal && signal.aborted)) return;
             console.error('Error fetching notifications:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        fetchNotifications();
-        const interval = setInterval(fetchNotifications, 120000);
-        return () => clearInterval(interval);
-    }, []);
+        const controller = new AbortController();
+        fetchNotifications(controller.signal);
+        const interval = setInterval(() => fetchNotifications(controller.signal), 120000);
+        return () => {
+            clearInterval(interval);
+            controller.abort();
+        };
+    }, [fetchNotifications]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -117,13 +131,7 @@ const NotificationCenter = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const getSeverityStyles = (severity) => {
-        switch (severity) {
-            case 'critico': return 'bg-rose-100 text-rose-600 border-rose-200';
-            case 'advertencia': return 'bg-amber-100 text-amber-600 border-amber-200';
-            default: return 'bg-indigo-100 text-indigo-600 border-indigo-200';
-        }
-    };
+
 
     return (
         <div className="relative" ref={dropdownRef}>
@@ -134,7 +142,7 @@ const NotificationCenter = () => {
                     setIsOpen(newOpen);
                     if (newOpen) fetchNotifications();
                 }}
-                className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all active:scale-90 shadow-lg border-2 ${isOpen ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-200 shadow-slate-200/50'}`}
+                className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-colors transition-transform active:scale-90 shadow-lg border-2 ${isOpen ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-200 shadow-slate-200/50'}`}
                 title="Centro de Alertas"
             >
                 <Bell size={20} />
@@ -173,14 +181,15 @@ const NotificationCenter = () => {
                                     const targetPath = isStockAlert ? '/analisis-detallado' : '/alertas';
 
                                     return (
-                                        <div
+                                        <button
                                             key={alert.id_alerta}
                                             onClick={() => {
                                                 setIsOpen(false);
                                                 // Pequeño delay para asegurar que el navegador procese el cambio de estado antes de la transición de ruta
                                                 setTimeout(() => navigate(targetPath), 10);
                                             }}
-                                            className="p-5 hover:bg-white hover:shadow-inner transition-all cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
+                                            type="button"
+                                            className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
                                         >
                                             <div className="flex gap-4">
                                                 <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getSeverityStyles(alert.severidad)}`}>
@@ -204,7 +213,7 @@ const NotificationCenter = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </button>
                                     );
                                 })}
                             </div>
@@ -225,7 +234,7 @@ const NotificationCenter = () => {
                             setIsOpen(false);
                             setTimeout(() => navigate('/alertas'), 10);
                         }}
-                        className="w-full p-5 bg-indigo-600 text-[10px] font-black text-white uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-inner relative z-50 cursor-pointer"
+                        className="w-full p-5 bg-indigo-600 text-[10px] font-black text-white uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-inner relative z-50 cursor-pointer"
                     >
                         Ingresar al Centro de Control de Alertas ⚡
                     </button>

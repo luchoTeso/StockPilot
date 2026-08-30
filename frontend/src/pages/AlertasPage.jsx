@@ -1,7 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { AlertCircle, AlertTriangle, Info, ShieldCheck, RefreshCw } from 'lucide-react';
+
+const SeveridadColors = {
+  critico: 'bg-rose-50 text-rose-700 border-rose-200',
+  advertencia: 'bg-amber-50 text-amber-700 border-amber-200',
+  info: 'bg-blue-50 text-blue-700 border-blue-200'
+};
+
+const SeveridadIcon = {
+  critico: AlertCircle,
+  advertencia: AlertTriangle,
+  info: Info,
+};
 
 const AlertasPage = () => {
   const [alertas, setAlertas] = useState([]);
@@ -12,14 +24,15 @@ const AlertasPage = () => {
   const [filter, setFilter] = useState('todas'); // 'todas', 'critico', 'advertencia', 'info'
   const toast = useToast();
 
-  const fetchAlertas = async (showSpinner = true) => {
+  const fetchAlertas = useCallback(async (showSpinner = true, signal = null) => {
     try {
       if (showSpinner) setLoading(true);
       const [alertasRes, statsRes, sessionRes] = await Promise.all([
-        axios.get('/api/alertas'),
-        axios.get('/api/alertas/stats'),
-        axios.get('/api/session-info')
+        axios.get('/api/alertas', { ...(signal && { signal }) }),
+        axios.get('/api/alertas/stats', { ...(signal && { signal }) }),
+        axios.get('/api/session-info', { ...(signal && { signal }) })
       ]);
+      if (signal && signal.aborted) return;
 
       if (sessionRes.data) {
         setIsAdmin(sessionRes.data.rol === 'Administrador');
@@ -28,17 +41,24 @@ const AlertasPage = () => {
       if (alertasRes.data.success) setAlertas(alertasRes.data.alerts);
       if (statsRes.data.success) setStats(statsRes.data.stats);
     } catch (e) {
+      if (axios.isCancel(e) || (signal && signal.aborted)) return;
       toast.error('Error cargando el panel de alertas');
     } finally {
-      if (showSpinner) setLoading(false);
+      if (!signal || !signal.aborted) {
+        if (showSpinner) setLoading(false);
+      }
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
-    fetchAlertas(true);
-    const interval = setInterval(() => fetchAlertas(false), 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const controller = new AbortController();
+    fetchAlertas(true, controller.signal);
+    const interval = setInterval(() => fetchAlertas(false, controller.signal), 5 * 60 * 1000);
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
+  }, [fetchAlertas]);
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -70,18 +90,6 @@ const AlertasPage = () => {
 
   const filteredAlertas = alertas.filter(a => filter === 'todas' ? true : a.severidad === filter);
 
-  const SeveridadColors = {
-    critico: 'bg-rose-50 text-rose-700 border-rose-200',
-    advertencia: 'bg-amber-50 text-amber-700 border-amber-200',
-    info: 'bg-blue-50 text-blue-700 border-blue-200'
-  };
-
-  const SeveridadIcon = {
-    critico: AlertCircle,
-    advertencia: AlertTriangle,
-    info: Info,
-  };
-
   return (
     <div className="p-8 pb-32 max-w-7xl mx-auto space-y-8 animate-fade-in font-outfit">
       {/* HEADER PREMIUM */}
@@ -103,7 +111,7 @@ const AlertasPage = () => {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-300 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-300 transition-colors transition-shadow disabled:opacity-50"
           >
             {isGenerating ? 'Buscando problemas...' : <><RefreshCw size={13} className="inline mr-1" />Actualizar Alertas</>}
           </button>
@@ -114,7 +122,7 @@ const AlertasPage = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 z-10 relative">
         <button
           onClick={() => setFilter('todas')}
-          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'todas' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
+          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'todas' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-80 mb-1">Todas</p>
           <p className="text-3xl font-black">{stats.total}</p>
@@ -122,7 +130,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('critico')}
-          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-rose-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
+          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-rose-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><AlertCircle size={10} /> Críticas</p>
           <p className="text-3xl font-black">{stats.critico}</p>
@@ -130,7 +138,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('advertencia')}
-          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-amber-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
+          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-amber-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><AlertTriangle size={10} /> Advertencias</p>
           <p className="text-3xl font-black">{stats.advertencia}</p>
@@ -138,7 +146,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('info')}
-          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-all ${filter === 'info' ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-blue-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'}`}
+          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'info' ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-blue-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><Info size={10} /> Sobrestock</p>
           <p className="text-3xl font-black">{stats.info}</p>
@@ -157,7 +165,7 @@ const AlertasPage = () => {
           </div>
         ) : (
           filteredAlertas.map(alerta => (
-            <div key={alerta.id_alerta} className={`p-4 sm:p-6 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 transition-all hover:shadow-xl ${SeveridadColors[alerta.severidad]}`}>
+            <div key={alerta.id_alerta} className={`p-4 sm:p-6 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 transition-shadow hover:shadow-xl ${SeveridadColors[alerta.severidad]}`}>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   {(() => { const Icon = SeveridadIcon[alerta.severidad]; return <Icon size={20} />; })()}

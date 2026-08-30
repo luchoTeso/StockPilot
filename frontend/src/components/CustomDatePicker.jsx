@@ -1,5 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+
+const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+const diasSemana = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
 
 const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...", align = "left" }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,12 +16,12 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
     return new Date();
   };
 
-  const [currentMonth, setCurrentMonth] = useState(getInitialDate());
+  const [currentMonth, setCurrentMonth] = useState(() => getInitialDate());
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0, right: 0, origin: 'top' });
 
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       if (align === 'right-flyout') {
@@ -37,7 +40,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
         });
       }
     }
-  };
+  }, [align]);
 
   useEffect(() => {
     if (isOpen) {
@@ -67,7 +70,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [isOpen]);
+  }, [isOpen, updatePosition]);
 
   const selectDate = (year, month, day) => {
     const formattedY = year;
@@ -86,10 +89,6 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
     e.preventDefault();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
-
-  // Nombres de meses y días
-  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  const diasSemana = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
 
   // Calcular días a mostrar
   const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
@@ -139,24 +138,25 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
 
       {/* Días de la semana */}
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {diasSemana.map((d, i) => (
-          <div key={i} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
+        {diasSemana.map((d) => (
+          <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
         ))}
       </div>
 
       {/* Grilla de Días */}
       <div className="grid grid-cols-7 gap-1">
         {days.map((day, idx) => {
-          if (!day) return <div key={idx} className="p-2"></div>;
+          if (!day) return <div key={`empty-${idx}`} className="p-2"></div>;
 
           const isSelected = value && value === `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isToday = new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
+          const dayId = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${day}`;
 
           return (
             <button
-              key={idx}
+              key={dayId}
               onClick={(e) => { e.preventDefault(); selectDate(currentMonth.getFullYear(), currentMonth.getMonth(), day); }}
-              className={`relative flex items-center justify-center w-full aspect-square text-sm font-bold rounded-xl transition-all ${isSelected
+              className={`relative flex items-center justify-center w-full aspect-square text-sm font-bold rounded-xl transition-colors transition-transform transition-shadow ${isSelected
                   ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-105'
                   : (isToday ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100' : 'text-slate-700 hover:bg-slate-100 hover:-translate-y-0.5')
                 }`}
@@ -195,7 +195,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
       <button
         ref={buttonRef}
         type="button"
-        className={`w-full flex items-center justify-between p-4 bg-slate-50 border rounded-2xl text-sm font-bold outline-none transition-all ${isOpen ? 'border-indigo-500 shadow-lg shadow-indigo-100' : 'border-slate-200'} ${value ? 'text-slate-800' : 'text-slate-400'}`}
+        className={`w-full flex items-center justify-between p-4 bg-slate-50 border rounded-2xl text-sm font-bold outline-none transition-colors transition-shadow ${isOpen ? 'border-indigo-500 shadow-lg shadow-indigo-100' : 'border-slate-200'} ${value ? 'text-slate-800' : 'text-slate-400'}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{displayValue}</span>

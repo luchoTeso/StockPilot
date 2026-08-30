@@ -98,9 +98,7 @@ class Sale {
             'CREATE INDEX IF NOT EXISTS idx_mov_producto ON MovimientosStock(id_producto)',
             'CREATE INDEX IF NOT EXISTS idx_mov_tienda ON MovimientosStock(id_tienda)',
         ];
-        for (const sql of indexes) {
-            await db.runAsync(sql);
-        }
+        await Promise.all(indexes.map(sql => db.runAsync(sql)));
     }
 }
 

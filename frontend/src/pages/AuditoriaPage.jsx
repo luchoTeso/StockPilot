@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
@@ -13,16 +13,18 @@ const AuditoriaPage = () => {
   const [filtroFuente, setFiltroFuente] = useState('');
   const [detailModal, setDetailModal] = useState(null);
 
-  const fetchData = async (page = 1) => {
+  const fetchData = useCallback(async (page = 1, signal) => {
     setLoading(true);
     try {
       const params = { page, limit: 10 };
       if (filtroFuente) params.fuente = filtroFuente;
 
       const [logsRes, statsRes] = await Promise.all([
-        axios.get('/api/auditoria', { params }),
-        axios.get('/api/auditoria/stats')
+        axios.get('/api/auditoria', { params, ...(signal && { signal }) }),
+        axios.get('/api/auditoria/stats', { ...(signal && { signal }) })
       ]);
+
+      if (signal && signal.aborted) return;
 
       if (logsRes.data.success) {
         setLogs(logsRes.data.data);
@@ -32,19 +34,24 @@ const AuditoriaPage = () => {
         setStats(statsRes.data.stats);
       }
     } catch (err) {
+      if (axios.isCancel(err) || (signal && signal.aborted)) return;
       if (err.response?.status === 403) {
         toast.error('Acceso denegado. Solo administradores.');
       } else {
         toast.error('Error cargando auditoría');
       }
     } finally {
-      setLoading(false);
+      if (!signal || !signal.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, [filtroFuente, toast]);
 
   useEffect(() => {
-    fetchData(1);
-  }, [filtroFuente]);
+    const controller = new AbortController();
+    fetchData(1, controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
 
   const formatFecha = (f) => {
     if (!f) return '---';
@@ -99,7 +106,7 @@ const AuditoriaPage = () => {
           <button
             key={f}
             onClick={() => setFiltroFuente(f)}
-            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors border ${
               filtroFuente === f 
                 ? 'bg-violet-600 text-white border-violet-600 shadow-lg shadow-violet-200' 
                 : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'
@@ -163,7 +170,7 @@ const AuditoriaPage = () => {
                     <td className="p-6 pr-8 text-right">
                       <button
                         onClick={() => setDetailModal(log)}
-                        className="px-4 py-2 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-violet-100 transition-all shadow-sm hover:scale-105"
+                        className="px-4 py-2 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-violet-100 transition-colors transition-transform shadow-sm hover:scale-105"
                       >
                         Inspeccionar
                       </button>
@@ -185,14 +192,14 @@ const AuditoriaPage = () => {
               <button
                 disabled={pagination.page <= 1}
                 onClick={() => fetchData(pagination.page - 1)}
-                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-30"
+                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-30"
               >
                 ← Anterior
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
                 onClick={() => fetchData(pagination.page + 1)}
-                className="px-4 py-2 bg-violet-600 text-white rounded-xl text-[10px] font-black hover:bg-violet-700 transition-all disabled:opacity-30 shadow-sm"
+                className="px-4 py-2 bg-violet-600 text-white rounded-xl text-[10px] font-black hover:bg-violet-700 transition-colors disabled:opacity-30 shadow-sm"
               >
                 Siguiente →
               </button>
@@ -205,15 +212,16 @@ const AuditoriaPage = () => {
 
     {/* Modal Detalle — portal directo a document.body para evitar stacking context del sidebar */}
     {detailModal && createPortal(
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4" onClick={() => setDetailModal(null)}>
-          <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setDetailModal(null)} role="presentation" aria-hidden="true"></div>
+          <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-2xl animate-scale-in relative z-10" onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-violet-50 rounded-t-[2.5rem]">
               <div>
                 <h3 className="text-xl font-black text-violet-800 tracking-tighter uppercase italic">Detalle de la sugerencia</h3>
                 <p className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mt-1">{formatFecha(detailModal.fecha_auditoria)}</p>
               </div>
-              <button onClick={() => setDetailModal(null)} className="w-10 h-10 bg-white border border-violet-200 text-violet-400 rounded-xl hover:text-rose-500 flex items-center justify-center transition-all"><X size={16} /></button>
+              <button onClick={() => setDetailModal(null)} aria-label="Cerrar modal" className="w-10 h-10 bg-white border border-violet-200 text-violet-400 rounded-xl hover:text-rose-500 flex items-center justify-center transition-colors"><X size={16} /></button>
             </div>
 
             {/* Metadata */}
@@ -280,7 +288,7 @@ const AuditoriaPage = () => {
                           const displayName = name || (id ? `Producto #${id}` : 'Producto');
                           
                           return (
-                            <tr key={i} className="hover:bg-white transition-colors">
+                            <tr key={displayName} className="hover:bg-white transition-colors">
                               <td className="px-4 py-3 font-bold text-slate-800 uppercase italic text-[11px] tracking-tight">{displayName}</td>
                               <td className="px-4 py-3 text-center font-black text-slate-600">${baseVal.toLocaleString()}</td>
                               <td className="px-4 py-3 text-center">
@@ -308,7 +316,7 @@ const AuditoriaPage = () => {
 
             {/* Footer */}
             <div className="px-6 pb-6">
-              <button onClick={() => setDetailModal(null)} className="w-full py-3 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
+              <button onClick={() => setDetailModal(null)} className="w-full py-3 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors">
                 Cerrar Inspección
               </button>
             </div>

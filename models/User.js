@@ -40,7 +40,7 @@ class User {
             hashedPassword,
             userData.rol,
             userData.id_tienda,
-            userData.cambio_clave_forzoso ? 1 : 0
+            userData.cambio_clave_forzoso ? true : false
         ]);
         return result.lastID;
     }

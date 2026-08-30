@@ -127,17 +127,18 @@ class ExportController {
      */
     static async listExports(req, res) {
         try {
-            const files = fs.readdirSync(EXPORTS_DIR)
-                .filter(f => f.endsWith('.csv') || f.endsWith('.xlsx'))
-                .map(f => {
+            const files = [];
+            for (const f of fs.readdirSync(EXPORTS_DIR)) {
+                if (f.endsWith('.csv') || f.endsWith('.xlsx')) {
                     const stats = fs.statSync(path.join(EXPORTS_DIR, f));
-                    return {
+                    files.push({
                         filename: f,
                         size: (stats.size / 1024).toFixed(1) + ' KB',
                         createdAt: stats.mtime.toISOString()
-                    };
-                })
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    });
+                }
+            }
+            files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
             res.json({ success: true, files });
         } catch (error) {

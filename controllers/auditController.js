@@ -65,21 +65,12 @@ const auditController = {
     try {
       const tiendaId = req.session.tiendaId;
 
-      const total = await db.getAsync(
-        'SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ?', [tiendaId]
-      );
-
-      const fromDashboard = await db.getAsync(
-        'SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ? AND id_orden IS NULL', [tiendaId]
-      );
-
-      const fromProveedores = await db.getAsync(
-        'SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ? AND id_orden IS NOT NULL', [tiendaId]
-      );
-
-      const ultima = await db.getAsync(
-        'SELECT fecha_auditoria FROM Auditoria_IA WHERE id_tienda = ? ORDER BY fecha_auditoria DESC LIMIT 1', [tiendaId]
-      );
+      const [total, fromDashboard, fromProveedores, ultima] = await Promise.all([
+        db.getAsync('SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ?', [tiendaId]),
+        db.getAsync('SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ? AND id_orden IS NULL', [tiendaId]),
+        db.getAsync('SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ? AND id_orden IS NOT NULL', [tiendaId]),
+        db.getAsync('SELECT fecha_auditoria FROM Auditoria_IA WHERE id_tienda = ? ORDER BY fecha_auditoria DESC LIMIT 1', [tiendaId])
+      ]);
 
       res.json({
         success: true,

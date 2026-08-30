@@ -16,17 +16,24 @@ const Sidebar = () => {
   const [alertCount, setAlertCount] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchAlerts = async () => {
       try {
-        const { data } = await axios.get('/api/dashboard/stats');
+        const { data } = await axios.get('/api/dashboard/stats', { signal: controller.signal });
+        if (controller.signal.aborted) return;
         setAlertCount((data.alertasCriticas > 0) ? data.alertasCriticas : (data.alertasAdvertencia > 0) ? data.alertasAdvertencia : 0);
       } catch (err) {
-        console.error('Error fetching alerts for sidebar', err);
+        if (!axios.isCancel(err) && !controller.signal.aborted) {
+          console.error('Error fetching alerts for sidebar', err);
+        }
       }
     };
     fetchAlerts();
     const interval = setInterval(fetchAlerts, 60000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
   }, []);
 
   const links = [
@@ -57,8 +64,10 @@ const Sidebar = () => {
       {/* Overlay Móvil */}
       {isOpen && (
         <div
+          role="presentation"
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] md:hidden transition-opacity"
           onClick={closeSidebar}
+          onKeyDown={(e) => { if (e.key === 'Escape') closeSidebar(); }}
         />
       )}
 
@@ -66,7 +75,7 @@ const Sidebar = () => {
       <div className={`
         fixed left-0 top-0 h-screen z-30
         bg-[#1e2235] text-white py-6 flex flex-col justify-between
-        shadow-2xl transition-all duration-300 ease-in-out font-outfit
+        shadow-2xl transition-[width,transform] duration-300 ease-in-out font-outfit
         ${sidebarWidth}
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
         ${isCollapsed ? 'items-center' : ''}
@@ -79,7 +88,7 @@ const Sidebar = () => {
           {/* Cerrar — solo móvil */}
           <button
             onClick={closeSidebar}
-            className="md:hidden absolute -right-2 top-0 bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-90 transition-all z-10"
+            className="md:hidden absolute -right-2 top-0 bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-90 transition-transform z-10"
           >
             <X size={14} />
           </button>
@@ -87,10 +96,11 @@ const Sidebar = () => {
           {/* Colapsar — desktop */}
           <button
             onClick={toggleCollapse}
+            aria-label={isCollapsed ? "Expandir menú" : "Colapsar menú"}
             className={`
               hidden md:flex absolute top-10 -right-4 w-8 h-8 rounded-full
               bg-indigo-600 hover:bg-indigo-700 text-white
-              items-center justify-center transition-all shadow-xl shadow-indigo-500/40
+              items-center justify-center transition-transform transition-colors shadow-xl shadow-indigo-500/40
               active:scale-90 border-2 border-[#1e2235] z-[120] hover:scale-110
             `}
             title={isCollapsed ? "Expandir" : "Colapsar"}
@@ -101,7 +111,7 @@ const Sidebar = () => {
           {/* Logo */}
           <div className="flex flex-col items-center">
             <div className={`
-              bg-white text-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/10 transition-all
+              bg-white text-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/10 transition-[width,height,background-color,color]
               ${isCollapsed ? 'w-10 h-10' : 'w-16 h-16 mb-4'}
             `}>
               <Store size={isCollapsed ? 20 : 32} />
@@ -127,7 +137,7 @@ const Sidebar = () => {
                 id={link.id}
                 onClick={() => { if (window.innerWidth < 768) closeSidebar(); }}
                 className={({ isActive }) =>
-                  `flex items-center group py-3 transition-all duration-300 rounded-xl relative mb-1 ${isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
+                  `flex items-center group py-3 transition-colors transition-shadow duration-300 rounded-xl relative mb-1 ${isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
                   } ${isActive
                     ? 'bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/20'
                     : 'text-slate-400 hover:bg-white/5 hover:text-white'
@@ -164,7 +174,7 @@ const Sidebar = () => {
           <button
             onClick={logout}
             className={`
-              flex items-center gap-3 py-3 transition-all text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 mt-4 rounded-xl shrink-0
+              flex items-center gap-3 py-3 transition-colors text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 mt-4 rounded-xl shrink-0
               ${isCollapsed ? 'justify-center px-0' : 'px-4'}
             `}
           >

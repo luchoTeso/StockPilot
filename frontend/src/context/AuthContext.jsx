@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 
 // Ensure all requests send the session cookie through the Vite proxy
@@ -36,26 +36,32 @@ export const AuthProvider = ({ children }) => {
     return () => axios.interceptors.response.eject(interceptor);
   }, [user]);
 
-  useEffect(() => {
-    checkSession();
-  }, []);
-
-  const checkSession = async () => {
+  const checkSession = useCallback(async (signal) => {
     try {
-      const res = await axios.get('/api/session-info');
+      const res = await axios.get('/api/session-info', { ...(signal && { signal }) });
+      if (signal && signal.aborted) return;
       if (res.data && res.data.userId) {
         setUser(res.data);
       } else {
         setUser(null);
       }
     } catch (err) {
+      if (axios.isCancel(err) || (signal && signal.aborted)) return;
       setUser(null);
     } finally {
-      setLoading(false);
+      if (!signal || !signal.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
 
-  const login = async (identificador, password, rol, force = false) => {
+  useEffect(() => {
+    const controller = new AbortController();
+    checkSession(controller.signal);
+    return () => controller.abort();
+  }, [checkSession]);
+
+  const login = useCallback(async (identificador, password, rol, force = false) => {
     try {
       const res = await axios.post('/api/login', { login: identificador, password, rol, force });
       if (res.data.success) {
@@ -72,19 +78,21 @@ export const AuthProvider = ({ children }) => {
       }
       throw new Error(apiError?.error || err.message || 'Error de conexión');
     }
-  };
+  }, [checkSession]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await axios.post('/api/logout');
       setUser(null);
     } catch (err) {
       console.error('Error al cerrar sesión', err);
     }
-  };
+  }, []);
+
+  const value = useMemo(() => ({ user, login, logout, loading }), [user, login, logout, loading]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );

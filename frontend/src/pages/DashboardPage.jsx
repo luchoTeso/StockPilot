@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Tooltip from '../components/Tooltip';
@@ -30,7 +30,7 @@ const DashboardPage = () => {
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async (signal) => {
     // --- Fase 0: caché local para respuesta instantánea ---
     const cachedStats = localStorage.getItem(`stockpilot_stats_${storeKey}`);
     const cachedPromos = localStorage.getItem(`stockpilot_promos_${storeKey}`);
@@ -42,11 +42,13 @@ const DashboardPage = () => {
 
     // --- Fase 1: stats SQL puros (~100–200ms), quita el spinner de inmediato ---
     try {
-      const statsRes = await axios.get('/api/dashboard/stats');
+      const statsRes = await axios.get('/api/dashboard/stats', { ...(signal && { signal }) });
+      if (signal && signal.aborted) return;
       setStats(statsRes.data);
       setLoading(false);
       localStorage.setItem(`stockpilot_stats_${storeKey}`, JSON.stringify(statsRes.data));
     } catch (error) {
+      if (axios.isCancel(error) || (signal && signal.aborted)) return;
       console.error('Error fetching stats:', error);
       setLoading(false);
     }
@@ -54,9 +56,10 @@ const DashboardPage = () => {
     // --- Fase 2: IA en background, no bloquea las tarjetas de stats ---
     try {
       const [aiRes, promoRes] = await Promise.all([
-        axios.get('/api/ia/recommendations'),
-        axios.get('/api/ia/promotions').catch(() => ({ data: { promotions: [] } }))
+        axios.get('/api/ia/recommendations', { ...(signal && { signal }) }),
+        axios.get('/api/ia/promotions', { ...(signal && { signal }) }).catch(() => ({ data: { promotions: [] } }))
       ]);
+      if (signal && signal.aborted) return;
 
       setRecommendations(aiRes.data.recommendations || []);
       localStorage.setItem(`stockpilot_recs_${storeKey}`, JSON.stringify(aiRes.data.recommendations || []));
@@ -64,14 +67,18 @@ const DashboardPage = () => {
       setPromotions(promoRes.data.promotions || []);
       localStorage.setItem(`stockpilot_promos_${storeKey}`, JSON.stringify(promoRes.data.promotions || []));
     } catch (error) {
+      if (axios.isCancel(error) || (signal && signal.aborted)) return;
       console.error('Error fetching AI data:', error);
     } finally {
-      setLoadingPromos(false);
+      if (!signal || !signal.aborted) {
+        setLoadingPromos(false);
+      }
     }
-  };
+  }, [storeKey]);
 
   useEffect(() => {
-    fetchDashboardData();
+    const controller = new AbortController();
+    fetchDashboardData(controller.signal);
 
     const unsubscribe = subscribeToSync((event) => {
       if (
@@ -83,8 +90,11 @@ const DashboardPage = () => {
       }
     });
 
-    return () => unsubscribe();
-  }, [storeKey]); // re-ejecutar si cambia la tienda activa
+    return () => {
+      controller.abort();
+      unsubscribe();
+    };
+  }, [fetchDashboardData]);
 
   const handleApplyStrategy = (promo) => {
     setSelectedPromo(promo);
@@ -92,7 +102,7 @@ const DashboardPage = () => {
   };
 
   const confirmExecution = async () => {
-    if (!selectedPromo) return;
+    if (!selectedPromo || applyingStrategy) return;
     
     try {
       setApplyingStrategy(true);
@@ -190,7 +200,7 @@ const DashboardPage = () => {
               </div>
               <button 
                 onClick={() => navigate('/analisis-detallado')}
-                className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all"
+                className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-colors"
               >
                 Ver Más
               </button>
@@ -204,8 +214,8 @@ const DashboardPage = () => {
                 </div>
               ) : recommendations.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {recommendations.slice(0, 4).map((rec, idx) => (
-                    <div key={idx} className="bg-white/5 border border-white/10 p-5 rounded-[1.5rem] hover:bg-white/10 transition-all group">
+                  {recommendations.slice(0, 4).map((rec) => (
+                    <div key={rec.id || rec.product} className="bg-white/5 border border-white/10 p-5 rounded-[1.5rem] hover:bg-white/10 transition-colors group">
                       <div className="flex justify-between items-start mb-3 gap-2">
                         <span className="text-indigo-300 font-black text-sm uppercase tracking-tight leading-tight flex-1">{rec.product}</span>
                         <span className={`shrink-0 text-[9px] font-black px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
@@ -220,7 +230,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                           <div
-                            className={`h-full opacity-80 transition-all duration-1000 ${rec.confidence >= 90 ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500'}`}
+                            className={`h-full opacity-80 transition-colors duration-1000 ${rec.confidence >= 90 ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500'}`}
                             style={{ width: `${rec.confidence}%` }}
                           ></div>
                         </div>
@@ -243,9 +253,10 @@ const DashboardPage = () => {
             <AlertCircle size={14} className="text-rose-500" /> Estado del Inventario
           </h2>
           <div className="space-y-6">
-            <div 
+            <button 
+              type="button"
               onClick={() => navigate('/alertas')}
-              className={`p-6 rounded-[1.5rem] transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${stats.alertasCriticas > 0 ? 'bg-rose-50 border border-rose-100 shadow-xl shadow-rose-100/50 hover:shadow-rose-200/50' : (stats.alertasAdvertencia > 0 ? 'bg-amber-50 border border-amber-100 shadow-xl shadow-amber-100/50' : 'bg-emerald-50 border border-emerald-100 hover:shadow-lg')}`}
+              className={`w-full text-left p-6 rounded-[1.5rem] transition-colors transition-shadow transition-transform duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] outline-none focus:ring-4 focus:ring-indigo-500/50 ${stats.alertasCriticas > 0 ? 'bg-rose-50 border border-rose-100 shadow-xl shadow-rose-100/50 hover:shadow-rose-200/50' : (stats.alertasAdvertencia > 0 ? 'bg-amber-50 border border-amber-100 shadow-xl shadow-amber-100/50' : 'bg-emerald-50 border border-emerald-100 hover:shadow-lg')}`}
             >
               <div className="flex items-center gap-4">
                 <div className={`w-4 h-4 rounded-full ${stats.alertasCriticas > 0 ? 'bg-rose-500 animate-ping' : (stats.alertasAdvertencia > 0 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_15px_#10b981]')}`}></div>
@@ -258,17 +269,18 @@ const DashboardPage = () => {
                   </p>
                 </div>
               </div>
-            </div>
+            </button>
 
             {user?.rol === 'Administrador' && (
-            <div
+            <button
+              type="button"
               onClick={() => navigate('/analitica-visual')}
-              className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 cursor-pointer relative overflow-hidden group hover:scale-[1.02] transition-transform"
+              className="w-full text-left bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 cursor-pointer relative overflow-hidden group hover:scale-[1.02] transition-transform outline-none focus:ring-4 focus:ring-indigo-500/50"
             >
               <div className="absolute -top-1 -right-1 p-4 opacity-5 group-hover:scale-125 transition-transform text-indigo-600"><BarChart2 size={40} /></div>
               <h4 className="text-xl font-black italic tracking-tighter uppercase mb-4 text-slate-800">Centro<br/><span className="text-indigo-600">Analítico</span></h4>
               <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">Ver Detalles →</span>
-            </div>
+            </button>
             )}
 
             {/* Margen Promedio (Movido a Sidebar & Convertido a Blanco) */}
@@ -309,8 +321,8 @@ const DashboardPage = () => {
             </div>
           ) : promotions.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-fr">
-              {promotions.map((promo, idx) => (
-                <div key={idx} className="bg-white/5 border border-white/10 p-6 rounded-[2rem] hover:bg-white/10 transition-all flex flex-col group h-full">
+              {promotions.map((promo) => (
+                <div key={promo.id || promo.productName} className="bg-white/5 border border-white/10 p-6 rounded-[2rem] hover:bg-white/10 transition-colors flex flex-col group h-full">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">PROPUESTA IA</span>
@@ -338,7 +350,7 @@ const DashboardPage = () => {
                     <button 
                       onClick={() => handleApplyStrategy(promo)}
                       disabled={applyingStrategy === promo.id}
-                      className="w-full py-4 rounded-xl bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-lg active:scale-95"
+                      className="w-full py-4 rounded-xl bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-colors transition-shadow transition-transform shadow-lg active:scale-95"
                     >
                       {applyingStrategy === promo.id
                         ? <span className="flex items-center justify-center gap-1"><Zap size={12} /> Procesando...</span>
@@ -360,7 +372,7 @@ const DashboardPage = () => {
       {/* STRATEGY MODAL */}
       {showModal && selectedPromo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowModal(false)} role="presentation" aria-hidden="true"></div>
           <div className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="bg-indigo-600 p-8 text-white relative">
                <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={64} /></div>
@@ -397,7 +409,7 @@ const DashboardPage = () => {
                  <button 
                   onClick={confirmExecution} 
                   disabled={applyingStrategy}
-                  className="flex-[1.5] bg-white text-slate-900 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-xl disabled:opacity-50"
+                  className="flex-[1.5] bg-white text-slate-900 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-colors transition-shadow shadow-xl disabled:opacity-50"
                  >
                    {applyingStrategy ? 'Procesando...' : 'Ejecutar Ahora'}
                  </button>

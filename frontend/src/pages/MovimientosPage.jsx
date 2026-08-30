@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
@@ -60,31 +60,21 @@ const MovimientosPage = () => {
   const [filtroDesde, setFiltroDesde] = useState('');
   const [filtroHasta, setFiltroHasta] = useState('');
 
-  useEffect(() => {
-    cargarProductos();
-    cargarResumen();
-    cargarMovimientos();
-  }, []);
-
-  // Cargar dependencia de filtro: cuando cambia el filtro, se recargan los movs
-  useEffect(() => {
-    cargarMovimientos();
-  }, [filtroTipo, filtroDesde, filtroHasta]);
-
-  const cargarProductos = async () => {
+  const cargarProductos = useCallback(async (signal) => {
     try {
-      const { data } = await axios.get('/api/inventario/productos');
+      const { data } = await axios.get('/api/inventario/productos', { ...(signal && { signal }) });
       if (data.success) {
         setProductos(data.data);
       }
     } catch (err) {
+      if (axios.isCancel(err) || (signal && signal.aborted)) return;
       console.error('Error cargando productos', err);
     }
-  };
+  }, []);
 
-  const cargarResumen = async () => {
+  const cargarResumen = useCallback(async (signal) => {
     try {
-      const { data } = await axios.get('/api/inventario/resumen');
+      const { data } = await axios.get('/api/inventario/resumen', { ...(signal && { signal }) });
       if (data.success) {
         let e = 0, s = 0, a = 0;
         data.data.forEach(r => {
@@ -95,11 +85,12 @@ const MovimientosPage = () => {
         setResumen({ entradas: e, salidas: s, ajustes: a });
       }
     } catch (err) {
+      if (axios.isCancel(err) || (signal && signal.aborted)) return;
       console.error('Error cargando resumen', err);
     }
-  };
+  }, []);
 
-  const cargarMovimientos = async () => {
+  const cargarMovimientos = useCallback(async (signal) => {
     setLoadingMovimientos(true);
     try {
       let url = '/api/inventario/movimientos?';
@@ -107,15 +98,32 @@ const MovimientosPage = () => {
       if (filtroDesde) url += `fechaDesde=${filtroDesde}&`;
       if (filtroHasta) url += `fechaHasta=${filtroHasta}&`;
 
-      const { data } = await axios.get(url);
+      const { data } = await axios.get(url, { ...(signal && { signal }) });
       setMovimientos(data.success ? data.data : []);
     } catch (err) {
+      if (axios.isCancel(err) || (signal && signal.aborted)) return;
       console.error('Error cargando movimientos', err);
       setMovimientos([]);
     } finally {
-      setLoadingMovimientos(false);
+      if (!signal || !signal.aborted) {
+        setLoadingMovimientos(false);
+      }
     }
-  };
+  }, [filtroTipo, filtroDesde, filtroHasta]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    cargarProductos(controller.signal);
+    cargarResumen(controller.signal);
+    return () => controller.abort();
+  }, [cargarProductos, cargarResumen]);
+
+  // Cargar dependencia de filtro: cuando cambia el filtro, se recargan los movs
+  useEffect(() => {
+    const controller = new AbortController();
+    cargarMovimientos(controller.signal);
+    return () => controller.abort();
+  }, [cargarMovimientos]);
 
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return '---';
@@ -198,8 +206,8 @@ const MovimientosPage = () => {
           { label: 'Entradas de Producto', value: resumen.entradas, icon: PackagePlus, color: 'text-emerald-500', bg: 'bg-emerald-50' },
           { label: 'Salidas de Producto', value: resumen.salidas, icon: PackageMinus, color: 'text-indigo-600', bg: 'bg-indigo-50' },
           { label: 'Ajustes Manuales', value: resumen.ajustes, icon: SlidersHorizontal, color: 'text-amber-500', bg: 'bg-amber-50' }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 flex items-center gap-4 transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-slate-200">
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 flex items-center gap-4 transition-shadow transition-transform hover:-translate-y-1 hover:shadow-2xl hover:border-slate-200">
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${stat.bg} ${stat.color}`}>
               {(() => { const Icon = stat.icon; return <Icon size={26} />; })()}
             </div>
@@ -225,7 +233,7 @@ const MovimientosPage = () => {
               <form onSubmit={registrarMovimiento} className="space-y-5">
               
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tipo de Movimiento</label>
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tipo de Movimiento</span>
                 <CustomSelect 
                   value={tipo} 
                   onChange={(val) => setTipo(val)}
@@ -240,7 +248,7 @@ const MovimientosPage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Producto</label>
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Producto</span>
                 <CustomSelect 
                   value={productoId} 
                   onChange={(val) => setProductoId(val)}
@@ -260,10 +268,11 @@ const MovimientosPage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                <label htmlFor="cantidad" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
                   {tipo === 'Ajuste' ? 'Cantidad (+ o -)' : 'Cantidad'}
                 </label>
                 <input 
+                  id="cantidad"
                   type="number" 
                   required 
                   min={tipo === 'Ajuste' ? '' : '1'} 
@@ -275,7 +284,7 @@ const MovimientosPage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Motivo o Justificación</label>
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Motivo o Justificación</span>
                 <CustomSelect 
                   value={observacion} 
                   onChange={(val) => setObservacion(val)}
@@ -289,7 +298,7 @@ const MovimientosPage = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting || !tipo || !productoId || !cantidad || !observacion} 
-                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 transition-colors transition-shadow transition-transform flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                 >
                   {isSubmitting ? 'Procesando...' : 'Ejecutar Movimiento'}
                 </button>
@@ -336,7 +345,7 @@ const MovimientosPage = () => {
             <button 
               type="button" 
               onClick={limpiarFiltros} 
-              className="bg-slate-800 hover:bg-slate-900 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95"
+              className="bg-slate-800 hover:bg-slate-900 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
             >
               Limpiar
             </button>
@@ -363,7 +372,7 @@ const MovimientosPage = () => {
                   ) : movimientos.length === 0 ? (
                     <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold italic">No se encontraron movimientos registrados en este período.</td></tr>
                   ) : (
-                    movimientos.map((m, idx) => {
+                    movimientos.map((m) => {
                       const isSalida = m.tipo_movimiento === 'Salida';
                       const isAjuste = m.tipo_movimiento === 'Ajuste';
                       const isEntrada = m.tipo_movimiento === 'Entrada';
@@ -376,7 +385,7 @@ const MovimientosPage = () => {
                       const textColor = isSalida ? 'text-indigo-600' : isAjuste ? 'text-amber-500' : 'text-emerald-500';
 
                       return (
-                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                        <tr key={m.id_movimiento || `${m.id_producto}-${m.fecha_movimiento}`} className="hover:bg-slate-50 transition-colors">
                           <td className="p-6 pl-8 font-medium text-slate-500 whitespace-nowrap">{formatearFecha(m.fecha_movimiento)}</td>
                           <td className="p-6">
                             <span className={`inline-block px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest ${badgeClass}`}>

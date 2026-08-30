@@ -9,26 +9,33 @@ const AnalisisDetalladoPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchSnapshot = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/ia/snapshot');
+        const response = await axios.get('/api/ia/snapshot', { signal: controller.signal });
+        if (controller.signal.aborted) return;
         // El controlador ahora devuelve response.data.data según mi actualización previa
         setData(response.data.data || []);
       } catch (err) {
-        console.error('Error fetching snapshot:', err);
+        if (!axios.isCancel(err) && !controller.signal.aborted) {
+          console.error('Error fetching snapshot:', err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     fetchSnapshot();
+    return () => controller.abort();
   }, []);
 
   return (
     <div className="animate-fade-in p-2 md:p-6 pb-20 space-y-10 font-outfit">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div className="flex items-center gap-6">
-          <button onClick={() => navigate('/dashboard')} className="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl transition-all shadow-sm active:scale-95">
+          <button onClick={() => navigate('/dashboard')} aria-label="Volver al dashboard" className="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl transition-colors transition-shadow active:scale-95 shadow-sm">
              <ArrowLeft size={20} className="text-slate-800" />
           </button>
           <div>
@@ -95,17 +102,17 @@ const AnalisisDetalladoPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-all">
+         <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-transform transition-shadow">
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><Rocket size={20} /></div>
             <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-3">Ritmo de Ventas</h4>
             <p className="text-xs text-slate-500 font-bold leading-relaxed">Cuánto se está vendiendo al día (en promedio), adaptándose automáticamente a cambios rápidos para que nunca quedes sin producto.</p>
          </div>
-         <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-all">
+         <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-transform transition-shadow">
             <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors"><BarChart2 size={20} /></div>
             <h4 className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-3">Ganancia Principal</h4>
             <p className="text-xs text-slate-500 font-bold leading-relaxed">Clasificamos tus productos para mostrarte cuáles te dejan la mayor rentabilidad (Tus estrellas Tipo A).</p>
          </div>
-         <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-all">
+         <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl group hover:scale-[1.02] transition-transform transition-shadow">
             <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-rose-500 group-hover:text-white transition-colors"><Clock size={20} /></div>
             <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-3">Alertas de Agotamiento</h4>
             <p className="text-xs text-slate-500 font-bold leading-relaxed">Te avisamos cuando tu stock está tan bajo que no te alcanzará mientras esperas al camión del proveedor.</p>

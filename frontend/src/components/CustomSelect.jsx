@@ -60,11 +60,22 @@ const CustomSelect = ({ value, onChange, options, placeholder, className }) => {
       }}
       className="fixed z-[9999] bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-scale-in py-2 max-h-60 overflow-y-auto scrollbar-premium font-outfit"
     >
-      {options.map((opt, idx) => (
+      {options.map((opt) => (
         <div 
-          key={idx}
+          key={opt.value}
+          role="option"
+          aria-selected={value === String(opt.value) || value === opt.value}
+          tabIndex={0}
           onClick={(e) => { e.stopPropagation(); onChange(opt.value); setIsOpen(false); }}
-          className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-600 ${value === String(opt.value) || value === opt.value ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700'}`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              onChange(opt.value);
+              setIsOpen(false);
+            }
+          }}
+          className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-600 focus:bg-indigo-50 focus:text-indigo-600 outline-none ${value === String(opt.value) || value === opt.value ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700'}`}
         >
           {opt.label}
         </div>
@@ -75,14 +86,15 @@ const CustomSelect = ({ value, onChange, options, placeholder, className }) => {
 
   return (
     <div className={`relative w-full h-full ${className || ''}`}>
-      <div 
+      <button 
+        type="button"
         ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)} 
-        className="w-full h-full flex items-center justify-between cursor-pointer outline-none select-none"
+        onClick={(e) => { e.preventDefault(); setIsOpen(!isOpen); }} 
+        className="w-full h-full flex items-center justify-between cursor-pointer outline-none select-none text-left bg-transparent border-none p-0 m-0"
       >
         <span className="truncate pr-4 font-semibold text-slate-700">{selectedLabel}</span>
         <span className={`transition-transform duration-300 text-xs opacity-50 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
-      </div>
+      </button>
       
       {dropdownPortal}
     </div>

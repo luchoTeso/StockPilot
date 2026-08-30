@@ -46,17 +46,7 @@ const feedbackController = {
       const diffTime = Math.abs(hoy - fechaAprobacion);
       const diasTranscurridos = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
 
-      const resultados = [];
-
-      for (const det of detalles) {
-        // Ignorar si la IA no sugirió nada y tampoco se vendió nada, aunque podríamos evaluarlo.
-        // Si base matemática y IA dieron cosas parecidas.
-        // Para simplificar, la IA sugiere una cantidad (sugerencia_ia es la respuesta de la IA o el diferencial,
-        // dependemos de cómo se guardó. Si se guardó como cantidad total sugerida, usamos esa).
-        // En Ordenes_Detalle, sugerencia_ia es lo que la IA sugirió en total o el diferencial (-/+) 
-        // Asumiendo sugerencia_ia es la cantidad exacta o diferencial porcentual. 
-        // En tu esquema: sugerencia_ia INTEGER /* Lo que dijo el oráculo */
-        
+      const promesas = detalles.map(async (det) => {
         // Ventas reales desde la fecha de aprobación hasta hoy:
         const ventasQuery = `
           SELECT COALESCE(SUM(vp.cantidad), 0) as total_vendido
@@ -89,15 +79,17 @@ const feedbackController = {
           );
         }
 
-        resultados.push({
+        return {
           id_producto: det.id_producto,
           nombre_producto: det.nombre_producto,
           sugerido,
           ventasReales,
           ventasProyectadasObjetivo,
           factor_precision: factor.toFixed(2)
-        });
-      }
+        };
+      });
+
+      const resultados = await Promise.all(promesas);
 
       res.json({
         success: true,
@@ -161,7 +153,7 @@ const feedbackController = {
       );
 
       const topPredecibles = ordenadoPorDistanciaA1.slice(0, 5);
-      const topImpredecibles = ordenadoPorDistanciaA1.reverse().slice(0, 5);
+      const topImpredecibles = ordenadoPorDistanciaA1.slice().reverse().slice(0, 5);
 
       res.json({
         success: true,

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
 import LoginPage from './pages/LoginPage';
 import VentasPage from './pages/VentasPage';
@@ -16,9 +17,9 @@ import RegisterPage from './pages/RegisterPage';
 import ProveedoresPage from './pages/ProveedoresPage';
 import AlertasPage from './pages/AlertasPage';
 import AuditoriaPage from './pages/AuditoriaPage';
-import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
+const AnalyticsDashboardPage = lazy(() => import('./pages/AnalyticsDashboardPage'));
 import SimuladorPage from './pages/SimuladorPage';
-import AprendizajePage from './pages/AprendizajePage';
+const AprendizajePage = lazy(() => import('./pages/AprendizajePage'));
 import ForcePasswordPage from './pages/ForcePasswordPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -116,12 +117,12 @@ function App() {
             {/* Rutas exclusivas de Administrador */}
             <Route path="/movimientos" element={<AdminRoute><MovimientosPage /></AdminRoute>} />
             <Route path="/proveedores" element={<AdminRoute><ProveedoresPage /></AdminRoute>} />
-            <Route path="/analitica-visual" element={<AdminRoute><AnalyticsDashboardPage /></AdminRoute>} />
+            <Route path="/analitica-visual" element={<AdminRoute><Suspense fallback={<div className="p-10 text-center animate-pulse text-indigo-500 font-bold uppercase tracking-widest text-[10px]">Cargando módulo de analítica...</div>}><AnalyticsDashboardPage /></Suspense></AdminRoute>} />
             <Route path="/analisis-detallado" element={<AdminRoute><AnalisisDetalladoPage /></AdminRoute>} />
             <Route path="/simulador" element={<AdminRoute><SimuladorPage /></AdminRoute>} />
             <Route path="/reportes" element={<AdminRoute><ReportesPage /></AdminRoute>} />
             <Route path="/auditoria" element={<AdminRoute><AuditoriaPage /></AdminRoute>} />
-            <Route path="/aprendizaje" element={<AdminRoute><AprendizajePage /></AdminRoute>} />
+            <Route path="/aprendizaje" element={<AdminRoute><Suspense fallback={<div className="p-10 text-center animate-pulse text-indigo-500 font-bold uppercase tracking-widest text-[10px]">Cargando módulo de IA...</div>}><AprendizajePage /></Suspense></AdminRoute>} />
             <Route path="/registro-tendero" element={<AdminRoute><RegistroTenderoPage /></AdminRoute>} />
           </Route>
         </Routes>

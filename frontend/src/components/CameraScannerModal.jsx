@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+// html5-qrcode is loaded dynamically
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
@@ -9,30 +9,57 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
   useEffect(() => {
     if (!isOpen) return;
 
-    const html5QrCode = new Html5Qrcode("reader");
+    let isMounted = true;
+    let html5QrCode = null;
+
+    const onScanSuccess = (decodedText) => {
+      if (decodedText && isMounted) {
+        onScan(decodedText);
+        stopScanner();
+      }
+    };
 
     const startScanner = async () => {
+      let Html5QrcodeModule;
       try {
+        const module = await import('html5-qrcode');
+        Html5QrcodeModule = module.Html5Qrcode;
+      } catch (err) {
+        console.error('Error loading html5-qrcode', err);
+        return;
+      }
+      if (!isMounted) return;
+      html5QrCode = new Html5QrcodeModule("reader");
+
+      try {
+        // Intento 1: Cámara trasera (environment)
         await html5QrCode.start(
-          { facingMode: "environment" }, // Prefer back camera
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-          },
-          (decodedText, decodedResult) => {
-            // Handle on success
-            if (decodedText) {
-              onScan(decodedText);
-              stopScanner();
-            }
-          },
-          (errorMessage) => {
-            // parse error, ignore it.
-          }
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          onScanSuccess,
+          () => {} // ignorar parse errors
         );
       } catch (err) {
-        console.error("Error al iniciar el escáner de cámara", err);
-        setError("No se pudo acceder a la cámara. Verifique los permisos.");
+        console.warn("No se encontró cámara trasera, intentando cualquier cámara...", err);
+        try {
+          // Intento 2: Cualquier cámara disponible (por ej. webcam frontal en PC)
+          const cameras = await Html5QrcodeModule.getCameras();
+          if (cameras && cameras.length > 0 && isMounted) {
+            await html5QrCode.start(
+              cameras[0].id,
+              { fps: 10, qrbox: { width: 250, height: 250 } },
+              onScanSuccess,
+              () => {}
+            );
+          } else if (isMounted) {
+            throw new Error("No hay cámaras conectadas.");
+          }
+        } catch (fallbackErr) {
+          console.error("Error al iniciar cualquier cámara", fallbackErr);
+          if (isMounted) {
+            setError("No se pudo acceder a la cámara. Verifique permisos o conecte una cámara.");
+          }
+        }
       }
     };
 
@@ -40,20 +67,21 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
       if (html5QrCode.isScanning) {
         html5QrCode.stop().then(() => {
           html5QrCode.clear();
-          onClose();
+          if (isMounted) onClose();
         }).catch(err => {
           console.error("Error deteniendo el escáner", err);
-          onClose();
+          if (isMounted) onClose();
         });
       } else {
-        onClose();
+        if (isMounted) onClose();
       }
     };
 
     startScanner();
 
     return () => {
-      if (html5QrCode.isScanning) {
+      isMounted = false;
+      if (html5QrCode && html5QrCode.isScanning) {
         html5QrCode.stop().then(() => html5QrCode.clear()).catch(console.error);
       }
     };
@@ -73,6 +101,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
           </div>
           <button 
             onClick={onClose}
+            aria-label="Cerrar modal de escáner"
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
           >
             <X className="w-5 h-5 text-gray-600" />
@@ -80,12 +109,13 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
         </div>
 
         {/* Scanner Area */}
-        <div className="p-6">
-          {error ? (
-            <div className="text-red-500 text-center py-4">{error}</div>
-          ) : (
-            <div id="reader" className="w-full h-full rounded-lg overflow-hidden border border-gray-200"></div>
+        <div className="p-6 relative">
+          {error && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50/90 rounded-lg">
+              <div className="text-red-500 text-center font-medium p-4">{error}</div>
+            </div>
           )}
+          <div id="reader" className="w-full min-h-[300px] rounded-lg overflow-hidden border border-gray-200"></div>
         </div>
 
         {/* Footer */}
