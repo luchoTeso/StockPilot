@@ -54,7 +54,7 @@ class TenderoController {
         } catch (error) {
             console.error('Error creando tendero:', error);
             
-            if (error.message && error.message.includes('UNIQUE constraint failed')) {
+            if (error.message && (error.message.includes('UNIQUE constraint failed') || error.message.includes('duplicate key value'))) {
                 return res.status(400).json({ success: false, error: "El correo o usuario ya existe" });
             }
             
