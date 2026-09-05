@@ -144,8 +144,8 @@ const DashboardPage = () => {
       {/* Métricas Principales */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Productos */}
-        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Productos</p>
+        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate" title="Productos">Productos</p>
           <div className="flex items-end justify-between mt-2 gap-2">
             <p className="text-2xl xl:text-3xl font-black text-slate-800 tracking-tighter">{stats.totalArticulos || 0}</p>
             <span className="text-[10px] text-emerald-500 font-bold mb-1 shrink-0">Catálogo</span>
@@ -153,17 +153,17 @@ const DashboardPage = () => {
         </div>
 
         {/* Inversión */}
-        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Valor Inventario</p>
+        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate" title="Valor Inventario">Valor Inventario</p>
           <div className="flex items-end justify-between mt-2 gap-2">
-            <p className="text-2xl xl:text-3xl font-black text-indigo-600 tracking-tighter">${(stats.valorInventario || 0).toLocaleString()}</p>
+            <p className="text-2xl xl:text-3xl font-black text-indigo-600 tracking-tighter truncate">${(stats.valorInventario || 0).toLocaleString()}</p>
             <span className="text-[10px] text-slate-400 font-bold mb-1 shrink-0">Valor Total</span>
           </div>
         </div>
 
         {/* Alertas */}
-        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Alertas</p>
+        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate" title="Alertas">Alertas</p>
           <div className="flex items-end justify-between mt-2 gap-2">
             <p className={`text-2xl xl:text-3xl font-black tracking-tighter ${stats.alertasCriticas > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{stats.alertasCriticas || stats.alertasStock || 0}</p>
             <span className={`text-[10px] font-black mb-1 shrink-0 ${stats.alertasCriticas > 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-500'}`}>

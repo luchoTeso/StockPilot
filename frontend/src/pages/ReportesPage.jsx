@@ -265,7 +265,7 @@ const ReportesPage = () => {
                   <input id="titulo" required type="text" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Balance Mensual..."/>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Categoría <span className="text-rose-500 text-sm">*</span></span>
                     <div className="form-control-premium">

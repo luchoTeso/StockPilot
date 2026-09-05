@@ -252,11 +252,11 @@ const VentasPage = () => {
             <thead>
               <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
                 <th className="p-4 md:p-8">Producto</th>
-                <th className="p-4 md:p-8">Categoría</th>
+                <th className="hidden lg:table-cell p-4 md:p-8">Categoría</th>
                 <th className="p-4 md:p-8 text-center">Unidades</th>
-                <th className="p-4 md:p-8 text-right">Precio</th>
+                <th className="hidden sm:table-cell p-4 md:p-8 text-right">Precio</th>
                 <th className="p-4 md:p-8 text-right">Total</th>
-                <th className="p-4 md:p-8 text-center">Fecha</th>
+                <th className="hidden md:table-cell p-4 md:p-8 text-center">Fecha</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
@@ -275,20 +275,20 @@ const VentasPage = () => {
                            {v.id_venta ? `VENTA #${String(v.id_venta).padStart(6, '0')}` : 'ID VENTA: ---'}
                          </p>
                        </td>
-                      <td className="p-8">
+                      <td className="hidden lg:table-cell p-8">
                          <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[9px] font-black uppercase tracking-widest group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">{v.categoria || 'Sin Info'}</span>
                       </td>
                       <td className="p-8 text-center">
                          <span className="text-xl font-black tracking-tighter text-slate-800">{v.cantidad}</span>
                          <span className="text-[9px] text-slate-400 font-bold uppercase ml-1 tracking-widest">ud</span>
                       </td>
-                      <td className="p-8 text-right font-black text-slate-400">
+                      <td className="hidden sm:table-cell p-8 text-right font-black text-slate-400">
                          ${precioUnitario.toLocaleString('es-CO')}
                       </td>
                       <td className="p-8 text-right text-emerald-600 font-black text-2xl italic tracking-tighter">
                          ${v.precio_total.toLocaleString('es-CO')}
                       </td>
-                      <td className="p-8 text-center font-bold text-slate-600 text-xs tracking-widest">
+                      <td className="hidden md:table-cell p-8 text-center font-bold text-slate-600 text-xs tracking-widest">
                         {formatearFecha(v.fecha_salida)}
                       </td>
                     </tr>

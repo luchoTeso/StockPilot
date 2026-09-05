@@ -34,10 +34,10 @@ const ProductTable = ({
           <thead>
             <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
               <th className="p-4 md:p-8">Producto</th>
-              <th className="p-4 md:p-8">Categoría</th>
+              <th className="hidden lg:table-cell p-4 md:p-8">Categoría</th>
               <th className="p-4 md:p-8 text-center">En Bodega</th>
-              <th className="p-4 md:p-8 text-center">Estado</th>
-              <th className="p-4 md:p-8 text-center">Registro</th>
+              <th className="hidden sm:table-cell p-4 md:p-8 text-center">Estado</th>
+              <th className="hidden xl:table-cell p-4 md:p-8 text-center">Registro</th>
               <th className="p-4 md:p-8 text-center">Acciones</th>
             </tr>
           </thead>
@@ -59,7 +59,7 @@ const ProductTable = ({
                        <p className="font-black text-slate-800 text-sm">{p.nombre_producto}</p>
                        <p className="text-[10px] font-bold text-slate-500 mt-1 tracking-widest uppercase">Ref: {p.codigo || 'S/N'}</p>
                     </td>
-                    <td className="p-6">
+                    <td className="hidden lg:table-cell p-6">
                       <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[9px] font-black uppercase tracking-widest">{p.categoria || 'Sin Info'}</span>
                     </td>
                     <td className="p-6 text-center">
@@ -71,12 +71,12 @@ const ProductTable = ({
                       </div>
                       <p className="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-widest">ud</p>
                     </td>
-                    <td className="p-6 text-center">
+                    <td className="hidden sm:table-cell p-6 text-center">
                       <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${isActive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                         {isActive ? 'Activo' : 'Pausado'}
                       </span>
                     </td>
-                    <td className="p-6 text-center font-bold text-slate-600 text-xs">
+                    <td className="hidden xl:table-cell p-6 text-center font-bold text-slate-600 text-xs">
                       {formatearFecha(p.fecha_entrada)}
                     </td>
                     <td className="p-6 text-center">

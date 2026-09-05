@@ -73,7 +73,7 @@ const Sidebar = () => {
 
       {/* Sidebar Principal */}
       <div className={`
-        fixed left-0 top-0 h-screen z-30
+        fixed left-0 top-0 h-screen z-[200]
         bg-[#1e2235] text-white py-6 flex flex-col justify-between
         shadow-2xl transition-[width,transform] duration-300 ease-in-out font-outfit
         ${sidebarWidth}
