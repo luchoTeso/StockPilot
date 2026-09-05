@@ -34,7 +34,8 @@ class Sale {
                 vp.cantidad,
                 p.nombre_producto,
                 p.categoria,
-                v.precio_total
+                p.precio AS precio_unitario,
+                (p.precio * vp.cantidad) AS precio_total
             FROM Ventas v
             JOIN VentasProductos vp ON vp.id_venta = v.id_venta
             JOIN Productos p ON p.id_producto = vp.id_producto
@@ -65,9 +66,9 @@ class Sale {
     static async getSalesStats(storeId) {
         const query = `
             SELECT 
-                COALESCE(SUM(v.precio_total), 0) AS totalVentas,
+                COALESCE(SUM(p.precio * vp.cantidad), 0) AS totalVentas,
                 COALESCE(SUM(vp.cantidad), 0) AS totalProductos,
-                COALESCE(AVG(v.precio_total), 0) AS ventaPromedio,
+                COALESCE(SUM(p.precio * vp.cantidad) / NULLIF(COUNT(DISTINCT v.id_venta), 0), 0) AS ventaPromedio,
                 COUNT(DISTINCT p.id_producto) AS productosUnicos
             FROM Ventas v
             JOIN VentasProductos vp ON vp.id_venta = v.id_venta

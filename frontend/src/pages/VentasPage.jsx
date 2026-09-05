@@ -283,10 +283,10 @@ const VentasPage = () => {
                          <span className="text-[9px] text-slate-400 font-bold uppercase ml-1 tracking-widest">ud</span>
                       </td>
                       <td className="hidden sm:table-cell p-8 text-right font-black text-slate-400">
-                         ${precioUnitario.toLocaleString('es-CO')}
+                         ${Number(precioUnitario).toLocaleString('es-CO')}
                       </td>
                       <td className="p-8 text-right text-emerald-600 font-black text-2xl italic tracking-tighter">
-                         ${v.precio_total.toLocaleString('es-CO')}
+                         ${Number(v.precio_total).toLocaleString('es-CO')}
                       </td>
                       <td className="hidden md:table-cell p-8 text-center font-bold text-slate-600 text-xs tracking-widest">
                         {formatearFecha(v.fecha_salida)}

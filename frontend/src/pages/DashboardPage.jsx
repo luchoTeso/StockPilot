@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Tooltip from '../components/Tooltip';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { SYNC_EVENTS, subscribeToSync } from '../utils/stockSync';
-import { Bot, Rocket, AlertCircle, TrendingUp, DollarSign, Target, Clock, Zap, BarChart2 } from 'lucide-react';
+import { Bot, Rocket, AlertCircle, TrendingUp, DollarSign, Target, Clock, Zap, BarChart2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -29,6 +28,8 @@ const DashboardPage = () => {
   const [applyingStrategy, setApplyingStrategy] = useState(null);
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [welcomeAlert, setWelcomeAlert] = useState(null);
+  const [customDiscount, setCustomDiscount] = useState(0);
 
   const fetchDashboardData = useCallback(async (signal) => {
     // --- Fase 0: caché local para respuesta instantánea ---
@@ -47,6 +48,20 @@ const DashboardPage = () => {
       setStats(statsRes.data);
       setLoading(false);
       localStorage.setItem(`stockpilot_stats_${storeKey}`, JSON.stringify(statsRes.data));
+
+      // Disparar Alerta de Bienvenida Proactiva (sólo con datos frescos de red y una vez por sesión)
+      const sessionKey = `notified_alerts_login_${storeKey}`;
+      if (!sessionStorage.getItem(sessionKey) && statsRes.data.totalArticulos !== undefined) {
+        if (statsRes.data.alertasCriticas > 0) {
+          setWelcomeAlert({ type: 'critical', title: '¡ACCIÓN URGENTE!', message: `Tienes ${statsRes.data.alertasCriticas} productos en estado crítico o agotados. Revisa tu inventario inmediatamente para no perder ventas.`, icon: AlertTriangle });
+        } else if (statsRes.data.alertasAdvertencia > 0) {
+          setWelcomeAlert({ type: 'warning', title: 'PRECAUCIÓN', message: `Tienes ${statsRes.data.alertasAdvertencia} productos con poco stock. Te sugerimos reabastecer pronto.`, icon: AlertTriangle });
+        } else if (statsRes.data.totalArticulos > 0) {
+          setWelcomeAlert({ type: 'success', title: '¡TODO EN ORDEN!', message: 'Tu inventario está 100% saludable el día de hoy. ¡Excelente trabajo!', icon: CheckCircle2 });
+        }
+        sessionStorage.setItem(sessionKey, 'true');
+      }
+
     } catch (error) {
       if (axios.isCancel(error) || (signal && signal.aborted)) return;
       console.error('Error fetching stats:', error);
@@ -96,8 +111,10 @@ const DashboardPage = () => {
     };
   }, [fetchDashboardData]);
 
+
   const handleApplyStrategy = (promo) => {
     setSelectedPromo(promo);
+    setCustomDiscount(promo.discount || 0);
     setShowModal(true);
   };
 
@@ -106,9 +123,10 @@ const DashboardPage = () => {
     
     try {
       setApplyingStrategy(true);
+      const nuevoPrecio = Math.round(selectedPromo.originalPrice * (1 - customDiscount / 100));
       const res = await axios.post('/api/ia/apply-strategy', {
         id_producto: selectedPromo.id,
-        nuevo_precio: selectedPromo.discountedPrice,
+        nuevo_precio: nuevoPrecio,
         duration_days: selectedPromo.duration_days,
         tipo: selectedPromo.type,
         razon: selectedPromo.reason
@@ -146,27 +164,29 @@ const DashboardPage = () => {
         {/* Productos */}
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate" title="Productos">Productos</p>
-          <div className="flex items-end justify-between mt-2 gap-2">
-            <p className="text-2xl xl:text-3xl font-black text-slate-800 tracking-tighter">{stats.totalArticulos || 0}</p>
-            <span className="text-[10px] text-emerald-500 font-bold mb-1 shrink-0">Catálogo</span>
+          <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
+            <p className="text-2xl lg:text-xl xl:text-3xl font-black text-slate-800 tracking-tighter break-all">{stats.totalArticulos || 0}</p>
+            <span className="text-[10px] text-emerald-500 font-bold shrink-0">Catálogo</span>
           </div>
         </div>
 
         {/* Inversión */}
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate" title="Valor Inventario">Valor Inventario</p>
-          <div className="flex items-end justify-between mt-2 gap-2">
-            <p className="text-2xl xl:text-3xl font-black text-indigo-600 tracking-tighter truncate">${(stats.valorInventario || 0).toLocaleString()}</p>
-            <span className="text-[10px] text-slate-400 font-bold mb-1 shrink-0">Valor Total</span>
+          <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
+            <p className="text-2xl lg:text-xl xl:text-2xl font-black text-indigo-600 tracking-tighter break-all" title={`$${Number(stats.valorInventario || 0).toLocaleString('es-CO')}`}>
+              ${Number(stats.valorInventario || 0).toLocaleString('es-CO')}
+            </p>
+            <span className="text-[10px] text-slate-400 font-bold shrink-0">Valor Total</span>
           </div>
         </div>
 
         {/* Alertas */}
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate" title="Alertas">Alertas</p>
-          <div className="flex items-end justify-between mt-2 gap-2">
-            <p className={`text-2xl xl:text-3xl font-black tracking-tighter ${stats.alertasCriticas > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{stats.alertasCriticas || stats.alertasStock || 0}</p>
-            <span className={`text-[10px] font-black mb-1 shrink-0 ${stats.alertasCriticas > 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-500'}`}>
+          <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
+            <p className={`text-2xl lg:text-xl xl:text-3xl font-black tracking-tighter break-all ${stats.alertasCriticas > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{stats.alertasCriticas || stats.alertasStock || 0}</p>
+            <span className={`text-[10px] font-black shrink-0 ${stats.alertasCriticas > 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-500'}`}>
               {stats.alertasCriticas > 0 ? 'URGENTE' : 'OK'}
             </span>
           </div>
@@ -175,11 +195,13 @@ const DashboardPage = () => {
         {/* Ventas Hoy */}
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Ventas de Hoy</p>
-          <div className="flex items-end justify-between mt-2 gap-2">
-            <p className="text-2xl xl:text-3xl font-black text-emerald-600 tracking-tighter">${(stats.ventasHoy || 0).toLocaleString()}</p>
-            <div className="text-right">
+          <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
+            <p className="text-2xl lg:text-xl xl:text-2xl font-black text-emerald-600 tracking-tighter break-all" title={`$${Number(stats.ventasHoy || 0).toLocaleString('es-CO')}`}>
+              ${Number(stats.ventasHoy || 0).toLocaleString('es-CO')}
+            </p>
+            <div className="text-right shrink-0">
               <span className="block text-[8px] text-slate-400 font-bold uppercase tracking-tighter">Total Mes</span>
-              <span className="text-[10px] text-slate-500 font-black">${(stats.ventasMes || 0).toLocaleString()}</span>
+              <span className="text-[10px] text-slate-500 font-black">${Number(stats.ventasMes || 0).toLocaleString('es-CO')}</span>
             </div>
           </div>
         </div>
@@ -206,7 +228,7 @@ const DashboardPage = () => {
               </button>
             </div>
 
-            <div className="flex-grow">
+            <div className="flex-grow max-h-[340px] overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="h-24 bg-white/5 rounded-[1.5rem] animate-pulse"></div>
@@ -214,7 +236,7 @@ const DashboardPage = () => {
                 </div>
               ) : recommendations.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {recommendations.slice(0, 4).map((rec) => (
+                  {recommendations.slice(0, 10).map((rec) => (
                     <div key={rec.id || rec.product} className="bg-white/5 border border-white/10 p-5 rounded-[1.5rem] hover:bg-white/10 transition-colors group">
                       <div className="flex justify-between items-start mb-3 gap-2">
                         <span className="text-indigo-300 font-black text-sm uppercase tracking-tight leading-tight flex-1">{rec.product}</span>
@@ -394,14 +416,35 @@ const DashboardPage = () => {
                  <div className="space-y-1">
                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Nuevo Precio</p>
                    <p className="text-3xl font-black text-white tracking-tighter italic border-b-2 border-emerald-500/50 pb-1 inline-block">
-                     ${selectedPromo.discountedPrice?.toLocaleString()}
+                     ${Math.round(selectedPromo.originalPrice * (1 - customDiscount / 100)).toLocaleString('es-CO')}
                    </p>
+                 </div>
+               </div>
+
+               <div className="space-y-3 bg-slate-950/50 p-6 rounded-2xl border border-white/5 shadow-inner">
+                 <div className="flex justify-between items-center">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ajustar Descuento</p>
+                   <span className="text-[14px] font-black text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-xl border border-indigo-500/20">{customDiscount}% OFF</span>
+                 </div>
+                 <input 
+                   type="range" 
+                   min="0" 
+                   max="90" 
+                   step="1"
+                   value={customDiscount} 
+                   onChange={(e) => setCustomDiscount(Number(e.target.value))}
+                   className="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                 />
+                 <div className="flex justify-between text-[8px] font-bold text-slate-500 uppercase tracking-widest">
+                   <span>0%</span>
+                   <span className={customDiscount === selectedPromo.discount ? 'text-indigo-400' : ''}>Sugerido IA: {selectedPromo.discount}%</span>
+                   <span>90%</span>
                  </div>
                </div>
 
                <div className="bg-white/5 p-5 rounded-2xl border border-white/5 flex justify-between items-center">
                  <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Ahorro para el Cliente</p>
-                 <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">-{selectedPromo.discount}% OFF</span>
+                 <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">-${Math.round(selectedPromo.originalPrice * (customDiscount / 100)).toLocaleString('es-CO')} COP</span>
                </div>
 
                <div className="flex flex-col sm:flex-row gap-4">
@@ -415,6 +458,30 @@ const DashboardPage = () => {
                  </button>
                </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* WELCOME ALERT MODAL */}
+      {welcomeAlert && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-in fade-in duration-500">
+          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onClick={() => setWelcomeAlert(null)}></div>
+          <div className={`relative z-10 w-full max-w-xl rounded-[3rem] p-8 md:p-12 shadow-2xl text-center transform animate-in zoom-in-95 duration-500 ${
+            welcomeAlert.type === 'critical' ? 'bg-rose-600 text-white shadow-[0_0_50px_rgba(225,29,72,0.3)]' : 
+            welcomeAlert.type === 'warning' ? 'bg-amber-500 text-white shadow-[0_0_50px_rgba(245,158,11,0.3)]' : 
+            'bg-emerald-500 text-white shadow-[0_0_50px_rgba(16,185,129,0.3)]'
+          }`}>
+            <div className="mx-auto w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mb-6 shadow-inner">
+               <welcomeAlert.icon size={48} className="text-white drop-shadow-md" />
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic mb-4 drop-shadow-sm">{welcomeAlert.title}</h2>
+            <p className="text-lg md:text-xl font-medium text-white/90 leading-relaxed mb-10">{welcomeAlert.message}</p>
+            <button 
+              onClick={() => setWelcomeAlert(null)}
+              className="w-full py-5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl text-sm"
+            >
+              Entendido
+            </button>
           </div>
         </div>
       )}
