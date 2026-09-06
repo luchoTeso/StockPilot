@@ -220,7 +220,7 @@ const suppliersController = {
         const costoUnit = item.presupuesto_estimado_final / item.sugerencia_final || 0;
         await client.query(
           "INSERT INTO Ordenes_Detalle (id_orden, id_producto, cantidad_sugerida, sugerencia_ia, cantidad_final, costo_unitario) VALUES ($1, $2, $3, $4, $5, $6)",
-          [ordenId, item.id_producto, item.calculo_base, item.sugerencia_final, item.sugerencia_final, costoUnit]
+          [ordenId, item.id_producto, item.calculo_base, iaPorcentaje, item.sugerencia_final, costoUnit]
         );
       }
 
