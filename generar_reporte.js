@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const jsonPath = path.join(__dirname, 'evidencia_pruebas.json');
-const mdPath = path.join(__dirname, 'Reporte_Pruebas_StockPilot.md');
+const mdPath = path.join(__dirname, 'Documentacion', 'Reporte_Pruebas_StockPilot.md');
 
 if (!fs.existsSync(jsonPath)) {
     console.error('❌ No se encontró el archivo evidencia_pruebas.json. Asegúrate de ejecutar "npm run test:evidence" primero.');
