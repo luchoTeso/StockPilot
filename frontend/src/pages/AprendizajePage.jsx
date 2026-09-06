@@ -23,12 +23,13 @@ const AprendizajePage = () => {
     const [evalResult, setEvalResult] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    const loadMetrics = useCallback(async (signal) => {
+    const loadMetrics = useCallback(async (isBackground = false, signal = null) => {
         try {
-            setLoading(true);
+            if (!isBackground) setLoading(true);
+            const timestamp = new Date().getTime();
             const [resMetrics, resOrders] = await Promise.all([
-                axios.get('/api/feedback/metrics', { withCredentials: true, ...(signal && { signal }) }),
-                axios.get('/api/feedback/orders/evaluable', { withCredentials: true, ...(signal && { signal }) })
+                axios.get(`/api/feedback/metrics?t=${timestamp}`, { withCredentials: true, ...(signal && { signal }) }),
+                axios.get(`/api/feedback/orders/evaluable?t=${timestamp}`, { withCredentials: true, ...(signal && { signal }) })
             ]);
             if (signal && signal.aborted) return;
 
@@ -44,14 +45,14 @@ const AprendizajePage = () => {
             addToast('Error al cargar métricas de IA', 'error');
         } finally {
             if (!signal || !signal.aborted) {
-                setLoading(false);
+                if (!isBackground) setLoading(false);
             }
         }
     }, [addToast]);
 
     useEffect(() => {
         const controller = new AbortController();
-        loadMetrics(controller.signal);
+        loadMetrics(false, controller.signal);
         return () => controller.abort();
     }, [loadMetrics]);
 
@@ -67,7 +68,7 @@ const AprendizajePage = () => {
             if (res.data.success) {
                 setEvalResult(res.data);
                 addToast('Evaluación completada', 'success');
-                loadMetrics();
+                loadMetrics(true);
             }
         } catch (error) {
             console.error(error);
