@@ -13,6 +13,11 @@ async function runAlterMigrations() {
     const alterations = [
         // v1.1 — precio unitario al momento de la venta
         `ALTER TABLE VentasProductos ADD COLUMN IF NOT EXISTS precio_unitario NUMERIC(15,2)`,
+        // v1.2 — Motor de Aprendizaje IA: métricas de días con stock, errores y sesgo (bias)
+        `ALTER TABLE Feedback_IA ADD COLUMN IF NOT EXISTS dias_con_stock INTEGER DEFAULT 0`,
+        `ALTER TABLE Feedback_IA ADD COLUMN IF NOT EXISTS error_absoluto NUMERIC(10, 4)`,
+        `ALTER TABLE Feedback_IA ADD COLUMN IF NOT EXISTS error_porcentual NUMERIC(10, 4)`,
+        `ALTER TABLE Feedback_IA ADD COLUMN IF NOT EXISTS bias NUMERIC(10, 4)`
     ];
 
     for (const sql of alterations) {

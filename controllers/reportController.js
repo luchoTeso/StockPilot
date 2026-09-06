@@ -305,7 +305,7 @@ class ReportController {
             doc.moveDown(1.5);
 
             doc.fillColor(textColor).fontSize(20).text('REPORTE DE MERMA Y PÉRDIDAS', { align: 'left' });
-            doc.fontSize(10).fillColor(grayColor).text(`Generado el: ${new Date().toLocaleString()}`, { align: 'left' });
+            doc.fontSize(10).fillColor(grayColor).text(`Generado el: ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota', hour12: true })}`, { align: 'left' });
             doc.moveDown(2);
 
             // Tabla

@@ -17,91 +17,111 @@ const feedbackController = {
   evaluateOrder: async (req, res) => {
     try {
       const { orderId } = req.params;
-      
-      const ordenQuery = `SELECT id_orden, COALESCE(fecha_aprobacion, fecha_creacion) as fecha_aprobacion, estado, id_tienda FROM Ordenes_Compra WHERE id_orden = ?`;
-      const orden = await db.getAsync(ordenQuery, [orderId]);
-
-      if (!orden) return res.status(404).json({ success: false, error: 'Orden no encontrada' });
-      if (!['Aprobada', 'Completada', 'Parcial'].includes(orden.estado)) {
-        return res.status(400).json({ success: false, error: 'Solo se pueden evaluar órdenes aprobadas.' });
-      }
-
-      // 2. Obtener los detalles de la orden (sugerencias IA) y datos del producto (lead_time)
-      const detallesQuery = `
-        SELECT od.id_producto, od.sugerencia_ia, od.cantidad_final, p.lead_time, p.nombre_producto
-        FROM Ordenes_Detalle od
-        JOIN Productos p ON od.id_producto = p.id_producto
-        WHERE od.id_orden = ?
-      `;
-      const detalles = await db.allAsync(detallesQuery, [orderId]);
-
-      if (!detalles || detalles.length === 0) {
-        return res.status(400).json({ success: false, error: 'La orden no tiene detalles.' });
-      }
-
-      // Fecha actual para calcular los días transcurridos
-      const hoy = new Date();
-      const fechaAprobacion = new Date(orden.fecha_aprobacion);
-      // Diferencia en días
-      const diffTime = Math.abs(hoy - fechaAprobacion);
-      const diasTranscurridos = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-
-      const promesas = detalles.map(async (det) => {
-        // Ventas reales desde la fecha de aprobación hasta hoy:
-        const ventasQuery = `
-          SELECT COALESCE(SUM(vp.cantidad), 0) as total_vendido
-          FROM VentasProductos vp
-          JOIN Ventas v ON vp.id_venta = v.id_venta
-          WHERE vp.id_producto = ? AND v.fecha_salida >= ?
-        `;
-        const vRow = await db.getAsync(ventasQuery, [det.id_producto, orden.fecha_aprobacion]);
-        const ventasReales = vRow ? Number(vRow.total_vendido) : 0;
-
-        const periodoObjetivo = feedbackController.calcularPeriodoObjetivo(det.lead_time);
-        const ventasProyectadasObjetivo = feedbackController.proyectarVentas(ventasReales, diasTranscurridos, periodoObjetivo);
-        const sugerido = det.sugerencia_ia || det.cantidad_final; // Fallback a lo aprobado si IA no actuó
-        const factor = feedbackController.calcularFactorPrecision(ventasProyectadasObjetivo, sugerido);
-
-        // Guardar o actualizar en Feedback_IA
-        // Verificamos si ya existe una evaluación para esta orden/producto
-        const existeQuery = `SELECT id_feedback FROM Feedback_IA WHERE id_orden = ? AND id_producto = ?`;
-        const existe = await db.getAsync(existeQuery, [orderId, det.id_producto]);
-
-        if (existe) {
-          await db.runAsync(
-            `UPDATE Feedback_IA SET ventas_reales_periodo = ?, factor_precision = ?, fecha_evaluacion = CURRENT_TIMESTAMP WHERE id_feedback = ?`,
-            [ventasReales, factor, existe.id_feedback]
-          );
-        } else {
-          await db.runAsync(
-            `INSERT INTO Feedback_IA (id_orden, id_producto, cantidad_sugerida, ventas_reales_periodo, factor_precision) VALUES (?, ?, ?, ?, ?)`,
-            [orderId, det.id_producto, sugerido, ventasReales, factor]
-          );
-        }
-
-        return {
-          id_producto: det.id_producto,
-          nombre_producto: det.nombre_producto,
-          sugerido,
-          ventasReales,
-          ventasProyectadasObjetivo,
-          factor_precision: factor.toFixed(2)
-        };
-      });
-
-      const resultados = await Promise.all(promesas);
-
-      res.json({
-        success: true,
-        message: 'Evaluación de IA completada con éxito',
-        diasTranscurridos,
-        evaluaciones: resultados
-      });
-
+      const result = await feedbackController.evaluateOrderInternal(orderId);
+      res.json(result);
     } catch (e) {
       console.error(e);
-      res.status(500).json({ success: false, error: safeError(e, 'Error evaluando orden') });
+      if (e.message === 'Orden no encontrada') return res.status(404).json({ success: false, error: e.message });
+      if (e.message === 'Solo se pueden evaluar órdenes aprobadas.' || e.message === 'La orden no tiene detalles.') return res.status(400).json({ success: false, error: e.message });
+      res.status(500).json({ success: false, error: safeError(e, 'Error al procesar la evaluación de la orden') });
     }
+  },
+
+  evaluateOrderInternal: async (orderId) => {
+    const ordenQuery = `SELECT id_orden, COALESCE(fecha_aprobacion, fecha_creacion) as fecha_aprobacion, estado, id_tienda FROM Ordenes_Compra WHERE id_orden = ?`;
+    const orden = await db.getAsync(ordenQuery, [orderId]);
+
+    if (!orden) throw new Error('Orden no encontrada');
+    if (!['Aprobada', 'Completada', 'Parcial'].includes(orden.estado)) {
+      throw new Error('Solo se pueden evaluar órdenes aprobadas.');
+    }
+
+    const detallesQuery = `
+      SELECT od.id_producto, od.sugerencia_ia, od.cantidad_final, p.lead_time, p.nombre_producto
+      FROM Ordenes_Detalle od
+      JOIN Productos p ON od.id_producto = p.id_producto
+      WHERE od.id_orden = ?
+    `;
+    const detalles = await db.allAsync(detallesQuery, [orderId]);
+
+    if (!detalles || detalles.length === 0) {
+      throw new Error('La orden no tiene detalles.');
+    }
+
+    const hoy = new Date();
+    const fechaAprobacion = new Date(orden.fecha_aprobacion);
+    const diffTime = Math.abs(hoy - fechaAprobacion);
+    const diasTranscurridos = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+
+    const promesas = detalles.map(async (det) => {
+      const periodoObjetivo = feedbackController.calcularPeriodoObjetivo(det.lead_time);
+      
+      const fechaFinEvaluacion = new Date(fechaAprobacion.getTime() + (periodoObjetivo * 24 * 60 * 60 * 1000));
+      const limiteReal = hoy < fechaFinEvaluacion ? hoy : fechaFinEvaluacion;
+      const diffTimeLimite = Math.abs(limiteReal - fechaAprobacion);
+      const diasTranscurridosReales = Math.ceil(diffTimeLimite / (1000 * 60 * 60 * 24)) || 1;
+
+      const ventasQuery = `
+        SELECT COALESCE(SUM(vp.cantidad), 0) as total_vendido
+        FROM VentasProductos vp
+        JOIN Ventas v ON vp.id_venta = v.id_venta
+        WHERE vp.id_producto = ? AND v.fecha_salida >= ? AND v.fecha_salida <= ?
+      `;
+      const vRow = await db.getAsync(ventasQuery, [det.id_producto, orden.fecha_aprobacion, limiteReal.toISOString()]);
+      const ventasReales = vRow ? Number(vRow.total_vendido) : 0;
+
+      const quiebreQuery = `
+        SELECT MIN(fecha_movimiento) as fecha_quiebre
+        FROM MovimientosStock
+        WHERE id_producto = ? AND stock_final <= 0 AND fecha_movimiento >= ? AND fecha_movimiento <= ?
+      `;
+      const quiebreRow = await db.getAsync(quiebreQuery, [det.id_producto, orden.fecha_aprobacion, limiteReal.toISOString()]);
+      
+      let diasConStock = diasTranscurridosReales;
+      if (quiebreRow && quiebreRow.fecha_quiebre) {
+          const fechaQuiebre = new Date(quiebreRow.fecha_quiebre);
+          const diffQuiebre = Math.abs(fechaQuiebre - fechaAprobacion);
+          diasConStock = Math.ceil(diffQuiebre / (1000 * 60 * 60 * 24)) || 1;
+      }
+
+      const ventasProyectadasObjetivo = feedbackController.proyectarVentas(ventasReales, diasConStock, periodoObjetivo);
+      const sugerido = det.sugerencia_ia || det.cantidad_final;
+      const factor = feedbackController.calcularFactorPrecision(ventasProyectadasObjetivo, sugerido);
+
+      const { errorAbsoluto, bias, errorPorcentual } = feedbackController.calcularErrorMetricas(ventasReales, sugerido);
+
+      const existeQuery = `SELECT id_feedback FROM Feedback_IA WHERE id_orden = ? AND id_producto = ?`;
+      const existe = await db.getAsync(existeQuery, [orderId, det.id_producto]);
+
+      if (existe) {
+        await db.runAsync(
+          `UPDATE Feedback_IA SET ventas_reales_periodo = ?, factor_precision = ?, dias_con_stock = ?, error_absoluto = ?, error_porcentual = ?, bias = ?, fecha_evaluacion = CURRENT_TIMESTAMP WHERE id_feedback = ?`,
+          [ventasReales, factor, diasConStock, errorAbsoluto, errorPorcentual, bias, existe.id_feedback]
+        );
+      } else {
+        await db.runAsync(
+          `INSERT INTO Feedback_IA (id_orden, id_producto, cantidad_sugerida, ventas_reales_periodo, factor_precision, dias_con_stock, error_absoluto, error_porcentual, bias) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [orderId, det.id_producto, sugerido, ventasReales, factor, diasConStock, errorAbsoluto, errorPorcentual, bias]
+        );
+      }
+
+      return {
+        id_producto: det.id_producto,
+        nombre_producto: det.nombre_producto,
+        sugerido,
+        ventasReales,
+        ventasProyectadasObjetivo,
+        factor_precision: factor.toFixed(2)
+      };
+    });
+
+    const resultados = await Promise.all(promesas);
+    return {
+      success: true,
+      message: 'Evaluación de IA completada con éxito',
+      diasTranscurridos,
+      evaluaciones: resultados
+    };
   },
 
   /**
@@ -186,6 +206,7 @@ const feedbackController = {
         FROM Ordenes_Compra o
         JOIN Proveedores p ON o.id_proveedor = p.id_proveedor
         WHERE o.id_tienda = ? AND o.estado IN ('Aprobada', 'Completada', 'Parcial')
+          AND COALESCE(o.fecha_aprobacion, o.fecha_creacion) >= CURRENT_DATE - INTERVAL '60 days'
         ORDER BY fecha_aprobacion DESC
         LIMIT 50
       `;
@@ -201,8 +222,14 @@ const feedbackController = {
 
   /** FUNCIONES PURAS PARA TESTING **/
   calcularPeriodoObjetivo: (leadTime) => Math.max((leadTime || 3) * 2, 14),
-  proyectarVentas: (ventasReales, diasTranscurridos, periodoObjetivo) => {
-    if (diasTranscurridos < periodoObjetivo) return (ventasReales / diasTranscurridos) * periodoObjetivo;
+  proyectarVentas: (ventasReales, diasConStock, periodoObjetivo) => {
+    if (diasConStock < periodoObjetivo) {
+      const proyeccionCruda = (ventasReales / diasConStock) * periodoObjetivo;
+      // Peso de confianza: cuantos más días reales, más confiamos en la proyección
+      const confianza = Math.min(diasConStock / periodoObjetivo, 1.0);
+      // Mezcla: si pocos días → se acerca a las ventas reales; si muchos → proyección plena
+      return ventasReales + (proyeccionCruda - ventasReales) * confianza;
+    }
     return ventasReales;
   },
   calcularFactorPrecision: (ventasProyectadas, sugerido) => {
@@ -210,6 +237,12 @@ const feedbackController = {
     if (sugerido > 0) factor = ventasProyectadas / sugerido;
     else if (sugerido === 0 && ventasProyectadas > 0) factor = 2.0;
     return Math.min(Math.max(factor, 0.2), 3.0);
+  },
+  calcularErrorMetricas: (ventasReales, sugerido) => {
+    const errorAbsoluto = Math.abs(ventasReales - sugerido);
+    const bias = sugerido - ventasReales;
+    const errorPorcentual = ventasReales > 0 ? (errorAbsoluto / ventasReales) * 100 : 0;
+    return { errorAbsoluto, bias, errorPorcentual };
   },
   determinarVeredicto: (factor) => {
     if (factor >= 0.9 && factor <= 1.1) return 'Acertado';

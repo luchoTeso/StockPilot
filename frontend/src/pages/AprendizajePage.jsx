@@ -423,7 +423,7 @@ const AprendizajePage = () => {
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div>
                                                             <p className="font-black text-slate-800 text-sm flex items-center gap-1.5">
-                                                                {verdict.icon} {ev.nombre_producto || `Producto #${ev.id_producto}`}
+                                                                {(() => { const Icon = verdict.icon; return <Icon size={16} />; })()} {ev.nombre_producto || `Producto #${ev.id_producto}`}
                                                             </p>
                                                             <p className="text-[10px] font-bold text-slate-500 mt-1 ml-6">{verdict.label}</p>
                                                         </div>

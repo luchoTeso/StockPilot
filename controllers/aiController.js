@@ -94,16 +94,20 @@ const aiController = {
       // 1. Obtener datos crudos con SQL optimizado (CTE en lugar de subconsultas correlacionadas)
       const snapshotQuery = `
         WITH VentasRecientes AS (
-          SELECT 
-            vp.id_producto,
-            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days' THEN vp.cantidad ELSE 0 END) as qty_7d,
-            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days' THEN vp.cantidad ELSE 0 END) as qty_30d,
-            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '60 days' THEN vp.cantidad ELSE 0 END) as qty_60d,
-            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '90 days' THEN vp.cantidad ELSE 0 END) as qty_90d
-          FROM VentasProductos vp
-          JOIN Ventas v ON vp.id_venta = v.id_venta
-          WHERE v.fecha_salida >= CURRENT_DATE - INTERVAL '90 days'
+          SELECT vp.id_producto,
+            SUM(CASE WHEN v.fecha_salida >= (CURRENT_DATE - INTERVAL '7 days') THEN vp.cantidad ELSE 0 END) as qty_7d,
+            SUM(CASE WHEN v.fecha_salida >= (CURRENT_DATE - INTERVAL '30 days') THEN vp.cantidad ELSE 0 END) as qty_30d,
+            SUM(CASE WHEN v.fecha_salida >= (CURRENT_DATE - INTERVAL '60 days') THEN vp.cantidad ELSE 0 END) as qty_60d,
+            SUM(CASE WHEN v.fecha_salida >= (CURRENT_DATE - INTERVAL '90 days') THEN vp.cantidad ELSE 0 END) as qty_90d
+          FROM Ventas v
+          JOIN VentasProductos vp ON v.id_venta = vp.id_venta
+          WHERE v.id_tienda = ?
           GROUP BY vp.id_producto
+        ),
+        PrecisionIA AS (
+          SELECT id_producto, AVG(factor_precision) as avg_precision
+          FROM Feedback_IA
+          GROUP BY id_producto
         )
         SELECT 
           p.id_producto as id, 
@@ -116,12 +120,15 @@ const aiController = {
           COALESCE(vr.qty_7d, 0) / 7.0 as velocity_7d,
           COALESCE(vr.qty_30d, 0) / 30.0 as velocity_30d,
           COALESCE(vr.qty_60d, 0) / 60.0 as velocity_60d,
-          COALESCE(vr.qty_90d, 0) / 90.0 as velocity_90d
+          COALESCE(vr.qty_90d, 0) / 90.0 as velocity_90d,
+          pia.avg_precision
         FROM Productos p
         LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
+        LEFT JOIN PrecisionIA pia ON p.id_producto = pia.id_producto
         WHERE p.id_tienda = ? AND p.estado = 'Disponible'
       `;
-      const rows = await db.allAsync(snapshotQuery, [tiendaId]);
+      // Pasamos dos veces el tiendaId: uno para VentasRecientes y otro para Productos
+      const rows = await db.allAsync(snapshotQuery, [tiendaId, tiendaId]);
       
       // 2. Cálculo de Hash para Caché Inteligente
       const dataString = JSON.stringify(rows);
@@ -173,7 +180,8 @@ const aiController = {
                 d60: parseFloat(Number(item.velocity_60d || 0).toFixed(2)), 
                 d90: parseFloat(Number(item.velocity_90d || 0).toFixed(2)) 
             },
-            risk: item.stock_actual <= item.stock_seguridad ? 'CRÍTICO' : (item.stock_actual <= rop ? 'MEDIO' : 'BAJO')
+            risk: item.stock_actual <= item.stock_seguridad ? 'CRÍTICO' : (item.stock_actual <= rop ? 'MEDIO' : 'BAJO'),
+            avg_precision: item.avg_precision // Pasamos la precisión promedio para usarla luego
           };
       });
 
@@ -227,7 +235,9 @@ const aiController = {
           adjustment: clampedAdj > 0 ? `+${clampedAdj}%` : `${clampedAdj}%`,
           final: finalTotal,
           reason: adj.reason,
-          confidence: 90,
+          confidence: original.avg_precision !== null && original.avg_precision !== undefined 
+                      ? Math.round(original.avg_precision * 100) 
+                      : 50, // Fase 2: 50% por defecto si no hay historial para reflejar incertidumbre
           trend: original.trend_label
         };
 

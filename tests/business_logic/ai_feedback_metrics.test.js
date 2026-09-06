@@ -11,6 +11,7 @@ const {
   calcularPeriodoObjetivo,
   proyectarVentas,
   calcularFactorPrecision,
+  calcularErrorMetricas,
   determinarVeredicto
 } = feedbackController;
 
@@ -38,19 +39,20 @@ describe('Módulo de Feedback IA (feedbackController.js)', () => {
     });
   });
 
-  describe('Proyección de Ventas', () => {
-    it('Debería proyectar ventas si no ha pasado el periodo completo', () => {
-      // Vendimos 50 en 7 días, periodo objetivo es 14 → proyección = (50/7)*14 = 100
-      expect(proyectarVentas(50, 7, 14)).toBe(100);
+  describe('Proyección de Ventas con Ponderación Temporal', () => {
+    it('Debería proyectar ventas con ponderación temporal si no ha pasado el periodo completo', () => {
+      // Vendimos 50 en 7 días, periodo objetivo es 14
+      // Cruda = (50/7)*14 = 100, confianza = 7/14 = 0.5 → 50 + (100 - 50)*0.5 = 75
+      expect(proyectarVentas(50, 7, 14)).toBe(75);
     });
 
     it('Debería usar ventas reales si ya pasó el periodo completo', () => {
       expect(proyectarVentas(120, 20, 14)).toBe(120);
     });
 
-    it('Debería proyectar correctamente con 1 día transcurrido', () => {
-      // 10 vendidos en 1 día, periodo 14 → 140
-      expect(proyectarVentas(10, 1, 14)).toBe(140);
+    it('Debería proyectar de forma conservadora con 1 día transcurrido', () => {
+      // 10 vendidos en 1 día, periodo 14 → Cruda = 140, confianza = 1/14 → 10 + 130*(1/14) ≈ 19.29
+      expect(proyectarVentas(10, 1, 14)).toBeCloseTo(19.29, 1);
     });
   });
 
@@ -112,6 +114,42 @@ describe('Módulo de Feedback IA (feedbackController.js)', () => {
 
     it('Factor 3.0 (máximo) → Sugirió de menos', () => {
       expect(determinarVeredicto(3.0)).toBe('Sugirió de menos');
+    });
+  });
+
+  describe('Métricas de Error y Sesgo (Error Absoluto, Bias, Error Porcentual)', () => {
+    it('Debería dar error 0 y bias 0 cuando sugerencia coincide con ventas', () => {
+      const metricas = calcularErrorMetricas(50, 50);
+      expect(metricas).toEqual({
+        errorAbsoluto: 0,
+        bias: 0,
+        errorPorcentual: 0
+      });
+    });
+
+    it('Debería calcular bias positivo cuando sugirió de más (sobre-predicción)', () => {
+      const metricas = calcularErrorMetricas(40, 50);
+      expect(metricas).toEqual({
+        errorAbsoluto: 10,
+        bias: 10,
+        errorPorcentual: 25 // (10 / 40) * 100 = 25%
+      });
+    });
+
+    it('Debería calcular bias negativo cuando sugirió de menos (sub-predicción)', () => {
+      const metricas = calcularErrorMetricas(60, 50);
+      expect(metricas.errorAbsoluto).toBe(10);
+      expect(metricas.bias).toBe(-10);
+      expect(metricas.errorPorcentual).toBeCloseTo(16.67, 1);
+    });
+
+    it('Debería manejar ventasReales = 0 sin división por cero ni NaN', () => {
+      const metricas = calcularErrorMetricas(0, 20);
+      expect(metricas).toEqual({
+        errorAbsoluto: 20,
+        bias: 20,
+        errorPorcentual: 0
+      });
     });
   });
 });

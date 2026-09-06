@@ -124,7 +124,8 @@ const suppliersController = {
         else if (item.stock_actual <= item.rop) risk = 'medium';
         // Crítico/medio: cubrir hasta ROP. Stock suficiente: sugerir 1 semana de ventas (mínimo 1).
         const qtyCritica = risk !== 'low' ? Math.max(0, item.rop - item.stock_actual) : 0;
-        const qtySugerida = qtyCritica > 0 ? qtyCritica : Math.max(1, Math.ceil(item.velocity_30d * 7));
+        // Fase 5: Aplicar factor_ia también a sugerencias preventivas (productos saludables)
+        const qtySugerida = qtyCritica > 0 ? qtyCritica : Math.max(1, Math.ceil(item.velocity_30d * 7 * item.factor_ia));
         return {
           id_producto: item.id_producto,
           nombre: item.nombre_producto,
@@ -219,7 +220,7 @@ const suppliersController = {
         const costoUnit = item.presupuesto_estimado_final / item.sugerencia_final || 0;
         await client.query(
           "INSERT INTO Ordenes_Detalle (id_orden, id_producto, cantidad_sugerida, sugerencia_ia, cantidad_final, costo_unitario) VALUES ($1, $2, $3, $4, $5, $6)",
-          [ordenId, item.id_producto, item.calculo_base, iaPorcentaje, item.sugerencia_final, costoUnit]
+          [ordenId, item.id_producto, item.calculo_base, item.sugerencia_final, item.sugerencia_final, costoUnit]
         );
       }
 

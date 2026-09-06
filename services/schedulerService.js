@@ -165,6 +165,42 @@ const runDailyPriceReversion = async () => {
         console.error('❌ [Scheduler] Error en reversión diaria:', error);
     }
 };
+/**
+ * Evalúa automáticamente la precisión de la IA para las órdenes elegibles.
+ */
+const runDailyAIEvaluation = async () => {
+    console.log('🤖 [Scheduler] Iniciando evaluación diaria de IA...');
+    try {
+        const feedbackController = require('../controllers/feedbackController');
+        
+        // Obtener órdenes de todas las tiendas de los últimos 60 días
+        const query = `
+            SELECT o.id_orden, o.id_tienda
+            FROM Ordenes_Compra o
+            WHERE o.estado IN ('Aprobada', 'Completada', 'Parcial')
+              AND COALESCE(o.fecha_aprobacion, o.fecha_creacion) >= CURRENT_DATE - INTERVAL '60 days'
+        `;
+        const ordenes = await db.allAsync(query);
+
+        if (ordenes.length === 0) {
+            console.log('[Scheduler] No hay órdenes pendientes para evaluar IA.');
+            return;
+        }
+
+        let evaluadas = 0;
+        await Promise.all(ordenes.map(async (orden) => {
+            try {
+                await feedbackController.evaluateOrderInternal(orden.id_orden);
+                evaluadas++;
+            } catch (err) {
+                console.error(`[Scheduler] Error evaluando orden ${orden.id_orden}:`, err.message);
+            }
+        }));
+        console.log(`[Scheduler] Evaluación IA finalizada. ${evaluadas} órdenes procesadas.`);
+    } catch (error) {
+        console.error('❌ [Scheduler] Error en evaluación IA diaria:', error);
+    }
+};
 
 const startScheduler = () => {
     // Resumen semanal: Lunes 8:00 AM
@@ -173,10 +209,13 @@ const startScheduler = () => {
     // Reversión de precios: Diario a las 00:05 AM
     cron.schedule('5 0 * * *', () => runDailyPriceReversion());
 
+    // Evaluación de Inteligencia Artificial: Diario a las 03:00 AM
+    cron.schedule('0 3 * * *', () => runDailyAIEvaluation());
+
     // Ejecución inmediata al arranque para limpiar promociones que vencieron mientras el servidor estaba apagado
     runDailyPriceReversion();
 
     console.log('✅ [Scheduler] Servicio de automatización (Diario/Semanal) activado.');
 };
 
-module.exports = { startScheduler, runWeeklySummary };
+module.exports = { startScheduler, runWeeklySummary, runDailyAIEvaluation };

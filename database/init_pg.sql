@@ -190,6 +190,10 @@ CREATE TABLE IF NOT EXISTS Feedback_IA (
     cantidad_sugerida INTEGER,
     ventas_reales_periodo INTEGER,
     factor_precision NUMERIC(10, 4),
+    dias_con_stock INTEGER DEFAULT 0,
+    error_absoluto NUMERIC(10, 4),
+    error_porcentual NUMERIC(10, 4),
+    bias NUMERIC(10, 4),
     fecha_evaluacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

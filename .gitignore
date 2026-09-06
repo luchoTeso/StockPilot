@@ -23,6 +23,9 @@ evidencia_pruebas.json
 coverage/
 playwright-report/
 test-results/
+*_report*.json
+bugs_list.json
+react_doctor_log*.txt
 
 # Archivos generados por la aplicación (Exportaciones)
 exports/*.xlsx

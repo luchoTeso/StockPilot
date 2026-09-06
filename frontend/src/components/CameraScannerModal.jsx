@@ -29,7 +29,20 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
         return;
       }
       if (!isMounted) return;
-      html5QrCode = new Html5QrcodeModule("reader");
+
+      // Configurar explícitamente para formatos de Supermercado (mayor velocidad y precisión)
+      const formatsToSupport = [
+        Html5QrcodeModule.Html5QrcodeSupportedFormats.EAN_13, // Estándar mundial supermercados
+        Html5QrcodeModule.Html5QrcodeSupportedFormats.EAN_8,  // Productos pequeños
+        Html5QrcodeModule.Html5QrcodeSupportedFormats.UPC_A,  // Estándar americano
+        Html5QrcodeModule.Html5QrcodeSupportedFormats.UPC_E,  // UPC comprimido
+        Html5QrcodeModule.Html5QrcodeSupportedFormats.CODE_128, // Cajas y distribución
+        Html5QrcodeModule.Html5QrcodeSupportedFormats.CODE_39, // Inventario logístico
+        Html5QrcodeModule.Html5QrcodeSupportedFormats.ITF,    // ITF-14 (Cajas al por mayor)
+        Html5QrcodeModule.Html5QrcodeSupportedFormats.QR_CODE // Promociones o pagos
+      ];
+
+      html5QrCode = new Html5QrcodeModule("reader", { formatsToSupport });
 
       try {
         // Intento 1: Cámara trasera (environment)
