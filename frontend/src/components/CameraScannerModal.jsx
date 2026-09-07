@@ -21,28 +21,37 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
 
     const startScanner = async () => {
       let Html5QrcodeModule;
+      let Html5QrcodeSupportedFormats;
       try {
         const module = await import('html5-qrcode');
-        Html5QrcodeModule = module.Html5Qrcode;
+        Html5QrcodeModule = module.Html5Qrcode || module.default?.Html5Qrcode || module;
+        Html5QrcodeSupportedFormats = module.Html5QrcodeSupportedFormats || module.default?.Html5QrcodeSupportedFormats;
       } catch (err) {
         console.error('Error loading html5-qrcode', err);
+        if (isMounted) setError("Error al cargar la librería de escáner.");
         return;
       }
       if (!isMounted) return;
 
-      // Configurar explícitamente para formatos de Supermercado (mayor velocidad y precisión)
-      const formatsToSupport = [
-        Html5QrcodeModule.Html5QrcodeSupportedFormats.EAN_13, // Estándar mundial supermercados
-        Html5QrcodeModule.Html5QrcodeSupportedFormats.EAN_8,  // Productos pequeños
-        Html5QrcodeModule.Html5QrcodeSupportedFormats.UPC_A,  // Estándar americano
-        Html5QrcodeModule.Html5QrcodeSupportedFormats.UPC_E,  // UPC comprimido
-        Html5QrcodeModule.Html5QrcodeSupportedFormats.CODE_128, // Cajas y distribución
-        Html5QrcodeModule.Html5QrcodeSupportedFormats.CODE_39, // Inventario logístico
-        Html5QrcodeModule.Html5QrcodeSupportedFormats.ITF,    // ITF-14 (Cajas al por mayor)
-        Html5QrcodeModule.Html5QrcodeSupportedFormats.QR_CODE // Promociones o pagos
-      ];
+      try {
+        // Configurar explícitamente para formatos de Supermercado (mayor velocidad y precisión)
+        const formatsToSupport = [
+          Html5QrcodeSupportedFormats?.EAN_13 || 9,
+          Html5QrcodeSupportedFormats?.EAN_8 || 10,
+          Html5QrcodeSupportedFormats?.UPC_A || 14,
+          Html5QrcodeSupportedFormats?.UPC_E || 15,
+          Html5QrcodeSupportedFormats?.CODE_128 || 5,
+          Html5QrcodeSupportedFormats?.CODE_39 || 3,
+          Html5QrcodeSupportedFormats?.ITF || 8,
+          Html5QrcodeSupportedFormats?.QR_CODE || 0
+        ];
 
-      html5QrCode = new Html5QrcodeModule("reader", { formatsToSupport });
+        html5QrCode = new Html5QrcodeModule("reader", { formatsToSupport });
+      } catch (err) {
+        console.error("Error al inicializar Html5Qrcode:", err);
+        if (isMounted) setError("Error al preparar la cámara: " + err.message);
+        return;
+      }
 
       try {
         // Intento 1: Cámara trasera (environment)
