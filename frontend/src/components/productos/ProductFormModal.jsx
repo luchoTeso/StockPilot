@@ -64,27 +64,27 @@ const ProductFormModal = ({
           <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">{editMode ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h3>
           <button onClick={onClose} type="button" className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-rose-100 flex items-center justify-center text-xl transition-colors shadow-sm">&times;</button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
               <label htmlFor="input_codigo" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Código (Referencia)</label>
-              <input id="input_codigo" required type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
+              <input id="input_codigo" required type="text" value={formData.codigo} onChange={e => setFormData({ ...formData, codigo: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
             </div>
             <div className="space-y-2">
-              <label htmlFor="input_nombre_producto" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Producto <span className="text-slate-400 normal-case">(Ej. Cuaderno 100 Hojas, Gaseosa 2L)</span></label>
-              <input id="input_nombre_producto" required type="text" value={formData.nombre_producto} onChange={e => setFormData({...formData, nombre_producto: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
+              <label htmlFor="input_nombre_producto" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Producto</label>
+              <input id="input_nombre_producto" required type="text" value={formData.nombre_producto} onChange={e => setFormData({ ...formData, nombre_producto: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
               <label htmlFor="input_categoria" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
-              <input 
+              <input
                 id="input_categoria"
                 list="lista_categorias"
-                value={formData.categoria} 
-                onChange={e => setFormData({...formData, categoria: e.target.value})}
+                value={formData.categoria}
+                onChange={e => setFormData({ ...formData, categoria: e.target.value })}
                 placeholder="Escribe o selecciona..."
                 className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors"
               />
@@ -94,23 +94,23 @@ const ProductFormModal = ({
             </div>
             <div className="space-y-2">
               <label htmlFor="input_subcategoria" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Subcategoría <span className="text-slate-400">(Opcional)</span></label>
-              <input id="input_subcategoria" type="text" value={formData.subcategoria} onChange={e => setFormData({...formData, subcategoria: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
+              <input id="input_subcategoria" type="text" value={formData.subcategoria} onChange={e => setFormData({ ...formData, subcategoria: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
               <label htmlFor="input_tipo_producto" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tipo de Empaque / Venta</label>
-              <CustomSelect 
+              <CustomSelect
                 id="input_tipo_producto"
-                value={formData.tipo_producto} 
-                onChange={val => setFormData({...formData, tipo_producto: val})}
+                value={formData.tipo_producto}
+                onChange={val => setFormData({ ...formData, tipo_producto: val })}
                 placeholder="Seleccione tipo..."
                 options={[
                   { value: '', label: 'Seleccione tipo...' },
-                  { value: 'Perecedero', label: '🍎 Perecedero' },
-                  { value: 'No Perecedero', label: '📦 No Perecedero' },
-                  { value: 'Digital', label: '💻 Digital' }
+                  { value: 'Perecedero', label: 'Perecedero' },
+                  { value: 'No Perecedero', label: 'No Perecedero' },
+                  { value: 'Digital', label: 'Digital' }
                 ]}
                 className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus-within:border-indigo-500 transition-colors"
               />
@@ -118,11 +118,11 @@ const ProductFormModal = ({
             {formData.tipo_producto === 'Perecedero' && (
               <div className="space-y-2 animate-bounce-in relative">
                 <label htmlFor="input_fecha_vencimiento" className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Fecha de Vencimiento 📅</label>
-                <CustomDatePicker 
+                <CustomDatePicker
                   id="input_fecha_vencimiento"
-                  value={formData.fecha_vencimiento} 
-                  onChange={v => setFormData({...formData, fecha_vencimiento: v})} 
-                  placeholder="Seleccionar vencimiento..." 
+                  value={formData.fecha_vencimiento}
+                  onChange={v => setFormData({ ...formData, fecha_vencimiento: v })}
+                  placeholder="Seleccionar vencimiento..."
                   align="left-flyout"
                 />
               </div>
@@ -132,11 +132,11 @@ const ProductFormModal = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
             <div className="space-y-2">
               <label htmlFor="input_precio" className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Precio de Venta</label>
-              <input id="input_precio" required type="number" step="0.01" min="0" value={formData.precio_unitario} onChange={e => setFormData({...formData, precio_unitario: e.target.value})} className="w-full p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-lg font-black text-indigo-700 focus:border-indigo-500 outline-none transition-colors" placeholder="0.00" />
+              <input id="input_precio" required type="number" step="0.01" min="0" value={formData.precio_unitario} onChange={e => setFormData({ ...formData, precio_unitario: e.target.value })} className="w-full p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-lg font-black text-indigo-700 focus:border-indigo-500 outline-none transition-colors" placeholder="0.00" />
             </div>
             <div className="space-y-2">
               <label htmlFor="input_stock_inicial" className="text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">Stock Inicial</label>
-              <input id="input_stock_inicial" required type="number" min="0" disabled={editMode} value={formData.cantidad} onChange={e => setFormData({...formData, cantidad: e.target.value})} className={`w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-lg font-black text-emerald-700 outline-none transition-colors ${editMode ? 'opacity-50 cursor-not-allowed' : 'focus:border-emerald-500'}`} placeholder="0" />
+              <input id="input_stock_inicial" required type="number" min="0" disabled={editMode} value={formData.cantidad} onChange={e => setFormData({ ...formData, cantidad: e.target.value })} className={`w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-lg font-black text-emerald-700 outline-none transition-colors ${editMode ? 'opacity-50 cursor-not-allowed' : 'focus:border-emerald-500'}`} placeholder="0" />
               {editMode && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase mt-1 inline-flex items-center gap-1"><Lock size={10} /> Protegido. Usar botón de agregar inventario.</span>}
             </div>
           </div>
@@ -152,23 +152,23 @@ const ProductFormModal = ({
                   <p className="text-[9px] font-bold text-slate-500 leading-relaxed">
                     Estos valores determinan cómo la IA y el motor de alertas evalúan el estado de este producto. Si no los configuras, se usarán los valores por defecto.
                   </p>
-                  
+
                   <div className="space-y-2">
-                      <label htmlFor="input_proveedor" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1"><Package size={12} /> Proveedor Principal (Opcional)</label>
-                      <CustomSelect 
-                        id="input_proveedor"
-                        value={formData.id_proveedor} 
-                        onChange={val => setFormData({...formData, id_proveedor: val})}
-                        placeholder="Seleccione proveedor..."
-                        options={[
-                          { value: '', label: 'Ninguno / Sin asignar' },
-                          ...proveedores.map(prov => ({ 
-                            value: prov.id_proveedor, 
-                            label: `${prov.nombre_empresa} (${prov.contacto_principal})` 
-                          }))
-                        ]}
-                        className="p-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
-                      />
+                    <label htmlFor="input_proveedor" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1"><Package size={12} /> Proveedor Principal (Opcional)</label>
+                    <CustomSelect
+                      id="input_proveedor"
+                      value={formData.id_proveedor}
+                      onChange={val => setFormData({ ...formData, id_proveedor: val })}
+                      placeholder="Seleccione proveedor..."
+                      options={[
+                        { value: '', label: 'Ninguno / Sin asignar' },
+                        ...proveedores.map(prov => ({
+                          value: prov.id_proveedor,
+                          label: `${prov.nombre_empresa} (${prov.contacto_principal})`
+                        }))
+                      ]}
+                      className="p-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -179,7 +179,7 @@ const ProductFormModal = ({
                           <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
                         </Tooltip>
                       </label>
-                      <input id="input_stock_min" type="number" min="0" value={formData.stock_minimo} onChange={e => setFormData({...formData, stock_minimo: e.target.value})} className="w-full p-3 bg-white border border-amber-200 rounded-xl text-sm font-black text-amber-700 focus:border-amber-500 outline-none text-center transition-colors" />
+                      <input id="input_stock_min" type="number" min="0" value={formData.stock_minimo} onChange={e => setFormData({ ...formData, stock_minimo: e.target.value })} className="w-full p-3 bg-white border border-amber-200 rounded-xl text-sm font-black text-amber-700 focus:border-amber-500 outline-none text-center transition-colors" />
                       <p className="text-[8px] text-slate-400 font-bold text-center">Avisa cuándo comprar</p>
                     </div>
                     <div className="space-y-2">
@@ -189,7 +189,7 @@ const ProductFormModal = ({
                           <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
                         </Tooltip>
                       </label>
-                      <input id="input_stock_seguridad" type="number" min="0" value={formData.stock_seguridad} onChange={e => setFormData({...formData, stock_seguridad: e.target.value})} className="w-full p-3 bg-white border border-rose-200 rounded-xl text-sm font-black text-rose-600 focus:border-rose-500 outline-none text-center transition-colors" />
+                      <input id="input_stock_seguridad" type="number" min="0" value={formData.stock_seguridad} onChange={e => setFormData({ ...formData, stock_seguridad: e.target.value })} className="w-full p-3 bg-white border border-rose-200 rounded-xl text-sm font-black text-rose-600 focus:border-rose-500 outline-none text-center transition-colors" />
                       <p className="text-[8px] text-slate-400 font-bold text-center">Avisa riesgo de quiebre</p>
                     </div>
                     <div className="space-y-2">
@@ -199,7 +199,7 @@ const ProductFormModal = ({
                           <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
                         </Tooltip>
                       </label>
-                      <input id="input_lead_time" type="number" min="1" value={formData.lead_time} onChange={e => setFormData({...formData, lead_time: e.target.value})} className="w-full p-3 bg-white border border-indigo-200 rounded-xl text-sm font-black text-indigo-600 focus:border-indigo-500 outline-none text-center transition-colors" />
+                      <input id="input_lead_time" type="number" min="1" value={formData.lead_time} onChange={e => setFormData({ ...formData, lead_time: e.target.value })} className="w-full p-3 bg-white border border-indigo-200 rounded-xl text-sm font-black text-indigo-600 focus:border-indigo-500 outline-none text-center transition-colors" />
                       <p className="text-[8px] text-slate-400 font-bold text-center">Días de entrega</p>
                     </div>
                   </div>
