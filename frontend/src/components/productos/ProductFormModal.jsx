@@ -35,7 +35,7 @@ const ProductFormModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      if (editMode && initialData) {
+      if (initialData) {
         setFormData({
           ...defaultData,
           ...initialData,
@@ -46,7 +46,7 @@ const ProductFormModal = ({
         setFormData(defaultData);
       }
     }
-  }, [isOpen, editMode, initialData]);
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
