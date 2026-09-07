@@ -6,6 +6,7 @@ const diasSemana = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
 
 const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...", align = "left" }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [mode, setMode] = useState('days'); // 'days' o 'years'
 
   // Extraer año, mes (0-11) y día del string YYYY-MM-DD
   const getInitialDate = () => {
@@ -127,15 +128,14 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
           <span className="text-lg font-black text-slate-800 italic uppercase tracking-tighter">
             {meses[currentMonth.getMonth()]}
           </span>
-          <select
-            value={currentMonth.getFullYear()}
-            onChange={(e) => setCurrentMonth(new Date(parseInt(e.target.value), currentMonth.getMonth(), 1))}
-            className="text-lg font-black text-indigo-600 bg-transparent outline-none cursor-pointer hover:bg-slate-50 rounded italic tracking-tighter"
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); setMode(mode === 'years' ? 'days' : 'years'); }}
+            className="text-lg font-black text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-0.5 rounded-lg transition-colors italic tracking-tighter flex items-center gap-1"
           >
-            {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 5 + i).map(y => (
-              <option key={y} value={y} className="text-base font-medium not-italic">{y}</option>
-            ))}
-          </select>
+            {currentMonth.getFullYear()}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${mode === 'years' ? 'rotate-180' : ''}`}><path d="m6 9 6 6 6-6"/></svg>
+          </button>
         </div>
         <div className="flex gap-2">
           <button onClick={prevMonth} className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 flex items-center justify-center font-bold transition-colors">
@@ -147,36 +147,60 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
         </div>
       </div>
 
-      {/* Días de la semana */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {diasSemana.map((d) => (
-          <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
-        ))}
-      </div>
-
-      {/* Grilla de Días */}
-      <div className="grid grid-cols-7 gap-1">
-        {days.map((day, idx) => {
-          if (!day) return <div key={`empty-${idx}`} className="p-2"></div>;
-
-          const isSelected = value && value === `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          const isToday = new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
-          const dayId = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${day}`;
-
-          return (
+      {mode === 'years' ? (
+        <div className="grid grid-cols-4 gap-2 py-1 max-h-[200px] overflow-y-auto scrollbar-hide">
+          {Array.from({ length: 24 }, (_, i) => new Date().getFullYear() - 4 + i).map(y => (
             <button
-              key={dayId}
-              onClick={(e) => { e.preventDefault(); selectDate(currentMonth.getFullYear(), currentMonth.getMonth(), day); }}
-              className={`relative flex items-center justify-center w-full aspect-square text-sm font-bold rounded-xl transition-colors transition-transform transition-shadow ${isSelected
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-105'
-                  : (isToday ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100' : 'text-slate-700 hover:bg-slate-100 hover:-translate-y-0.5')
-                }`}
+              key={y}
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentMonth(new Date(y, currentMonth.getMonth(), 1));
+                setMode('days');
+              }}
+              className={`py-2 rounded-xl text-sm font-bold transition-colors ${
+                y === currentMonth.getFullYear() 
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 hover:bg-indigo-700' 
+                  : 'text-slate-700 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600'
+              }`}
             >
-              {day}
+              {y}
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Días de la semana */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {diasSemana.map((d) => (
+              <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
+            ))}
+          </div>
+
+          {/* Grilla de Días */}
+          <div className="grid grid-cols-7 gap-1">
+            {days.map((day, idx) => {
+              if (!day) return <div key={`empty-${idx}`} className="p-2"></div>;
+
+              const isSelected = value && value === `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+              const isToday = new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
+              const dayId = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${day}`;
+
+              return (
+                <button
+                  key={dayId}
+                  onClick={(e) => { e.preventDefault(); selectDate(currentMonth.getFullYear(), currentMonth.getMonth(), day); }}
+                  className={`relative flex items-center justify-center w-full aspect-square text-sm font-bold rounded-xl transition-all ${isSelected
+                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-105'
+                      : (isToday ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100' : 'text-slate-700 hover:bg-slate-100 hover:-translate-y-0.5')
+                    }`}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between">
         <button
