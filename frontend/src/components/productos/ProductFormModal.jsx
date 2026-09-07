@@ -13,7 +13,8 @@ const ProductFormModal = ({
   editMode,
   isAdmin,
   proveedores,
-  loading
+  loading,
+  categorias = []
 }) => {
   const defaultData = {
     id_producto: '',
@@ -71,7 +72,7 @@ const ProductFormModal = ({
               <input id="input_codigo" required type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
             </div>
             <div className="space-y-2">
-              <label htmlFor="input_nombre_producto" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Producto</label>
+              <label htmlFor="input_nombre_producto" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Producto <span className="text-slate-400 normal-case">(Ej. Cuaderno 100 Hojas, Gaseosa 2L)</span></label>
               <input id="input_nombre_producto" required type="text" value={formData.nombre_producto} onChange={e => setFormData({...formData, nombre_producto: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
             </div>
           </div>
@@ -79,24 +80,17 @@ const ProductFormModal = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
               <label htmlFor="input_categoria" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
-              <CustomSelect 
+              <input 
                 id="input_categoria"
+                list="lista_categorias"
                 value={formData.categoria} 
-                onChange={val => setFormData({...formData, categoria: val})}
-                placeholder="Seleccione..."
-                options={[
-                  { value: '', label: 'Seleccione...' },
-                  { value: 'Alimentos Secos', label: 'Alimentos Secos' },
-                  { value: 'Lácteos', label: 'Lácteos' },
-                  { value: 'Aseo', label: 'Aseo' },
-                  { value: 'Bebidas', label: 'Bebidas' },
-                  { value: 'Carnes', label: 'Carnes' },
-                  { value: 'Frutas y Verduras', label: 'Frutas y Verduras' },
-                  { value: 'Panadería', label: 'Panadería' },
-                  { value: 'Otros', label: 'Otros' }
-                ]}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus-within:border-indigo-500 transition-colors"
+                onChange={e => setFormData({...formData, categoria: e.target.value})}
+                placeholder="Escribe o selecciona..."
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors"
               />
+              <datalist id="lista_categorias">
+                {categorias.map(c => <option key={c} value={c} />)}
+              </datalist>
             </div>
             <div className="space-y-2">
               <label htmlFor="input_subcategoria" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Subcategoría <span className="text-slate-400">(Opcional)</span></label>
@@ -131,12 +125,6 @@ const ProductFormModal = ({
                   placeholder="Seleccionar vencimiento..." 
                   align="left-flyout"
                 />
-              </div>
-            )}
-            {formData.tipo_producto !== 'Perecedero' && (
-              <div className="space-y-2">
-                <label htmlFor="input_detalles" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Detalles Adicionales <span className="text-slate-400">(Opcional)</span></label>
-                <input id="input_detalles" type="text" value={formData.subcategoria} onChange={e => setFormData({...formData, subcategoria: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" placeholder="Ej: Pack x6, 500ml..." />
               </div>
             )}
           </div>

@@ -139,6 +139,7 @@ const ProductosPage = () => {
         isAdmin={isAdmin}
         proveedores={proveedores}
         loading={formLoading}
+        categorias={categorias}
       />
 
       <VentaModal
