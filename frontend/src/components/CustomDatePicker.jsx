@@ -123,9 +123,20 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
 
       {/* Header Calendario (Mes y Año) */}
       <div className="flex justify-between items-center mb-6">
-        <h4 className="text-lg font-black text-slate-800 italic uppercase tracking-tighter">
-          {meses[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-        </h4>
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-black text-slate-800 italic uppercase tracking-tighter">
+            {meses[currentMonth.getMonth()]}
+          </span>
+          <select
+            value={currentMonth.getFullYear()}
+            onChange={(e) => setCurrentMonth(new Date(parseInt(e.target.value), currentMonth.getMonth(), 1))}
+            className="text-lg font-black text-indigo-600 bg-transparent outline-none cursor-pointer hover:bg-slate-50 rounded italic tracking-tighter"
+          >
+            {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 5 + i).map(y => (
+              <option key={y} value={y} className="text-base font-medium not-italic">{y}</option>
+            ))}
+          </select>
+        </div>
         <div className="flex gap-2">
           <button onClick={prevMonth} className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 flex items-center justify-center font-bold transition-colors">
             &larr;

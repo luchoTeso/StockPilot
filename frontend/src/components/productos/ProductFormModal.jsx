@@ -59,7 +59,7 @@ const ProductFormModal = ({
   return createPortal(
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={onClose} role="presentation" aria-hidden="true"></div>
-      <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-premium shadow-2xl animate-scale-in relative z-10 transition-transform transition-opacity">
+      <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-2xl animate-scale-in relative z-10 transition-transform transition-opacity">
         <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-slate-50">
           <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">{editMode ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h3>
           <button onClick={onClose} type="button" className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-rose-100 flex items-center justify-center text-xl transition-colors shadow-sm">&times;</button>
