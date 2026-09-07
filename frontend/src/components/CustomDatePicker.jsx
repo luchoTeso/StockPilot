@@ -20,25 +20,42 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
   const [currentMonth, setCurrentMonth] = useState(() => getInitialDate());
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
-  const [coords, setCoords] = useState({ top: 0, left: 0, right: 0, origin: 'top' });
+  const [coords, setCoords] = useState({ top: 'auto', bottom: 'auto', left: 'auto', right: 'auto', origin: 'top left' });
 
   const updatePosition = useCallback(() => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const popoverHeight = 380; // approximate max height of calendar
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
       if (align === 'right-flyout') {
         setCoords({
-          top: rect.top - 180, // Alinear el centro del calendario con el botón
-          left: rect.right + 20, // Del lado derecho del botón
+          top: rect.top - 180,
+          bottom: 'auto',
+          left: rect.right + 20,
           right: 'auto',
           origin: 'left center'
         });
       } else {
-        setCoords({
-          top: rect.bottom + 8,
-          left: align === 'right' ? 'auto' : rect.left,
-          right: align === 'right' ? window.innerWidth - rect.right : 'auto',
-          origin: align === 'right' ? 'top right' : 'top left'
-        });
+        // Si no hay suficiente espacio abajo pero sí arriba, ábrelo hacia arriba
+        if (spaceBelow < popoverHeight && spaceAbove > spaceBelow) {
+          setCoords({
+            top: 'auto',
+            bottom: window.innerHeight - rect.top + 8,
+            left: align === 'right' ? 'auto' : rect.left,
+            right: align === 'right' ? window.innerWidth - rect.right : 'auto',
+            origin: align === 'right' ? 'bottom right' : 'bottom left'
+          });
+        } else {
+          setCoords({
+            top: rect.bottom + 8,
+            bottom: 'auto',
+            left: align === 'right' ? 'auto' : rect.left,
+            right: align === 'right' ? window.innerWidth - rect.right : 'auto',
+            origin: align === 'right' ? 'top right' : 'top left'
+          });
+        }
       }
     }
   }, [align]);
@@ -115,11 +132,12 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
     <div
       ref={dropdownRef}
       style={{
-        top: `${coords.top}px`,
+        ...(coords.top !== 'auto' ? { top: `${coords.top}px` } : {}),
+        ...(coords.bottom !== 'auto' ? { bottom: `${coords.bottom}px` } : {}),
         ...(coords.right !== 'auto' ? { right: `${coords.right}px` } : { left: `${coords.left}px` }),
         transformOrigin: coords.origin
       }}
-      className={`fixed z-[9999] p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] w-full min-w-[320px] max-w-[320px] animate-scale-in font-outfit`}
+      className={`fixed z-[9999] p-5 sm:p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] w-full min-w-[300px] max-w-[320px] animate-scale-in font-outfit`}
     >
 
       {/* Header Calendario (Mes y Año) */}
