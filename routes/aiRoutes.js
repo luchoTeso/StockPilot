@@ -21,6 +21,9 @@ router.post('/apply-strategy', requireLogin, aiController.applyPromotionStrategy
 // Alertas profesionales (Motor de Decisión Fase 2)
 router.get('/alerts', requireLogin, aiController.getProAlerts);
 
+// Sugerencia dinámica de stock mínimo y de seguridad (Asistente IA)
+router.get('/suggest-alerts', requireLogin, aiController.suggestStockAlerts);
+
 // Tendencia de precios histórica (Gráfica de Variaciones IA)
 router.get('/price-trend', requireLogin, aiController.getPriceTrend);
 

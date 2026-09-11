@@ -33,15 +33,66 @@ const ProductFormModal = ({
   };
 
   const [formData, setFormData] = useState(defaultData);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [aiSuccess, setAiSuccess] = useState(null);
+  const [updatedFields, setUpdatedFields] = useState([]);
+
+  const handleSuggestAlerts = async () => {
+    setIsSuggesting(true);
+    setAiError(null);
+    setAiSuccess(null);
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      if (formData.id_producto) params.append('id_producto', formData.id_producto);
+      if (formData.categoria) params.append('categoria', formData.categoria);
+      if (formData.id_proveedor) params.append('id_proveedor', formData.id_proveedor);
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/ia/suggest-alerts?${params.toString()}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      
+      if (data.success && data.suggestions) {
+        setFormData(prev => ({
+          ...prev,
+          stock_minimo: data.suggestions.stock_minimo.toString(),
+          stock_seguridad: data.suggestions.stock_seguridad.toString(),
+          lead_time: data.suggestions.lead_time.toString()
+        }));
+        setUpdatedFields(['stock_minimo', 'stock_seguridad', 'lead_time']);
+        if (data.suggestions.nota) {
+          setAiSuccess(data.suggestions.nota);
+        }
+      } else {
+        setAiError(data.error || 'Ocurrió un problema obteniendo las sugerencias.');
+      }
+    } catch (e) {
+      console.error(e);
+      setAiError('Error de conexión al solicitar sugerencias de la IA.');
+    } finally {
+      setIsSuggesting(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
+      setAiError(null);
+      setAiSuccess(null);
+      setUpdatedFields([]);
       if (initialData) {
+        let formattedDate = initialData.fecha_vencimiento || '';
+        if (formattedDate.includes('T')) {
+          formattedDate = formattedDate.split('T')[0];
+        }
+
         setFormData({
           ...defaultData,
           ...initialData,
           precio_unitario: initialData.precio ?? initialData.precio_unitario ?? '',
-          cantidad: initialData.cantidad ?? ''
+          cantidad: initialData.cantidad ?? '',
+          fecha_vencimiento: formattedDate
         });
       } else {
         setFormData(defaultData);
@@ -149,9 +200,30 @@ const ProductFormModal = ({
                   <span className="ml-auto text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                 </summary>
                 <div className="mt-4 p-5 bg-indigo-50/30 border border-indigo-100 rounded-2xl space-y-5">
-                  <p className="text-[9px] font-bold text-slate-500 leading-relaxed">
-                    Estos valores determinan cómo la IA y el motor de alertas evalúan el estado de este producto. Si no los configuras, se usarán los valores por defecto.
+                  <p className="text-[9px] font-bold text-slate-500 leading-relaxed flex items-center justify-between">
+                    <span>Estos valores determinan cómo la IA y el motor de alertas evalúan el estado de este producto.</span>
+                    <button 
+                      type="button" 
+                      onClick={handleSuggestAlerts} 
+                      disabled={isSuggesting}
+                      className="ml-4 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-bold text-[10px] flex items-center gap-1.5 transition-colors shadow-sm"
+                    >
+                      {isSuggesting ? 'Calculando...' : '✨ Sugerir con IA'}
+                    </button>
                   </p>
+                  
+                  {aiError && (
+                    <div className="p-3 bg-red-50/50 border border-red-100 rounded-xl flex items-start gap-2">
+                      <span className="text-red-500 mt-0.5 text-xs">⚠️</span>
+                      <p className="text-[10px] text-red-600 font-bold">{aiError}</p>
+                    </div>
+                  )}
+                  {aiSuccess && (
+                    <div className="p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5 text-xs">✨</span>
+                      <p className="text-[10px] text-emerald-600 font-bold">{aiSuccess}</p>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <label htmlFor="input_proveedor" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1"><Package size={12} /> Proveedor Principal (Opcional)</label>
@@ -164,7 +236,7 @@ const ProductFormModal = ({
                         { value: '', label: 'Ninguno / Sin asignar' },
                         ...proveedores.map(prov => ({
                           value: prov.id_proveedor,
-                          label: `${prov.nombre_empresa} (${prov.contacto_principal})`
+                          label: prov.contacto_principal && prov.contacto_principal !== 'null' ? `${prov.nombre_empresa} (${prov.contacto_principal})` : prov.nombre_empresa
                         }))
                       ]}
                       className="p-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
@@ -173,33 +245,63 @@ const ProductFormModal = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <label htmlFor="input_stock_min" className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 flex items-center gap-1">
-                        Cantidad Mínima
+                      <label htmlFor="input_stock_minimo" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1">
+                        Stock Mínimo
                         <Tooltip text="Cantidad mínima antes de activar alerta amarilla (Pedir más)">
                           <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
                         </Tooltip>
                       </label>
-                      <input id="input_stock_min" type="number" min="0" value={formData.stock_minimo} onChange={e => setFormData({ ...formData, stock_minimo: e.target.value })} className="w-full p-3 bg-white border border-amber-200 rounded-xl text-sm font-black text-amber-700 focus:border-amber-500 outline-none text-center transition-colors" />
+                      <input
+                        type="number"
+                        id="input_stock_minimo"
+                        min="0"
+                        value={formData.stock_minimo}
+                        onChange={e => {
+                          setFormData({ ...formData, stock_minimo: e.target.value });
+                          setUpdatedFields(prev => prev.filter(f => f !== 'stock_minimo'));
+                        }}
+                        className={`w-full p-3 border rounded-xl text-sm font-black outline-none text-center transition-all duration-500 ${updatedFields.includes('stock_minimo') ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200 text-indigo-700' : 'bg-white border-amber-200 text-amber-700 focus:border-amber-500'}`}
+                      />
                       <p className="text-[8px] text-slate-400 font-bold text-center">Avisa cuándo comprar</p>
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="input_stock_seguridad" className="text-[10px] font-black text-rose-600 uppercase tracking-widest ml-1 flex items-center gap-1">
-                        Stock de Emergencia
+                      <label htmlFor="input_stock_seguridad" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1">
+                        Stock Seguridad
                         <Tooltip text="Colchón de emergencia. Si baja de aquí, se activa alerta roja (Agotado)">
                           <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
                         </Tooltip>
                       </label>
-                      <input id="input_stock_seguridad" type="number" min="0" value={formData.stock_seguridad} onChange={e => setFormData({ ...formData, stock_seguridad: e.target.value })} className="w-full p-3 bg-white border border-rose-200 rounded-xl text-sm font-black text-rose-600 focus:border-rose-500 outline-none text-center transition-colors" />
+                      <input
+                        type="number"
+                        id="input_stock_seguridad"
+                        min="0"
+                        value={formData.stock_seguridad}
+                        onChange={e => {
+                          setFormData({ ...formData, stock_seguridad: e.target.value });
+                          setUpdatedFields(prev => prev.filter(f => f !== 'stock_seguridad'));
+                        }}
+                        className={`w-full p-3 border rounded-xl text-sm font-black outline-none text-center transition-all duration-500 ${updatedFields.includes('stock_seguridad') ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200 text-indigo-700' : 'bg-white border-rose-200 text-rose-600 focus:border-rose-500'}`}
+                      />
                       <p className="text-[8px] text-slate-400 font-bold text-center">Avisa riesgo de quiebre</p>
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="input_lead_time" className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1 flex items-center gap-1">
-                        Días para recibir pedido
+                      <label htmlFor="input_lead_time" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1">
+                        Días Recepción
                         <Tooltip text="Días que tarda el proveedor en entregarte este producto" align="right">
                           <span className="text-slate-400/80 hover:text-indigo-500 font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
                         </Tooltip>
                       </label>
-                      <input id="input_lead_time" type="number" min="1" value={formData.lead_time} onChange={e => setFormData({ ...formData, lead_time: e.target.value })} className="w-full p-3 bg-white border border-indigo-200 rounded-xl text-sm font-black text-indigo-600 focus:border-indigo-500 outline-none text-center transition-colors" />
+                      <input
+                        type="number"
+                        id="input_lead_time"
+                        min="1"
+                        value={formData.lead_time}
+                        onChange={e => {
+                          setFormData({ ...formData, lead_time: e.target.value });
+                          setUpdatedFields(prev => prev.filter(f => f !== 'lead_time'));
+                        }}
+                        className={`w-full p-3 border rounded-xl text-sm font-black outline-none text-center transition-all duration-500 ${updatedFields.includes('lead_time') ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200 text-indigo-700' : 'bg-white border-indigo-200 text-indigo-600 focus:border-indigo-500'}`}
+                      />
                       <p className="text-[8px] text-slate-400 font-bold text-center">Días de entrega</p>
                     </div>
                   </div>

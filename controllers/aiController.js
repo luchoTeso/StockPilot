@@ -709,6 +709,107 @@ const aiController = {
     } catch (e) {
       res.status(500).json({ error: safeError(e, 'Error obteniendo tendencia de precios') });
     }
+  },
+
+  /**
+   * Sugerencia dinámica de alertas de inventario (Stock Mínimo, Stock Seguridad, Lead Time)
+   * GET /api/ia/suggest-alerts?id_producto=X&categoria=Y&id_proveedor=Z
+   */
+  suggestStockAlerts: async (req, res) => {
+    try {
+      const tiendaId = req.session.tiendaId;
+      if (!tiendaId) return res.status(401).json({ error: "Sesión inválida" });
+      const { id_producto, categoria, id_proveedor } = req.query;
+
+      let avgDailySales = 0;
+      let suggestedLeadTime = 3; // Valor por defecto seguro (3 días)
+
+      if (id_producto) {
+        // 1. Producto Existente: Ventas promedio del propio producto en los últimos 30 días
+        const salesRows = await db.allAsync(`
+          SELECT COALESCE(SUM(vp.cantidad), 0) / 30.0 AS avg_daily
+          FROM VentasProductos vp
+          JOIN Ventas v ON vp.id_venta = v.id_venta
+          WHERE vp.id_producto = ? AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
+        `, [id_producto]);
+        
+        if (salesRows.length > 0 && salesRows[0].avg_daily > 0) {
+          avgDailySales = parseFloat(salesRows[0].avg_daily);
+        }
+
+        // Obtener el lead_time actual del producto (si lo tiene)
+        const prodRows = await db.getAsync(`SELECT lead_time FROM Productos WHERE id_producto = ?`, [id_producto]);
+        if (prodRows && prodRows.lead_time > 0) {
+          suggestedLeadTime = prodRows.lead_time;
+        }
+
+      } else if (categoria) {
+        // 2. Producto Nuevo: Velocidad promedio de ventas de otros productos de la MISMA CATEGORÍA
+        const catSales = await db.allAsync(`
+          SELECT COALESCE(SUM(vp.cantidad), 0) / 30.0 AS cat_avg_daily
+          FROM VentasProductos vp
+          JOIN Ventas v ON vp.id_venta = v.id_venta
+          JOIN Productos p ON vp.id_producto = p.id_producto
+          WHERE p.id_tienda = ? AND p.categoria = ? 
+          AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
+        `, [tiendaId, categoria]);
+
+        if (catSales.length > 0 && catSales[0].cat_avg_daily > 0) {
+          const catCount = await db.getAsync(`SELECT COUNT(*) as count FROM Productos WHERE id_tienda = ? AND categoria = ?`, [tiendaId, categoria]);
+          const numProducts = (catCount && catCount.count > 0) ? catCount.count : 1;
+          avgDailySales = parseFloat(catSales[0].cat_avg_daily) / numProducts;
+        }
+      }
+
+      // Si aún no hay historial (ni propio ni de categoría), devolver valores por defecto
+      if (!avgDailySales || avgDailySales <= 0) {
+        return res.json({
+          success: true,
+          suggestions: {
+            stock_minimo: 5,
+            stock_seguridad: 2,
+            lead_time: suggestedLeadTime,
+            nota: 'Sin historial de ventas suficiente. Se sugieren valores base predeterminados.'
+          }
+        });
+      }
+
+      // 3. Lead Time para producto nuevo: Promedio del proveedor
+      if (!id_producto && id_proveedor) {
+         const provProd = await db.getAsync(`
+           SELECT AVG(lead_time) as avg_lead 
+           FROM Productos 
+           WHERE id_tienda = ? AND id_proveedor = ? AND lead_time > 0
+         `, [tiendaId, id_proveedor]);
+         
+         if (provProd && provProd.avg_lead) {
+           suggestedLeadTime = Math.ceil(provProd.avg_lead);
+         }
+      }
+
+      // 4. Matemáticas (Reorder Point)
+      // Stock Emergencia = Colchón de 2 días de venta
+      // Stock Mínimo = (Ventas Diarias * Días de Entrega) + Stock Emergencia
+      let stockSeguridad = Math.ceil(avgDailySales * 2); 
+      let stockMinimo = Math.ceil((avgDailySales * suggestedLeadTime) + stockSeguridad);
+
+      // Asegurar que no sugiera valores irrisorios
+      if (stockMinimo < 5) stockMinimo = 5;
+      if (stockSeguridad < 2) stockSeguridad = 2;
+
+      res.json({
+        success: true,
+        suggestions: {
+          stock_minimo: stockMinimo,
+          stock_seguridad: stockSeguridad,
+          lead_time: suggestedLeadTime,
+          nota: id_producto ? 'Sugerencia basada en las ventas reales de los últimos 30 días.' : 'Sugerencia basada en el promedio de ventas de la categoría.'
+        }
+      });
+    } catch (e) {
+      console.error('❌ ERROR EN SUGGEST_ALERTS:', e);
+      res.status(500).json({ error: safeError(e, 'Error calculando sugerencias de stock') });
+    }
   }
 };
 
