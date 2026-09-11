@@ -2,12 +2,14 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
+const isNeon = process.env.DATABASE_URL && process.env.DATABASE_URL.includes('neon.tech');
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : 25,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    connectionTimeoutMillis: 20000, // 20 segundos para tolerar cold starts de Neon Serverless
+    ssl: (process.env.NODE_ENV === 'production' || isNeon) ? { rejectUnauthorized: false } : false
 });
 
 const bogotaDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' });
@@ -133,64 +135,77 @@ const db = {
 };
 
 // -----------------------------------------------------------------------------
-// AUTO-MIGRACIÓN PARA PRODUCCIÓN (RENDER)
+// AUTO-MIGRACIÓN PARA PRODUCCIÓN (RENDER + NEON SERVERLESS)
 // Evita que la app falle si el usuario olvida correr los scripts de migración.
+// Incluye reintentos automáticos para tolerar cold starts de Neon.
 // -----------------------------------------------------------------------------
 (async function autoMigrate() {
-    try {
-        // 1. Asegurar que id_propietario existe en Tienda
-        await pool.query(`
-            ALTER TABLE Tienda 
-            ADD COLUMN IF NOT EXISTS id_propietario INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
-        `);
-        
-        // 2. Asignar el administrador principal como propietario de las tiendas que no tengan uno
-        await pool.query(`
-            UPDATE Tienda t
-            SET id_propietario = (
-                SELECT id_usuario FROM Usuarios u 
-                WHERE u.id_tienda = t.id_tienda AND u.rol = 'Administrador' 
-                ORDER BY u.id_usuario ASC LIMIT 1
-            )
-            WHERE t.id_propietario IS NULL;
-        `);
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`⏳ Auto-migration: Verificando esquema en Neon/PostgreSQL (intento ${attempt}/${maxRetries})...`);
 
-        // 3. Crear índices de rendimiento si no existen (Optimizaciones Fase 1)
-        await pool.query(`
-            CREATE INDEX IF NOT EXISTS idx_productos_tienda ON Productos(id_tienda);
-            CREATE INDEX IF NOT EXISTS idx_productos_codigo ON Productos(codigo);
-            CREATE INDEX IF NOT EXISTS idx_productos_tienda_estado ON Productos(id_tienda, estado);
-            CREATE INDEX IF NOT EXISTS idx_productos_tienda_nombre ON Productos(id_tienda, nombre_producto);
-            CREATE INDEX IF NOT EXISTS idx_productos_proveedor ON Productos(id_proveedor);
+            // 1. Asegurar que id_propietario existe en Tienda
+            await pool.query(`
+                ALTER TABLE Tienda 
+                ADD COLUMN IF NOT EXISTS id_propietario INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
+            `);
             
-            CREATE INDEX IF NOT EXISTS idx_ventas_tienda ON Ventas(id_tienda);
-            CREATE INDEX IF NOT EXISTS idx_ventas_tienda_fecha ON Ventas(id_tienda, fecha_salida DESC);
-            CREATE INDEX IF NOT EXISTS idx_ventas_vendedor ON Ventas(id_vendedor);
-            CREATE INDEX IF NOT EXISTS idx_ventasprod_venta ON VentasProductos(id_venta);
-            CREATE INDEX IF NOT EXISTS idx_ventasprod_producto ON VentasProductos(id_producto);
+            // 2. Asignar el administrador principal como propietario de las tiendas que no tengan uno
+            await pool.query(`
+                UPDATE Tienda t
+                SET id_propietario = (
+                    SELECT id_usuario FROM Usuarios u 
+                    WHERE u.id_tienda = t.id_tienda AND u.rol = 'Administrador' 
+                    ORDER BY u.id_usuario ASC LIMIT 1
+                )
+                WHERE t.id_propietario IS NULL;
+            `);
+
+            // 3. Crear índices de rendimiento si no existen (Optimizaciones Fase 1)
+            await pool.query(`
+                CREATE INDEX IF NOT EXISTS idx_productos_tienda ON Productos(id_tienda);
+                CREATE INDEX IF NOT EXISTS idx_productos_codigo ON Productos(codigo);
+                CREATE INDEX IF NOT EXISTS idx_productos_tienda_estado ON Productos(id_tienda, estado);
+                CREATE INDEX IF NOT EXISTS idx_productos_tienda_nombre ON Productos(id_tienda, nombre_producto);
+                CREATE INDEX IF NOT EXISTS idx_productos_proveedor ON Productos(id_proveedor);
+                
+                CREATE INDEX IF NOT EXISTS idx_ventas_tienda ON Ventas(id_tienda);
+                CREATE INDEX IF NOT EXISTS idx_ventas_tienda_fecha ON Ventas(id_tienda, fecha_salida DESC);
+                CREATE INDEX IF NOT EXISTS idx_ventas_vendedor ON Ventas(id_vendedor);
+                CREATE INDEX IF NOT EXISTS idx_ventasprod_venta ON VentasProductos(id_venta);
+                CREATE INDEX IF NOT EXISTS idx_ventasprod_producto ON VentasProductos(id_producto);
+                
+                CREATE INDEX IF NOT EXISTS idx_movimientos_tienda_fecha ON MovimientosStock(id_tienda, fecha_movimiento DESC);
+                CREATE INDEX IF NOT EXISTS idx_movimientos_producto ON MovimientosStock(id_producto);
+                CREATE INDEX IF NOT EXISTS idx_movimientos_usuario ON MovimientosStock(id_usuario);
+                
+                CREATE INDEX IF NOT EXISTS idx_alertas_tienda_resuelta ON Alertas(id_tienda, resuelta);
+                CREATE INDEX IF NOT EXISTS idx_alertas_tienda_fecha ON Alertas(id_tienda, fecha_creacion DESC);
+                CREATE INDEX IF NOT EXISTS idx_alertas_producto ON Alertas(id_producto);
+                
+                CREATE INDEX IF NOT EXISTS idx_ordenes_tienda ON Ordenes_Compra(id_tienda);
+                CREATE INDEX IF NOT EXISTS idx_ordenes_detalle_orden ON Ordenes_Detalle(id_orden);
+                CREATE INDEX IF NOT EXISTS idx_proveedores_tienda ON Proveedores(id_tienda);
+                
+                CREATE INDEX IF NOT EXISTS idx_tienda_propietario ON Tienda(id_propietario);
+                CREATE INDEX IF NOT EXISTS idx_usuarios_tienda ON Usuarios(id_tienda);
+                CREATE INDEX IF NOT EXISTS idx_historial_producto ON Historial_Precios(id_producto);
+                CREATE INDEX IF NOT EXISTS idx_reportes_tienda ON reportes(id_tienda);
+                CREATE INDEX IF NOT EXISTS idx_auditoria_ia_tienda ON Auditoria_IA(id_tienda);
+            `);
             
-            CREATE INDEX IF NOT EXISTS idx_movimientos_tienda_fecha ON MovimientosStock(id_tienda, fecha_movimiento DESC);
-            CREATE INDEX IF NOT EXISTS idx_movimientos_producto ON MovimientosStock(id_producto);
-            CREATE INDEX IF NOT EXISTS idx_movimientos_usuario ON MovimientosStock(id_usuario);
-            
-            CREATE INDEX IF NOT EXISTS idx_alertas_tienda_resuelta ON Alertas(id_tienda, resuelta);
-            CREATE INDEX IF NOT EXISTS idx_alertas_tienda_fecha ON Alertas(id_tienda, fecha_creacion DESC);
-            CREATE INDEX IF NOT EXISTS idx_alertas_producto ON Alertas(id_producto);
-            
-            CREATE INDEX IF NOT EXISTS idx_ordenes_tienda ON Ordenes_Compra(id_tienda);
-            CREATE INDEX IF NOT EXISTS idx_ordenes_detalle_orden ON Ordenes_Detalle(id_orden);
-            CREATE INDEX IF NOT EXISTS idx_proveedores_tienda ON Proveedores(id_tienda);
-            
-            CREATE INDEX IF NOT EXISTS idx_tienda_propietario ON Tienda(id_propietario);
-            CREATE INDEX IF NOT EXISTS idx_usuarios_tienda ON Usuarios(id_tienda);
-            CREATE INDEX IF NOT EXISTS idx_historial_producto ON Historial_Precios(id_producto);
-            CREATE INDEX IF NOT EXISTS idx_reportes_tienda ON reportes(id_tienda);
-            CREATE INDEX IF NOT EXISTS idx_auditoria_ia_tienda ON Auditoria_IA(id_tienda);
-        `);
-        
-        console.log('✅ Auto-migration: Esquema de Tienda e Índices de Rendimiento actualizados.');
-    } catch (err) {
-        console.error('❌ Auto-migration error:', err.message);
+            console.log('✅ Auto-migration: Esquema de Tienda e Índices de Rendimiento actualizados exitosamente.');
+            return; // Éxito, salir de la función
+        } catch (err) {
+            console.warn(`⚠️ Auto-migration intento ${attempt}/${maxRetries} falló:`, err.message);
+            if (attempt === maxRetries) {
+                console.error('❌ Auto-migration error definitivo:', err.message);
+            } else {
+                // Esperar 3 segundos para que Neon termine su cold-start
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+        }
     }
 })();
 
