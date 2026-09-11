@@ -32,7 +32,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)' }}>
       {/* Orbes decorativos */}
       <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-15%] left-[-10%] w-[400px] h-[400px] bg-violet-500/15 rounded-full blur-[100px] pointer-events-none"></div>
@@ -43,7 +43,7 @@ const LoginPage = () => {
           <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600"></div>
           
           <div className="text-center mb-10">
-            <div className="w-20 h-20 bg-slate-900 text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-slate-200 hover:scale-105 transition-transform cursor-default"><Store size={36} /></div>
+            <div className="w-20 h-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-600/25 hover:scale-105 transition-transform cursor-default"><Store size={36} /></div>
             <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">StockPilot</h1>
             <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2 font-outfit">Gestión Inteligente de Inventario</p>
           </div>

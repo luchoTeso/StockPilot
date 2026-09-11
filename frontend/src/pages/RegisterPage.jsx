@@ -74,7 +74,7 @@ const RegisterPage = () => {
   return (
     <div
       className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)' }}
     >
       {/* Orbes decorativos */}
       <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
@@ -98,7 +98,7 @@ const RegisterPage = () => {
 
           {/* Header */}
           <div className="text-center mb-10 mt-6">
-            <div className="w-16 h-16 bg-slate-900 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-slate-200 hover:scale-105 transition-transform cursor-default">
+            <div className="w-16 h-16 bg-indigo-600 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-indigo-600/25 hover:scale-105 transition-transform cursor-default">
               <Store size={28} />
             </div>
             <h1 className="text-3xl font-black text-slate-800 tracking-tighter italic uppercase">

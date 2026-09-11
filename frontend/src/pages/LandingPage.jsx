@@ -34,7 +34,7 @@ const LandingPage = () => {
   return (
     <div style={{
       fontFamily: "'Outfit', 'Inter Tight', system-ui, sans-serif",
-      background: '#0f172a',
+      background: '#1e293b',
       color: '#f8fafc',
       overflowX: 'hidden',
       minHeight: '100vh',
@@ -59,13 +59,13 @@ const LandingPage = () => {
         .reveal-delay-4 { transition-delay: 0.4s; }
 
         .nav-blur {
-          background: rgba(15,23,42,0.0);
+          background: rgba(30,41,59,0.0);
           backdrop-filter: none;
           transition: background 0.3s, backdrop-filter 0.3s, border-color 0.3s;
           border-bottom: 1px solid transparent;
         }
         .nav-blur.scrolled {
-          background: rgba(15,23,42,0.85);
+          background: rgba(30,41,59,0.85);
           backdrop-filter: blur(16px);
           border-bottom: 1px solid rgba(99,102,241,0.15);
         }
@@ -241,13 +241,13 @@ const LandingPage = () => {
             </div>
             <div style={{ display: 'flex', height: 380 }}>
               {/* Sidebar */}
-              <div style={{ width: 180, background: '#0f172a', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+              <div style={{ width: 180, background: '#334155', borderRight: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '0 8px' }}>
                   <span style={{ fontSize: 16 }}>🏪</span>
                   <span style={{ fontWeight: 900, fontSize: 11, letterSpacing: '-0.01em', fontStyle: 'italic', textTransform: 'uppercase' }}>StockPilot</span>
                 </div>
                 {[['📊','Vista General', true], ['💰','Ventas', false], ['📦','Catálogo', false], ['🚨','Monitor Alertas', false], ['🔧','Proveedores', false]].map(([ico, label, active]) => (
-                  <div key={label} style={{ padding: '9px 12px', borderRadius: 10, background: active ? '#6366f1' : 'transparent', color: active ? '#fff' : '#64748b', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div key={label} style={{ padding: '9px 12px', borderRadius: 10, background: active ? '#6366f1' : 'transparent', color: active ? '#fff' : '#cbd5e1', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span>{ico}</span>{label}
                   </div>
                 ))}
@@ -265,19 +265,19 @@ const LandingPage = () => {
                     </div>
                   ))}
                 </div>
-                <div style={{ background: '#0f172a', borderRadius: 16, padding: '16px 18px', color: '#fff' }}>
+                <div style={{ background: '#ffffff', borderRadius: 16, padding: '16px 18px', color: '#1e293b', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <div style={{ width: 32, height: 32, background: '#6366f1', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🚀</div>
+                    <div style={{ width: 32, height: 32, background: '#6366f1', color: '#fff', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🚀</div>
                     <div>
-                      <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: '-0.01em' }}>Consejero IA</p>
-                      <p style={{ fontSize: 8, color: '#a5b4fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Recomendaciones inteligentes</p>
+                      <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: '-0.01em', color: '#0f172a' }}>Consejero IA</p>
+                      <p style={{ fontSize: 8, color: '#4f46e5', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Recomendaciones inteligentes</p>
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                     {[['Arroz Roa 5kg', 'ALTA DEMANDA', '+42 ud sugeridas'], ['Aceite Girasol 1L', 'BAJA ROTACIÓN', 'Revisar stock']].map(([prod, tag, action]) => (
-                      <div key={prod} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        <p style={{ fontSize: 9, fontWeight: 900, color: '#a5b4fc', textTransform: 'uppercase', marginBottom: 4 }}>{prod}</p>
-                        <span style={{ fontSize: 8, fontWeight: 800, background: tag.includes('ALTA') ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)', color: tag.includes('ALTA') ? '#34d399' : '#f87171', padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase' }}>{tag}</span>
+                      <div key={prod} style={{ background: '#f8fafc', borderRadius: 10, padding: '10px 12px', border: '1px solid #e2e8f0' }}>
+                        <p style={{ fontSize: 9, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', marginBottom: 4 }}>{prod}</p>
+                        <span style={{ fontSize: 8, fontWeight: 800, background: tag.includes('ALTA') ? '#d1fae5' : '#fee2e2', color: tag.includes('ALTA') ? '#059669' : '#dc2626', padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase' }}>{tag}</span>
                         <p style={{ fontSize: 8, color: '#64748b', marginTop: 6, fontWeight: 700 }}>{action}</p>
                       </div>
                     ))}
