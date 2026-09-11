@@ -29,14 +29,15 @@ class Product {
     static async create(productData) {
         const query = `
             INSERT INTO Productos (
-                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                codigo, codigo_barras, nombre_producto, categoria, subcategoria, tipo_producto,
                 precio, cantidad, fecha_entrada, estado, id_tienda,
                 stock_minimo, stock_maximo, fecha_vencimiento, frecuencia_compra_dias, costo_compra,
                 stock_seguridad, lead_time, id_proveedor
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_DATE, 'Disponible', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_DATE, 'Disponible', ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const result = await db.runAsync(query, [
             productData.codigo,
+            productData.codigo_barras || null,
             productData.nombre_producto,
             productData.categoria,
             productData.subcategoria,
@@ -59,7 +60,7 @@ class Product {
     static async update(productId, productData) {
         const query = `
             UPDATE Productos SET
-            codigo = ?, nombre_producto = ?, categoria = ?, subcategoria = ?,
+            codigo = ?, codigo_barras = ?, nombre_producto = ?, categoria = ?, subcategoria = ?,
             tipo_producto = ?, precio = ?, cantidad = ?,
             stock_minimo = ?, stock_maximo = ?, fecha_vencimiento = ?,
             frecuencia_compra_dias = ?, costo_compra = ?,
@@ -68,6 +69,7 @@ class Product {
         `;
         const result = await db.runAsync(query, [
             productData.codigo,
+            productData.codigo_barras || null,
             productData.nombre_producto,
             productData.categoria,
             productData.subcategoria,
@@ -105,6 +107,21 @@ class Product {
     static async delete(productId) {
         const query = `DELETE FROM Productos WHERE id_producto = ?`;
         const result = await db.runAsync(query, [productId]);
+        return result.changes > 0;
+    }
+
+    static async findByBarcode(storeId, barcode) {
+        const query = `
+            SELECT * FROM Productos 
+            WHERE id_tienda = ? AND (codigo_barras = ? OR codigo = ?)
+            LIMIT 1
+        `;
+        return await db.getAsync(query, [storeId, barcode, barcode]);
+    }
+
+    static async linkBarcode(productId, barcode) {
+        const query = `UPDATE Productos SET codigo_barras = ? WHERE id_producto = ?`;
+        const result = await db.runAsync(query, [barcode, productId]);
         return result.changes > 0;
     }
 

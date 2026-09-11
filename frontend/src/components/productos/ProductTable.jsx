@@ -14,8 +14,6 @@ const ProductTable = ({
   loading,
   isAdmin,
   onEdit,
-  onSell,
-  onAddStock,
   onToggleStatus,
   onDelete
 }) => {
@@ -58,6 +56,9 @@ const ProductTable = ({
                     <td className="p-6">
                        <p className="font-black text-slate-800 text-sm">{p.nombre_producto}</p>
                        <p className="text-[10px] font-bold text-slate-500 mt-1 tracking-widest uppercase">Ref: {p.codigo || 'S/N'}</p>
+                       {p.codigo_barras && (
+                         <p className="text-[9px] font-bold text-slate-400 mt-0.5 tracking-wider font-mono bg-slate-100 inline-block px-1.5 rounded">EAN: {p.codigo_barras}</p>
+                       )}
                     </td>
                     <td className="hidden lg:table-cell p-6">
                       <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[9px] font-black uppercase tracking-widest">{p.categoria || 'Sin Info'}</span>
@@ -83,9 +84,6 @@ const ProductTable = ({
                       <div className="flex items-center justify-center gap-2">
                         {isActive ? (
                           <>
-                            <button onClick={() => onSell(p)} className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-colors transition-transform shadow-sm active:scale-95" title="Registrar Venta Directa"><DollarSign size={16} /></button>
-                            <button onClick={() => onAddStock(p)} className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-colors transition-transform shadow-sm active:scale-95" title="Ingresar Stock"><Package size={16} /></button>
-                            
                             {isAdmin && (
                               <>
                                  <div className="w-px h-8 bg-slate-200 mx-1"></div>

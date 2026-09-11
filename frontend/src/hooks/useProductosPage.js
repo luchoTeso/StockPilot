@@ -33,15 +33,7 @@ export const useProductosPage = () => {
   const [formData, setFormData] = useState(null);
   const [proveedores, setProveedores] = useState([]);
 
-  // Modal Venta
-  const [ventaModalOpen, setVentaModalOpen] = useState(false);
-  const [ventaLoading, setVentaLoading] = useState(false);
-  const [ventaProducto, setVentaProducto] = useState(null);
-
-  // Modal Agregar Stock
-  const [stockModalOpen, setStockModalOpen] = useState(false);
-  const [stockLoading, setStockLoading] = useState(false);
-  const [stockProducto, setStockProducto] = useState(null);
+  // Modales antiguos removidos
 
   // Modal Confirmar Toggle Estado
   const [toggleModalOpen, setToggleModalOpen] = useState(false);
@@ -52,6 +44,11 @@ export const useProductosPage = () => {
   const [eliminarModalOpen, setEliminarModalOpen] = useState(false);
   const [eliminarProductoSel, setEliminarProductoSel] = useState(null);
   const [eliminarLoading, setEliminarLoading] = useState(false);
+
+  // Modal Vincular Código de Barras
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [linkBarcodeCode, setLinkBarcodeCode] = useState('');
+  const [linkLoading, setLinkLoading] = useState(false);
 
   // Upload
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -257,22 +254,20 @@ export const useProductosPage = () => {
     }
   };
 
-  const submitVenta = async (cantidadVender) => {
-    if (ventaLoading) return;
-    setVentaLoading(true);
+  const submitLinkBarcode = async (productId, barcode) => {
+    if (linkLoading) return;
+    setLinkLoading(true);
     try {
-      await axios.post('/api/registrar-venta', {
-        id_producto: ventaProducto.id_producto,
-        cantidad: parseInt(cantidadVender, 10)
-      });
-      toast.success('Venta registrada con éxito');
-      setVentaModalOpen(false);
+      await axios.put(`/api/productos/${productId}/link-barcode`, { codigo_barras: barcode });
+      toast.success('Código de barras vinculado con éxito');
+      setLinkModalOpen(false);
+      setLinkBarcodeCode('');
       cargarProductos();
-      emitSyncEvent(SYNC_EVENTS.SALE_COMPLETED, { id: ventaProducto.id_producto });
+      emitSyncEvent(SYNC_EVENTS.PRODUCT_MODIFIED, { id: productId });
     } catch (err) {
       toast.error(`${err.response?.data?.error || err.message}`);
     } finally {
-      setVentaLoading(false);
+      setLinkLoading(false);
     }
   };
 
@@ -296,19 +291,32 @@ export const useProductosPage = () => {
     if (!code) return;
     if (modalOpen && !editMode) return;
     
-    const existingProduct = productos.find(p => p.codigo === code);
+    // Buscar primero por codigo_barras, luego por codigo
+    const existingProduct = productos.find(p => p.codigo_barras === code || p.codigo === code);
     
     if (existingProduct) {
-      setVentaProducto(existingProduct);
-      setVentaModalOpen(true);
+      // Si el producto existe, abrir modal de edición (ya no venta)
+      setEditMode(true);
+      setFormData(existingProduct);
+      setModalOpen(true);
       toast.success(`Producto encontrado: ${existingProduct.nombre_producto}`);
     } else {
+      // Si no existe, sugerir vinculación o creación
+      setLinkBarcodeCode(code);
+      setLinkModalOpen(true);
+    }
+  };
+
+  // Función para continuar con la creación de un nuevo producto (se llama desde el modal Link)
+  const openNewProductWithBarcode = async (code) => {
+      setLinkModalOpen(false);
       toast.info('Buscando detalles del producto...');
       const apiData = await fetchProductFromOpenFoodFacts(code);
       
       setFormData({
         id_producto: '',
-        codigo: code,
+        codigo: '',
+        codigo_barras: code,
         nombre_producto: apiData ? apiData.nombre_producto : '',
         categoria: apiData ? apiData.categoria : '',
         subcategoria: '',
@@ -330,7 +338,6 @@ export const useProductosPage = () => {
       } else {
         toast.info('Producto nuevo. Por favor ingresa los detalles.');
       }
-    }
   };
 
   // El scanner local de teclado llama a handleBarcodeScan
@@ -385,14 +392,13 @@ export const useProductosPage = () => {
     modalOpen, editMode, formLoading, formData, proveedores,
     handleOpenModal, handleCloseModal, handleSubmitProducto,
 
-    // Venta Modal
-    ventaModalOpen, setVentaModalOpen, ventaProducto, setVentaProducto, ventaLoading, submitVenta,
-
-    // Stock Modal
-    stockModalOpen, setStockModalOpen, stockProducto, setStockProducto, stockLoading, submitAgregarStock,
+    // Modales eliminados (Venta, Stock) ya no se exportan
 
     // Toggle Modal
     toggleModalOpen, setToggleModalOpen, toggleProducto, setToggleProducto, toggleLoading, submitToggleEstado,
+
+    // Link Barcode Modal
+    linkModalOpen, setLinkModalOpen, linkBarcodeCode, linkLoading, submitLinkBarcode, openNewProductWithBarcode,
 
     // Eliminar Modal
     eliminarModalOpen, setEliminarModalOpen, eliminarProductoSel, setEliminarProductoSel, eliminarLoading, submitEliminar

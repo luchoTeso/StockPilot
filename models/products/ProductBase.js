@@ -49,6 +49,7 @@ class ProductBase {
     toDBRecord() {
         return {
             ...this.data,
+            codigo_barras: this.data.codigo_barras || null,
             precio: parseFloat(this.data.precio) || 0,
             cantidad: parseInt(this.data.cantidad) || 0,
             id_proveedor: this.data.id_proveedor ? parseInt(this.data.id_proveedor) : null,

@@ -48,7 +48,7 @@ const Sidebar = () => {
 
   const links = [
     { to: "/dashboard",  text: "Vista general",    icon: LayoutDashboard },
-    { to: "/ventas",     text: "Ventas",            icon: ShoppingCart },
+    { to: "/ventas",     text: "Punto de Venta",    icon: ShoppingCart },
     { to: "/productos",  text: "Catálogo",          icon: Package },
     { to: "/alertas",    text: "Monitor Alertas",   icon: Bell },
     { to: "/tiendas",    text: user?.rol === 'Administrador' ? "Mis Tiendas" : "Mi Tienda", icon: Store },

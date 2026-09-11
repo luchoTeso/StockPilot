@@ -19,6 +19,7 @@ const ProductFormModal = ({
   const defaultData = {
     id_producto: '',
     codigo: '',
+    codigo_barras: '',
     nombre_producto: '',
     categoria: '',
     subcategoria: '',
@@ -119,13 +120,21 @@ const ProductFormModal = ({
         <form onSubmit={handleSubmit} className="p-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
-              <label htmlFor="input_codigo" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Código (Referencia)</label>
+              <label htmlFor="input_codigo" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">SKU / Referencia Interna</label>
               <input id="input_codigo" required type="text" value={formData.codigo} onChange={e => setFormData({ ...formData, codigo: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
             </div>
             <div className="space-y-2">
-              <label htmlFor="input_nombre_producto" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Producto</label>
-              <input id="input_nombre_producto" required type="text" value={formData.nombre_producto} onChange={e => setFormData({ ...formData, nombre_producto: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
+              <label htmlFor="input_codigo_barras" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex justify-between">
+                <span>Código de Barras (EAN/UPC)</span>
+                <span className="text-slate-400 font-bold lowercase tracking-normal">(Opcional)</span>
+              </label>
+              <input id="input_codigo_barras" type="text" value={formData.codigo_barras || ''} onChange={e => setFormData({ ...formData, codigo_barras: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" placeholder="Ej: 7702007031002" />
             </div>
+          </div>
+
+          <div className="mb-6 space-y-2">
+            <label htmlFor="input_nombre_producto" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Producto</label>
+            <input id="input_nombre_producto" required type="text" value={formData.nombre_producto} onChange={e => setFormData({ ...formData, nombre_producto: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">

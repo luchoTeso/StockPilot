@@ -120,6 +120,28 @@ function validateReport(req, res, next) {
 
     next();
 }
+/**
+ * Valida campos de venta múltiple (Carrito)
+ */
+function validateCartSale(req, res, next) {
+    const { items } = req.body;
+
+    if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ success: false, error: 'El carrito debe contener al menos un producto' });
+    }
+
+    for (const item of items) {
+        if (!item.id_producto || !item.cantidad) {
+            return res.status(400).json({ success: false, error: 'Cada ítem debe tener producto y cantidad' });
+        }
+        if (isNaN(parseInt(item.cantidad)) || parseInt(item.cantidad) <= 0) {
+            return res.status(400).json({ success: false, error: 'Las cantidades deben ser mayores a 0' });
+        }
+    }
+
+    next();
+}
+
 /* v8 ignore stop */
 
 module.exports = {
@@ -129,5 +151,6 @@ module.exports = {
     validateRegister,
     validateProduct,
     validateSale,
+    validateCartSale,
     validateReport
 };

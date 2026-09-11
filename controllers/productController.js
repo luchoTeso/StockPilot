@@ -150,14 +150,14 @@ class ProductController {
             const tiendaId = req.session.tiendaId;
             
             const {
-                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                codigo, codigo_barras, nombre_producto, categoria, subcategoria, tipo_producto,
                 precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
                 frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
                 id_proveedor
             } = req.body;
 
             const productInstance = ProductFactory.create({
-                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                codigo, codigo_barras, nombre_producto, categoria, subcategoria, tipo_producto,
                 precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
                 frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
                 id_proveedor,
@@ -192,14 +192,14 @@ class ProductController {
             }
             
             const {
-                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                codigo, codigo_barras, nombre_producto, categoria, subcategoria, tipo_producto,
                 precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
                 frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
                 id_proveedor
             } = req.body;
 
             const productInstance = ProductFactory.create({
-                codigo, nombre_producto, categoria, subcategoria, tipo_producto,
+                codigo, codigo_barras, nombre_producto, categoria, subcategoria, tipo_producto,
                 precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
                 frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
                 id_proveedor
@@ -245,6 +245,52 @@ class ProductController {
         } catch (error) {
             console.error('Error agregando stock:', error);
             res.status(500).json({ success: false, error: safeError(error, 'Error al agregar stock') });
+        }
+    }
+
+    static async getByBarcode(req, res) {
+        try {
+            const barcode = req.params.code;
+            const tiendaId = req.session.tiendaId;
+            const producto = await Product.findByBarcode(tiendaId, barcode);
+            
+            if (!producto) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+            }
+            
+            res.json(producto);
+        } catch (error) {
+            console.error('Error buscando por código de barras:', error);
+            res.status(500).json({ success: false, error: safeError(error, 'Error al buscar producto') });
+        }
+    }
+
+    static async linkBarcode(req, res) {
+        try {
+            const productId = req.params.id;
+            const { codigo_barras } = req.body;
+            const tiendaId = req.session.tiendaId;
+
+            if (!codigo_barras) {
+                return res.status(400).json({ success: false, error: 'Código de barras es requerido' });
+            }
+
+            // 🛡️ IDOR: Verificar propiedad
+            const ownership = await verifyProductOwnership(productId, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+            }
+
+            const success = await Product.linkBarcode(productId, codigo_barras);
+            
+            if (!success) {
+                return res.status(404).json({ success: false, error: 'Error al vincular el código' });
+            }
+
+            res.json({ success: true, message: "Código vinculado correctamente" });
+        } catch (error) {
+            console.error('Error vinculando código:', error);
+            res.status(500).json({ success: false, error: safeError(error, 'Error al vincular código') });
         }
     }
 

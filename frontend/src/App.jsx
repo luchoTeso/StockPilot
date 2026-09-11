@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
 import LoginPage from './pages/LoginPage';
-import VentasPage from './pages/VentasPage';
+import PuntoVentaPage from './pages/PuntoVentaPage';
 import MovimientosPage from './pages/MovimientosPage';
 import ProductosPage from './pages/ProductosPage';
 import ReportesPage from './pages/ReportesPage';
@@ -109,7 +109,7 @@ function App() {
           {/* Rutas Privadas con Layout del Dashboard */}
           <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/ventas" element={<VentasPage />} />
+            <Route path="/ventas" element={<PuntoVentaPage />} />
             <Route path="/productos" element={<ProductosPage />} />
             <Route path="/alertas" element={<AlertasPage />} />
             <Route path="/tiendas" element={<TiendasPage />} />

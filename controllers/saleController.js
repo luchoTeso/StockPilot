@@ -158,6 +158,107 @@ class SaleController {
             res.status(500).json({ success: false, error: "Error interno procesando la transacción" });
         }
     }
+
+    /**
+     * Registra una venta de múltiples productos (Carrito de compras).
+     * @async
+     * @function registerCartSale
+     * @param {import('express').Request} req - Debe contener un array 'items' con {id_producto, cantidad}.
+     * @param {import('express').Response} res
+     */
+    static async registerCartSale(req, res) {
+        try {
+            const { items } = req.body;
+            const id_vendedor = req.session.userId;
+            const id_tienda = req.session.tiendaId;
+
+            if (!id_vendedor || !id_tienda) {
+                return res.status(401).json({ success: false, error: "Sesión no válida" });
+            }
+            if (!Array.isArray(items) || items.length === 0) {
+                return res.status(400).json({ success: false, error: "El carrito está vacío" });
+            }
+
+            const client = await db.getClient();
+
+            try {
+                await client.query('BEGIN');
+
+                let totalVenta = 0;
+                const productosProcesados = [];
+
+                // 1. Validar todos los productos y calcular el total
+                for (const item of items) {
+                    const prodResult = await client.query('SELECT id_producto, cantidad, precio, nombre_producto FROM Productos WHERE id_producto = ? AND id_tienda = ?', [item.id_producto, id_tienda]);
+                    const producto = prodResult.rows[0];
+
+                    if (!producto) {
+                        throw new Error(`Producto ID ${item.id_producto} no encontrado`);
+                    }
+                    if (producto.cantidad < item.cantidad) {
+                        throw new Error(`Stock insuficiente para: ${producto.nombre_producto}`);
+                    }
+
+                    const subtotal = producto.precio * item.cantidad;
+                    totalVenta += subtotal;
+
+                    productosProcesados.push({
+                        ...producto,
+                        cantidadVendida: item.cantidad,
+                        precio_unitario: producto.precio
+                    });
+                }
+
+                // 2. Registrar Venta principal
+                const saleInsert = await client.query(
+                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida) 
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP) RETURNING id_venta`,
+                    [id_vendedor, id_tienda, totalVenta]
+                );
+                const id_venta = saleInsert.rows[0].id_venta;
+
+                // 3. Registrar detalles y descontar stock
+                for (const prod of productosProcesados) {
+                    // Detalle de venta
+                    await client.query(
+                        `INSERT INTO VentasProductos (id_venta, id_producto, cantidad, precio_unitario) VALUES (?, ?, ?, ?)`,
+                        [id_venta, prod.id_producto, prod.cantidadVendida, prod.precio_unitario]
+                    );
+
+                    // Descontar stock
+                    const stockFinalResult = prod.cantidad - prod.cantidadVendida;
+                    await client.query('UPDATE Productos SET cantidad = ? WHERE id_producto = ?', [stockFinalResult, prod.id_producto]);
+
+                    // Movimiento de stock
+                    await client.query(
+                        `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, stock_final, fecha_movimiento, observacion, id_usuario, id_tienda)
+                         VALUES (?, 'Salida', ?, ?, CURRENT_TIMESTAMP, 'Venta POS #' || LPAD(?::text, 6, '0'), ?, ?)`,
+                        [prod.id_producto, prod.cantidadVendida, stockFinalResult, id_venta, id_vendedor, id_tienda]
+                    );
+                }
+
+                await client.query('COMMIT');
+                res.json({ success: true, message: "Venta registrada correctamente", id_venta });
+
+                // Alertas asíncronas
+                Alert.generate(id_tienda).catch(e => console.error('Error regenerando alertas post-venta POS:', e));
+
+            } catch (txError) {
+                await client.query('ROLLBACK');
+                // Errores de validación controlados vs errores SQL
+                const msg = txError.message.includes('Stock') || txError.message.includes('Producto') 
+                    ? txError.message 
+                    : "Error interno procesando la venta";
+                return res.status(400).json({ success: false, error: msg });
+            } finally {
+                client.release();
+            }
+
+        } catch (error) {
+            console.error('Error en proceso de venta de carrito:', error);
+            res.status(500).json({ success: false, error: "Error interno" });
+        }
+    }
 }
 
 module.exports = SaleController;

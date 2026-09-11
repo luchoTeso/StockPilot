@@ -11,6 +11,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/api/productos', requireLogin, ProductController.getProducts);
 router.get('/api/productos/:id', requireLogin, ProductController.getProduct);
+router.get('/api/productos/barcode/:code', requireLogin, ProductController.getByBarcode);
+router.put('/api/productos/:id/link-barcode', requireLogin, sanitizeBody, ProductController.linkBarcode);
 router.post('/api/productos/bulk', requireLogin, upload.single('file'), ProductController.bulkUpload);
 router.post('/api/productos/admin', requireLogin, sanitizeBody, validateProduct, ProductController.createProduct);
 router.put('/api/productos/:id', requireLogin, sanitizeBody, validateProduct, ProductController.updateProduct);

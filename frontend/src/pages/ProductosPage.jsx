@@ -9,8 +9,6 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 
 import ProductTable from '../components/productos/ProductTable';
 import ProductFormModal from '../components/productos/ProductFormModal';
-import VentaModal from '../components/productos/VentaModal';
-import AgregarStockModal from '../components/productos/AgregarStockModal';
 
 const ProductosPage = () => {
   const navigate = useNavigate();
@@ -22,9 +20,8 @@ const ProductosPage = () => {
     uploadLoading, handleFileUpload,
     cameraScannerOpen, setCameraScannerOpen, handleBarcodeScan,
     modalOpen, editMode, formLoading, formData, proveedores, handleOpenModal, handleCloseModal, handleSubmitProducto,
-    ventaModalOpen, setVentaModalOpen, ventaProducto, setVentaProducto, ventaLoading, submitVenta,
-    stockModalOpen, setStockModalOpen, stockProducto, setStockProducto, stockLoading, submitAgregarStock,
     toggleModalOpen, setToggleModalOpen, toggleProducto, setToggleProducto, toggleLoading, submitToggleEstado,
+    linkModalOpen, setLinkModalOpen, linkBarcodeCode, linkLoading, submitLinkBarcode, openNewProductWithBarcode,
     eliminarModalOpen, setEliminarModalOpen, eliminarProductoSel, setEliminarProductoSel, eliminarLoading, submitEliminar
   } = useProductosPage();
 
@@ -124,8 +121,6 @@ const ProductosPage = () => {
         loading={loading}
         isAdmin={isAdmin}
         onEdit={(p) => handleOpenModal(p)}
-        onSell={(p) => { setVentaProducto(p); setVentaModalOpen(true); }}
-        onAddStock={(p) => { setStockProducto(p); setStockModalOpen(true); }}
         onToggleStatus={(p) => { setToggleProducto(p); setToggleModalOpen(true); }}
         onDelete={(p) => { setEliminarProductoSel(p); setEliminarModalOpen(true); }}
       />
@@ -142,21 +137,48 @@ const ProductosPage = () => {
         categorias={categorias}
       />
 
-      <VentaModal
-        isOpen={ventaModalOpen}
-        onClose={() => setVentaModalOpen(false)}
-        onSubmit={submitVenta}
-        producto={ventaProducto}
-        loading={ventaLoading}
-      />
+      {/* Modal de Vinculación de Código de Barras */}
+      {linkModalOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setLinkModalOpen(false)}></div>
+          <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-2xl relative z-10 animate-scale-in">
+             <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic mb-4">Código Escaneado</h3>
+             <p className="text-slate-600 font-bold mb-6">Hemos detectado el código <span className="bg-slate-100 text-slate-800 px-2 py-1 rounded font-mono">{linkBarcodeCode}</span>, pero no está registrado.</p>
+             
+             <div className="space-y-4">
+                <button onClick={() => openNewProductWithBarcode(linkBarcodeCode)} className="w-full text-left p-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-300 transition-colors group">
+                   <h4 className="font-black text-indigo-700 uppercase tracking-widest text-sm mb-1 group-hover:text-indigo-800">Crear Producto Nuevo</h4>
+                   <p className="text-xs font-bold text-indigo-500">Usar este EAN para registrar un artículo que no existe en el sistema.</p>
+                </button>
+                
+                <div className="relative flex items-center py-2">
+                   <div className="flex-grow border-t border-slate-200"></div>
+                   <span className="flex-shrink-0 mx-4 text-slate-400 text-xs font-black uppercase tracking-widest">O Vincular</span>
+                   <div className="flex-grow border-t border-slate-200"></div>
+                </div>
 
-      <AgregarStockModal
-        isOpen={stockModalOpen}
-        onClose={() => setStockModalOpen(false)}
-        onSubmit={submitAgregarStock}
-        producto={stockProducto}
-        loading={stockLoading}
-      />
+                <div className="p-4 rounded-2xl border-2 border-slate-200 bg-slate-50">
+                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-2">Selecciona un producto existente</label>
+                   <CustomSelect
+                      value=""
+                      onChange={(val) => {
+                         if(val) submitLinkBarcode(val, linkBarcodeCode);
+                      }}
+                      placeholder="Buscar producto..."
+                      options={[
+                        { value: '', label: 'Seleccione para vincular...' },
+                        ...productos.map(p => ({ value: p.id_producto, label: `${p.nombre_producto} (SKU: ${p.codigo})` }))
+                      ]}
+                      className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+                   />
+                   <p className="text-xs text-slate-500 mt-2 font-bold leading-tight">Asignará el EAN escaneado al producto seleccionado para futuros escaneos.</p>
+                </div>
+             </div>
+             
+             <button onClick={() => setLinkModalOpen(false)} className="w-full mt-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-colors">Cancelar</button>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={toggleModalOpen}
