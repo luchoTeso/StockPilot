@@ -125,6 +125,10 @@ class AuthController {
 
             const userId = await User.create(userData);
 
+            // Actualizar la tienda para asignarle el propietario (el usuario recién creado)
+            const db = require('../config/database');
+            await db.runAsync(`UPDATE Tienda SET id_propietario = ? WHERE id_tienda = ?`, [userId, storeId]);
+
             // Establecer sesión
             req.session.userId = userId;
             req.session.tiendaId = storeId;
@@ -163,19 +167,26 @@ class AuthController {
         }
     }
 
-    static getSessionInfo(req, res) {
+    static async getSessionInfo(req, res) {
         if (!req.session.userId) {
             return res.status(401).json({ success: false, error: "Sesión no iniciada" });
         }
 
-        res.json({
-            success: true,
-            userId: req.session.userId,
-            tiendaId: req.session.tiendaId,
-            rol: req.session.rol,
-            nombres: req.session.nombres,
-            cambioClaveForzoso: req.session.cambio_clave_forzoso
-        });
+        try {
+            const tienda = await Store.findById(req.session.tiendaId);
+            res.json({
+                success: true,
+                userId: req.session.userId,
+                tiendaId: req.session.tiendaId,
+                tiendaNombre: tienda ? tienda.nombre_establecimiento : 'Sin tienda',
+                rol: req.session.rol,
+                nombres: req.session.nombres,
+                cambioClaveForzoso: req.session.cambio_clave_forzoso
+            });
+        } catch (error) {
+            console.error('Error en getSessionInfo:', error);
+            res.status(500).json({ success: false, error: 'Error al obtener sesión' });
+        }
     }
 
     static async getProfile(req, res) {

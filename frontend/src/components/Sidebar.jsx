@@ -11,9 +11,11 @@ import {
 } from 'lucide-react';
 
 const Sidebar = () => {
-  const { logout, user } = useAuth();
+  const { logout, user, switchStore } = useAuth();
   const { isOpen, isCollapsed, toggleCollapse, closeSidebar } = useSidebar();
   const [alertCount, setAlertCount] = useState(0);
+  const [tiendas, setTiendas] = useState([]);
+  const [isStoreDropdownOpen, setIsStoreDropdownOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -36,12 +38,20 @@ const Sidebar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (user?.rol === 'Administrador') {
+      axios.get('/api/tiendas')
+        .then(res => { if (res.data.success) setTiendas(res.data.tiendas); })
+        .catch(err => console.error('Error fetching stores in sidebar', err));
+    }
+  }, [user?.tiendaId, user?.rol]);
+
   const links = [
     { to: "/dashboard",  text: "Vista general",    icon: LayoutDashboard },
     { to: "/ventas",     text: "Ventas",            icon: ShoppingCart },
     { to: "/productos",  text: "Catálogo",          icon: Package },
     { to: "/alertas",    text: "Monitor Alertas",   icon: Bell },
-    { to: "/tiendas",    text: "Mi Tienda",         icon: Store },
+    { to: "/tiendas",    text: user?.rol === 'Administrador' ? "Mis Tiendas" : "Mi Tienda", icon: Store },
   ];
 
   if (user?.rol === 'Administrador') {
@@ -109,7 +119,7 @@ const Sidebar = () => {
           </button>
 
           {/* Logo */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center w-full relative">
             <div className={`
               bg-white text-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/10 transition-[width,height,background-color,color]
               ${isCollapsed ? 'w-10 h-10' : 'w-16 h-16 mb-4'}
@@ -118,9 +128,48 @@ const Sidebar = () => {
             </div>
 
             {!isCollapsed && (
-              <div className="text-center animate-fade-in whitespace-nowrap overflow-hidden">
+              <div className="text-center animate-fade-in w-full">
                 <h1 className="text-2xl font-black tracking-tighter italic uppercase text-white">StockPilot</h1>
-                <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-[0.3em] mt-1">Inteligencia Stock</p>
+                
+                {/* Selector de tienda */}
+                {user?.rol === 'Administrador' && tiendas.length > 0 ? (
+                  <div className="mt-3 relative w-full">
+                    <button 
+                      onClick={() => setIsStoreDropdownOpen(!isStoreDropdownOpen)}
+                      className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-800/80 border border-slate-700/50 hover:bg-slate-700 hover:border-indigo-500/50 rounded-xl transition-all shadow-inner group"
+                    >
+                      <div className="flex flex-col items-start overflow-hidden">
+                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Tienda Activa</span>
+                        <span className="text-xs font-bold text-white truncate max-w-[130px] leading-tight mt-0.5 group-hover:text-indigo-300 transition-colors">
+                          {user?.tiendaNombre || 'Cargando...'}
+                        </span>
+                      </div>
+                      <ChevronRight size={14} className={`text-slate-400 shrink-0 transition-transform duration-300 ${isStoreDropdownOpen ? 'rotate-90' : ''}`} />
+                    </button>
+
+                    {isStoreDropdownOpen && (
+                      <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-[300] py-1 animate-fade-in">
+                        {tiendas.map(t => (
+                          <button
+                            key={t.id_tienda}
+                            onClick={async () => {
+                              if (t.id_tienda !== user.tiendaId) {
+                                await switchStore(t.id_tienda);
+                              }
+                              setIsStoreDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${t.id_tienda === user.tiendaId ? 'bg-indigo-600/20 text-indigo-300 font-bold' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                          >
+                            <Store size={12} className={t.id_tienda === user.tiendaId ? 'text-indigo-400' : 'text-slate-500'} />
+                            <span className="truncate">{t.nombre_establecimiento}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-[0.3em] mt-1">Inteligencia Stock</p>
+                )}
               </div>
             )}
           </div>

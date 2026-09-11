@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS Tienda (
     documento VARCHAR(50),
     razon_social VARCHAR(255),
     celular VARCHAR(20),
-    ciudad VARCHAR(100)
+    ciudad VARCHAR(100),
+    id_propietario INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL
 );
 
 -- 2. TABLA USUARIOS
@@ -238,6 +239,39 @@ CREATE TABLE IF NOT EXISTS "session" (
 WITH (OIDS=FALSE);
 
 CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+
+-- ==========================================
+-- 17. ÍNDICES DE RENDIMIENTO MULTI-TIENDA
+-- ==========================================
+CREATE INDEX IF NOT EXISTS idx_productos_tienda ON Productos(id_tienda);
+CREATE INDEX IF NOT EXISTS idx_productos_codigo ON Productos(codigo);
+CREATE INDEX IF NOT EXISTS idx_productos_tienda_estado ON Productos(id_tienda, estado);
+CREATE INDEX IF NOT EXISTS idx_productos_tienda_nombre ON Productos(id_tienda, nombre_producto);
+CREATE INDEX IF NOT EXISTS idx_productos_proveedor ON Productos(id_proveedor);
+
+CREATE INDEX IF NOT EXISTS idx_ventas_tienda ON Ventas(id_tienda);
+CREATE INDEX IF NOT EXISTS idx_ventas_tienda_fecha ON Ventas(id_tienda, fecha_salida DESC);
+CREATE INDEX IF NOT EXISTS idx_ventas_vendedor ON Ventas(id_vendedor);
+CREATE INDEX IF NOT EXISTS idx_ventasprod_venta ON VentasProductos(id_venta);
+CREATE INDEX IF NOT EXISTS idx_ventasprod_producto ON VentasProductos(id_producto);
+
+CREATE INDEX IF NOT EXISTS idx_movimientos_tienda_fecha ON MovimientosStock(id_tienda, fecha_movimiento DESC);
+CREATE INDEX IF NOT EXISTS idx_movimientos_producto ON MovimientosStock(id_producto);
+CREATE INDEX IF NOT EXISTS idx_movimientos_usuario ON MovimientosStock(id_usuario);
+
+CREATE INDEX IF NOT EXISTS idx_alertas_tienda_resuelta ON Alertas(id_tienda, resuelta);
+CREATE INDEX IF NOT EXISTS idx_alertas_tienda_fecha ON Alertas(id_tienda, fecha_creacion DESC);
+CREATE INDEX IF NOT EXISTS idx_alertas_producto ON Alertas(id_producto);
+
+CREATE INDEX IF NOT EXISTS idx_ordenes_tienda ON Ordenes_Compra(id_tienda);
+CREATE INDEX IF NOT EXISTS idx_ordenes_detalle_orden ON Ordenes_Detalle(id_orden);
+CREATE INDEX IF NOT EXISTS idx_proveedores_tienda ON Proveedores(id_tienda);
+
+CREATE INDEX IF NOT EXISTS idx_tienda_propietario ON Tienda(id_propietario);
+CREATE INDEX IF NOT EXISTS idx_usuarios_tienda ON Usuarios(id_tienda);
+CREATE INDEX IF NOT EXISTS idx_historial_producto ON Historial_Precios(id_producto);
+CREATE INDEX IF NOT EXISTS idx_reportes_tienda ON reportes(id_tienda);
+CREATE INDEX IF NOT EXISTS idx_auditoria_ia_tienda ON Auditoria_IA(id_tienda);
 
 -- ==========================================
 -- DATOS SEMILLA (Adaptados a ON CONFLICT)

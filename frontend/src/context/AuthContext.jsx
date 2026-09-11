@@ -89,7 +89,22 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const value = useMemo(() => ({ user, login, logout, loading }), [user, login, logout, loading]);
+  const switchStore = useCallback(async (tiendaId) => {
+    try {
+      const res = await axios.post(`/api/tiendas/switch/${tiendaId}`);
+      if (res.data.success) {
+        // Refrescar el estado del usuario para obtener el nuevo tiendaId y tiendaNombre
+        await checkSession();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Error al cambiar de tienda', err);
+      throw new Error(err.response?.data?.error || 'Error al cambiar de tienda');
+    }
+  }, [checkSession]);
+
+  const value = useMemo(() => ({ user, login, logout, switchStore, loading }), [user, login, logout, switchStore, loading]);
 
   return (
     <AuthContext.Provider value={value}>

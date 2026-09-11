@@ -4,26 +4,42 @@ const db = require('../config/database');
 class Store {
     static async create(storeData) {
         const query = `
-            INSERT INTO Tienda (nombre_establecimiento, direccion, anio_creacion, estado) 
-            VALUES (?, ?, ?, ?)
+            INSERT INTO Tienda (nombre_establecimiento, direccion, anio_creacion, estado, id_propietario) 
+            VALUES (?, ?, ?, ?, ?)
+            RETURNING id_tienda
         `;
         const result = await db.runAsync(query, [
             storeData.nombre_establecimiento,
             storeData.direccion,
             storeData.anio_creacion,
-            'Activo'
+            'Activo',
+            storeData.id_propietario || null
         ]);
+        // db.runAsync con pg retorna ROWS cuando hay RETURNING. Si es la versión que simula runAsync con pg, podría devolver el objeto en row.
+        // Verificando cómo db.runAsync fue configurado en db.js. Si antes usaba lastID (SQLite), ahora con pg usará RETURNING o algo similar.
+        // En config/database.js adaptaron lastID. Mantengo result.lastID si está mapeado, pero mejor garantizo compatibilidad:
         return result.lastID;
     }
 
     static async findById(storeId) {
         const query = `
             SELECT id_tienda, nombre_establecimiento, direccion, anio_creacion, estado,
-                   documento, razon_social, celular, ciudad
+                   documento, razon_social, celular, ciudad, id_propietario
             FROM Tienda
             WHERE id_tienda = ?
         `;
         return await db.getAsync(query, [storeId]);
+    }
+
+    static async findByOwner(userId) {
+        const query = `
+            SELECT id_tienda, nombre_establecimiento, direccion, anio_creacion, estado,
+                   documento, razon_social, celular, ciudad, id_propietario
+            FROM Tienda
+            WHERE id_propietario = ?
+            ORDER BY id_tienda
+        `;
+        return await db.allAsync(query, [userId]);
     }
 
     static async update(storeId, data) {
