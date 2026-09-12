@@ -28,20 +28,52 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
     let isMounted = true;
     let html5QrCode = null;
 
+    let lastScannedCode = null;
+    let lastScannedTime = 0;
+
+    // Validador matemático de Checksum EAN/UPC (Luhn Mod 10)
+    const isValidBarcode = (code) => {
+      if (!/^\d+$/.test(code)) return true; // Si tiene letras (ej CODE128), asume válido
+      if (![8, 12, 13, 14].includes(code.length)) return true; // No es EAN/UPC estándar
+      
+      const digits = code.split('').map(Number);
+      const checkDigit = digits.pop();
+      digits.reverse();
+      let sum = 0;
+      for (let i = 0; i < digits.length; i++) {
+        sum += digits[i] * (i % 2 === 0 ? 3 : 1);
+      }
+      return checkDigit === ((10 - (sum % 10)) % 10);
+    };
+
     const onScanSuccess = (decodedText) => {
       if (decodedText && isMounted) {
         const cleanText = decodedText.trim();
-        // Validar longitud mínima de códigos comerciales (EAN-8, UPC-A, EAN-13)
-        // para prevenir lecturas parciales fantasmas.
+        
+        // 1. Descartar basura corta
         if (cleanText.length < 8) {
-          console.warn('Lectura fantasma descartada (muy corta):', cleanText);
+          console.warn('Descartado (muy corto):', cleanText);
           return;
         }
-        
-        // Vibración háptica al escanear (como un PDA)
-        if (navigator.vibrate) navigator.vibrate(100);
-        onScan(cleanText);
-        stopScanner();
+
+        // 2. Verificación matemática estricta
+        if (!isValidBarcode(cleanText)) {
+          console.warn('Descartado (Checksum inválido - reflejo de luz):', cleanText);
+          return;
+        }
+
+        // 3. Confirmación de doble fotograma (Consenso)
+        const now = Date.now();
+        if (lastScannedCode === cleanText && (now - lastScannedTime) < 800) {
+          // ¡Confirmado! Lo leyó intacto 2 veces seguidas
+          if (navigator.vibrate) navigator.vibrate(100);
+          onScan(cleanText);
+          stopScanner();
+        } else {
+          // Es el primer fotograma correcto, lo guardamos a la espera de confirmación
+          lastScannedCode = cleanText;
+          lastScannedTime = now;
+        }
       }
     };
 
