@@ -113,7 +113,7 @@ const CajaRapidaTab = () => {
     setLoadingPay(true);
     try {
       const items = cart.map(i => ({ id_producto: i.id_producto, cantidad: i.cantidadCart }));
-      await axios.post('/api/registrar-venta-carrito', { cart: items });
+      await axios.post('/api/registrar-venta-carrito', { items });
       toast.success('Venta procesada exitosamente.');
       setCart([]);
       // Emitir eventos para que el historial y productos se actualicen
