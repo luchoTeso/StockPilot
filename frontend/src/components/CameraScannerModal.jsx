@@ -30,9 +30,17 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
 
     const onScanSuccess = (decodedText) => {
       if (decodedText && isMounted) {
+        const cleanText = decodedText.trim();
+        // Validar longitud mínima de códigos comerciales (EAN-8, UPC-A, EAN-13)
+        // para prevenir lecturas parciales fantasmas.
+        if (cleanText.length < 8) {
+          console.warn('Lectura fantasma descartada (muy corta):', cleanText);
+          return;
+        }
+        
         // Vibración háptica al escanear (como un PDA)
         if (navigator.vibrate) navigator.vibrate(100);
-        onScan(decodedText);
+        onScan(cleanText);
         stopScanner();
       }
     };
@@ -52,16 +60,14 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
       if (!isMounted) return;
 
       try {
-        // Formatos de código de barras comerciales (retail, logística, distribución)
+        // Formatos de código de barras estandarizados para retail (Punto de Venta)
+        // Se removieron ITF, CODE_39 y UPC_E para evitar "falsos positivos" o lecturas fantasma
+        // en empaques de plástico con brillos o arrugas.
         const formatsToSupport = [
           Html5QrcodeSupportedFormats?.EAN_13 || 9,
           Html5QrcodeSupportedFormats?.EAN_8 || 10,
           Html5QrcodeSupportedFormats?.UPC_A || 14,
-          Html5QrcodeSupportedFormats?.UPC_E || 15,
-          Html5QrcodeSupportedFormats?.CODE_128 || 5,
-          Html5QrcodeSupportedFormats?.CODE_39 || 3,
-          Html5QrcodeSupportedFormats?.ITF || 8,
-          Html5QrcodeSupportedFormats?.QR_CODE || 0
+          Html5QrcodeSupportedFormats?.CODE_128 || 5
         ];
 
         html5QrCode = new Html5QrcodeModule("reader", {
