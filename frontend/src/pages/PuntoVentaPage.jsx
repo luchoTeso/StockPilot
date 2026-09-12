@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { SYNC_EVENTS, subscribeToSync, emitSyncEvent } from '../utils/stockSync';
-import { Trophy, Download, DollarSign, Package, Receipt, Rocket, ShoppingCart, History, ScanBarcode, Plus, Minus, X, CreditCard } from 'lucide-react';
+import { Trophy, Download, DollarSign, Package, Receipt, Rocket, ShoppingCart, History, ScanBarcode, Plus, Minus, X, CreditCard, Search } from 'lucide-react';
 import useBarcodeScanner from '../hooks/useBarcodeScanner';
 import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
@@ -45,6 +45,44 @@ const CajaRapidaTab = () => {
   const [loadingPay, setLoadingPay] = useState(false);
   const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
   const searchInputRef = useRef(null);
+
+  // Nuevo estado para búsqueda predictiva
+  const [allProducts, setAllProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    // Cargar todos los productos al montar la pestaña para la búsqueda rápida
+    const fetchProducts = async () => {
+      try {
+        const { data } = await axios.get('/api/productos');
+        setAllProducts(data);
+      } catch (error) {
+        console.error("Error al cargar productos para búsqueda", error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    const term = searchTerm.toLowerCase();
+    return allProducts.filter(p => 
+      p.nombre_producto?.toLowerCase().includes(term) || 
+      (p.codigo && p.codigo.toLowerCase().includes(term))
+    ).slice(0, 8); // Limitar a 8 resultados para no saturar la pantalla
+  }, [searchTerm, allProducts]);
+
+  const handleSelectProduct = (product) => {
+    if (product.estado !== 'Disponible') {
+      toast.error(`El producto ${product.nombre_producto} no está disponible.`);
+      return;
+    }
+    addToCart(product);
+    toast.success(`Añadido: ${product.nombre_producto}`);
+    setSearchTerm('');
+    setShowResults(false);
+  };
 
   // Escanear código de barras para añadir al carrito
   const handleBarcodeScan = useCallback(async (code) => {
@@ -129,13 +167,54 @@ const CajaRapidaTab = () => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Columna Izquierda: Escaneo y Carrito */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Acciones de escaneo */}
-        <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
-           <div>
-             <h3 className="font-black text-xl italic uppercase tracking-tighter text-slate-800">Escanear Producto</h3>
-             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Usa tu pistola láser o cámara</p>
+        {/* Acciones de escaneo y búsqueda */}
+        <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between relative z-20">
+           <div className="flex-1 w-full relative">
+             <h3 className="font-black text-xl italic uppercase tracking-tighter text-slate-800 mb-2">Buscar o Escanear Producto</h3>
+             <div className="relative">
+               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                 <Search size={18} className="text-slate-400" />
+               </div>
+               <input
+                 type="text"
+                 placeholder="Escribe el nombre o código, o escanea..."
+                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                 value={searchTerm}
+                 onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowResults(true);
+                 }}
+                 onFocus={() => setShowResults(true)}
+                 onBlur={() => setTimeout(() => setShowResults(false), 200)}
+               />
+               
+               {/* Dropdown de resultados */}
+               {showResults && searchTerm && (
+                 <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden max-h-64 overflow-y-auto">
+                   {filteredProducts.length > 0 ? (
+                     filteredProducts.map(p => (
+                       <button
+                         key={p.id_producto}
+                         onMouseDown={() => handleSelectProduct(p)}
+                         className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b border-slate-50 flex justify-between items-center transition-colors"
+                       >
+                         <div>
+                           <p className="font-bold text-slate-700 text-sm">{p.nombre_producto}</p>
+                           <p className="text-[10px] text-slate-400 uppercase tracking-widest">{p.codigo || 'SIN CÓDIGO'} • Stock: {p.cantidad}</p>
+                         </div>
+                         <span className="font-black text-indigo-600">${Number(p.precio_venta || p.precio_unitario || p.precio || 0).toLocaleString('es-CO')}</span>
+                       </button>
+                     ))
+                   ) : (
+                     <div className="px-4 py-6 text-center text-slate-400 text-sm font-bold">
+                       No se encontraron productos
+                     </div>
+                   )}
+                 </div>
+               )}
+             </div>
            </div>
-           <button onClick={() => setCameraScannerOpen(true)} className="w-full sm:w-auto bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-100 py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform flex items-center justify-center gap-2 active:scale-95">
+           <button onClick={() => setCameraScannerOpen(true)} className="w-full sm:w-auto h-12 mt-auto bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-100 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap">
               <ScanBarcode size={16} /> Abrir Cámara
            </button>
         </div>
@@ -451,14 +530,15 @@ const HistorialVentasTab = () => {
                 <th className="p-4 md:p-8 text-center">Unidades</th>
                 <th className="hidden sm:table-cell p-4 md:p-8 text-right">Precio</th>
                 <th className="p-4 md:p-8 text-right">Total</th>
+                <th className="p-4 md:p-8 text-center">Vendedor</th>
                 <th className="hidden md:table-cell p-4 md:p-8 text-center">Fecha</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
               {isLoading && ventasFiltradas.length === 0 ? (
-                <tr><td colSpan="6" className="p-32 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse">Consultando Registros...</td></tr>
+                <tr><td colSpan="7" className="p-32 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse">Consultando Registros...</td></tr>
               ) : ventasFiltradas.length === 0 ? (
-                <tr><td colSpan="6" className="p-32 text-center text-slate-400 font-bold italic">No hay transacciones.</td></tr>
+                <tr><td colSpan="7" className="p-32 text-center text-slate-400 font-bold italic">No hay transacciones.</td></tr>
               ) : (
                 ventasFiltradas.map((v, idx) => {
                   const precioUnitario = v.precio_unitario || (v.precio_total / v.cantidad);
@@ -466,7 +546,10 @@ const HistorialVentasTab = () => {
                     <tr key={v.id_venta ? `${v.id_venta}-${idx}` : idx} className="hover:bg-indigo-50/30">
                        <td className="p-8">
                          <p className="font-black text-slate-800 text-sm uppercase">{v.nombre_producto}</p>
-                         <p className="text-[9px] font-bold text-slate-400 mt-1 tracking-widest uppercase">{v.id_venta ? `VENTA #${String(v.id_venta).padStart(6, '0')}` : '---'}</p>
+                         <p className="text-[9px] font-bold text-slate-400 mt-1 tracking-widest uppercase flex items-center gap-1.5 flex-wrap">
+                           <span>{v.id_venta ? `VENTA #${String(v.id_venta).padStart(6, '0')}` : '---'}</span>
+                           <span className="text-indigo-600 font-black sm:hidden">• {v.nombre_vendedor || 'Admin'}</span>
+                         </p>
                        </td>
                       <td className="hidden lg:table-cell p-8">
                          <span className="inline-block px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[9px] font-black uppercase tracking-widest">{v.categoria || 'S/N'}</span>
@@ -474,6 +557,11 @@ const HistorialVentasTab = () => {
                       <td className="p-8 text-center font-black text-slate-800 text-xl">{v.cantidad}</td>
                       <td className="hidden sm:table-cell p-8 text-right font-black text-slate-400">${Number(precioUnitario).toLocaleString('es-CO')}</td>
                       <td className="p-8 text-right text-emerald-600 font-black text-xl italic">${Number(v.precio_total).toLocaleString('es-CO')}</td>
+                      <td className="p-8 text-center font-bold text-slate-700 text-xs">
+                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 text-slate-700 rounded-xl text-[10px] font-black uppercase tracking-wider">
+                           {v.nombre_vendedor || 'Admin'}
+                         </span>
+                      </td>
                       <td className="hidden md:table-cell p-8 text-center font-bold text-slate-600 text-xs tracking-widest">{formatearFecha(v.fecha_salida)}</td>
                     </tr>
                   );

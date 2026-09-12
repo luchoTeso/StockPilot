@@ -256,14 +256,15 @@ const VentasPage = () => {
                 <th className="p-4 md:p-8 text-center">Unidades</th>
                 <th className="hidden sm:table-cell p-4 md:p-8 text-right">Precio</th>
                 <th className="p-4 md:p-8 text-right">Total</th>
+                <th className="p-4 md:p-8 text-center">Vendedor</th>
                 <th className="hidden md:table-cell p-4 md:p-8 text-center">Fecha</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
               {isLoading && ventasFiltradas.length === 0 ? (
-                <tr><td colSpan="6" className="p-32 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse">Consultando Registros...</td></tr>
+                <tr><td colSpan="7" className="p-32 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse">Consultando Registros...</td></tr>
               ) : ventasFiltradas.length === 0 ? (
-                <tr><td colSpan="6" className="p-32 text-center text-slate-400 font-bold italic">No se encontraron transacciones en este período.</td></tr>
+                <tr><td colSpan="7" className="p-32 text-center text-slate-400 font-bold italic">No se encontraron transacciones en este período.</td></tr>
               ) : (
                 ventasFiltradas.map((v, idx) => {
                   const precioUnitario = v.precio_unitario || (v.precio_total / v.cantidad);
@@ -271,8 +272,9 @@ const VentasPage = () => {
                     <tr key={v.id_venta ? `${v.id_venta}-${idx}` : idx} className="group transition-colors hover:bg-indigo-50/30">
                        <td className="p-8">
                          <p className="font-black text-slate-800 text-sm group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{v.nombre_producto}</p>
-                         <p className="text-[9px] font-bold text-slate-400 mt-1 tracking-widest uppercase">
-                           {v.id_venta ? `VENTA #${String(v.id_venta).padStart(6, '0')}` : 'ID VENTA: ---'}
+                         <p className="text-[9px] font-bold text-slate-400 mt-1 tracking-widest uppercase flex items-center gap-1.5 flex-wrap">
+                           <span>{v.id_venta ? `VENTA #${String(v.id_venta).padStart(6, '0')}` : 'ID VENTA: ---'}</span>
+                           <span className="text-indigo-600 font-black sm:hidden">• {v.nombre_vendedor || 'Admin'}</span>
                          </p>
                        </td>
                       <td className="hidden lg:table-cell p-8">
@@ -287,6 +289,11 @@ const VentasPage = () => {
                       </td>
                       <td className="p-8 text-right text-emerald-600 font-black text-2xl italic tracking-tighter">
                          ${Number(v.precio_total).toLocaleString('es-CO')}
+                      </td>
+                      <td className="p-8 text-center font-bold text-slate-700 text-xs">
+                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 text-slate-700 rounded-xl text-[10px] font-black uppercase tracking-wider">
+                           {v.nombre_vendedor || 'Admin'}
+                         </span>
                       </td>
                       <td className="hidden md:table-cell p-8 text-center font-bold text-slate-600 text-xs tracking-widest">
                         {formatearFecha(v.fecha_salida)}

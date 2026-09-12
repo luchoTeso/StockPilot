@@ -4,6 +4,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "predev": "kill-port 3000",
     "dev": "npx nodemon app.js",
     "build": "npm run build:frontend",
     "build:frontend": "cd frontend && npm install --include=dev && npm run build",
@@ -44,6 +45,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^4.1.4",
     "@vitest/ui": "^4.1.4",
+    "kill-port": "^2.0.1",
     "vitest": "^4.1.4"
   },
   "description": "",

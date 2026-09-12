@@ -135,6 +135,7 @@ const ProductosPage = () => {
         proveedores={proveedores}
         loading={formLoading}
         categorias={categorias}
+        productos={productos}
       />
 
       {/* Modal de Vinculación de Código de Barras */}

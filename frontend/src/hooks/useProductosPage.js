@@ -203,16 +203,32 @@ export const useProductosPage = () => {
     if (formLoading) return;
     setFormLoading(true);
     try {
-      if (editMode) {
+      if (data.isStockAddition) {
+        // Entrada rápida de mercancía: registra en Kardex y actualiza stock en bodega
+        await axios.post('/api/inventario/entrada', {
+          id_producto: data.id_producto,
+          cantidad: parseInt(data.cantidadAAgregar, 10),
+          observacion: data.observacion || 'Recepción de mercancía (Entrada rápida)'
+        });
+
+        // Si además el usuario actualizó el precio de venta u otros campos:
+        if (data.precio_unitario && Number(data.precio_unitario) !== Number(data.precioAnterior)) {
+          await axios.put(`/api/productos/${data.id_producto}`, data);
+        }
+
+        toast.success(`¡Inventario ingresado exitosamente! (+${data.cantidadAAgregar} ud)`);
+        emitSyncEvent(SYNC_EVENTS.STOCK_UPDATED, { id: data.id_producto });
+      } else if (editMode) {
         await axios.put(`/api/productos/${data.id_producto}`, data);
         toast.success('Producto actualizado');
+        emitSyncEvent(SYNC_EVENTS.PRODUCT_MODIFIED, { id: data.id_producto });
       } else {
         await axios.post('/api/productos/admin', data);
         toast.success('Producto creado');
+        emitSyncEvent(SYNC_EVENTS.PRODUCT_MODIFIED, { id: data.id_producto });
       }
       handleCloseModal();
       cargarProductos();
-      emitSyncEvent(SYNC_EVENTS.PRODUCT_MODIFIED, { id: data.id_producto });
     } catch (err) {
       toast.error(`${err.response?.data?.error || err.message}`);
     } finally {

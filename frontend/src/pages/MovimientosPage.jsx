@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
 import Tooltip from '../components/Tooltip';
 import CustomDatePicker from '../components/CustomDatePicker';
-import { PackagePlus, PackageMinus, SlidersHorizontal } from 'lucide-react';
+import { PackagePlus, PackageMinus, SlidersHorizontal, HelpCircle, ShieldCheck, AlertOctagon, RefreshCw, X, CheckCircle2 } from 'lucide-react';
 
 const MovimientosPage = () => {
   const toast = useToast();
@@ -13,6 +13,7 @@ const MovimientosPage = () => {
   const [resumen, setResumen] = useState({ entradas: 0, salidas: 0, ajustes: 0 });
   const [movimientos, setMovimientos] = useState([]);
   const [loadingMovimientos, setLoadingMovimientos] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   // Formulario Registro
   const [tipo, setTipo] = useState('');
@@ -196,8 +197,16 @@ const MovimientosPage = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div>
           <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Movimientos de Inventario</h2>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Registro completo de entradas, salidas y ajustes</p>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Registro completo de entradas, salidas y auditoría de stock (Kardex)</p>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowHelpModal(true)}
+          className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm flex items-center gap-2.5 transition-all active:scale-95"
+        >
+          <HelpCircle size={18} className="text-indigo-600" />
+          <span>¿Para qué sirve esta ventana?</span>
+        </button>
       </div>
 
       {/* Tarjetas de Resumen */}
@@ -412,6 +421,97 @@ const MovimientosPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal Educativo: ¿Cuándo y para qué usar Movimientos? */}
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-scale-in overflow-hidden border border-slate-100">
+            <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-100 bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-md">
+                  <ShieldCheck size={24} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Guía de Movimientos (Kardex)</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600">La cámara de seguridad de tu inventario</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowHelpModal(false)}
+                className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-rose-100 flex items-center justify-center text-xl transition-colors shadow-sm"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="p-6 md:p-8 overflow-y-auto space-y-6 text-slate-600 font-medium text-sm">
+              <p className="text-slate-700 font-bold leading-relaxed">
+                Esta ventana registra <strong className="text-indigo-600 font-black">cada unidad física</strong> que entra o sale de tu negocio, con fecha exacta y el usuario que lo hizo. Úsala principalmente en estas 4 situaciones:
+              </p>
+
+              <div className="space-y-4">
+                <div className="p-5 bg-emerald-50/70 border border-emerald-100 rounded-2xl flex gap-4 items-start">
+                  <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                    <PackagePlus size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-emerald-800 text-xs uppercase tracking-widest mb-1">1. Entrada de Mercancía (Compras / Proveedores)</h4>
+                    <p className="text-xs text-emerald-700 leading-relaxed font-bold">
+                      Cuando recibes cajas o pedidos de proveedores y necesitas sumar stock a tu bodega con constancia de quién lo recibió.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-5 bg-rose-50/70 border border-rose-100 rounded-2xl flex gap-4 items-start">
+                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertOctagon size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-rose-800 text-xs uppercase tracking-widest mb-1">2. Mermas, Daños, Vencimientos o Pérdidas (Salida Manual)</h4>
+                    <p className="text-xs text-rose-700 leading-relaxed font-bold">
+                      Si un producto se rompe, se vence o se pierde, <span className="underline font-black">NO debes registrarlo como venta</span> (porque descuadraría el dinero de caja). Regístralo aquí como <strong>Salida manual</strong> para restar el stock justificadamente.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-5 bg-amber-50/70 border border-amber-100 rounded-2xl flex gap-4 items-start">
+                  <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                    <RefreshCw size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-amber-800 text-xs uppercase tracking-widest mb-1">3. Ajustes de Conteo Físico (Auditoría de Fin de Mes)</h4>
+                    <p className="text-xs text-amber-800 leading-relaxed font-bold">
+                      Al contar físicamente las vitrinas, si tienes más o menos unidades que el sistema, haces un <strong>Ajuste (+ o -)</strong> con la justificación "Inventario Físico" para sincronizar la realidad con la app.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex gap-4 items-start">
+                  <div className="w-10 h-10 bg-slate-200 text-slate-700 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                    <ShieldCheck size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-800 text-xs uppercase tracking-widest mb-1">4. ¿Por qué también aparecen las Ventas aquí?</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      El <em>Historial de Ventas</em> se enfoca en el dinero que pagó el cliente. Esta tabla se enfoca en la <strong>auditoría física</strong>: muestra qué cajero despachó el producto, permitiendo rastrear robos o descuadres entre vendedores.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowHelpModal(false)}
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-colors"
+                >
+                  Entendido, volver a Movimientos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

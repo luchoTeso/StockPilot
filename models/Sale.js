@@ -35,10 +35,12 @@ class Sale {
                 p.nombre_producto,
                 p.categoria,
                 p.precio AS precio_unitario,
-                (p.precio * vp.cantidad) AS precio_total
+                (p.precio * vp.cantidad) AS precio_total,
+                COALESCE(NULLIF(u.nombres, ''), u.usuario, 'Admin') AS nombre_vendedor
             FROM Ventas v
             JOIN VentasProductos vp ON vp.id_venta = v.id_venta
             JOIN Productos p ON p.id_producto = vp.id_producto
+            LEFT JOIN Usuarios u ON u.id_usuario = v.id_vendedor
             WHERE v.id_tienda = ?
             ORDER BY v.fecha_salida DESC
             LIMIT ? OFFSET ?

@@ -197,15 +197,41 @@ function startServer(port) {
         console.log('📍 Orígenes CORS permitidos:', allowedOrigins.join(', '));
     });
 
+    // Cierre limpio para nodemon y terminación de proceso en Windows
+    const handleShutdown = () => {
+        server.close(() => {
+            process.exit(0);
+        });
+    };
+    process.once('SIGINT', handleShutdown);
+    process.once('SIGTERM', handleShutdown);
+    process.once('SIGUSR2', () => {
+        server.close(() => {
+            process.kill(process.pid, 'SIGUSR2');
+        });
+    });
+
     server.on('error', (err) => {
         if (err.code === 'EADDRINUSE') {
             retries++;
+            if (retries === 1) {
+                console.log(`⏳ Puerto ${port} ocupado. Liberando puerto automáticamente con kill-port...`);
+                try {
+                    const killPort = require('kill-port');
+                    killPort(port).catch(() => {}).finally(() => {
+                        setTimeout(() => startServer(port), 600);
+                    });
+                    return;
+                } catch {
+                    // Fallback a reintentos normales si kill-port no está presente
+                }
+            }
+
             if (retries <= MAX_RETRIES) {
-                console.log('⏳ Puerto ' + port + ' ocupado. Reintentando en 1.5s... (intento ' + retries + '/' + MAX_RETRIES + ')');
-                setTimeout(() => startServer(port), 1500);
+                console.log(`⏳ Puerto ${port} ocupado. Reintentando... (intento ${retries}/${MAX_RETRIES})`);
+                setTimeout(() => startServer(port), 1200);
             } else {
-                console.log('❌ No se pudo obtener el puerto ' + port + ' después de ' + MAX_RETRIES + ' intentos.');
-                console.log('   Solución: Ejecuta en PowerShell -> Stop-Process -Id (Get-NetTCPConnection -LocalPort ' + port + ').OwningProcess -Force');
+                console.log(`❌ No se pudo obtener el puerto ${port} después de ${MAX_RETRIES} intentos.`);
                 process.exit(1);
             }
         } else {
