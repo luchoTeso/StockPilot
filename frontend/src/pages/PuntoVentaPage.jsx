@@ -105,7 +105,7 @@ const CajaRapidaTab = () => {
     setCart(prev => prev.filter(item => item.id_producto !== id));
   };
 
-  const cartTotal = cart.reduce((acc, item) => acc + (item.precio_unitario * item.cantidadCart), 0);
+  const cartTotal = cart.reduce((acc, item) => acc + ((item.precio || item.precio_unitario || 0) * item.cantidadCart), 0);
   const cartItemsCount = cart.reduce((acc, item) => acc + item.cantidadCart, 0);
 
   const handleCobrar = async () => {
@@ -161,13 +161,13 @@ const CajaRapidaTab = () => {
                        <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Stock disponible: {item.cantidad}</p>
                      </div>
                      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                       <p className="font-black text-indigo-600 text-lg">${Number(item.precio_unitario).toLocaleString('es-CO')}</p>
+                       <p className="font-black text-indigo-600 text-lg">${Number(item.precio || item.precio_unitario || 0).toLocaleString('es-CO')}</p>
                        <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200">
                           <button onClick={() => updateQuantity(item.id_producto, -1)} className="p-2 text-slate-500 hover:text-rose-500 transition-colors"><Minus size={16} /></button>
                           <span className="w-8 text-center font-black text-slate-700">{item.cantidadCart}</span>
                           <button onClick={() => updateQuantity(item.id_producto, 1)} className="p-2 text-slate-500 hover:text-emerald-500 transition-colors"><Plus size={16} /></button>
                        </div>
-                       <p className="font-black text-emerald-600 text-lg min-w-[100px] text-right">${(item.precio_unitario * item.cantidadCart).toLocaleString('es-CO')}</p>
+                       <p className="font-black text-emerald-600 text-lg min-w-[100px] text-right">${((item.precio || item.precio_unitario || 0) * item.cantidadCart).toLocaleString('es-CO')}</p>
                        <button onClick={() => removeFromCart(item.id_producto)} className="p-2 text-rose-300 hover:text-rose-600 bg-rose-50 rounded-xl transition-colors"><X size={16} /></button>
                      </div>
                   </div>
