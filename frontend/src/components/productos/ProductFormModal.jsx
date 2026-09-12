@@ -119,7 +119,7 @@ const ProductFormModal = ({
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      
+
       if (data.success && data.suggestions) {
         setFormData(prev => ({
           ...prev,
@@ -215,15 +215,15 @@ const ProductFormModal = ({
         <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-slate-50">
           <div>
             <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">
-              {editMode 
-                ? 'Editar Producto' 
-                : selectedProduct 
-                  ? 'Recepción de Mercancía (+Stock)' 
+              {editMode
+                ? 'Editar Producto'
+                : selectedProduct
+                  ? 'Recepción de Mercancía (+Stock)'
                   : 'Registrar o Ingresar Producto'}
             </h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-              {selectedProduct 
-                ? 'Sumar existencias a un artículo ya registrado' 
+              {selectedProduct
+                ? 'Sumar existencias a un artículo ya registrado'
                 : 'Escanea, busca o crea un artículo nuevo'}
             </p>
           </div>
@@ -380,14 +380,14 @@ const ProductFormModal = ({
 
           <div className="mb-6 space-y-2">
             <label htmlFor="input_nombre_producto" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Producto</label>
-            <input 
-              id="input_nombre_producto" 
-              required 
-              type="text" 
-              value={formData.nombre_producto} 
-              onChange={e => setFormData({ ...formData, nombre_producto: e.target.value })} 
-              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" 
-              placeholder="Ej: Funda Silicona iPhone 13 Pro"
+            <input
+              id="input_nombre_producto"
+              required
+              type="text"
+              value={formData.nombre_producto}
+              onChange={e => setFormData({ ...formData, nombre_producto: e.target.value })}
+              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors"
+              placeholder="Ej: Arroz roa 500g"
             />
           </div>
 
@@ -474,16 +474,16 @@ const ProductFormModal = ({
                     <span>Precio de Venta</span>
                     <span className="text-slate-400 font-bold lowercase tracking-normal text-[9px] bg-white px-2 py-0.5 rounded border border-slate-200">(editable si cambió)</span>
                   </label>
-                  <input 
-                    id="input_precio" 
-                    required 
-                    type="number" 
-                    step="0.01" 
-                    min="0" 
-                    value={formData.precio_unitario} 
-                    onChange={e => setFormData({ ...formData, precio_unitario: e.target.value })} 
-                    className="w-full p-4 bg-white border border-indigo-200 rounded-2xl text-lg font-black text-indigo-700 focus:border-indigo-500 outline-none transition-colors shadow-sm" 
-                    placeholder="0.00" 
+                  <input
+                    id="input_precio"
+                    required
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.precio_unitario}
+                    onChange={e => setFormData({ ...formData, precio_unitario: e.target.value })}
+                    className="w-full p-4 bg-white border border-indigo-200 rounded-2xl text-lg font-black text-indigo-700 focus:border-indigo-500 outline-none transition-colors shadow-sm"
+                    placeholder="0.00"
                   />
                 </div>
 
@@ -494,15 +494,15 @@ const ProductFormModal = ({
                       Nuevo Total: {Number(selectedProduct.cantidad || 0) + Number(cantidadIngreso || 0)} ud
                     </span>
                   </label>
-                  <input 
-                    id="input_cantidad_ingreso" 
-                    required 
-                    type="number" 
-                    min="1" 
-                    value={cantidadIngreso} 
-                    onChange={e => setCantidadIngreso(e.target.value)} 
-                    className="w-full p-4 bg-white border-2 border-emerald-500 rounded-2xl text-2xl font-black text-emerald-700 outline-none focus:ring-4 focus:ring-emerald-200 shadow-sm transition-all" 
-                    placeholder="Ej: 10, 50, 100" 
+                  <input
+                    id="input_cantidad_ingreso"
+                    required
+                    type="number"
+                    min="1"
+                    value={cantidadIngreso}
+                    onChange={e => setCantidadIngreso(e.target.value)}
+                    className="w-full p-4 bg-white border-2 border-emerald-500 rounded-2xl text-2xl font-black text-emerald-700 outline-none focus:ring-4 focus:ring-emerald-200 shadow-sm transition-all"
+                    placeholder="Ej: 10, 50, 100"
                     autoFocus
                   />
                   <p className="text-[9px] text-emerald-700 font-bold ml-1">
@@ -516,32 +516,32 @@ const ProductFormModal = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <div className="space-y-2">
                 <label htmlFor="input_precio" className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Precio de Venta</label>
-                <input 
-                  id="input_precio" 
-                  required 
-                  type="number" 
-                  step="0.01" 
-                  min="0" 
-                  value={formData.precio_unitario} 
-                  onChange={e => setFormData({ ...formData, precio_unitario: e.target.value })} 
-                  className="w-full p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-lg font-black text-indigo-700 focus:border-indigo-500 outline-none transition-colors" 
-                  placeholder="0.00" 
+                <input
+                  id="input_precio"
+                  required
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.precio_unitario}
+                  onChange={e => setFormData({ ...formData, precio_unitario: e.target.value })}
+                  className="w-full p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-lg font-black text-indigo-700 focus:border-indigo-500 outline-none transition-colors"
+                  placeholder="0.00"
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="input_stock_inicial" className="text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">
                   {editMode ? 'Stock Actual' : 'Stock Inicial'}
                 </label>
-                <input 
-                  id="input_stock_inicial" 
-                  required 
-                  type="number" 
-                  min="0" 
-                  disabled={editMode} 
-                  value={formData.cantidad} 
-                  onChange={e => setFormData({ ...formData, cantidad: e.target.value })} 
-                  className={`w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-lg font-black text-emerald-700 outline-none transition-colors ${editMode ? 'opacity-50 cursor-not-allowed' : 'focus:border-emerald-500'}`} 
-                  placeholder="0" 
+                <input
+                  id="input_stock_inicial"
+                  required
+                  type="number"
+                  min="0"
+                  disabled={editMode}
+                  value={formData.cantidad}
+                  onChange={e => setFormData({ ...formData, cantidad: e.target.value })}
+                  className={`w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-lg font-black text-emerald-700 outline-none transition-colors ${editMode ? 'opacity-50 cursor-not-allowed' : 'focus:border-emerald-500'}`}
+                  placeholder="0"
                 />
                 {editMode && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase mt-1 inline-flex items-center gap-1"><Lock size={10} /> Protegido. Para sumar stock abre la ventana de registrar producto.</span>}
               </div>
@@ -561,16 +561,16 @@ const ProductFormModal = ({
                 <div className="mt-4 p-5 bg-indigo-50/30 border border-indigo-100 rounded-2xl space-y-5">
                   <p className="text-[9px] font-bold text-slate-500 leading-relaxed flex items-center justify-between">
                     <span>Estos valores determinan cuándo se activan las alertas de reposición de este producto.</span>
-                    <button 
-                      type="button" 
-                      onClick={handleSuggestAlerts} 
+                    <button
+                      type="button"
+                      onClick={handleSuggestAlerts}
                       disabled={isSuggesting}
                       className="ml-4 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-bold text-[10px] flex items-center gap-1.5 transition-colors shadow-sm"
                     >
                       {isSuggesting ? 'Calculando...' : '✨ Sugerir con IA'}
                     </button>
                   </p>
-                  
+
                   {aiError && (
                     <div className="p-3 bg-red-50/50 border border-red-100 rounded-xl flex items-start gap-2">
                       <span className="text-red-500 mt-0.5 text-xs">⚠️</span>
@@ -676,14 +676,13 @@ const ProductFormModal = ({
             <button type="button" onClick={onClose} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors">
               Cancelar
             </button>
-            <button 
-              type="submit" 
-              disabled={loading} 
-              className={`flex-[2] py-4 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${
-                selectedProduct 
-                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200' 
+            <button
+              type="submit"
+              disabled={loading}
+              className={`flex-[2] py-4 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${selectedProduct
+                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200'
                   : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100'
-              }`}
+                }`}
             >
               {loading ? (
                 'Sincronizando...'
