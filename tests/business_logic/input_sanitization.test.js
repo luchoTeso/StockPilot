@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import validationModule from '../../middleware/validation.js';
 
-const { sanitize } = validationModule;
+const { sanitize, validateProduct } = validationModule;
 
 // === PRUEBAS UNITARIAS: Middleware de Validación ===
 
@@ -155,40 +155,84 @@ describe('Middleware de Validación (validation.js)', () => {
   // ────────────────────────────────────────────────────
 
   describe('validateProduct() — Lógica de validación', () => {
-    function evaluarProducto(body) {
-      const { codigo, nombre_producto, precio, cantidad } = body || {};
-      if (!codigo || !nombre_producto) return 'campos_faltantes';
-      if (precio !== undefined && (isNaN(parseFloat(precio)) || parseFloat(precio) < 0)) return 'precio_invalido';
-      if (cantidad !== undefined && (isNaN(parseInt(cantidad)) || parseInt(cantidad) < 0)) return 'cantidad_invalida';
-      return 'pass';
+    function runValidate(body) {
+      const req = { body: { ...body } };
+      let statusCode = null;
+      let jsonResponse = null;
+      let nextCalled = false;
+
+      const res = {
+        status: (code) => {
+          statusCode = code;
+          return {
+            json: (data) => {
+              jsonResponse = data;
+            }
+          };
+        }
+      };
+      const next = () => {
+        nextCalled = true;
+      };
+
+      validateProduct(req, res, next);
+      return { nextCalled, statusCode, jsonResponse, body: req.body };
     }
 
-    it('Debería pasar con código y nombre válidos', () => {
-      expect(evaluarProducto({ codigo: 'SKU001', nombre_producto: 'Arroz' })).toBe('pass');
+    it('Debería pasar con código de barras obligatorio y asignar SKU por defecto', () => {
+      const result = runValidate({ codigo_barras: '7702007031002', nombre_producto: 'Arroz Diana' });
+      expect(result.nextCalled).toBe(true);
+      expect(result.body.codigo).toBe('7702007031002');
     });
 
-    it('Debería rechazar sin código', () => {
-      expect(evaluarProducto({ nombre_producto: 'Arroz' })).toBe('campos_faltantes');
+    it('Debería pasar y respetar código SKU si viene explícito', () => {
+      const result = runValidate({ codigo_barras: '7702007031002', codigo: 'REF-ARR-01', nombre_producto: 'Arroz Diana' });
+      expect(result.nextCalled).toBe(true);
+      expect(result.body.codigo).toBe('REF-ARR-01');
+      expect(result.body.codigo_barras).toBe('7702007031002');
+    });
+
+    it('Debería aceptar código SKU como fallback retrocompatible si no viene código de barras', () => {
+      const result = runValidate({ codigo: 'SKU001', nombre_producto: 'Arroz' });
+      expect(result.nextCalled).toBe(true);
+      expect(result.body.codigo_barras).toBe('SKU001');
+    });
+
+    it('Debería rechazar si no viene ni código de barras ni SKU', () => {
+      const result = runValidate({ nombre_producto: 'Arroz' });
+      expect(result.nextCalled).toBe(false);
+      expect(result.statusCode).toBe(400);
+      expect(result.jsonResponse.error).toContain('código de barras');
     });
 
     it('Debería rechazar sin nombre de producto', () => {
-      expect(evaluarProducto({ codigo: 'SKU001' })).toBe('campos_faltantes');
+      const result = runValidate({ codigo_barras: '7702007031002' });
+      expect(result.nextCalled).toBe(false);
+      expect(result.statusCode).toBe(400);
+      expect(result.jsonResponse.error).toContain('nombre del producto');
     });
 
     it('Debería rechazar precio negativo', () => {
-      expect(evaluarProducto({ codigo: 'A', nombre_producto: 'B', precio: -100 })).toBe('precio_invalido');
+      const result = runValidate({ codigo_barras: '7702007031002', nombre_producto: 'Arroz', precio: -100 });
+      expect(result.nextCalled).toBe(false);
+      expect(result.statusCode).toBe(400);
     });
 
     it('Debería aceptar precio = 0 (producto gratuito)', () => {
-      expect(evaluarProducto({ codigo: 'A', nombre_producto: 'B', precio: 0 })).toBe('pass');
+      const result = runValidate({ codigo_barras: '7702007031002', nombre_producto: 'Muestra', precio: 0 });
+      expect(result.nextCalled).toBe(true);
     });
 
     it('Debería rechazar cantidad negativa', () => {
-      expect(evaluarProducto({ codigo: 'A', nombre_producto: 'B', cantidad: -5 })).toBe('cantidad_invalida');
+      const result = runValidate({ codigo_barras: '7702007031002', nombre_producto: 'Arroz', cantidad: -5 });
+      expect(result.nextCalled).toBe(false);
+      expect(result.statusCode).toBe(400);
     });
 
     it('Debería rechazar precio no numérico', () => {
-      expect(evaluarProducto({ codigo: 'A', nombre_producto: 'B', precio: 'abc' })).toBe('precio_invalido');
+      const result = runValidate({ codigo_barras: '7702007031002', nombre_producto: 'Arroz', precio: 'abc' });
+      expect(result.nextCalled).toBe(false);
+      expect(result.statusCode).toBe(400);
     });
   });
 

@@ -74,10 +74,25 @@ function validateRegister(req, res, next) {
  * Valida campos de producto
  */
 function validateProduct(req, res, next) {
-    const { codigo, nombre_producto, precio, cantidad } = req.body;
+    let { codigo, codigo_barras, nombre_producto, precio, cantidad } = req.body;
 
-    if (!codigo || !nombre_producto) {
-        return res.status(400).json({ success: false, error: 'Código y nombre del producto son obligatorios' });
+    // El código de barras (EAN/UPC) es el principal y obligatorio
+    if (!codigo_barras && !codigo) {
+        return res.status(400).json({ success: false, error: 'El código de barras (EAN/UPC) es obligatorio' });
+    }
+
+    // Si solo viene código SKU (ej. importación legacy), se usa como código de barras
+    if (!codigo_barras && codigo) {
+        req.body.codigo_barras = codigo.toString().trim();
+    }
+
+    // Si el SKU interno está vacío, usar el código de barras como fallback
+    if (!codigo && codigo_barras) {
+        req.body.codigo = codigo_barras.toString().trim();
+    }
+
+    if (!nombre_producto || nombre_producto.toString().trim() === '') {
+        return res.status(400).json({ success: false, error: 'El nombre del producto es obligatorio' });
     }
 
     if (precio !== undefined && (isNaN(parseFloat(precio)) || parseFloat(precio) < 0)) {

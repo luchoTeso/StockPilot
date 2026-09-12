@@ -165,6 +165,7 @@ const db = {
             // 3. Crear índices de rendimiento si no existen (Optimizaciones Fase 1)
             await pool.query(`
                 ALTER TABLE Productos ADD COLUMN IF NOT EXISTS codigo_barras VARCHAR(50);
+                ALTER TABLE Productos ALTER COLUMN codigo DROP NOT NULL;
                 
                 CREATE INDEX IF NOT EXISTS idx_productos_tienda ON Productos(id_tienda);
                 CREATE INDEX IF NOT EXISTS idx_productos_codigo ON Productos(codigo);

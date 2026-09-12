@@ -1,4 +1,4 @@
-import { DollarSign, Package } from 'lucide-react';
+import { DollarSign, Package, Barcode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const formatearFecha = (fechaString) => {
@@ -26,24 +26,34 @@ const ProductTable = ({
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden ring-1 ring-slate-100">
+    <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
-              <th className="p-4 md:p-8">Producto</th>
-              <th className="hidden lg:table-cell p-4 md:p-8">Categoría</th>
-              <th className="p-4 md:p-8 text-center">En Bodega</th>
-              <th className="hidden sm:table-cell p-4 md:p-8 text-center">Estado</th>
-              <th className="hidden xl:table-cell p-4 md:p-8 text-center">Registro</th>
-              <th className="p-4 md:p-8 text-center">Acciones</th>
+            <tr className="border-b border-slate-100 text-[10px] font-black tracking-widest text-slate-400 uppercase bg-slate-50/50">
+              <th className="p-6">Producto / Identificación</th>
+              <th className="hidden lg:table-cell p-6">Categoría</th>
+              <th className="p-6 text-center">Disponibilidad</th>
+              <th className="hidden sm:table-cell p-6 text-center">Estado</th>
+              <th className="hidden xl:table-cell p-6 text-center">Último Ingreso</th>
+              <th className="p-6 text-center">Acciones</th>
             </tr>
           </thead>
-          <tbody className="text-sm divide-y divide-slate-50">
+          <tbody className="divide-y divide-slate-100">
             {loading ? (
-              <tr><td colSpan="6" className="p-32 text-center text-slate-300 font-black uppercase tracking-[0.5em] animate-pulse whitespace-nowrap">Consultando Bóveda...</td></tr>
+              [1, 2, 3, 4, 5].map((i) => (
+                <tr key={i} className="animate-pulse">
+                  <td colSpan="6" className="p-6">
+                    <div className="h-8 bg-slate-100 rounded-xl w-full"></div>
+                  </td>
+                </tr>
+              ))
             ) : productos.length === 0 ? (
-              <tr><td colSpan="6" className="p-32 text-center text-slate-400 font-bold italic whitespace-nowrap">No hay productos en esta vista.</td></tr>
+              <tr>
+                <td colSpan="6" className="p-12 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">
+                  No se encontraron productos registrados
+                </td>
+              </tr>
             ) : (
               productos.map(p => {
                 const isActive = p.estado === 'Disponible';
@@ -55,10 +65,18 @@ const ProductTable = ({
                   <tr key={p.id_producto} className={`group transition-colors hover:bg-slate-50 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
                     <td className="p-6">
                        <p className="font-black text-slate-800 text-sm">{p.nombre_producto}</p>
-                       <p className="text-[10px] font-bold text-slate-500 mt-1 tracking-widest uppercase">Ref: {p.codigo || 'S/N'}</p>
-                       {p.codigo_barras && (
-                         <p className="text-[9px] font-bold text-slate-400 mt-0.5 tracking-wider font-mono bg-slate-100 inline-block px-1.5 rounded">EAN: {p.codigo_barras}</p>
-                       )}
+                       <div className="flex flex-wrap items-center gap-2 mt-1">
+                         {(p.codigo_barras || p.codigo) && (
+                           <span className="text-[10px] font-bold text-indigo-700 font-mono bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 flex items-center gap-1">
+                             <Barcode size={12} className="text-indigo-500" /> {p.codigo_barras || p.codigo}
+                           </span>
+                         )}
+                         {p.codigo && p.codigo_barras && p.codigo !== p.codigo_barras && (
+                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                             SKU: {p.codigo}
+                           </span>
+                         )}
+                       </div>
                     </td>
                     <td className="hidden lg:table-cell p-6">
                       <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[9px] font-black uppercase tracking-widest">{p.categoria || 'Sin Info'}</span>

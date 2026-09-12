@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS Proveedores (
 -- 4. TABLA PRODUCTOS
 CREATE TABLE IF NOT EXISTS Productos (
     id_producto SERIAL PRIMARY KEY,
-    codigo VARCHAR(100) NOT NULL,
+    codigo VARCHAR(100),
     codigo_barras VARCHAR(50),
     nombre_producto VARCHAR(255) NOT NULL,
     categoria VARCHAR(100),

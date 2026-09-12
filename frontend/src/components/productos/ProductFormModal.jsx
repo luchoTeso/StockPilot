@@ -105,7 +105,13 @@ const ProductFormModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    const barcode = formData.codigo_barras?.trim() || '';
+    const sku = formData.codigo?.trim() || '';
+    onSubmit({
+      ...formData,
+      codigo_barras: barcode,
+      codigo: sku || barcode
+    });
   };
 
   return createPortal(
@@ -120,15 +126,33 @@ const ProductFormModal = ({
         <form onSubmit={handleSubmit} className="p-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
-              <label htmlFor="input_codigo" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">SKU / Referencia Interna</label>
-              <input id="input_codigo" required type="text" value={formData.codigo} onChange={e => setFormData({ ...formData, codigo: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" />
+              <label htmlFor="input_codigo_barras" className="text-[10px] font-black text-slate-700 uppercase tracking-widest ml-1 flex justify-between items-center">
+                <span>Código de Barras (EAN/UPC)</span>
+                <span className="text-indigo-600 font-bold lowercase tracking-normal text-[9px] bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">obligatorio</span>
+              </label>
+              <input
+                id="input_codigo_barras"
+                required
+                type="text"
+                value={formData.codigo_barras || ''}
+                onChange={e => setFormData({ ...formData, codigo_barras: e.target.value })}
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors"
+                placeholder="Ej: 7702007031002"
+              />
             </div>
             <div className="space-y-2">
-              <label htmlFor="input_codigo_barras" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex justify-between">
-                <span>Código de Barras (EAN/UPC)</span>
-                <span className="text-slate-400 font-bold lowercase tracking-normal">(Opcional)</span>
+              <label htmlFor="input_codigo" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex justify-between items-center">
+                <span>SKU / Referencia Interna</span>
+                <span className="text-slate-400 font-bold lowercase tracking-normal text-[9px]">(opcional)</span>
               </label>
-              <input id="input_codigo_barras" type="text" value={formData.codigo_barras || ''} onChange={e => setFormData({ ...formData, codigo_barras: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors" placeholder="Ej: 7702007031002" />
+              <input
+                id="input_codigo"
+                type="text"
+                value={formData.codigo || ''}
+                onChange={e => setFormData({ ...formData, codigo: e.target.value })}
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none transition-colors"
+                placeholder="Opcional (Ej: REF-001)"
+              />
             </div>
           </div>
 
