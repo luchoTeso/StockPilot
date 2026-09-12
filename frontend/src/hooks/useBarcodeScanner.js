@@ -9,7 +9,7 @@ import { useEffect, useRef, useCallback } from 'react';
  * @param {number} options.minLength - Longitud mínima del código para considerarlo válido (default: 4).
  */
 const useBarcodeScanner = (onScan, options = {}) => {
-  const { delayThreshold = 50, minLength = 4 } = options;
+  const { delayThreshold = 150, minLength = 4 } = options;
   
   const buffer = useRef('');
   const lastTimeStamp = useRef(0);

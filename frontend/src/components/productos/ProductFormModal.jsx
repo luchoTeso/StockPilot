@@ -109,6 +109,7 @@ const ProductFormModal = ({
     const sku = formData.codigo?.trim() || '';
     onSubmit({
       ...formData,
+      precio: formData.precio_unitario,
       codigo_barras: barcode,
       codigo: sku || barcode
     });
