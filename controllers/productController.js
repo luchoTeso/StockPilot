@@ -258,7 +258,7 @@ class ProductController {
                 return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
             
-            res.json(producto);
+            res.json({ success: true, data: producto });
         } catch (error) {
             console.error('Error buscando por código de barras:', error);
             res.status(500).json({ success: false, error: safeError(error, 'Error al buscar producto') });
