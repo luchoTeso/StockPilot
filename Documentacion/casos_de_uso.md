@@ -156,11 +156,16 @@
 1. El usuario navega al módulo "Productos".
 2. Visualiza la tabla de productos con filtros por categoría y búsqueda.
 3. Para **crear**: completa el formulario (código, nombre, categoría, subcategoría, precio, costo, cantidad, stock mínimo, stock máximo, fecha vencimiento, frecuencia compra, stock seguridad, lead time, proveedor) y presiona "Agregar".
+   - *Nota:* Al ingresar el código de barras, el sistema realiza una consulta automática a bases de datos externas (ej. Open Food Facts) para autocompletar el nombre y categoría si el producto existe globalmente.
 4. Para **editar**: selecciona un producto → se precargan los datos → edita → "Guardar".
 5. Para **eliminar**: selecciona el producto → modal de confirmación → confirma.
 6. El sistema recalcula la clasificación ABC automáticamente tras cada cambio.
 
-**Postcondiciones:** Producto creado/actualizado/eliminado; clasificación ABC recalculada.
+**Flujos Alternativos:**
+
+- **FA-1:** Producto existente al crear → Si el sistema detecta (mediante búsqueda predictiva o escáner) que el producto ya está en base de datos, el formulario cambia dinámicamente al modo "Recepción de Inventario" para sumar stock, evitando duplicados.
+
+**Postcondiciones:** Producto creado/actualizado/eliminado o stock sumado; clasificación ABC recalculada.
 
 ---
 
@@ -174,17 +179,18 @@
 
 **Flujo Principal:**
 
-1. El usuario navega al módulo "Movimientos".
-2. Registra un movimiento: tipo (Entrada/Salida), producto, cantidad, motivo.
-3. Presiona "Registrar".
-4. El sistema actualiza el stock actual del producto en tiempo real.
-5. El movimiento queda trazado con fecha, usuario responsable y tipo.
+1. El usuario navega al módulo "Movimientos" (Kardex).
+2. Lee las instrucciones del modal de ayuda para confirmar que su operación no es una venta (merma, entrada de proveedor, ajuste).
+3. Registra un movimiento: tipo (Entrada/Salida/Ajuste), producto, cantidad, motivo.
+4. Presiona "Registrar".
+5. El sistema actualiza el stock actual del producto en tiempo real.
+6. El movimiento queda trazado con fecha, usuario responsable (quién lo ejecutó) y tipo.
 
 **Flujos Alternativos:**
 
 - **FA-1:** Salida mayor al stock actual → El sistema impide la operación.
 
-**Postcondiciones:** Stock actualizado; movimiento registrado con trazabilidad.
+**Postcondiciones:** Stock actualizado; movimiento administrativo/manual registrado con trazabilidad.
 
 ---
 
@@ -243,19 +249,19 @@
 
 **Flujo Principal:**
 
-1. El usuario navega al módulo "Ventas".
-2. Busca y selecciona los productos a vender.
-3. Indica la cantidad de cada producto.
-4. Presiona "Registrar Venta".
+1. El usuario navega al módulo "Punto de Venta" (Caja Rápida).
+2. Busca y selecciona los productos a vender utilizando búsqueda predictiva por texto, o mediante escaneo de código de barras (con cámara o pistola láser).
+3. Indica la cantidad de cada producto en el carrito.
+4. Presiona "Cobrar" y selecciona el método de pago.
 5. El sistema descuenta automáticamente las cantidades del inventario.
-6. La venta queda registrada con fecha, productos, cantidades y monto total.
-7. El usuario puede consultar el historial completo de ventas con filtros por fecha y búsqueda por nombre de producto.
+6. La venta queda registrada con fecha, productos, cantidades, monto total y el **usuario vendedor** que realizó la transacción.
+7. El usuario puede consultar el historial completo de ventas en la pestaña contigua "Historial", visualizando al vendedor responsable de cada transacción.
 
 **Flujos Alternativos:**
 
 - **FA-1:** Cantidad solicitada > stock disponible → Error; operación rechazada.
 
-**Postcondiciones:** Venta registrada; stock descontado automáticamente; historial consultable con filtros.
+**Postcondiciones:** Venta registrada con trazabilidad de vendedor; stock descontado automáticamente; historial consultable con filtros.
 
 ---
 

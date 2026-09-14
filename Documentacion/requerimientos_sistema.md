@@ -29,11 +29,12 @@
 
 | ID     | Descripción                                                                                                                                                              | Prioridad | Estado |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------ |
-| RF-007 | El sistema debe permitir CRUD completo de productos (crear, leer, actualizar, eliminar)                                                                                  | Alta      | ✅     |
+| RF-007 | El sistema debe permitir CRUD completo de productos (crear, leer, actualizar, eliminar) previniendo duplicados; al registrar, debe buscar coincidencias y cambiar al flujo de "Recepción de Inventario" si el producto ya existe | Alta      | ✅     |
 | RF-008 | Cada producto debe registrar: código, nombre, categoría, subcategoría, precio, costo, cantidad, stock mínimo, stock máximo, fecha de vencimiento, frecuencia de compra, stock de seguridad y lead time | Alta | ✅ |
 | RF-009 | El sistema debe calcular y almacenar la clasificación ABC (Pareto) de cada producto según su contribución a los ingresos: A (80%), B (95%), C (100%)                     | Alta      | ✅     |
 | RF-010 | El sistema debe registrar fechas de vencimiento y utilizarlas para generar alertas predictivas cruzadas con la velocidad de venta                                        | Alta      | ✅     |
 | RF-011 | El sistema debe mostrar gráficos visuales (barras Pareto con % acumulado y donut de distribución) de la clasificación ABC de los productos en el Centro Analítico        | Media     | ✅     |
+| RF-064 | El sistema debe consultar APIs externas (ej. Open Food Facts) al escanear un código de barras para autocompletar automáticamente el nombre y categoría de productos nuevos | Alta      | ✅     |
 
 ---
 
@@ -41,10 +42,11 @@
 
 | ID     | Descripción                                                                                                                                                              | Prioridad | Estado |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------ |
-| RF-012 | El sistema debe permitir el registro de ventas asociando productos, cantidades y precios unitarios, descontando automáticamente del inventario                            | Alta      | ✅     |
+| RF-012 | El sistema debe permitir el registro de ventas asociando productos, cantidades, precios unitarios y el **usuario vendedor**, descontando automáticamente del inventario | Alta      | ✅     |
 | RF-013 | El sistema debe descontar automáticamente del inventario las cantidades vendidas al confirmar una venta                                                                   | Alta      | ✅     |
 | RF-014 | El sistema debe mostrar un ranking de los productos más vendidos (Top Ventas) con cantidades e ingresos totales acumulados                                               | Media     | ✅     |
-| RF-015 | El sistema debe mostrar el historial de ventas con filtros por fecha y opción de búsqueda                                                                                | Media     | ✅     |
+| RF-015 | El sistema debe unificar la experiencia de caja y reporte mostrando el historial completo de ventas dentro del Punto de Venta (y en módulo Reportes), exponiendo qué vendedor hizo cada transacción | Media     | ✅     |
+| RF-065 | El Punto de Venta debe permitir agregar productos al carrito mediante escaneo estricto de código o búsqueda predictiva tecleando nombre o fragmentos del SKU             | Alta      | ✅     |
 
 ---
 

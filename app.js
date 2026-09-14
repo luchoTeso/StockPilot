@@ -13,6 +13,7 @@ const session = require('express-session');
 const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression'); // 🚀 Nuevo: Compresión para Producción
 const { logger, requestLogger } = require('./utils/logger');
 // const { createBackup } = require('./utils/backup'); (Obsoleto en Postgres)
 const { globalLimiter, authLimiter, aiLimiter } = require('./middleware/rateLimiter');
@@ -93,6 +94,7 @@ app.use(cors({
 }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
+app.use(compression()); // 🚀 Habilitar compresión GZIP/Brotli para todas las respuestas (ahorro ~70% de ancho de banda)
 
 // 🛡️ LOGGING: Registrar todas las peticiones HTTP (OWASP A09)
 app.use(requestLogger);
@@ -239,6 +241,18 @@ function startServer(port) {
             process.exit(1);
         }
     });
+}
+
+// 🛡️ VALIDACIÓN ESTRICTA EN PRODUCCIÓN ANTES DE ARRANCAR
+if (process.env.NODE_ENV === 'production') {
+    const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'OPENAI_API_KEY'];
+    const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+    
+    if (missingVars.length > 0) {
+        console.error('❌ FATAL (PRODUCCIÓN): Faltan las siguientes variables de entorno críticas:', missingVars.join(', '));
+        console.error('   El servidor se detendrá por seguridad. Configúralas en tu entorno de despliegue (ej. Render/Railway).');
+        process.exit(1);
+    }
 }
 // Iniciar planeador de tareas automáticas (Cron Jobs)
 scheduler.startScheduler();
