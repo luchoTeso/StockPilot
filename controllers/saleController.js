@@ -95,13 +95,13 @@ class SaleController {
             try {
                 await client.query('BEGIN');
 
-                // 1. Obtener información del producto DENTRO de la transacción
-                const prodResult = await client.query('SELECT cantidad, precio FROM Productos WHERE id_producto = ?', [id_producto]);
+                // 1. Obtener información del producto DENTRO de la transacción y validar propiedad (IDOR)
+                const prodResult = await client.query('SELECT cantidad, precio FROM Productos WHERE id_producto = ? AND id_tienda = ?', [id_producto, id_tienda]);
                 const producto = prodResult.rows[0];
                 
                 if (!producto) {
                     await client.query('ROLLBACK');
-                    return res.status(404).json({ success: false, error: "Producto no encontrado" });
+                    return res.status(404).json({ success: false, error: "Producto no encontrado o no pertenece a tu tienda" });
                 }
 
                 if (producto.cantidad < cantidad) {
@@ -193,10 +193,12 @@ class SaleController {
                     const producto = prodResult.rows[0];
 
                     if (!producto) {
-                        throw new Error(`Producto ID ${item.id_producto} no encontrado`);
+                        // 🛡️ Ocultamos el ID en el error para no permitir escaneo
+                        throw new Error(`Un producto del carrito no fue encontrado o no pertenece a tu tienda`);
                     }
                     if (producto.cantidad < item.cantidad) {
-                        throw new Error(`Stock insuficiente para: ${producto.nombre_producto}`);
+                        // Exponemos el nombre (que es público para el tendero) pero no su ID
+                        throw new Error(`Stock insuficiente para el producto: ${producto.nombre_producto}`);
                     }
 
                     const subtotal = producto.precio * item.cantidad;

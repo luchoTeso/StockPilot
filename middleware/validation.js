@@ -32,15 +32,10 @@ function sanitizeBody(req, res, next) {
  * Valida campos de login
  */
 function validateLogin(req, res, next) {
-    const { login, password, rol } = req.body;
+    const { login, password } = req.body;
 
-    if (!login || !password || !rol) {
+    if (!login || !password) {
         return res.status(400).json({ success: false, error: 'Faltan campos obligatorios' });
-    }
-
-    const rolesValidos = ['Administrador', 'Tendero'];
-    if (!rolesValidos.includes(rol)) {
-        return res.status(400).json({ success: false, error: 'Rol no válido' });
     }
 
     next();

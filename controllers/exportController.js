@@ -53,10 +53,11 @@ class ExportController {
                 });
             });
 
-            // Generar nombre de archivo con fecha y hora
+            // Generar nombre de archivo con fecha, hora y un sufijo aleatorio único
             const now = new Date();
             const timestamp = now.toISOString().replace(/[:.]/g, '-').split('T');
-            const filename = `ventas_${timestamp[0]}_${timestamp[1].substring(0, 8)}.xlsx`;
+            const uniqueSuffix = Math.random().toString(36).substring(2, 8);
+            const filename = `ventas_${timestamp[0]}_${timestamp[1].substring(0, 8)}_${uniqueSuffix}.xlsx`;
             const filePath = path.join(EXPORTS_DIR, filename);
 
             // Guardar archivo
@@ -100,10 +101,11 @@ class ExportController {
 
             const csvContent = headers + rows;
 
-            // Generar nombre de archivo
+            // Generar nombre de archivo con fecha, hora y un sufijo aleatorio único
             const now = new Date();
             const timestamp = now.toISOString().replace(/[:.]/g, '-').split('T');
-            const filename = `reportes_${timestamp[0]}_${timestamp[1].substring(0, 8)}.csv`;
+            const uniqueSuffix = Math.random().toString(36).substring(2, 8);
+            const filename = `reportes_${timestamp[0]}_${timestamp[1].substring(0, 8)}_${uniqueSuffix}.csv`;
             const filePath = path.join(EXPORTS_DIR, filename);
 
             // Guardar archivo

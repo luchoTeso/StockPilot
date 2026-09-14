@@ -8,10 +8,10 @@ const { safeError } = require('../utils/securityUtils');
 class AuthController {
     static async login(req, res) {
         try {
-            const { login, password, rol } = req.body;
-            console.log(`--- LOGIN ATTEMPT: ${login} | ROL: ${rol} ---`);
+            const { login, password } = req.body;
+            console.log(`--- LOGIN ATTEMPT: ${login} ---`);
 
-            if (!login || !password || !rol) {
+            if (!login || !password) {
                 console.warn('Login fallido: Faltan campos');
                 return res.status(400).json({ 
                     success: false, 
@@ -20,13 +20,13 @@ class AuthController {
             }
 
             console.log('Buscando usuario en BD...');
-            const user = await User.findByCredentials(login, password, rol);
+            const user = await User.findByCredentials(login, password);
             
             if (!user) {
                 console.warn('Login fallido: Usuario no encontrado o clave incorrecta');
                 return res.status(401).json({ 
                     success: false, 
-                    error: 'Usuario/correo, contraseña o rol incorrectos' 
+                    error: 'Usuario/correo o contraseña incorrectos' 
                 });
             }
 
@@ -304,8 +304,8 @@ class AuthController {
             const emailEnviado = await Mailer.sendPasswordResetCode(user.correo, code);
 
             if (!emailEnviado) {
-                // Aunque falle el correo real, el fallback en terminal permitirá continuar en dev
-                console.warn("⚠️ Aviso: El correo SMTP falló, revisa la terminal para el código.");
+                // 🛡️ Ocultamos el código en consola para evitar exposición en logs
+                console.warn("⚠️ Aviso: El correo SMTP falló y no se pudo enviar el código de recuperación al usuario.");
             }
 
             // Respuesta segura (sin filtrar el código al cliente)

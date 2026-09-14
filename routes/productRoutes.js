@@ -6,8 +6,11 @@ const { requireLogin } = require('../middleware/auth');
 const { sanitizeBody, validateProduct } = require('../middleware/validation');
 const router = express.Router();
 
-// Configurar multer para guardar el archivo en memoria (Buffer)
-const upload = multer({ storage: multer.memoryStorage() });
+// Configurar multer para guardar el archivo en memoria (Buffer) y con límite de 5MB
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
 
 router.get('/api/productos', requireLogin, ProductController.getProducts);
 router.get('/api/productos/:id', requireLogin, ProductController.getProduct);

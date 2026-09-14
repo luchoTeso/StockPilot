@@ -92,11 +92,24 @@ class ProductController {
                         return;
                     }
 
-                    promises.push(Product.create(productInstance.toDBRecord()).then(() => {
-                        successCount++;
+                    // 🛡️ IDOR y Prevención de Duplicados: Verificar si el producto ya existe para esta tienda específica
+                    const pRecord = productInstance.toDBRecord();
+                    const existingTask = Product.findByBarcode(tiendaId, pRecord.codigo).then(existing => {
+                        if (existing) {
+                            // Actualizar el producto si ya existe para esta tienda
+                            return Product.update(existing.id_producto, pRecord).then(() => {
+                                successCount++;
+                            });
+                        } else {
+                            // Crear solo si no existe
+                            return Product.create(pRecord).then(() => {
+                                successCount++;
+                            });
+                        }
                     }).catch(err => {
-                        warnings.push(`Fila ${rowNumber}: Error al guardar (${err.message})`);
-                    }));
+                        warnings.push(`Fila ${rowNumber}: Error al procesar (${err.message})`);
+                    });
+                    promises.push(existingTask);
                 } catch (err) {
                     warnings.push(`Fila ${rowNumber}: Error (${err.message})`);
                 }

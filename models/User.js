@@ -5,14 +5,13 @@ const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 
 class User {
-    static async findByCredentials(login, password, rol) {
-        // Buscar usuario sin comparar contraseña en SQL
+    static async findByCredentials(login, password) {
+        // Buscar usuario sin comparar contraseña en SQL y sin requerir rol del cliente
         const query = `
             SELECT * FROM Usuarios 
             WHERE (usuario = ? OR correo = ?) 
-            AND rol = ?
         `;
-        const user = await db.getAsync(query, [login, login, rol]);
+        const user = await db.getAsync(query, [login, login]);
 
         if (!user) return null;
 

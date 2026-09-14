@@ -130,9 +130,9 @@ const aiController = {
       // Pasamos dos veces el tiendaId: uno para VentasRecientes y otro para Productos
       const rows = await db.allAsync(snapshotQuery, [tiendaId, tiendaId]);
       
-      // 2. Cálculo de Hash para Caché Inteligente
+      // 2. Cálculo de Hash para Caché Inteligente (Usando SHA-256 en lugar de MD5)
       const dataString = JSON.stringify(rows);
-      const currentHash = crypto.createHash('md5').update(dataString).digest('hex');
+      const currentHash = crypto.createHash('sha256').update(dataString).digest('hex');
 
       // 1. Memoria (instantáneo)
       const tiendaCache = aiCache_v3[tiendaId];
@@ -436,9 +436,9 @@ const aiController = {
         return res.json({ success: true, promotions: [] });
       }
 
-      // 3. Hash para Caché (Independiente de recomendaciones de compra)
+      // 3. Hash para Caché (Independiente de recomendaciones de compra) (Usando SHA-256)
       const dataString = "PROMO_" + JSON.stringify(candidates);
-      const currentHash = crypto.createHash('md5').update(dataString).digest('hex');
+      const currentHash = crypto.createHash('sha256').update(dataString).digest('hex');
       
       const cacheKey = `PROMO_${tiendaId}`;
       if (aiCache_v3[cacheKey] && aiCache_v3[cacheKey].dataHash === currentHash) {

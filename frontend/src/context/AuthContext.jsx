@@ -61,9 +61,9 @@ export const AuthProvider = ({ children }) => {
     return () => controller.abort();
   }, [checkSession]);
 
-  const login = useCallback(async (identificador, password, rol, force = false) => {
+  const login = useCallback(async (identificador, password, force = false) => {
     try {
-      const res = await axios.post('/api/login', { login: identificador, password, rol, force });
+      const res = await axios.post('/api/login', { login: identificador, password, force });
       if (res.data.success) {
         await checkSession();
       } else {

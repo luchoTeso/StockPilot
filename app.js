@@ -14,6 +14,7 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression'); // 🚀 Nuevo: Compresión para Producción
+const multer = require('multer'); // Importado para el manejo global de errores de subida
 const { logger, requestLogger } = require('./utils/logger');
 // const { createBackup } = require('./utils/backup'); (Obsoleto en Postgres)
 const { globalLimiter, authLimiter, aiLimiter } = require('./middleware/rateLimiter');
@@ -166,6 +167,20 @@ app.use((req, res) => {
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
+    // 🛡️ Manejo de errores generalizado para subida de archivos (Multer)
+    if (err instanceof multer.MulterError) {
+        // LIMIT_FILE_SIZE amerita un 413, otros problemas (ej: LIMIT_FIELD_KEY) un 400
+        const status = err.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+        logger.warn({ err, url: req.originalUrl, method: req.method }, '⚠️ Rechazo por validación de subida de archivo (Multer)');
+        
+        return res.status(status).json({
+            success: false,
+            error: err.code === 'LIMIT_FILE_SIZE' 
+                ? 'El archivo subido supera el límite máximo permitido de 5MB.' 
+                : `Error en la subida del archivo: ${err.message}`
+        });
+    }
+
     // Logging estructurado del error
     logger.error({ err, url: req.originalUrl, method: req.method }, '❌ ERROR GLOBAL');
 
