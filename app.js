@@ -113,11 +113,12 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false, 
+    rolling: true, // 🛡️ Idle Timeout: Renueva la cookie en cada request, expirará si hay inactividad
     cookie: { 
         secure: process.env.NODE_ENV === 'production', 
         httpOnly: true, 
-        maxAge: 1000 * 60 * 60 * 24, // 24 horas
-        sameSite: 'lax' 
+        maxAge: 1000 * 60 * 30, // 30 minutos
+        sameSite: 'strict' 
     }
 }));
 
@@ -183,6 +184,11 @@ app.use((err, req, res, next) => {
 
     // Logging estructurado del error
     logger.error({ err, url: req.originalUrl, method: req.method }, '❌ ERROR GLOBAL');
+
+    // Validación de tipo de archivo (fileFilter de Multer lanza Error normal)
+    if (err.message && err.message.includes('Tipo de archivo no permitido')) {
+        return res.status(400).json({ success: false, error: err.message });
+    }
 
     // En producción, silenciamos detalles técnicos peligrosos
     const isProd = process.env.NODE_ENV === 'production';

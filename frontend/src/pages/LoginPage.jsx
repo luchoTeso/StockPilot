@@ -8,7 +8,12 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [sessionConflict, setSessionConflict] = useState(false);
-  const { login } = useAuth();
+  
+  // Estado 2FA
+  const [is2FA, setIs2FA] = useState(false);
+  const [token2FA, setToken2FA] = useState('');
+  
+  const { login, verify2FA } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -18,9 +23,23 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     setSessionConflict(false);
+    if (is2FA) {
+      try {
+        await verify2FA(token2FA);
+        navigate('/dashboard');
+      } catch (err) {
+        setError(err.message || 'Código incorrecto');
+      }
+      return;
+    }
+
     try {
-      await login(identificador, password, force);
-      navigate('/dashboard');
+      const result = await login(identificador, password, force);
+      if (result?.require2FA) {
+        setIs2FA(true);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       if (err.code === 'SESSION_ACTIVE') {
         setSessionConflict(true);
@@ -72,23 +91,40 @@ const LoginPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-1">
-              <label htmlFor="identificador" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usuario o Correo</label>
-              <input id="identificador" type="text" value={identificador} onChange={e => setIdentificador(e.target.value)} required placeholder="tu@correo.com o usuario" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors" />
-            </div>
+          {is2FA ? (
+            <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
+              <div className="text-center mb-6">
+                <p className="text-sm font-bold text-slate-600 mb-2">Autenticación de Dos Factores requerida</p>
+                <p className="text-xs text-slate-400">Abre tu aplicación de autenticación (Google Authenticator, Authy) e ingresa el código de 6 dígitos.</p>
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="token2FA" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Código de 6 Dígitos</label>
+                <input id="token2FA" type="text" maxLength="6" value={token2FA} onChange={e => setToken2FA(e.target.value.replace(/\D/g, ''))} required placeholder="000000" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl tracking-[0.5em] font-black focus:border-indigo-600 outline-none transition-colors" />
+              </div>
+              <button type="submit" className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 transition-transform transition-colors">
+                Verificar Código
+              </button>
+              <button type="button" onClick={() => {setIs2FA(false); setToken2FA(''); setError('');}} className="w-full mt-2 py-3 text-slate-400 hover:text-slate-600 text-[10px] font-bold uppercase tracking-widest transition-colors">
+                Volver
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-1">
+                <label htmlFor="identificador" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usuario o Correo</label>
+                <input id="identificador" type="text" value={identificador} onChange={e => setIdentificador(e.target.value)} required placeholder="tu@correo.com o usuario" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors" />
+              </div>
 
-            <div className="space-y-1">
-              <label htmlFor="password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
-              <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors" />
-            </div>
+              <div className="space-y-1">
+                <label htmlFor="password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
+                <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors" />
+              </div>
 
-
-
-            <button type="submit" className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 transition-transform transition-colors">
-              Ingresar a mi Negocio
-            </button>
-          </form>
+              <button type="submit" className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 transition-transform transition-colors">
+                Ingresar a mi Negocio
+              </button>
+            </form>
+          )}
 
           <div className="mt-8 text-center border-t border-slate-100 pt-8 space-y-3">
              <button onClick={() => navigate('/forgot-password')} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline decoration-2 underline-offset-4">¿Olvidó su clave?</button>

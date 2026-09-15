@@ -65,7 +65,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await axios.post('/api/login', { login: identificador, password, force });
       if (res.data.success) {
+        if (res.data.require2FA) {
+            return { require2FA: true };
+        }
         await checkSession();
+        return { success: true };
       } else {
         throw new Error(res.data.error || 'Error de inicio de sesión');
       }
@@ -78,6 +82,19 @@ export const AuthProvider = ({ children }) => {
       }
       throw new Error(apiError?.error || err.message || 'Error de conexión');
     }
+  }, [checkSession]);
+
+  const verify2FA = useCallback(async (token) => {
+      try {
+          const res = await axios.post('/api/2fa/verify', { token });
+          if (res.data.success) {
+              await checkSession();
+              return { success: true };
+          }
+          throw new Error(res.data.error || 'Código incorrecto');
+      } catch (err) {
+          throw new Error(err.response?.data?.error || err.message || 'Error validando 2FA');
+      }
   }, [checkSession]);
 
   const logout = useCallback(async () => {
@@ -104,7 +121,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [checkSession]);
 
-  const value = useMemo(() => ({ user, login, logout, switchStore, loading }), [user, login, logout, switchStore, loading]);
+  const value = useMemo(() => ({ user, login, verify2FA, logout, switchStore, loading }), [user, login, verify2FA, logout, switchStore, loading]);
 
   return (
     <AuthContext.Provider value={value}>

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
-import { User, Lock } from 'lucide-react';
+import { User, Lock, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
@@ -26,6 +26,54 @@ const ProfilePage = () => {
   const [passData, setPassData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [loading, setLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
+
+  // 2FA States
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [totpToken, setTotpToken] = useState('');
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false); // Modal confirmación desactivar
+
+
+
+  const handleGenerate2FA = async () => {
+    try {
+      const { data } = await axios.post('/api/2fa/generate');
+      if (data.success) {
+        setQrCodeUrl(data.qrCode);
+        setShow2FAModal(true);
+      }
+    } catch (err) {
+      toast.error('Error generando configuración 2FA');
+    }
+  };
+
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('/api/2fa/verify', { token: totpToken });
+      toast.success('2FA Habilitado con éxito');
+      setShow2FAModal(false);
+      setTotpToken('');
+      window.location.reload(); // Recargar para actualizar el estado user de AuthContext
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Código incorrecto');
+    }
+  };
+
+  const handleDisable2FA = () => {
+    setShowDisableConfirm(true);
+  };
+
+  const confirmDisable2FA = async () => {
+    try {
+      await axios.post('/api/2fa/disable');
+      toast.success('2FA Desactivado');
+      setShowDisableConfirm(false);
+      window.location.reload();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error desactivando 2FA');
+    }
+  };
 
   const fetchProfile = useCallback(async (signal = null) => {
     try {
@@ -176,12 +224,43 @@ const ProfilePage = () => {
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><Lock size={20} /></div>
               <div className="text-left">
-                <p className="text-xs font-black text-slate-800 uppercase tracking-tighter">Seguridad</p>
+                <p className="text-xs font-black text-slate-800 uppercase tracking-tighter">Contraseña</p>
                 <p className="text-[9px] text-slate-400 font-bold uppercase">Actualizar Clave</p>
               </div>
             </div>
             <span className="text-slate-300">→</span>
           </button>
+
+          {/* Botón 2FA */}
+          {!user?.is2FAEnabled ? (
+             <button
+              onClick={handleGenerate2FA}
+              className="w-full p-6 bg-rose-50 border border-rose-200 rounded-[2rem] flex items-center justify-between group hover:bg-white hover:shadow-lg transition-colors transition-shadow"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><ShieldAlert size={20} className="text-rose-500" /></div>
+                <div className="text-left">
+                  <p className="text-xs font-black text-rose-800 uppercase tracking-tighter">Seguridad 2FA</p>
+                  <p className="text-[9px] text-rose-500 font-bold uppercase">No configurado - ¡Habilitar!</p>
+                </div>
+              </div>
+              <span className="text-rose-300">→</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleDisable2FA}
+              className="w-full p-6 bg-emerald-50 border border-emerald-200 rounded-[2rem] flex items-center justify-between group hover:bg-white hover:shadow-lg transition-colors transition-shadow"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><ShieldCheck size={20} className="text-emerald-500" /></div>
+                <div className="text-left">
+                  <p className="text-xs font-black text-emerald-800 uppercase tracking-tighter">Seguridad 2FA</p>
+                  <p className="text-[9px] text-emerald-600 font-bold uppercase">Protegido</p>
+                </div>
+              </div>
+              {user?.rol !== 'Administrador' && <span className="text-emerald-300 text-[10px] uppercase font-bold hover:text-red-500">Desactivar</span>}
+            </button>
+          )}
         </div>
 
         {/* Lado Derecho: Formulario Detallado */}
@@ -335,6 +414,78 @@ const ProfilePage = () => {
               >Actualizar</button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Modal Configuración 2FA */}
+      {show2FAModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <form onSubmit={handleVerify2FA} className="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl animate-scale-in text-center">
+            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield size={32} />
+            </div>
+            <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Configurar 2FA</h2>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-6 leading-relaxed">
+              1. Descarga Google Authenticator o Authy.<br/>
+              2. Escanea este código QR con la aplicación.
+            </p>
+
+            {qrCodeUrl ? (
+              <img src={qrCodeUrl} alt="Código QR 2FA" className="mx-auto w-48 h-48 border-4 border-slate-100 rounded-xl mb-6 shadow-sm" />
+            ) : (
+              <div className="w-48 h-48 bg-slate-100 animate-pulse mx-auto rounded-xl mb-6"></div>
+            )}
+
+            <div className="space-y-1 mb-8 text-left">
+              <label htmlFor="totp-token" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">3. Ingresa el código de 6 dígitos</label>
+              <input
+                id="totp-token"
+                type="text"
+                maxLength="6"
+                value={totpToken}
+                required
+                placeholder="000000"
+                onChange={e => setTotpToken(e.target.value.replace(/\D/g, ''))}
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] font-black focus:border-indigo-500 outline-none"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              {!user?.needs2FASetup && (
+                <button
+                  type="button"
+                  onClick={() => { setShow2FAModal(false); setTotpToken(''); }}
+                  className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest"
+                >Cancelar</button>
+              )}
+              <button
+                type="submit"
+                className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-colors"
+              >Verificar y Activar</button>
+            </div>
+          </form>
+        </div>
+      )}
+      {/* Modal Confirmación Desactivar 2FA */}
+      {showDisableConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-sm p-8 rounded-[2.5rem] shadow-2xl animate-scale-in text-center">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShieldAlert size={32} />
+            </div>
+            <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-2">¿Desactivar Seguridad?</h2>
+            <p className="text-xs text-slate-500 font-bold mb-8">
+              Al desactivar la autenticación de dos factores, tu cuenta será más vulnerable a accesos no autorizados. ¿Estás seguro?
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowDisableConfirm(false)} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                Cancelar
+              </button>
+              <button onClick={confirmDisable2FA} className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg shadow-red-100">
+                Sí, Desactivar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

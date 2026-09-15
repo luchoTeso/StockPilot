@@ -46,7 +46,7 @@ class User {
 
     static async findById(userId) {
         const query = `
-            SELECT id_usuario, nombres, genero, correo, celular, usuario, rol, id_tienda, foto_url, cambio_clave_forzoso
+            SELECT id_usuario, nombres, genero, correo, celular, usuario, rol, id_tienda, foto_url, cambio_clave_forzoso, two_factor_enabled
             FROM Usuarios WHERE id_usuario = ?
         `;
         return await db.getAsync(query, [userId]);
@@ -138,6 +138,26 @@ class User {
         const query = `SELECT session_id FROM Usuarios WHERE id_usuario = ?`;
         const user = await db.getAsync(query, [userId]);
         return user && user.session_id === sessionId;
+    }
+
+    static async get2FASecret(userId) {
+        const query = `SELECT two_factor_secret, two_factor_enabled FROM Usuarios WHERE id_usuario = ?`;
+        return await db.getAsync(query, [userId]);
+    }
+
+    static async set2FASecret(userId, secret) {
+        const query = `UPDATE Usuarios SET two_factor_secret = ? WHERE id_usuario = ?`;
+        await db.runAsync(query, [secret, userId]);
+    }
+
+    static async enable2FA(userId) {
+        const query = `UPDATE Usuarios SET two_factor_enabled = true WHERE id_usuario = ?`;
+        await db.runAsync(query, [userId]);
+    }
+
+    static async disable2FA(userId) {
+        const query = `UPDATE Usuarios SET two_factor_enabled = false, two_factor_secret = NULL WHERE id_usuario = ?`;
+        await db.runAsync(query, [userId]);
     }
 }
 

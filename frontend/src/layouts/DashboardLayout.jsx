@@ -3,12 +3,95 @@ import Sidebar from '../components/Sidebar';
 import NotificationCenter from '../components/NotificationCenter';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { useSidebar } from '../context/SidebarContext';
-import { Store, Menu, X } from 'lucide-react';
+import { Store, Menu, X, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import axios from 'axios';
 
 const DashboardLayout = () => {
   const { toggleSidebar, isOpen, isCollapsed } = useSidebar();
-
+  const { user } = useAuth();
+  const toast = useToast();
+  
   const marginLeft = isCollapsed ? 'md:ml-20' : 'md:ml-64';
+
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [totpToken, setTotpToken] = useState('');
+
+  useEffect(() => {
+    if (user?.needs2FASetup && !qrCodeUrl) {
+      handleGenerate2FA();
+    }
+  }, [user]);
+
+  const handleGenerate2FA = async () => {
+    try {
+      const { data } = await axios.post('/api/2fa/generate');
+      if (data.success) {
+        setQrCodeUrl(data.qrCode);
+      }
+    } catch (err) {
+      toast.error('Error generando configuración 2FA');
+    }
+  };
+
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('/api/2fa/verify', { token: totpToken });
+      toast.success('2FA Habilitado con éxito');
+      window.location.reload(); 
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Código incorrecto');
+    }
+  };
+
+  const renderForce2FA = () => {
+    if (!user?.needs2FASetup) return null;
+    return (
+      <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[9999] flex items-center justify-center p-6">
+        <form onSubmit={handleVerify2FA} className="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl animate-scale-in text-center">
+          <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield size={32} />
+          </div>
+          <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Configurar Seguridad</h2>
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-6 leading-relaxed">
+            Como Administrador, es obligatorio configurar 2FA antes de continuar.<br/>
+            1. Descarga Google Authenticator.<br/>
+            2. Escanea el código QR.
+          </p>
+
+          {qrCodeUrl ? (
+            <img src={qrCodeUrl} alt="Código QR 2FA" className="mx-auto w-48 h-48 border-4 border-slate-100 rounded-xl mb-6 shadow-sm" />
+          ) : (
+            <div className="w-48 h-48 bg-slate-100 animate-pulse mx-auto rounded-xl mb-6"></div>
+          )}
+
+          <div className="space-y-1 mb-8 text-left">
+            <label htmlFor="totp-token-layout" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">3. Ingresa el código de 6 dígitos</label>
+            <input
+              id="totp-token-layout"
+              type="text"
+              maxLength="6"
+              value={totpToken}
+              required
+              placeholder="000000"
+              onChange={e => setTotpToken(e.target.value.replace(/\D/g, ''))}
+              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] font-black focus:border-indigo-500 outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-colors"
+          >
+            Verificar y Activar
+          </button>
+        </form>
+      </div>
+    );
+  };
 
   return (
     <div className="flex w-full min-h-screen bg-[#f8fafc] font-outfit overflow-x-hidden relative">
@@ -64,6 +147,9 @@ const DashboardLayout = () => {
 
       {/* Botón Flotante de Scroll (Nivel Raíz para evitar estiramientos) */}
       <ScrollToTopButton />
+
+      {/* Modal global forzado para Admins sin 2FA */}
+      {renderForce2FA()}
     </div>
   );
 };

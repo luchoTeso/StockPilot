@@ -15,6 +15,11 @@ router.put('/api/perfil', AuthController.updateProfile);
 router.put('/api/perfil/password', AuthController.changePassword);
 router.put('/api/perfil/first-password', AuthController.firstPasswordChange);
 
+// Rutas 2FA
+router.post('/api/2fa/generate', AuthController.generate2FA);
+router.post('/api/2fa/verify', AuthController.verify2FA);
+router.post('/api/2fa/disable', AuthController.disable2FA);
+
 // Rutas de Recuperación
 router.post('/api/forgot-password', AuthController.forgotPassword);
 router.post('/api/verify-reset-code', AuthController.verifyResetCode);

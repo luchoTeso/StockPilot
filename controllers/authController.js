@@ -4,6 +4,8 @@ const Store = require('../models/Store');
 const crypto = require('crypto'); // Para generar tokens aleatorios
 const Mailer = require('../utils/mailer'); // Servicio de envíos de correo
 const { safeError } = require('../utils/securityUtils');
+const { authenticator } = require('otplib');
+const qrcode = require('qrcode');
 
 class AuthController {
     static async login(req, res) {
@@ -30,7 +32,17 @@ class AuthController {
                 });
             }
 
-            console.log('Login exitoso: Usuario encontrado. Asignando sesión...');
+            console.log('Login exitoso: Usuario encontrado. Regenerando ID de sesión...');
+            
+            // Regenerar Session ID para prevenir Session Fixation (OWASP A07)
+            await new Promise((resolve, reject) => {
+                const oldSession = req.session;
+                req.session.regenerate((err) => {
+                    if (err) return reject(err);
+                    resolve();
+                });
+            });
+
             if (!user.id_tienda) {
                 console.error('ERROR: Usuario sin tienda detectado en login exitoso');
                 return res.status(401).json({ 
@@ -39,8 +51,7 @@ class AuthController {
                 });
             }
 
-            // Bloquear segundo login: solo para roles distintos a Administrador
-            // Permitimos múltiples sesiones para administradores por comodidad del equipo.
+            // Bloquear segundo login (solo para Tenderos)
             const { force } = req.body;
             if (user.rol !== 'Administrador' && user.session_id && !force) {
                 return res.status(409).json({
@@ -50,13 +61,37 @@ class AuthController {
                 });
             }
 
+            // Obtener estado 2FA de la base de datos
+            const twoFactorData = await User.get2FASecret(user.id_usuario);
+            const is2FAEnabled = twoFactorData && twoFactorData.two_factor_enabled;
+            const isAdmin = user.rol === 'Administrador';
+
+            if (is2FAEnabled) {
+                // Guardar en sesión que el usuario está pendiente de verificar 2FA
+                req.session.pending2FA_userId = user.id_usuario;
+                req.session.pending2FA_tiendaId = user.id_tienda;
+                req.session.pending2FA_rol = user.rol;
+                req.session.pending2FA_nombres = user.nombres;
+                req.session.pending2FA_cambio_clave = user.cambio_clave_forzoso === 1;
+
+                return res.json({
+                    success: true,
+                    require2FA: true,
+                    message: 'Se requiere código de verificación 2FA'
+                });
+            }
+
+            // Si es administrador y NO tiene 2FA, debe configurarlo.
+            // Lo dejamos pasar pero le avisamos al frontend.
+            const needs2FASetup = isAdmin && !is2FAEnabled;
+
             req.session.userId = user.id_usuario;
             req.session.tiendaId = user.id_tienda;
             req.session.rol = user.rol;
             req.session.nombres = user.nombres;
             req.session.cambio_clave_forzoso = user.cambio_clave_forzoso === 1;
 
-            // Registrar la sesión activa en la BD (sobreescribe si se forzó el acceso)
+            // Registrar la sesión activa en la BD
             await User.setCurrentSession(user.id_usuario, req.sessionID);
 
             console.log('Sesión establecida correctamente. Enviando respuesta...');
@@ -67,7 +102,8 @@ class AuthController {
                 user: {
                     nombres: user.nombres,
                     rol: user.rol,
-                    cambioClaveForzoso: user.cambio_clave_forzoso === 1
+                    cambioClaveForzoso: user.cambio_clave_forzoso === 1,
+                    needs2FASetup: needs2FASetup
                 }
             });
         } catch (error) {
@@ -174,6 +210,10 @@ class AuthController {
 
         try {
             const tienda = await Store.findById(req.session.tiendaId);
+            const user = await User.findById(req.session.userId);
+            const isAdmin = req.session.rol === 'Administrador';
+            const is2FAEnabled = user && user.two_factor_enabled;
+            
             res.json({
                 success: true,
                 userId: req.session.userId,
@@ -181,7 +221,9 @@ class AuthController {
                 tiendaNombre: tienda ? tienda.nombre_establecimiento : 'Sin tienda',
                 rol: req.session.rol,
                 nombres: req.session.nombres,
-                cambioClaveForzoso: req.session.cambio_clave_forzoso
+                cambioClaveForzoso: req.session.cambio_clave_forzoso,
+                needs2FASetup: isAdmin && !is2FAEnabled,
+                is2FAEnabled: is2FAEnabled
             });
         } catch (error) {
             console.error('Error en getSessionInfo:', error);
@@ -373,6 +415,113 @@ class AuthController {
         req.session.destroy(() => {
             res.status(200).json({ success: true, message: 'Sesión cerrada' });
         });
+    }
+
+    // ==========================================
+    // MÉTODOS 2FA
+    // ==========================================
+
+    static async generate2FA(req, res) {
+        try {
+            const userId = req.session.userId;
+            if (!userId) return res.status(401).json({ success: false, error: 'No autorizado' });
+
+            const secret = authenticator.generateSecret();
+            const email = req.session.nombres; // o el correo
+            const otpauthUrl = authenticator.keyuri(email, 'StockPilot', secret);
+
+            // Guardar secreto temporalmente o permanentemente pero desactivado
+            await User.set2FASecret(userId, secret);
+
+            // Generar QR
+            const qrCodeDataUrl = await qrcode.toDataURL(otpauthUrl);
+
+            res.json({ success: true, qrCode: qrCodeDataUrl, secret });
+        } catch (error) {
+            console.error('Error generando 2FA:', error);
+            res.status(500).json({ success: false, error: 'Error generando 2FA' });
+        }
+    }
+
+    static async verify2FA(req, res) {
+        try {
+            // Este método sirve tanto para habilitar 2FA desde el perfil, como para completar un login.
+            const isLoginAttempt = !!req.session.pending2FA_userId;
+            const userId = isLoginAttempt ? req.session.pending2FA_userId : req.session.userId;
+
+            if (!userId) {
+                return res.status(401).json({ success: false, error: 'No autorizado o sesión expirada' });
+            }
+
+            const { token } = req.body;
+            if (!token) return res.status(400).json({ success: false, error: 'Token es requerido' });
+
+            const twoFactorData = await User.get2FASecret(userId);
+            if (!twoFactorData || !twoFactorData.two_factor_secret) {
+                return res.status(400).json({ success: false, error: 'El secreto 2FA no está configurado.' });
+            }
+
+            const isValid = authenticator.check(token, twoFactorData.two_factor_secret);
+
+            if (!isValid) {
+                return res.status(401).json({ success: false, error: 'Código inválido o ha expirado.' });
+            }
+
+            if (isLoginAttempt) {
+                // Completar el login
+                req.session.userId = req.session.pending2FA_userId;
+                req.session.tiendaId = req.session.pending2FA_tiendaId;
+                req.session.rol = req.session.pending2FA_rol;
+                req.session.nombres = req.session.pending2FA_nombres;
+                req.session.cambio_clave_forzoso = req.session.pending2FA_cambio_clave;
+
+                // Limpiar temporales
+                delete req.session.pending2FA_userId;
+                delete req.session.pending2FA_tiendaId;
+                delete req.session.pending2FA_rol;
+                delete req.session.pending2FA_nombres;
+                delete req.session.pending2FA_cambio_clave;
+
+                await User.setCurrentSession(userId, req.sessionID);
+
+                return res.json({ 
+                    success: true, 
+                    message: 'Login completado exitosamente',
+                    user: {
+                        nombres: req.session.nombres,
+                        rol: req.session.rol,
+                        cambioClaveForzoso: req.session.cambio_clave_forzoso,
+                        needs2FASetup: false
+                    }
+                });
+            } else {
+                // Habilitando desde el perfil
+                await User.enable2FA(userId);
+                return res.json({ success: true, message: 'Autenticación de dos factores activada.' });
+            }
+        } catch (error) {
+            console.error('Error verificando 2FA:', error);
+            res.status(500).json({ success: false, error: 'Error del servidor' });
+        }
+    }
+
+    static async disable2FA(req, res) {
+        try {
+            const userId = req.session.userId;
+            if (!userId) return res.status(401).json({ success: false, error: 'No autorizado' });
+
+            // Solo permitimos desactivarlo si el usuario no es admin (o si es admin, podríamos bloquearlo,
+            // pero el requerimiento dice obligatorio para admin, así que lo bloqueamos para admin).
+            if (req.session.rol === 'Administrador') {
+                return res.status(403).json({ success: false, error: 'Los administradores no pueden desactivar el 2FA por políticas de seguridad.' });
+            }
+
+            await User.disable2FA(userId);
+            res.json({ success: true, message: 'Autenticación de dos factores desactivada.' });
+        } catch (error) {
+            console.error('Error desactivando 2FA:', error);
+            res.status(500).json({ success: false, error: 'Error del servidor' });
+        }
     }
 }
 

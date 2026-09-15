@@ -49,7 +49,9 @@ CREATE TABLE IF NOT EXISTS Usuarios (
     foto_url TEXT,
     cambio_clave_forzoso BOOLEAN DEFAULT FALSE,
     reset_token VARCHAR(255),
-    reset_expires VARCHAR(100)
+    reset_expires VARCHAR(100),
+    two_factor_secret VARCHAR(255),
+    two_factor_enabled BOOLEAN DEFAULT FALSE
 );
 
 -- 3. TABLA PROVEEDORES

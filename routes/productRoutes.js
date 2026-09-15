@@ -9,7 +9,19 @@ const router = express.Router();
 // Configurar multer para guardar el archivo en memoria (Buffer) y con límite de 5MB
 const upload = multer({ 
     storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+        const allowedMimes = [
+            'text/csv', 
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel'
+        ];
+        if (allowedMimes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Tipo de archivo no permitido. Solo se aceptan .csv y .xlsx'), false);
+        }
+    }
 });
 
 router.get('/api/productos', requireLogin, ProductController.getProducts);
