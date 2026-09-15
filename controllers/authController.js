@@ -510,6 +510,17 @@ class AuthController {
             const userId = req.session.userId;
             if (!userId) return res.status(401).json({ success: false, error: 'No autorizado' });
 
+            // Extraer y validar contraseña para evitar bypass de seguridad
+            const { password } = req.body;
+            if (!password) {
+                return res.status(400).json({ success: false, error: 'Debe proporcionar su contraseña para desactivar el 2FA.' });
+            }
+
+            const isPasswordValid = await User.verifyPasswordById(userId, password);
+            if (!isPasswordValid) {
+                return res.status(401).json({ success: false, error: 'Contraseña incorrecta. No se pudo desactivar el 2FA.' });
+            }
+
             // Solo permitimos desactivarlo si el usuario no es admin (o si es admin, podríamos bloquearlo,
             // pero el requerimiento dice obligatorio para admin, así que lo bloqueamos para admin).
             if (req.session.rol === 'Administrador') {

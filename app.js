@@ -15,9 +15,13 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression'); // 🚀 Nuevo: Compresión para Producción
 const multer = require('multer'); // Importado para el manejo global de errores de subida
+const { csrfSync } = require('csrf-sync');
+const { csrfSynchronisedProtection, generateToken } = csrfSync({
+  getTokenFromRequest: (req) => req.headers['x-csrf-token'] || req.headers['X-CSRF-Token']
+});
 const { logger, requestLogger } = require('./utils/logger');
 // const { createBackup } = require('./utils/backup'); (Obsoleto en Postgres)
-const { globalLimiter, authLimiter, aiLimiter } = require('./middleware/rateLimiter');
+const { globalLimiter, authLimiter, aiLimiter, twoFactorLimiter } = require('./middleware/rateLimiter');
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
@@ -125,11 +129,25 @@ app.use(session({
 // 🛡️ SEGURIDAD: Límite de peticiones (aplicado después de session para identificar por usuario)
 app.use('/api/', globalLimiter);
 
+// 🛡️ SEGURIDAD: Configuración CSRF global
+app.get('/api/csrf-token', (req, res) => {
+    res.json({ csrfToken: generateToken(req) });
+});
+// Excluimos rutas de autenticación tempranas donde aún no hay sesión establecida.
+app.use('/api/', (req, res, next) => {
+    const publicPaths = ['/login', '/registro', '/2fa/verify'];
+    if (publicPaths.includes(req.path)) {
+        return next();
+    }
+    csrfSynchronisedProtection(req, res, next);
+});
+
 // 🛡️ SEGURIDAD: Límite drástico en endpoints críticos (Fuerza Bruta)
 app.use('/api/login', authLimiter);
 app.use('/api/registro', authLimiter);
 app.use('/api/forgot-password', authLimiter);
 app.use('/api/reset-password', authLimiter);
+app.use('/api/2fa/verify', twoFactorLimiter);
 
 // Usar rutas
 app.use('/api/dashboard', dashboardRoutes);

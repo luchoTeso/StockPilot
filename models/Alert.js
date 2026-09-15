@@ -9,13 +9,43 @@ class Alert {
     // 1. Marcar como resueltas TODAS las alertas actuales (se regeneran si aún aplican)
     await db.runAsync(`UPDATE Alertas SET resuelta = 1, fecha_resolucion = CURRENT_TIMESTAMP WHERE resuelta = 0 AND id_tienda = ?`, [tiendaId]);
 
-    // 2. Extraer todos los productos con sus métricas de 30 y 7 días
+    // 2. Calcular y Persistir Clasificación ABC directamente en PostgreSQL usando Funciones Analíticas (Window Functions)
+    // Esto mitiga el Control 20 (Unrestricted Resource Consumption) eliminando el .sort() en memoria
+    const abcUpdateQuery = `
+      WITH RevenueCalc AS (
+          SELECT 
+              p.id_producto,
+              p.precio * COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) * 30 as rev30
+          FROM Productos p
+          WHERE id_tienda = $1 AND estado = 'Disponible'
+      ),
+      Accumulated AS (
+          SELECT 
+              id_producto,
+              SUM(rev30) OVER () as totalRevenue,
+              SUM(rev30) OVER (ORDER BY rev30 DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as accum
+          FROM RevenueCalc
+      )
+      UPDATE Productos p
+      SET clasificacion_abc = 
+          CASE 
+              WHEN a.totalRevenue = 0 THEN 'A'
+              WHEN (a.accum / a.totalRevenue) <= 0.8 THEN 'A'
+              WHEN (a.accum / a.totalRevenue) <= 0.95 THEN 'B'
+              ELSE 'C'
+          END
+      FROM Accumulated a
+      WHERE p.id_producto = a.id_producto AND p.id_tienda = $1;
+    `;
+    await db.runAsync(abcUpdateQuery, [tiendaId]);
+
+    // 3. Extraer todos los productos con sus métricas actualizadas de 30 y 7 días
     // Similar a suppliersController pero para TODOS los proveedores y productos
     const query = `
       SELECT 
         p.id_producto, p.nombre_producto, p.cantidad, p.stock_minimo, p.stock_maximo, 
         p.fecha_vencimiento, p.frecuencia_compra_dias, p.stock_seguridad, p.lead_time,
-        p.precio,
+        p.precio, p.clasificacion_abc,
         COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) / 30.0 as velocity_30d,
         COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days'), 0) / 7.0 as velocity_7d
       FROM Productos p
@@ -24,13 +54,6 @@ class Alert {
 
     const productos = await db.allAsync(query, [tiendaId]);
     let generadas = 0;
-
-    // Calcular Clasificación ABC en Memoria (Evita crash de SQLite por funciones de ventana)
-    Alert.calcularClasificacionABC(productos);
-    productos.forEach(p => {
-        // RF-009 Fix: Persist calculated ABC class to DB
-        db.runAsync('UPDATE Productos SET clasificacion_abc = ? WHERE id_producto = ?', [p.clasificacion_abc, p.id_producto]).catch(e => console.error('Error guardando ABC', e));
-    });
 
     const hoy = new Date();
     // Neutralizar horas

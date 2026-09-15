@@ -86,39 +86,48 @@ const suppliersController = {
       const tiendaId = req.session.tiendaId;
       const { proveedorId } = req.params;
       const query = `
-        SELECT 
-          p.id_producto, p.nombre_producto, p.cantidad as stock_actual, p.precio, p.stock_seguridad, p.lead_time,
-          COALESCE(
-            (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
-             WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
-            ), 0) / 30.0 as velocity_30d,
-          COALESCE(
-            (SELECT AVG(factor_precision) FROM (
-              SELECT factor_precision FROM Feedback_IA f 
-              WHERE f.id_producto = p.id_producto 
-              ORDER BY fecha_evaluacion DESC LIMIT 5
-            ) as sub), 1.0) as factor_ia
-        FROM Productos p
-        WHERE p.id_tienda = ? AND p.id_proveedor = ? AND p.estado = 'Disponible'
+        WITH BaseData AS (
+          SELECT 
+            p.id_producto, p.nombre_producto, p.cantidad as stock_actual, p.precio, p.stock_seguridad, p.lead_time,
+            COALESCE(
+              (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
+               WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
+              ), 0) / 30.0 as velocity_30d,
+            COALESCE(
+              (SELECT AVG(factor_precision) FROM (
+                SELECT factor_precision FROM Feedback_IA f 
+                WHERE f.id_producto = p.id_producto 
+                ORDER BY fecha_evaluacion DESC LIMIT 5
+              ) as sub), 1.0) as factor_ia
+          FROM Productos p
+          WHERE p.id_tienda = ? AND p.id_proveedor = ? AND p.estado = 'Disponible'
+        ),
+        MathData AS (
+          SELECT *, 
+            (velocity_30d * 30 * precio) as revenue,
+            CEIL(((velocity_30d * lead_time) + stock_seguridad) * factor_ia) as rop,
+            CASE WHEN velocity_30d > 0.01 THEN ROUND(stock_actual / velocity_30d) ELSE 999999 END as days_to_exhaust
+          FROM BaseData
+        ),
+        AccumData AS (
+          SELECT *,
+            SUM(revenue) OVER () as totalRevenue,
+            SUM(revenue) OVER (ORDER BY revenue DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as accum
+          FROM MathData
+        )
+        SELECT *,
+          CASE 
+            WHEN totalRevenue = 0 THEN 'A'
+            WHEN (accum / totalRevenue) <= 0.8 THEN 'A'
+            WHEN (accum / totalRevenue) <= 0.95 THEN 'B'
+            ELSE 'C'
+          END as clasificacion_abc
+        FROM AccumData
+        ORDER BY revenue DESC;
       `;
       const rows = await db.allAsync(query, [tiendaId, proveedorId]);
-      let totalRevenue = 0;
-      const productsWithMath = rows.map(r => {
-        const v30 = Number(r.velocity_30d || 0);
-        const fIA = Number(r.factor_ia || 1.0);
-        const rev = v30 * 30 * r.precio;
-        totalRevenue += rev;
-        const rop_base = (v30 * r.lead_time) + r.stock_seguridad;
-        const rop = Math.ceil(rop_base * fIA);
-        const days = v30 > 0.01 ? Math.round(r.stock_actual / v30) : Infinity;
-        return { ...r, velocity_30d: v30, factor_ia: fIA, revenue: rev, rop, days_to_exhaust: days };
-      });
-      productsWithMath.sort((a, b) => b.revenue - a.revenue);
-      let cum = 0;
-      const smartList = productsWithMath.map(item => {
-        cum += item.revenue;
-        const p = (cum / (totalRevenue || 1)) * 100;
-        const category = p <= 80 ? 'A' : (p <= 95 ? 'B' : 'C');
+      
+      const smartList = rows.map(item => {
         let risk = 'low';
         if (item.stock_actual <= item.stock_seguridad) risk = 'critical';
         else if (item.stock_actual <= item.rop) risk = 'medium';
@@ -129,11 +138,11 @@ const suppliersController = {
         return {
           id_producto: item.id_producto,
           nombre: item.nombre_producto,
-          clasificacion_abc: category,
+          clasificacion_abc: item.clasificacion_abc,
           nivel_riesgo: risk,
           stock: item.stock_actual,
-          dias_inventario: item.days_to_exhaust,
-          factor_aprendizaje_ia: item.factor_ia.toFixed(2),
+          dias_inventario: item.days_to_exhaust === 999999 ? Infinity : item.days_to_exhaust,
+          factor_aprendizaje_ia: Number(item.factor_ia).toFixed(2),
           cantidad_sugerida: qtySugerida,
           presupuesto_estimado: qtySugerida * item.precio
         };

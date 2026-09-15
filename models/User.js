@@ -20,6 +20,13 @@ class User {
         return match ? user : null;
     }
 
+    static async verifyPasswordById(userId, password) {
+        const query = `SELECT contrasena FROM Usuarios WHERE id_usuario = ?`;
+        const user = await db.getAsync(query, [userId]);
+        if (!user) return false;
+        return await bcrypt.compare(password, user.contrasena);
+    }
+
     static async create(userData) {
         // Hashear la contraseña antes de guardar
         const hashedPassword = await bcrypt.hash(userData.contrasena, SALT_ROUNDS);

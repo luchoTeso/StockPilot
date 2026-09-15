@@ -82,65 +82,55 @@ class DashboardController {
             if (!tiendaId) return res.status(401).json({ error: "Sesión no válida" });
 
             // 1. Proyección de Pérdidas por Vencimiento (Próximos 30 días)
-            const vencimientoQuery = `
-                SELECT 
-                    id_producto, nombre_producto, cantidad, precio, fecha_vencimiento,
-                    COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) / 30.0 as velocity
-                FROM Productos p
-                WHERE id_tienda = ? AND fecha_vencimiento IS NOT NULL 
-                AND fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days' AND fecha_vencimiento > CURRENT_DATE
+            const riskQuery = `
+                WITH BaseDatos AS (
+                    SELECT 
+                        id_producto as id, 
+                        nombre_producto as nombre,
+                        GREATEST(0, CEIL(EXTRACT(EPOCH FROM (fecha_vencimiento - CURRENT_TIMESTAMP))/86400)) as dias,
+                        cantidad,
+                        precio,
+                        COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) / 30.0 as velocity
+                    FROM Productos p
+                    WHERE id_tienda = ? AND fecha_vencimiento IS NOT NULL AND cantidad > 0
+                    AND fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days' AND fecha_vencimiento > CURRENT_DATE
+                ),
+                Calculos AS (
+                    SELECT 
+                        id, nombre, dias,
+                        ROUND(GREATEST(0, cantidad - (velocity * dias))) as "unidadesPerdidas",
+                        ROUND(GREATEST(0, cantidad - (velocity * dias)) * precio) as "perdidaEstimada"
+                    FROM BaseDatos
+                )
+                SELECT * FROM Calculos WHERE "unidadesPerdidas" > 0
+                ORDER BY "perdidaEstimada" DESC
             `;
-            const itemsVencimiento = await db.allAsync(vencimientoQuery, [tiendaId]);
+            const listaRiesgo = await db.allAsync(riskQuery, [tiendaId]);
+            const top10Criticos = listaRiesgo.slice(0, 10);
             
             let totalPerdidaProyectada = 0;
-            let productosEnRiesgo = 0;
-            let listaRiesgo = [];
-
-            itemsVencimiento.forEach(item => {
-                const hoy = new Date();
-                const vanc = new Date(item.fecha_vencimiento);
-                const diasRestantes = Math.max(0, Math.ceil((vanc - hoy) / (1000 * 60 * 60 * 24)));
-                
-                const ventasEstimadas = item.velocity * diasRestantes;
-                const unidadesQueVenceran = Math.max(0, item.cantidad - ventasEstimadas);
-                
-                if (unidadesQueVenceran > 0) {
-                    const perdida = unidadesQueVenceran * item.precio;
-                    totalPerdidaProyectada += perdida;
-                    productosEnRiesgo++;
-                    listaRiesgo.push({
-                        id: item.id_producto,
-                        nombre: item.nombre_producto,
-                        dias: diasRestantes,
-                        unidadesPerdidas: Math.round(unidadesQueVenceran),
-                        perdidaEstimada: Math.round(perdida)
-                    });
-                }
+            let productosEnRiesgo = listaRiesgo.length;
+            listaRiesgo.forEach(item => {
+                totalPerdidaProyectada += Number(item.perdidaEstimada);
             });
-            
-            // RF-041: Top 10 más críticos por pérdida estimada
-            listaRiesgo.sort((a, b) => b.perdidaEstimada - a.perdidaEstimada);
-            const top10Criticos = listaRiesgo.slice(0, 10);
 
             // 2. Nivel de Servicio Estimado (% productos con stock > ROP)
             const servicioQuery = `
+                WITH BaseDatos AS (
+                    SELECT 
+                        cantidad as stock_actual, stock_seguridad, lead_time,
+                        COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) / 30.0 as velocity
+                    FROM Productos p
+                    WHERE id_tienda = ? AND estado = 'Disponible'
+                )
                 SELECT 
-                    p.id_producto, p.cantidad as stock_actual, p.stock_seguridad, p.lead_time,
-                    COALESCE((SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'), 0) / 30.0 as velocity
-                FROM Productos p
-                WHERE id_tienda = ? AND estado = 'Disponible'
+                    COUNT(*) as total,
+                    COUNT(CASE WHEN stock_actual > ((velocity * lead_time) + stock_seguridad) THEN 1 END) as saludables
+                FROM BaseDatos
             `;
-            const todosLosProductos = await db.allAsync(servicioQuery, [tiendaId]);
-            const totalProductos = todosLosProductos.length;
-            
-            let productosSaludables = 0;
-            todosLosProductos.forEach(p => {
-                const rop = (p.velocity * p.lead_time) + p.stock_seguridad;
-                if (p.stock_actual > rop) {
-                    productosSaludables++;
-                }
-            });
-
+            const statsServicio = await db.getAsync(servicioQuery, [tiendaId]);
+            const totalProductos = Number(statsServicio.total) || 0;
+            const productosSaludables = Number(statsServicio.saludables) || 0;
             const nivelServicio = totalProductos > 0 ? (productosSaludables / totalProductos) * 100 : 100;
 
             // 3. Comparativa de Ventas (30d actuales vs 30d anteriores)

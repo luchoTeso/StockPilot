@@ -32,6 +32,7 @@ const ProfilePage = () => {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [totpToken, setTotpToken] = useState('');
   const [showDisableConfirm, setShowDisableConfirm] = useState(false); // Modal confirmación desactivar
+  const [disablePassword, setDisablePassword] = useState('');
 
 
 
@@ -64,11 +65,16 @@ const ProfilePage = () => {
     setShowDisableConfirm(true);
   };
 
-  const confirmDisable2FA = async () => {
+  const confirmDisable2FA = async (e) => {
+    if (e) e.preventDefault();
+    if (!disablePassword) {
+      return toast.error('Debe ingresar su contraseña para desactivar el 2FA');
+    }
     try {
-      await axios.post('/api/2fa/disable');
+      await axios.post('/api/2fa/disable', { password: disablePassword });
       toast.success('2FA Desactivado');
       setShowDisableConfirm(false);
+      setDisablePassword('');
       window.location.reload();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error desactivando 2FA');
@@ -469,23 +475,34 @@ const ProfilePage = () => {
       {/* Modal Confirmación Desactivar 2FA */}
       {showDisableConfirm && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-sm p-8 rounded-[2.5rem] shadow-2xl animate-scale-in text-center">
+          <form onSubmit={confirmDisable2FA} className="bg-white w-full max-w-sm p-8 rounded-[2.5rem] shadow-2xl animate-scale-in text-center">
             <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <ShieldAlert size={32} />
             </div>
             <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-2">¿Desactivar Seguridad?</h2>
-            <p className="text-xs text-slate-500 font-bold mb-8">
+            <p className="text-xs text-slate-500 font-bold mb-6">
               Al desactivar la autenticación de dos factores, tu cuenta será más vulnerable a accesos no autorizados. ¿Estás seguro?
             </p>
+            <div className="space-y-1 mb-6 text-left">
+              <label htmlFor="disable-password" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Ingresa tu contraseña</label>
+              <input
+                id="disable-password"
+                type="password"
+                value={disablePassword}
+                required
+                onChange={e => setDisablePassword(e.target.value)}
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-red-500 outline-none"
+              />
+            </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowDisableConfirm(false)} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest">
+              <button type="button" onClick={() => { setShowDisableConfirm(false); setDisablePassword(''); }} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest">
                 Cancelar
               </button>
-              <button onClick={confirmDisable2FA} className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg shadow-red-100">
+              <button type="submit" className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg shadow-red-100">
                 Sí, Desactivar
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>

@@ -20,7 +20,7 @@ const globalLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => req.path.startsWith('/api/login') || req.path.startsWith('/api/registro'),
+    skip: (req) => req.path.startsWith('/api/login') || req.path.startsWith('/api/registro') || req.path.startsWith('/api/2fa'),
 });
 
 // Limitador para rutas de IA (costosas en tiempo y recursos del servidor).
@@ -50,4 +50,18 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-module.exports = { globalLimiter, authLimiter, aiLimiter };
+// Limitador para validación de 2FA (Protección contra Fuerza Bruta de TOTP).
+// Máximo 5 intentos por ventana de 15 minutos. Usa clave por sesión o IP.
+const twoFactorLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    keyGenerator: keyBySession,
+    message: {
+        success: false,
+        error: "Demasiados intentos de validación 2FA fallidos. Por seguridad, por favor espera 15 minutos."
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+module.exports = { globalLimiter, authLimiter, aiLimiter, twoFactorLimiter };

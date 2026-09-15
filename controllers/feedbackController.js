@@ -154,26 +154,33 @@ const feedbackController = {
       `;
       const evolucion = await db.allAsync(evolucionQuery, [tiendaId]);
 
-      // 3. Top 5 productos más y menos predecibles
+      // 3. Top 5 productos más y menos predecibles optimizado por PostgreSQL
       const productosQuery = `
-        SELECT p.id_producto, p.nombre_producto, p.categoria,
-               AVG(f.factor_precision) as factor_historico,
-               COUNT(f.id_feedback) as evaluaciones
-        FROM Feedback_IA f
-        JOIN Productos p ON f.id_producto = p.id_producto
-        WHERE p.id_tienda = ?
-        GROUP BY p.id_producto, p.nombre_producto, p.categoria
-        HAVING COUNT(f.id_feedback) > 0
+        WITH Stats AS (
+            SELECT p.id_producto, p.nombre_producto, p.categoria,
+                   AVG(f.factor_precision) as factor_historico,
+                   COUNT(f.id_feedback) as evaluaciones
+            FROM Feedback_IA f
+            JOIN Productos p ON f.id_producto = p.id_producto
+            WHERE p.id_tienda = ?
+            GROUP BY p.id_producto, p.nombre_producto, p.categoria
+            HAVING COUNT(f.id_feedback) > 0
+        ),
+        Ranked AS (
+            SELECT *,
+                   ABS(factor_historico - 1.0) as dist_a1,
+                   ROW_NUMBER() OVER (ORDER BY ABS(factor_historico - 1.0) ASC) as rank_asc,
+                   ROW_NUMBER() OVER (ORDER BY ABS(factor_historico - 1.0) DESC) as rank_desc
+            FROM Stats
+        )
+        SELECT * FROM Ranked 
+        WHERE rank_asc <= 5 OR rank_desc <= 5
       `;
       const productosData = await db.allAsync(productosQuery, [tiendaId]);
 
-      // Ordenar para predecibles (más cercano a 1.0)
-      const ordenadoPorDistanciaA1 = [...productosData].sort((a, b) =>
-        Math.abs(Number(a.factor_historico) - 1.0) - Math.abs(Number(b.factor_historico) - 1.0)
-      );
-
-      const topPredecibles = ordenadoPorDistanciaA1.slice(0, 5);
-      const topImpredecibles = ordenadoPorDistanciaA1.slice().reverse().slice(0, 5);
+      // Ya solo recibimos un máximo de 10 filas, separamos en memoria (despreciable)
+      const topPredecibles = productosData.filter(p => p.rank_asc <= 5).sort((a, b) => a.rank_asc - b.rank_asc);
+      const topImpredecibles = productosData.filter(p => p.rank_desc <= 5).sort((a, b) => a.rank_desc - b.rank_desc);
 
       res.json({
         success: true,

@@ -4,6 +4,13 @@ import axios from 'axios';
 // Ensure all requests send the session cookie through the Vite proxy
 axios.defaults.withCredentials = true;
 
+// Obtener token CSRF al cargar la app y configurarlo en axios
+axios.get('/api/csrf-token').then(response => {
+  if(response.data.csrfToken) {
+    axios.defaults.headers.common['x-csrf-token'] = response.data.csrfToken;
+  }
+}).catch(err => console.warn("No se pudo obtener CSRF Token inicial", err));
+
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
