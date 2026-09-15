@@ -72,6 +72,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await axios.post('/api/login', { login: identificador, password, force });
       if (res.data.success) {
+        // Renovar token CSRF ya que la sesión fue regenerada en el backend
+        try {
+          const csrfRes = await axios.get('/api/csrf-token');
+          if (csrfRes.data?.csrfToken) {
+            axios.defaults.headers.common['x-csrf-token'] = csrfRes.data.csrfToken;
+          }
+        } catch (e) {
+          console.warn("No se pudo renovar el CSRF Token post-login", e);
+        }
+
         if (res.data.require2FA) {
             return { require2FA: true };
         }
@@ -107,9 +117,10 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       await axios.post('/api/logout');
-      setUser(null);
     } catch (err) {
       console.error('Error al cerrar sesión', err);
+    } finally {
+      setUser(null);
     }
   }, []);
 

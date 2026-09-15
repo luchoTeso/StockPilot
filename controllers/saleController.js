@@ -95,8 +95,8 @@ class SaleController {
             try {
                 await client.query('BEGIN');
 
-                // 1. Obtener información del producto DENTRO de la transacción y validar propiedad (IDOR)
-                const prodResult = await client.query('SELECT cantidad, precio FROM Productos WHERE id_producto = ? AND id_tienda = ?', [id_producto, id_tienda]);
+                // 1. Obtener información del producto DENTRO de la transacción y bloquear la fila para evitar Race Conditions (SELECT ... FOR UPDATE)
+                const prodResult = await client.query('SELECT cantidad, precio FROM Productos WHERE id_producto = ? AND id_tienda = ? FOR UPDATE', [id_producto, id_tienda]);
                 const producto = prodResult.rows[0];
                 
                 if (!producto) {

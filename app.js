@@ -54,6 +54,15 @@ const allowedOrigins = process.env.CORS_ORIGIN
 
 console.log('📍 Origins permitidos:', allowedOrigins);
 
+// 🛡️ SEGURIDAD: Bloquear métodos HTTP no deseados (ej. TRACE, TRACK)
+const allowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'];
+app.use((req, res, next) => {
+    if (!allowedMethods.includes(req.method)) {
+        return res.status(405).send('Method Not Allowed');
+    }
+    next();
+});
+
 // 🛡️ SEGURIDAD: Configuración de Helmet (Cabeceras de respuesta seguras — OWASP A05)
 app.use(helmet({
     contentSecurityPolicy: {

@@ -131,6 +131,15 @@ class AuthController {
                 });
             }
 
+            // 🛡️ OWASP: Validación estricta de formato de correo (Mitigación Email Injection)
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'El formato del correo electrónico no es válido' 
+                });
+            }
+
             if (password.length < 8) {
                 return res.status(400).json({ 
                     success: false, 
@@ -329,6 +338,12 @@ class AuthController {
         try {
             const { email } = req.body;
             if (!email) return res.status(400).json({ success: false, error: 'Correo es requerido' });
+
+            // 🛡️ OWASP: Validación estricta (Mitigación Email Injection / SMTP Abuse)
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ success: false, error: 'Formato de correo inválido' });
+            }
 
             const user = await User.findByEmail(email);
             if (!user) {
