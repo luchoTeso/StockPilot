@@ -199,7 +199,14 @@ const db = {
                 CREATE INDEX IF NOT EXISTS idx_auditoria_ia_tienda ON Auditoria_IA(id_tienda);
             `);
             
-            console.log('✅ Auto-migration: Esquema de Tienda e Índices de Rendimiento actualizados exitosamente.');
+            // 4. Asegurar columnas de 2FA en Usuarios
+            await pool.query(`
+                ALTER TABLE Usuarios 
+                ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255),
+                ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE;
+            `);
+            
+            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA) e Índices actualizados exitosamente.');
             return; // Éxito, salir de la función
         } catch (err) {
             console.warn(`⚠️ Auto-migration intento ${attempt}/${maxRetries} falló:`, err.message);
