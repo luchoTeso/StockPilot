@@ -33,6 +33,8 @@ inventario-node/
 ├── routes/                   # Endpoints REST
 ├── database/
 │   └── init_pg.sql           # Esquema PostgreSQL completo
+├── scripts/
+│   └── alter_2fa.js          # Script de migración de base de datos (2FA)
 ├── frontend/                 # Aplicación React (SPA)
 │   ├── src/
 │   │   ├── pages/            # Vistas principales
@@ -103,9 +105,21 @@ Crea la base de datos y ejecuta el esquema:
 # Crear la BD en PostgreSQL local
 psql -U postgres -c "CREATE DATABASE stockpilot;"
 
-# Aplicar el esquema completo
+# Aplicar el esquema completo (instalación limpia)
 psql -U postgres -d stockpilot -f database/init_pg.sql
 ```
+
+> **Actualización de base de datos existente (Soporte 2FA):**  
+> Si ya cuentas con la base de datos local creada previamente, aplica las columnas requeridas para 2FA (`two_factor_secret` y `two_factor_enabled`) ejecutando:
+> ```bash
+> node scripts/alter_2fa.js
+> ```
+> O aplicando la consulta SQL directamente:
+> ```sql
+> ALTER TABLE "Usuarios" 
+> ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255),
+> ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE;
+> ```
 
 ### 4 — Instalar dependencias
 
@@ -170,6 +184,33 @@ npm run test:coverage
 
 ---
 
+## Autenticación de Dos Factores (2FA / TOTP)
+
+El sistema cuenta con un esquema de autenticación de dos factores basado en tiempo (TOTP estándar RFC 6238), compatible con aplicaciones como Google Authenticator, Microsoft Authenticator, Authy y gestores de contraseñas.
+
+* **Administradores:** Configuración obligatoria. Al iniciar sesión con un usuario Administrador que no tenga 2FA configurado, se activará un bloqueo global con código QR que debe vincularse y validarse antes de acceder al sistema.
+* **Colaboradores / Tenderos:** Configuración opcional. Pueden habilitar o deshabilitar la protección 2FA en cualquier momento desde su vista de Perfil.
+
+### Gestión de 2FA en Entornos de Desarrollo y Equipos
+
+* **Compartir acceso a una cuenta entre varios desarrolladores:**  
+  Para que varios miembros del equipo sincronicen la misma cuenta sin depender de solicitar el código al creador, consulta la clave secreta generada en la base de datos local:
+  ```sql
+  SELECT email, two_factor_secret FROM "Usuarios" WHERE email = 'correo_admin@ejemplo.com';
+  ```
+  Los desarrolladores deben abrir Google Authenticator (o similar), presionar **`+`** → **"Introducir clave de configuración"** (*Enter setup key*), asignarle un nombre e ingresar dicho secreto. Ambos dispositivos generarán los mismos códigos sincronizados.
+
+* **Desbloqueo o Reset de Emergencia en Local:**  
+  Si un desarrollador no tiene el código de verificación configurado y necesita acceder a la cuenta de prueba en su entorno local:
+  ```sql
+  UPDATE "Usuarios" 
+  SET two_factor_enabled = false, two_factor_secret = NULL 
+  WHERE email = 'correo_admin@ejemplo.com';
+  ```
+  Al recargar la aplicación en el navegador, el sistema solicitará escanear un nuevo código QR.
+
+---
+
 ## Despliegue en Render
 
 El proyecto usa despliegue continuo: cada `git push` a `main` redespliega automáticamente en Render.
@@ -183,6 +224,9 @@ OPENAI_API_KEY      → clave de OpenAI
 RESEND_API_KEY      → clave de Resend
 RESEND_FROM_EMAIL   → StockPilot <onboarding@resend.dev>
 ```
+
+> **Nota de migración en producción:**  
+> Al desplegar esta versión en producción, asegúrate de aplicar la migración en la base de datos de producción ejecutando `node scripts/alter_2fa.js` o ejecutando el script SQL en la consola de PostgreSQL de Render/Neon.
 
 ---
 
