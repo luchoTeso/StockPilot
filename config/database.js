@@ -203,7 +203,11 @@ const db = {
             await pool.query(`
                 ALTER TABLE Usuarios 
                 ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255),
-                ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE;
+                ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS foto_url TEXT,
+                ADD COLUMN IF NOT EXISTS cambio_clave_forzoso BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255),
+                ADD COLUMN IF NOT EXISTS reset_expires VARCHAR(100);
             `);
 
             // 5. Asegurar esquema para Arqueo de Caja y Facturación POS (Fase 1 y 2)
