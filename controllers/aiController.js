@@ -172,23 +172,38 @@ const aiController = {
 
       // 3. Procesamiento Analítico (Tendencia y Variabilidad) mapeado directo
       const contextItemsFull = rows.map(item => {
+        // 1. ROP: Punto en el que se disparan las alarmas (¿Cuándo pedir?)
         const rop = (item.velocity_30d * item.lead_time) + item.stock_seguridad;
         
-          return {
-            id: item.id,
-            nombre: item.nombre,
-            stock: item.stock_actual,
-            base_load: Math.ceil(rop),
-            abc: item.category,
-            trend_val: item.trend,
-            trend_label: item.trend > 1.2 ? 'alcista' : (item.trend < 0.8 ? 'bajista' : 'estable'),
-            velocity_long: { 
-                d60: parseFloat(Number(item.velocity_60d || 0).toFixed(2)), 
-                d90: parseFloat(Number(item.velocity_90d || 0).toFixed(2)) 
-            },
-            risk: item.stock_actual <= item.stock_seguridad ? 'CRÍTICO' : (item.stock_actual <= rop ? 'MEDIO' : 'BAJO'),
-            avg_precision: item.avg_precision // Pasamos la precisión promedio para usarla luego
-          };
+        // 2. Días de Cobertura Deseada (Ciclo de resurtido). 
+        // Para una Pyme suele ser de 15 a 30 días, dependiendo si el producto es A, B o C.
+        const dias_cobertura = item.category === 'A' ? 15 : (item.category === 'B' ? 30 : 45);
+
+        // 3. Stock Objetivo: Lo que necesito para sobrevivir esos días + mi stock de seguridad
+        // Se le puede aplicar la tendencia para predecir si venderemos más o menos
+        const tendencia_multiplicador = item.trend > 0 ? item.trend : 1; 
+        const stock_objetivo = (item.velocity_30d * tendencia_multiplicador * dias_cobertura) + item.stock_seguridad;
+
+        // 4. Cantidad base a pedir (EOQ simplificado / Min-Max):
+        // ¿Cuánto me falta para llegar a mi stock objetivo?
+        let cantidad_a_pedir = stock_objetivo - item.stock_actual;
+        if (cantidad_a_pedir < 0) cantidad_a_pedir = 0;
+
+        return {
+          id: item.id,
+          nombre: item.nombre,
+          stock: item.stock_actual,
+          base_load: Math.ceil(cantidad_a_pedir),
+          abc: item.category,
+          trend_val: item.trend,
+          trend_label: item.trend > 1.2 ? 'alcista' : (item.trend < 0.8 ? 'bajista' : 'estable'),
+          velocity_long: { 
+              d60: parseFloat(Number(item.velocity_60d || 0).toFixed(2)), 
+              d90: parseFloat(Number(item.velocity_90d || 0).toFixed(2)) 
+          },
+          risk: item.stock_actual <= item.stock_seguridad ? 'CRÍTICO' : (item.stock_actual <= rop ? 'MEDIO' : 'BAJO'),
+          avg_precision: item.avg_precision // Pasamos la precisión promedio para usarla luego
+        };
       });
 
       const contextItemsForAI = contextItemsFull.slice(0, 15);
@@ -451,9 +466,9 @@ const aiController = {
         return res.json({ success: true, promotions: [] });
       }
 
-      // 3. Hash para Caché (Independiente de recomendaciones de compra) (Usando SHA-256)
+      // 3. Hash para Caché (Independiente de recomendaciones de compra) (Usando MD5 para mantener compatibilidad con Cache_IA VARCHAR(32))
       const dataString = "PROMO_" + JSON.stringify(candidates);
-      const currentHash = crypto.createHash('sha256').update(dataString).digest('hex');
+      const currentHash = crypto.createHash('md5').update(dataString).digest('hex');
       
       const cacheKey = `PROMO_${tiendaId}`;
       if (aiCache_v3[cacheKey] && aiCache_v3[cacheKey].dataHash === currentHash) {

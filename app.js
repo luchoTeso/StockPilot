@@ -115,14 +115,21 @@ app.use(requestLogger);
 
 const pgSession = require('connect-pg-simple')(session);
 const db = require('./config/database');
+const redisClient = require('./config/redis');
+const { RedisStore } = require('connect-redis');
 
-// 🛡️ SEGURIDAD: Configuración de Sesión Hardened (Persistente en Postgres)
-app.use(session({
-    store: new pgSession({
+// Fallback dinámico: Redis si está configurado, si no Postgres.
+const sessionStore = redisClient 
+    ? new RedisStore({ client: redisClient }) 
+    : new pgSession({
         pool: db.pool,                // Usar el pool de conexiones de Postgres
         tableName: 'session',         // Se creará automáticamente o mediante init_pg.sql
         createTableIfMissing: true    // Auto-creación de tabla de sesiones
-    }),
+    });
+
+// 🛡️ SEGURIDAD: Configuración de Sesión Hardened
+app.use(session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false, 

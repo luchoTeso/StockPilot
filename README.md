@@ -15,7 +15,7 @@ Sistema integral de gestión de inventario para tiendas y microempresas colombia
 | **Base de Datos** | PostgreSQL 16 (Neon) | Base de datos relacional en producción |
 | **IA** | OpenAI GPT-4o-mini | Motor de sugerencias de reabastecimiento y promociones |
 | **Email** | Resend | Envío de notificaciones y órdenes de compra |
-| **Sesiones** | connect-pg-simple | Sesiones persistidas en PostgreSQL |
+| **Sesiones / Caché** | Redis + connect-pg-simple | Sesiones y limitador de peticiones (Fallback a Postgres) |
 | **Testing** | Vitest + Playwright | Pruebas unitarias (lógica de negocio) + E2E |
 
 ```
@@ -86,6 +86,9 @@ SESSION_SECRET=una_frase_secreta_larga
 
 # PostgreSQL (local o remoto)
 DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/stockpilot
+
+# Redis (Opcional — fallback a PostgreSQL/Memoria si no se provee)
+# REDIS_URL=redis://localhost:6379
 
 # IA (opcional — sin ella el módulo de recomendaciones queda deshabilitado)
 OPENAI_API_KEY=sk-...
