@@ -71,8 +71,9 @@ class AuthController {
                 req.session.pending2FA_userId = user.id_usuario;
                 req.session.pending2FA_tiendaId = user.id_tienda;
                 req.session.pending2FA_rol = user.rol;
+                const isCambioForzoso = Boolean(user.cambio_clave_forzoso && user.cambio_clave_forzoso !== '0' && user.cambio_clave_forzoso !== 'false');
                 req.session.pending2FA_nombres = user.nombres;
-                req.session.pending2FA_cambio_clave = user.cambio_clave_forzoso === 1;
+                req.session.pending2FA_cambio_clave = isCambioForzoso;
 
                 return res.json({
                     success: true,
@@ -84,12 +85,13 @@ class AuthController {
             // Si es administrador y NO tiene 2FA, debe configurarlo.
             // Lo dejamos pasar pero le avisamos al frontend.
             const needs2FASetup = isAdmin && !is2FAEnabled;
+            const isCambioForzoso = Boolean(user.cambio_clave_forzoso && user.cambio_clave_forzoso !== '0' && user.cambio_clave_forzoso !== 'false');
 
             req.session.userId = user.id_usuario;
             req.session.tiendaId = user.id_tienda;
             req.session.rol = user.rol;
             req.session.nombres = user.nombres;
-            req.session.cambio_clave_forzoso = user.cambio_clave_forzoso === 1;
+            req.session.cambio_clave_forzoso = isCambioForzoso;
 
             // Registrar la sesión activa en la BD
             await User.setCurrentSession(user.id_usuario, req.sessionID);
@@ -102,7 +104,7 @@ class AuthController {
                 user: {
                     nombres: user.nombres,
                     rol: user.rol,
-                    cambioClaveForzoso: user.cambio_clave_forzoso === 1,
+                    cambioClaveForzoso: isCambioForzoso,
                     needs2FASetup: needs2FASetup
                 }
             });
@@ -230,7 +232,7 @@ class AuthController {
                 tiendaNombre: tienda ? tienda.nombre_establecimiento : 'Sin tienda',
                 rol: req.session.rol,
                 nombres: req.session.nombres,
-                cambioClaveForzoso: req.session.cambio_clave_forzoso,
+                cambioClaveForzoso: Boolean(req.session.cambio_clave_forzoso),
                 needs2FASetup: isAdmin && !is2FAEnabled,
                 is2FAEnabled: is2FAEnabled
             });
@@ -284,6 +286,10 @@ class AuthController {
 
             const { currentPassword, newPassword } = req.body;
 
+            if (currentPassword === newPassword) {
+                return res.status(400).json({ success: false, error: 'La nueva contraseña no puede ser igual a la que tienes asignada actualmente.' });
+            }
+
             // Verificar contraseña actual
             const userFull = await User.findById(userId);
             // El findById original no trae la contraseña por seguridad, necesito una forma de obtenerla
@@ -322,6 +328,17 @@ class AuthController {
             const { newPassword } = req.body;
             if (!newPassword || newPassword.length < 8) {
                 return res.status(400).json({ success: false, error: 'La contraseña debe tener al menos 8 caracteres' });
+            }
+
+            const query = `SELECT contrasena FROM Usuarios WHERE id_usuario = ?`;
+            const db = require('../config/database');
+            const row = await db.getAsync(query, [userId]);
+
+            if (row && row.contrasena) {
+                const isMatch = await require('bcrypt').compare(newPassword, row.contrasena);
+                if (isMatch) {
+                    return res.status(400).json({ success: false, error: 'La nueva contraseña no puede ser igual a la que tienes asignada actualmente.' });
+                }
             }
 
             await User.updatePassword(userId, newPassword);

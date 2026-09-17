@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
             return { require2FA: true };
         }
         await checkSession();
-        return { success: true };
+        return { success: true, user: res.data.user };
       } else {
         throw new Error(res.data.error || 'Error de inicio de sesión');
       }
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
           const res = await axios.post('/api/2fa/verify', { token });
           if (res.data.success) {
               await checkSession();
-              return { success: true };
+              return { success: true, user: res.data.user };
           }
           throw new Error(res.data.error || 'Código incorrecto');
       } catch (err) {

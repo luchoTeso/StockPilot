@@ -205,8 +205,35 @@ const db = {
                 ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255),
                 ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE;
             `);
+
+            // 5. Asegurar esquema para Arqueo de Caja y Facturación POS (Fase 1 y 2)
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS SesionCaja (
+                    id_sesion SERIAL PRIMARY KEY,
+                    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+                    id_vendedor INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+                    fecha_apertura TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    fecha_cierre TIMESTAMP,
+                    monto_apertura DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+                    monto_cierre_declarado DECIMAL(12, 2),
+                    monto_cierre_calculado DECIMAL(12, 2),
+                    diferencia DECIMAL(12, 2),
+                    estado VARCHAR(20) DEFAULT 'ABIERTA',
+                    observaciones TEXT
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_sesioncaja_tienda_vendedor ON SesionCaja(id_tienda, id_vendedor, estado);
+
+                ALTER TABLE Ventas 
+                ADD COLUMN IF NOT EXISTS id_sesion_caja INTEGER REFERENCES SesionCaja(id_sesion) ON DELETE SET NULL,
+                ADD COLUMN IF NOT EXISTS metodo_pago VARCHAR(50) DEFAULT 'Efectivo',
+                ADD COLUMN IF NOT EXISTS efectivo_recibido DECIMAL(12, 2),
+                ADD COLUMN IF NOT EXISTS cambio_devuelto DECIMAL(12, 2);
+
+                CREATE INDEX IF NOT EXISTS idx_ventas_sesion_caja ON Ventas(id_sesion_caja);
+            `);
             
-            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA) e Índices actualizados exitosamente.');
+            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA), Índices y SesionCaja POS actualizados exitosamente.');
             return; // Éxito, salir de la función
         } catch (err) {
             console.warn(`⚠️ Auto-migration intento ${attempt}/${maxRetries} falló:`, err.message);

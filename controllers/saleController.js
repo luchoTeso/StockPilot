@@ -81,12 +81,18 @@ class SaleController {
      */
     static async registerSale(req, res) {
         try {
-            const { id_producto, cantidad } = req.body;
+            const { id_producto, cantidad, metodo_pago, efectivo_recibido } = req.body;
             const id_vendedor = req.session.userId;
             const id_tienda = req.session.tiendaId;
 
             if (!id_vendedor || !id_tienda) {
                 return res.status(401).json({ success: false, error: "Sesión no válida" });
+            }
+
+            const CashRegister = require('../models/CashRegister');
+            const activeSession = await CashRegister.getCurrentSession(id_tienda, id_vendedor);
+            if (!activeSession) {
+                return res.status(403).json({ success: false, error: "Debes abrir tu caja antes de realizar ventas." });
             }
 
             // Iniciar transacción de BD (Patrón Postgres Client)
@@ -110,13 +116,15 @@ class SaleController {
                 }
 
                 const total = producto.precio * cantidad;
+                const metodo = metodo_pago || 'Efectivo';
+                const recibido = efectivo_recibido || total;
+                const cambio = recibido >= total ? recibido - total : 0;
 
-                // 2. Registrar la venta principal (Sale.create debe adaptarse o usarse el client)
-                // Para mantener la consistencia de la transacción, usaremos el client directamente aquí
+                // 2. Registrar la venta principal
                 const saleInsert = await client.query(
-                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida) 
-                     VALUES (?, ?, ?, CURRENT_TIMESTAMP) RETURNING id_venta`,
-                    [id_vendedor, id_tienda, total]
+                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida, id_sesion_caja, metodo_pago, efectivo_recibido, cambio_devuelto) 
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?) RETURNING id_venta`,
+                    [id_vendedor, id_tienda, total, activeSession.id_sesion, metodo, recibido, cambio]
                 );
                 const id_venta = saleInsert.rows[0].id_venta;
 
@@ -168,7 +176,7 @@ class SaleController {
      */
     static async registerCartSale(req, res) {
         try {
-            const { items } = req.body;
+            const { items, metodo_pago, efectivo_recibido } = req.body;
             const id_vendedor = req.session.userId;
             const id_tienda = req.session.tiendaId;
 
@@ -177,6 +185,12 @@ class SaleController {
             }
             if (!Array.isArray(items) || items.length === 0) {
                 return res.status(400).json({ success: false, error: "El carrito está vacío" });
+            }
+
+            const CashRegister = require('../models/CashRegister');
+            const activeSession = await CashRegister.getCurrentSession(id_tienda, id_vendedor);
+            if (!activeSession) {
+                return res.status(403).json({ success: false, error: "Debes abrir tu caja antes de realizar ventas." });
             }
 
             const client = await db.getClient();
@@ -212,10 +226,14 @@ class SaleController {
                 }
 
                 // 2. Registrar Venta principal
+                const metodo = metodo_pago || 'Efectivo';
+                const recibido = efectivo_recibido || totalVenta;
+                const cambio = recibido >= totalVenta ? recibido - totalVenta : 0;
+
                 const saleInsert = await client.query(
-                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida) 
-                     VALUES (?, ?, ?, CURRENT_TIMESTAMP) RETURNING id_venta`,
-                    [id_vendedor, id_tienda, totalVenta]
+                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida, id_sesion_caja, metodo_pago, efectivo_recibido, cambio_devuelto) 
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?) RETURNING id_venta`,
+                    [id_vendedor, id_tienda, totalVenta, activeSession.id_sesion, metodo, recibido, cambio]
                 );
                 const id_venta = saleInsert.rows[0].id_venta;
 

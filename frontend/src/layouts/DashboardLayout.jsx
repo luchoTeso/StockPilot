@@ -137,7 +137,7 @@ const DashboardLayout = () => {
         </header>
 
         {/* Elemento decorativo de fondo */}
-        <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-indigo-50/50 blur-3xl -z-10 pointer-events-none"></div>
+        <div className="!absolute top-0 right-0 w-1/3 h-1/3 bg-indigo-50/50 blur-3xl -z-10 pointer-events-none"></div>
         
         {/* Contenedor Fluido */}
         <div className="p-4 md:p-8 lg:px-12 lg:pb-12 lg:pt-2 max-w-7xl xl:max-w-[1600px] mx-auto w-full flex-grow flex flex-col gap-8">

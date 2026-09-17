@@ -25,8 +25,12 @@ const LoginPage = () => {
     setSessionConflict(false);
     if (is2FA) {
       try {
-        await verify2FA(token2FA);
-        navigate('/dashboard');
+        const res = await verify2FA(token2FA);
+        if (res?.user?.cambioClaveForzoso) {
+          navigate('/activacion-cuenta');
+        } else {
+          navigate('/dashboard');
+        }
       } catch (err) {
         setError(err.message || 'Código incorrecto');
       }
@@ -37,6 +41,8 @@ const LoginPage = () => {
       const result = await login(identificador, password, force);
       if (result?.require2FA) {
         setIs2FA(true);
+      } else if (result?.user?.cambioClaveForzoso) {
+        navigate('/activacion-cuenta');
       } else {
         navigate('/dashboard');
       }

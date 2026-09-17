@@ -2,18 +2,43 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { SYNC_EVENTS, subscribeToSync, emitSyncEvent } from '../utils/stockSync';
-import { Trophy, Download, DollarSign, Package, Receipt, Rocket, ShoppingCart, History, ScanBarcode, Plus, Minus, X, CreditCard, Search } from 'lucide-react';
+import { Trophy, Download, DollarSign, Package, Receipt, Rocket, ShoppingCart, History, ScanBarcode, Plus, Minus, X, CreditCard, Search, Lock, Unlock } from 'lucide-react';
 import useBarcodeScanner from '../hooks/useBarcodeScanner';
 import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
 import CameraScannerModal from '../components/CameraScannerModal';
+import { useReactToPrint } from 'react-to-print';
+import PaymentModal from '../components/PaymentModal';
+import TicketPrinter from '../components/TicketPrinter';
+import CashRegisterModal from '../components/CashRegisterModal';
+import { useAuth } from '../context/AuthContext';
 
 const PuntoVentaPage = () => {
-  const [activeTab, setActiveTab] = useState('caja'); // 'caja' | 'historial'
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'Administrador';
+  const [activeTab, setActiveTab] = useState('caja'); // 'caja' | 'historial' | 'historial_caja'
+
+  // Cash Register Session State (movido desde CajaRapidaTab)
+  const [isCashRegisterOpen, setIsCashRegisterOpen] = useState(false);
+  const [isSessionActive, setIsSessionActive] = useState(false);
+
+  // Cargar estado inicial de la sesión de caja
+  useEffect(() => {
+    const checkRegisterSession = async () => {
+      try {
+        const res = await axios.get('/api/caja/sesion');
+        setIsSessionActive(Boolean(res.data?.active));
+      } catch (error) {
+        console.error("Error al verificar sesión de caja", error);
+      }
+    };
+    checkRegisterSession();
+  }, []);
+
   return (
     <div className="animate-fade-in pb-12 space-y-8 font-outfit">
       {/* Pestañas / Header */}
-      <div className="flex justify-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
         <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 shadow-inner">
           <button
             onClick={() => setActiveTab('caja')}
@@ -27,11 +52,49 @@ const PuntoVentaPage = () => {
           >
             <History size={16} /> Historial
           </button>
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('historial_caja')}
+              className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'historial_caja' ? 'bg-white text-rose-600 shadow-md scale-100' : 'text-slate-500 hover:text-slate-800 scale-95'}`}
+            >
+              <DollarSign size={16} /> Historial Caja
+            </button>
+          )}
         </div>
+
+        {/* Botón de Caja movido al lado de las pestañas */}
+        <button
+          onClick={() => setIsCashRegisterOpen(true)}
+          className={`px-5 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+            isSessionActive 
+              ? 'bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 shadow-sm' 
+              : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/20'
+          }`}
+        >
+          {isSessionActive ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+              <Lock size={14} />
+              Cerrar Turno (Caja Activa)
+            </>
+          ) : (
+            <>
+              <Unlock size={14} />
+              Abrir Caja
+            </>
+          )}
+        </button>
       </div>
 
-      {activeTab === 'caja' && <CajaRapidaTab />}
+      {activeTab === 'caja' && <CajaRapidaTab isSessionActive={isSessionActive} setIsCashRegisterOpen={setIsCashRegisterOpen} />}
       {activeTab === 'historial' && <HistorialVentasTab />}
+      {activeTab === 'historial_caja' && isAdmin && <HistorialCajaTab />}
+
+      <CashRegisterModal
+        isOpen={isCashRegisterOpen}
+        onClose={() => setIsCashRegisterOpen(false)}
+        onStatusChange={setIsSessionActive}
+      />
     </div>
   );
 };
@@ -39,12 +102,26 @@ const PuntoVentaPage = () => {
 /* =========================================
  * PESTAÑA: CAJA RÁPIDA (POS)
  * ========================================= */
-const CajaRapidaTab = () => {
+const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen }) => {
   const toast = useToast();
   const [cart, setCart] = useState([]);
   const [loadingPay, setLoadingPay] = useState(false);
   const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
   const searchInputRef = useRef(null);
+  
+  // Payment and Ticket State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [ticketData, setTicketData] = useState(null);
+  const ticketRef = useRef();
+
+  const handlePrint = useReactToPrint({
+    contentRef: ticketRef,
+    documentTitle: 'Ticket_Venta',
+    onAfterPrint: () => {
+       setTicketData(null);
+       setCart([]);
+    }
+  });
 
   // Nuevo estado para búsqueda predictiva
   const [allProducts, setAllProducts] = useState([]);
@@ -145,17 +222,48 @@ const CajaRapidaTab = () => {
 
   const cartTotal = cart.reduce((acc, item) => acc + ((item.precio || item.precio_unitario || 0) * item.cantidadCart), 0);
   const cartItemsCount = cart.reduce((acc, item) => acc + item.cantidadCart, 0);
+  const totalCart = cartTotal;
 
-  const handleCobrar = async () => {
+  const handleOpenPayment = () => {
+    if (!isSessionActive) {
+      toast.error('Debes abrir la caja antes de poder cobrar.');
+      setIsCashRegisterOpen(true);
+      return;
+    }
     if (cart.length === 0) return;
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleConfirmPayment = async (paymentDetails) => {
     setLoadingPay(true);
     try {
       const items = cart.map(i => ({ id_producto: i.id_producto, cantidad: i.cantidadCart }));
-      await axios.post('/api/registrar-venta-carrito', { items });
+      const payload = { 
+        items, 
+        metodo_pago: paymentDetails.metodo_pago, 
+        efectivo_recibido: paymentDetails.efectivo_recibido 
+      };
+      const response = await axios.post('/api/registrar-venta-carrito', payload);
       toast.success('Venta procesada exitosamente.');
-      setCart([]);
-      // Emitir eventos para que el historial y productos se actualicen
+      setIsPaymentModalOpen(false);
+      
+      // Emitir eventos
       items.forEach(i => emitSyncEvent(SYNC_EVENTS.SALE_COMPLETED, { id: i.id_producto }));
+      
+      // Preparar e imprimir ticket
+      setTicketData({
+        items: cart,
+        total: totalCart,
+        id_venta: response.data.id_venta,
+        metodo_pago: paymentDetails.metodo_pago,
+        efectivo_recibido: paymentDetails.efectivo_recibido,
+        cambio_devuelto: paymentDetails.efectivo_recibido >= totalCart ? paymentDetails.efectivo_recibido - totalCart : 0,
+        fecha: new Date()
+      });
+      setTimeout(() => {
+        handlePrint();
+      }, 500);
+
     } catch (error) {
       toast.error(error.response?.data?.error || 'Error al procesar la venta.');
     } finally {
@@ -261,7 +369,9 @@ const CajaRapidaTab = () => {
          {/* Fondo decorativo */}
          <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
          
-         <h2 className="text-3xl font-black italic tracking-tighter uppercase mb-8 relative z-10 text-slate-800">Resumen</h2>
+         <div className="flex justify-between items-center mb-8 relative z-10">
+           <h2 className="text-3xl font-black italic tracking-tighter uppercase text-slate-800">Resumen</h2>
+         </div>
          
          <div className="flex-1 space-y-6 relative z-10">
            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
@@ -280,7 +390,7 @@ const CajaRapidaTab = () => {
 
          <div className="mt-8 relative z-10">
            <button 
-             onClick={handleCobrar}
+             onClick={handleOpenPayment}
              disabled={cart.length === 0 || loadingPay}
              className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-500 text-white p-5 rounded-2xl font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-colors active:scale-95 shadow-xl shadow-emerald-500/20"
            >
@@ -296,6 +406,19 @@ const CajaRapidaTab = () => {
           setCameraScannerOpen(false);
           handleBarcodeScan(code);
         }} 
+      />
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        total={totalCart}
+        onConfirm={handleConfirmPayment}
+        loading={loadingPay}
+      />
+
+      <TicketPrinter 
+        ref={ticketRef}
+        ticketData={ticketData}
       />
     </div>
   );
@@ -609,3 +732,98 @@ const HistorialVentasTab = () => {
 };
 
 export default PuntoVentaPage;
+
+/* =========================================
+ * PESTAÑA: HISTORIAL DE CAJA (Solo Admin)
+ * ========================================= */
+const HistorialCajaTab = () => {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const { data } = await axios.get('/api/caja/historial');
+        if (data.success) {
+          setHistory(data.history);
+        }
+      } catch (error) {
+        console.error("Error al cargar historial de caja:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, []);
+
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val || 0);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '---';
+    return new Date(dateString).toLocaleString('es-CO', { 
+      year: 'numeric', month: '2-digit', day: '2-digit', 
+      hour: '2-digit', minute: '2-digit' 
+    });
+  };
+
+  return (
+    <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8">
+      <h2 className="text-3xl font-black italic tracking-tighter uppercase text-slate-800 mb-6">Historial de Sesiones de Caja</h2>
+      
+      {loading ? (
+        <div className="animate-pulse space-y-4">
+          <div className="h-12 bg-slate-100 rounded-xl"></div>
+          <div className="h-12 bg-slate-100 rounded-xl"></div>
+          <div className="h-12 bg-slate-100 rounded-xl"></div>
+        </div>
+      ) : history.length === 0 ? (
+        <p className="text-center text-slate-400 font-bold py-8 uppercase tracking-widest text-sm">No hay registros de sesiones de caja.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr className="border-b border-slate-100 text-[10px] font-black tracking-widest text-slate-400 uppercase bg-slate-50/50">
+                <th className="p-4">Estado</th>
+                <th className="p-4">Apertura</th>
+                <th className="p-4">Cierre</th>
+                <th className="p-4">Vendedor</th>
+                <th className="p-4 text-right">M. Apertura</th>
+                <th className="p-4 text-right">M. Calculado</th>
+                <th className="p-4 text-right">M. Declarado</th>
+                <th className="p-4 text-right">Diferencia</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-sm font-medium">
+              {history.map((s) => {
+                const diff = parseFloat(s.diferencia || 0);
+                const isDescuadre = diff !== 0 && s.estado === 'Cerrada';
+                return (
+                  <tr key={s.id_sesion} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-4">
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                        s.estado === 'Abierta' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'
+                      }`}>
+                        {s.estado}
+                      </span>
+                    </td>
+                    <td className="p-4 text-slate-600">{formatDate(s.fecha_apertura)}</td>
+                    <td className="p-4 text-slate-600">{formatDate(s.fecha_cierre)}</td>
+                    <td className="p-4 font-bold text-slate-800">{s.vendedor_nombre || `ID: ${s.id_vendedor}`}</td>
+                    <td className="p-4 text-right text-indigo-700 font-bold">{formatCurrency(s.monto_apertura)}</td>
+                    <td className="p-4 text-right text-slate-600">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_calculado) : '---'}</td>
+                    <td className="p-4 text-right text-slate-800 font-bold">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_declarado) : '---'}</td>
+                    <td className={`p-4 text-right font-black ${isDescuadre ? (diff < 0 ? 'text-rose-600' : 'text-amber-500') : 'text-emerald-500'}`}>
+                      {s.estado === 'Cerrada' ? formatCurrency(diff) : '---'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};

@@ -36,7 +36,7 @@ const ProductTable = ({
               <th className="p-6 text-center">Disponibilidad</th>
               <th className="hidden sm:table-cell p-6 text-center">Estado</th>
               <th className="hidden xl:table-cell p-6 text-center">Último Ingreso</th>
-              <th className="p-6 text-center">Acciones</th>
+              {isAdmin && <th className="p-6 text-center">Acciones</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -98,27 +98,25 @@ const ProductTable = ({
                     <td className="hidden xl:table-cell p-6 text-center font-bold text-slate-600 text-xs">
                       {formatearFecha(p.fecha_entrada)}
                     </td>
-                    <td className="p-6 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        {isActive ? (
-                          <>
-                            {isAdmin && (
-                              <>
-                                 <div className="w-px h-8 bg-slate-200 mx-1"></div>
-                                 <button onClick={() => onEdit(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors">Editar</button>
-                                 <button onClick={() => onToggleStatus(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 rounded-xl transition-colors">Pausar</button>
-                                 <button onClick={() => onDelete(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">Borrar</button>
-                              </>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {isAdmin && <button onClick={() => onToggleStatus(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-colors shadow-sm">Reactivar</button>}
-                            {isAdmin && <button onClick={() => onDelete(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-colors ml-2">Eliminar</button>}
-                          </>
-                        )}
-                      </div>
-                    </td>
+                    {isAdmin && (
+                      <td className="p-6 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          {isActive ? (
+                            <>
+                               <div className="w-px h-8 bg-slate-200 mx-1"></div>
+                               <button onClick={() => onEdit(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors">Editar</button>
+                               <button onClick={() => onToggleStatus(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 rounded-xl transition-colors">Pausar</button>
+                               <button onClick={() => onDelete(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">Borrar</button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => onToggleStatus(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-colors shadow-sm">Reactivar</button>
+                              <button onClick={() => onDelete(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-colors ml-2">Eliminar</button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })

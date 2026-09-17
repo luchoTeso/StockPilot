@@ -110,14 +110,31 @@ CREATE TABLE IF NOT EXISTS MovimientosStock (
     id_usuario INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
     id_tienda INTEGER REFERENCES Tienda(id_tienda) ON DELETE CASCADE
 );
+-- 5.5. TABLA SESION DE CAJA (Arqueo y Turnos)
+CREATE TABLE IF NOT EXISTS SesionCaja (
+    id_sesion SERIAL PRIMARY KEY,
+    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+    id_vendedor INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+    monto_apertura NUMERIC(15, 2) NOT NULL DEFAULT 0,
+    monto_cierre_declarado NUMERIC(15, 2),
+    monto_cierre_calculado NUMERIC(15, 2),
+    diferencia NUMERIC(15, 2),
+    fecha_apertura TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    fecha_cierre TIMESTAMP WITH TIME ZONE,
+    estado VARCHAR(50) DEFAULT 'Abierta' -- 'Abierta', 'Cerrada'
+);
 
 -- 6. TABLA VENTAS
 CREATE TABLE IF NOT EXISTS Ventas (
     id_venta SERIAL PRIMARY KEY,
     id_vendedor INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
     id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+    id_sesion_caja INTEGER REFERENCES SesionCaja(id_sesion) ON DELETE SET NULL,
     fecha_salida TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    precio_total NUMERIC(15, 2) NOT NULL
+    precio_total NUMERIC(15, 2) NOT NULL,
+    metodo_pago VARCHAR(50) DEFAULT 'Efectivo', -- 'Efectivo', 'Tarjeta', 'Transferencia'
+    efectivo_recibido NUMERIC(15, 2) DEFAULT 0,
+    cambio_devuelto NUMERIC(15, 2) DEFAULT 0
 );
 
 -- 7. TABLA VENTAS-PRODUCTOS

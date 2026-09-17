@@ -99,8 +99,8 @@ class User {
 
     static async updatePassword(userId, newPassword) {
         const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-        const query = `UPDATE Usuarios SET contrasena = ?, cambio_clave_forzoso = 0 WHERE id_usuario = ?`;
-        const result = await db.runAsync(query, [hashedPassword, userId]);
+        const query = `UPDATE Usuarios SET contrasena = ?, cambio_clave_forzoso = ? WHERE id_usuario = ?`;
+        const result = await db.runAsync(query, [hashedPassword, false, userId]);
         return result.changes > 0;
     }
 

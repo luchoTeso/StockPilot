@@ -218,6 +218,43 @@ const ReportesPage = () => {
     }
   };
 
+  const descargarHistorialCaja = async () => {
+    try {
+      toast.info('Generando reporte de caja (CSV)...');
+      const { data } = await axios.get('/api/caja/historial');
+      if (data.success && data.history) {
+        const rows = [
+          ['ID Sesion', 'Estado', 'Fecha Apertura', 'Fecha Cierre', 'Vendedor', 'Monto Apertura', 'Monto Declarado', 'Monto Calculado', 'Diferencia']
+        ];
+        data.history.forEach(h => {
+          rows.push([
+            h.id_sesion,
+            h.estado,
+            h.fecha_apertura,
+            h.fecha_cierre || 'N/A',
+            h.vendedor_nombre || 'N/A',
+            h.monto_apertura,
+            h.monto_cierre_declarado || '',
+            h.monto_cierre_calculado || '',
+            h.diferencia || ''
+          ]);
+        });
+        const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `historial_caja_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Reporte descargado correctamente');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al generar el reporte de caja');
+    }
+  };
+
   const filteredReportes = useMemo(() => {
     return reportes.filter(r => {
       const ms = r.titulo?.toLowerCase().includes(filtroBusqueda.toLowerCase()) ||
@@ -240,7 +277,15 @@ const ReportesPage = () => {
             Exportación y Análisis de Datos del Negocio
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap justify-end items-center gap-4">
+           {isAdmin && (
+             <button
+               onClick={descargarHistorialCaja}
+               className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1"
+             >
+               <Download size={14} /> Exportar Historial Caja
+             </button>
+           )}
            <div className="bg-white/60 px-6 py-3 rounded-2xl border border-white/40 shadow-sm">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Archivos totales</span>
               <span className="text-xl font-black text-slate-800">{reportes.length} <span className="text-[10px] text-indigo-500 italic">docs</span></span>
