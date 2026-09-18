@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [checkSession]);
 
-  const value = useMemo(() => ({ user, login, verify2FA, logout, switchStore, loading }), [user, login, verify2FA, logout, switchStore, loading]);
+  const value = useMemo(() => ({ user, login, verify2FA, logout, switchStore, loading, checkSession }), [user, login, verify2FA, logout, switchStore, loading, checkSession]);
 
   return (
     <AuthContext.Provider value={value}>

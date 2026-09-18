@@ -230,6 +230,7 @@ class AuthController {
                 userId: req.session.userId,
                 tiendaId: req.session.tiendaId,
                 tiendaNombre: tienda ? tienda.nombre_establecimiento : 'Sin tienda',
+                limiteEgresoTendero: tienda ? (tienda.limite_egreso_tendero || 150000) : 150000,
                 rol: req.session.rol,
                 nombres: req.session.nombres,
                 cambioClaveForzoso: Boolean(req.session.cambio_clave_forzoso),

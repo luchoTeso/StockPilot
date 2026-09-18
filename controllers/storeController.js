@@ -57,24 +57,30 @@ class StoreController {
                 return res.status(403).json({ success: false, error: "No autorizado para esta tienda" });
             }
 
-            const { nombre_establecimiento, direccion, documento, razon_social, celular, ciudad } = req.body;
+            const { nombre_establecimiento, direccion, documento, razon_social, celular, ciudad, limite_egreso_tendero } = req.body;
 
-            // Validate required fields
-            if (!nombre_establecimiento || !direccion) {
+            // Validate required fields if they are explicitly being updated to empty
+            if (nombre_establecimiento !== undefined && !nombre_establecimiento.trim()) {
                 return res.status(400).json({ 
                     success: false, 
-                    error: "El nombre del establecimiento y dirección son obligatorios" 
+                    error: "El nombre del establecimiento no puede estar vacío" 
+                });
+            }
+            if (direccion !== undefined && !direccion.trim()) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: "La dirección no puede estar vacía" 
                 });
             }
 
-            const data = {
-                nombre_establecimiento: nombre_establecimiento.trim(),
-                direccion: direccion.trim(),
-                documento: documento ? documento.trim() : null,
-                razon_social: razon_social ? razon_social.trim() : null,
-                celular: celular ? celular.trim() : null,
-                ciudad: ciudad ? ciudad.trim() : null
-            };
+            const data = {};
+            if (nombre_establecimiento !== undefined) data.nombre_establecimiento = nombre_establecimiento.trim();
+            if (direccion !== undefined) data.direccion = direccion.trim();
+            if (documento !== undefined) data.documento = documento ? documento.trim() : null;
+            if (razon_social !== undefined) data.razon_social = razon_social ? razon_social.trim() : null;
+            if (celular !== undefined) data.celular = celular ? celular.trim() : null;
+            if (ciudad !== undefined) data.ciudad = ciudad ? ciudad.trim() : null;
+            if (limite_egreso_tendero !== undefined) data.limite_egreso_tendero = parseFloat(limite_egreso_tendero);
 
             const success = await Store.update(storeId, data);
             

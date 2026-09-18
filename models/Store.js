@@ -24,7 +24,7 @@ class Store {
     static async findById(storeId) {
         const query = `
             SELECT id_tienda, nombre_establecimiento, direccion, anio_creacion, estado,
-                   documento, razon_social, celular, ciudad, id_propietario
+                   documento, razon_social, celular, ciudad, id_propietario, limite_egreso_tendero
             FROM Tienda
             WHERE id_tienda = ?
         `;
@@ -34,7 +34,7 @@ class Store {
     static async findByOwner(userId) {
         const query = `
             SELECT id_tienda, nombre_establecimiento, direccion, anio_creacion, estado,
-                   documento, razon_social, celular, ciudad, id_propietario
+                   documento, razon_social, celular, ciudad, id_propietario, limite_egreso_tendero
             FROM Tienda
             WHERE id_propietario = ?
             ORDER BY id_tienda
@@ -43,25 +43,24 @@ class Store {
     }
 
     static async update(storeId, data) {
-        const query = `
-            UPDATE Tienda SET 
-                nombre_establecimiento = ?,
-                direccion = ?,
-                documento = ?,
-                razon_social = ?,
-                celular = ?,
-                ciudad = ?
-            WHERE id_tienda = ?
-        `;
-        const result = await db.runAsync(query, [
-            data.nombre_establecimiento,
-            data.direccion,
-            data.documento,
-            data.razon_social,
-            data.celular,
-            data.ciudad,
-            storeId
-        ]);
+        // Construimos el query dinámicamente según los campos que vengan en `data`
+        const fields = [];
+        const values = [];
+
+        if (data.nombre_establecimiento !== undefined) { fields.push('nombre_establecimiento = ?'); values.push(data.nombre_establecimiento); }
+        if (data.direccion !== undefined) { fields.push('direccion = ?'); values.push(data.direccion); }
+        if (data.documento !== undefined) { fields.push('documento = ?'); values.push(data.documento); }
+        if (data.razon_social !== undefined) { fields.push('razon_social = ?'); values.push(data.razon_social); }
+        if (data.celular !== undefined) { fields.push('celular = ?'); values.push(data.celular); }
+        if (data.ciudad !== undefined) { fields.push('ciudad = ?'); values.push(data.ciudad); }
+        if (data.limite_egreso_tendero !== undefined) { fields.push('limite_egreso_tendero = ?'); values.push(data.limite_egreso_tendero); }
+
+        if (fields.length === 0) return true; // Nada que actualizar
+
+        values.push(storeId);
+        const query = `UPDATE Tienda SET ${fields.join(', ')} WHERE id_tienda = ?`;
+        
+        const result = await db.runAsync(query, values);
         return result.changes > 0;
     }
 

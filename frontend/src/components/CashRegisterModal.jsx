@@ -109,6 +109,9 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
                 <p className="text-slate-500 font-bold">Sesión Abierta desde:</p>
                 <p className="font-black text-slate-800">{new Date(session.fecha_apertura).toLocaleString('es-CO')}</p>
                 <p className="text-slate-500 text-sm mt-2">Fondo inicial: <span className="font-bold text-slate-700">${Number(session.monto_apertura).toLocaleString('es-CO')}</span></p>
+                <div className="bg-rose-50 border border-rose-100 p-3 rounded-xl mt-3 text-[11px] text-rose-600 font-bold">
+                   <p>💡 Nota: Los egresos registrados durante el turno se restarán automáticamente del monto esperado.</p>
+                </div>
               </div>
 
               <div>

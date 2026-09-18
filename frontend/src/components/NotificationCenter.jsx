@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Bell, Package, Calendar, ShieldCheck, Zap } from 'lucide-react';
+import { Bell, Package, Calendar, ShieldCheck, Zap, DollarSign, CheckCircle, XCircle } from 'lucide-react';
 
 const getSeverityStyles = (severity) => {
     switch (severity) {
@@ -12,10 +12,28 @@ const getSeverityStyles = (severity) => {
     }
 };
 
+const getNotifStyles = (tipo) => {
+    switch (tipo) {
+        case 'egreso_aprobado': return 'bg-emerald-100 text-emerald-600 border-emerald-200';
+        case 'egreso_rechazado': return 'bg-rose-100 text-rose-600 border-rose-200';
+        default: return 'bg-indigo-100 text-indigo-600 border-indigo-200';
+    }
+};
+
+const getNotifIcon = (tipo) => {
+    switch (tipo) {
+        case 'egreso_aprobado': return <CheckCircle size={18} />;
+        case 'egreso_rechazado': return <XCircle size={18} />;
+        default: return <DollarSign size={18} />;
+    }
+};
+
 const NotificationCenter = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [alerts, setAlerts] = useState([]);
+    const [userNotifs, setUserNotifs] = useState([]);
     const [stats, setStats] = useState({ total: 0, critico: 0 });
+    const [userNotifCount, setUserNotifCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const dropdownRef = useRef(null);
@@ -86,23 +104,35 @@ const NotificationCenter = () => {
     const fetchNotifications = useCallback(async (signal) => {
         try {
             setLoading(true);
-            const [statsRes, alertsRes] = await Promise.all([
+            const [statsRes, alertsRes, notifCountRes, notifsRes] = await Promise.all([
                 axios.get('/api/alertas/stats', { ...(signal && { signal }) }),
-                axios.get('/api/alertas?limit=5', { ...(signal && { signal }) })
+                axios.get('/api/alertas?limit=5', { ...(signal && { signal }) }),
+                axios.get('/api/notificaciones/count', { ...(signal && { signal }) }),
+                axios.get('/api/notificaciones?limit=5', { ...(signal && { signal }) })
             ]);
             if (signal && signal.aborted) return;
 
+            let newAlertTotal = 0;
             if (statsRes.data.success) {
-                const newTotal = statsRes.data.stats.total;
-                const newCritico = statsRes.data.stats.critico;
-
-                if (prevCountRef.current !== null && newTotal > prevCountRef.current) {
-                    playNotificationSound(newCritico > 0);
-                }
-                prevCountRef.current = newTotal;
+                newAlertTotal = statsRes.data.stats.total;
                 setStats(statsRes.data.stats);
             }
             if (alertsRes.data.success) setAlerts(alertsRes.data.alerts.slice(0, 5));
+
+            let newNotifCount = 0;
+            if (notifCountRes.data.success) {
+                newNotifCount = notifCountRes.data.count;
+                setUserNotifCount(newNotifCount);
+            }
+            if (notifsRes.data.success) setUserNotifs(notifsRes.data.notifications || []);
+
+            // Sound: play if total (alerts + user notifs) increased
+            const combinedTotal = newAlertTotal + newNotifCount;
+            if (prevCountRef.current !== null && combinedTotal > prevCountRef.current) {
+                const hasCritical = (statsRes.data.success && statsRes.data.stats.critico > 0);
+                playNotificationSound(hasCritical);
+            }
+            prevCountRef.current = combinedTotal;
         } catch (error) {
             if (axios.isCancel(error) || (signal && signal.aborted)) return;
             console.error('Error fetching notifications:', error);
@@ -131,7 +161,27 @@ const NotificationCenter = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const handleMarkNotifRead = async (id) => {
+        try {
+            await axios.patch(`/api/notificaciones/${id}/read`);
+            setUserNotifs(prev => prev.filter(n => n.id_notificacion !== id));
+            setUserNotifCount(prev => Math.max(0, prev - 1));
+        } catch (err) {
+            console.error('Error marcando notificación como leída:', err);
+        }
+    };
 
+    const handleMarkAllRead = async () => {
+        try {
+            await axios.patch('/api/notificaciones/read-all');
+            setUserNotifs([]);
+            setUserNotifCount(0);
+        } catch (err) {
+            console.error('Error marcando todas como leídas:', err);
+        }
+    };
+
+    const totalBadge = stats.total + userNotifCount;
 
     return (
         <div className="relative" ref={dropdownRef}>
@@ -146,9 +196,9 @@ const NotificationCenter = () => {
                 title="Centro de Alertas"
             >
                 <Bell size={20} />
-                {stats.total > 0 && (
-                    <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-[10px] font-black text-white rounded-full border-2 shadow-md ${isOpen ? 'border-indigo-600' : 'border-white'} ${stats.critico > 0 ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`}>
-                        {stats.total > 9 ? '+9' : stats.total}
+                {totalBadge > 0 && (
+                    <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-[10px] font-black text-white rounded-full border-2 shadow-md ${isOpen ? 'border-indigo-600' : 'border-white'} ${stats.critico > 0 || userNotifCount > 0 ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`}>
+                        {totalBadge > 9 ? '+9' : totalBadge}
                     </span>
                 )}
             </button>
@@ -163,59 +213,119 @@ const NotificationCenter = () => {
                     <div className="p-5 border-b border-indigo-50 flex items-center justify-between bg-gradient-to-r from-indigo-50/50 to-white">
                         <h3 className="font-black text-slate-800 text-[10px] uppercase tracking-[0.2em] italic">Notificaciones Activas</h3>
                         <span className="bg-indigo-600 px-3 py-1 rounded-full text-[9px] font-black text-white uppercase tracking-widest shadow-md shadow-indigo-100">
-                            {stats.total} Alertas
+                            {totalBadge} Alertas
                         </span>
                     </div>
 
                     <div className="flex-1 overflow-y-auto scrollbar-premium min-h-0">
-                        {loading && alerts.length === 0 ? (
+                        {loading && alerts.length === 0 && userNotifs.length === 0 ? (
                             <div className="p-12 text-center">
                                 <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sincronizando IA...</p>
                             </div>
-                        ) : alerts.length > 0 ? (
+                        ) : (alerts.length > 0 || userNotifs.length > 0) ? (
                             <div className="divide-y divide-slate-50">
-                                {alerts.map((alert) => {
-                                    // Lógica de resolución inteligente
-                                    const isStockAlert = alert.tipo.includes('stock') || alert.tipo.includes('rop');
-                                    const targetPath = isStockAlert ? '/analisis-detallado' : '/alertas';
+                                {/* === USER NOTIFICATIONS (egresos, etc.) === */}
+                                {userNotifs.length > 0 && (
+                                    <>
+                                        <div className="px-5 pt-3 pb-1 flex items-center justify-between">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">🔔 Mensajes para ti</span>
+                                            {userNotifCount > 1 && (
+                                                <button
+                                                    onClick={handleMarkAllRead}
+                                                    className="text-[9px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest transition-colors"
+                                                >
+                                                    Marcar todo leído
+                                                </button>
+                                            )}
+                                        </div>
+                                        {userNotifs.map((notif) => (
+                                            <button
+                                                key={`notif-${notif.id_notificacion}`}
+                                                onClick={() => handleMarkNotifRead(notif.id_notificacion)}
+                                                type="button"
+                                                className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
+                                            >
+                                                <div className="flex gap-4">
+                                                    <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getNotifStyles(notif.tipo)}`}>
+                                                        {getNotifIcon(notif.tipo)}
+                                                    </div>
+                                                    <div className="space-y-1 flex-1 min-w-0">
+                                                        <div className="flex justify-between items-start">
+                                                            <p className="text-[12px] font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
+                                                                {notif.titulo}
+                                                            </p>
+                                                            <span className="text-[9px] font-bold text-slate-300 whitespace-nowrap ml-2">
+                                                                {new Date(notif.fecha_creacion).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[11px] font-bold text-slate-500 leading-snug">
+                                                            {notif.mensaje}
+                                                        </p>
+                                                        <div className="flex items-center gap-1.5 mt-2">
+                                                            <span className="w-1 h-1 rounded-full bg-indigo-400"></span>
+                                                            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+                                                                Click para marcar leída
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </>
+                                )}
 
-                                    return (
-                                        <button
-                                            key={alert.id_alerta}
-                                            onClick={() => {
-                                                setIsOpen(false);
-                                                // Pequeño delay para asegurar que el navegador procese el cambio de estado antes de la transición de ruta
-                                                setTimeout(() => navigate(targetPath), 10);
-                                            }}
-                                            type="button"
-                                            className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
-                                        >
-                                            <div className="flex gap-4">
-                                                <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getSeverityStyles(alert.severidad)}`}>
-                                                    {alert.tipo.includes('vencimiento') ? <Calendar size={18} /> : <Package size={18} />}
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between items-start">
-                                                        <p className="text-[12px] font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
-                                                            {alert.nombre_producto || 'Producto Desconocido'}
-                                                        </p>
-                                                        <span className="text-[9px] font-black text-indigo-400 group-hover:translate-x-1 transition-transform">→</span>
-                                                    </div>
-                                                    <p className="text-[11px] font-bold text-slate-500 leading-snug lowercase first-letter:uppercase">
-                                                        {alert.mensaje}
-                                                    </p>
-                                                    <div className="flex items-center gap-1.5 mt-2">
-                                                        <span className="w-1 h-1 rounded-full bg-indigo-400"></span>
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                                            Resolución Sugerida: <span className="text-indigo-500">{isStockAlert ? 'Reabastecer' : 'Promocionar'}</span>
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                {/* === STOCK / PRODUCT ALERTS === */}
+                                {alerts.length > 0 && (
+                                    <>
+                                        {userNotifs.length > 0 && (
+                                            <div className="px-5 pt-3 pb-1">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">📦 Alertas de Inventario</span>
                                             </div>
-                                        </button>
-                                    );
-                                })}
+                                        )}
+                                        {alerts.map((alert) => {
+                                            // Lógica de resolución inteligente
+                                            const isStockAlert = alert.tipo.includes('stock') || alert.tipo.includes('rop');
+                                            const targetPath = isStockAlert ? '/analisis-detallado' : '/alertas';
+
+                                            return (
+                                                <button
+                                                    key={alert.id_alerta}
+                                                    onClick={() => {
+                                                        setIsOpen(false);
+                                                        // Pequeño delay para asegurar que el navegador procese el cambio de estado antes de la transición de ruta
+                                                        setTimeout(() => navigate(targetPath), 10);
+                                                    }}
+                                                    type="button"
+                                                    className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
+                                                >
+                                                    <div className="flex gap-4">
+                                                        <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getSeverityStyles(alert.severidad)}`}>
+                                                            {alert.tipo.includes('vencimiento') ? <Calendar size={18} /> : <Package size={18} />}
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <div className="flex justify-between items-start">
+                                                                <p className="text-[12px] font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
+                                                                    {alert.nombre_producto || 'Producto Desconocido'}
+                                                                </p>
+                                                                <span className="text-[9px] font-black text-indigo-400 group-hover:translate-x-1 transition-transform">→</span>
+                                                            </div>
+                                                            <p className="text-[11px] font-bold text-slate-500 leading-snug lowercase first-letter:uppercase">
+                                                                {alert.mensaje}
+                                                            </p>
+                                                            <div className="flex items-center gap-1.5 mt-2">
+                                                                <span className="w-1 h-1 rounded-full bg-indigo-400"></span>
+                                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                                                    Resolución Sugerida: <span className="text-indigo-500">{isStockAlert ? 'Reabastecer' : 'Promocionar'}</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </>
+                                )}
                             </div>
                         ) : (
                             <div className="p-16 text-center">

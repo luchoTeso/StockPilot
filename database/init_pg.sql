@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS Tienda (
     razon_social VARCHAR(255),
     celular VARCHAR(20),
     ciudad VARCHAR(100),
-    id_propietario INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL
+    id_propietario INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
+    limite_egreso_tendero NUMERIC(15, 2) DEFAULT 150000
 );
 
 -- 2. TABLA USUARIOS
@@ -124,6 +125,26 @@ CREATE TABLE IF NOT EXISTS SesionCaja (
     estado VARCHAR(50) DEFAULT 'Abierta' -- 'Abierta', 'Cerrada'
 );
 
+-- 5.6. TABLA EGRESOS CAJA CHICA (Fase 3)
+CREATE TABLE IF NOT EXISTS EgresosCaja (
+    id_egreso SERIAL PRIMARY KEY,
+    id_sesion_caja INTEGER NOT NULL REFERENCES SesionCaja(id_sesion) ON DELETE CASCADE,
+    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+    id_usuario INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
+    monto NUMERIC(15, 2) NOT NULL,
+    motivo TEXT NOT NULL,
+    categoria VARCHAR(50) DEFAULT 'Otro',  -- 'Proveedor', 'Insumos', 'Transporte', 'Otro'
+    foto_soporte TEXT,                      -- base64 de la imagen (max ~2MB)
+    estado VARCHAR(50) DEFAULT 'Registrado', -- 'Registrado', 'Aprobado', 'Rechazado'
+    aprobado_por INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
+    fecha_aprobacion TIMESTAMP WITH TIME ZONE,
+    notas_admin TEXT,
+    fecha_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_egresos_sesion ON EgresosCaja(id_sesion_caja);
+CREATE INDEX IF NOT EXISTS idx_egresos_tienda ON EgresosCaja(id_tienda);
+
 -- 6. TABLA VENTAS
 CREATE TABLE IF NOT EXISTS Ventas (
     id_venta SERIAL PRIMARY KEY,
@@ -187,6 +208,20 @@ CREATE TABLE IF NOT EXISTS Alertas (
     resuelta INTEGER DEFAULT 0,
     fecha_resolucion TIMESTAMP WITH TIME ZONE,
     datos_json TEXT
+);
+
+-- 10b. TABLA NOTIFICACIONES DE USUARIO (egresos aprobados/rechazados, etc.)
+CREATE TABLE IF NOT EXISTS NotificacionesUsuario (
+    id_notificacion SERIAL PRIMARY KEY,
+    id_usuario INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+    id_tienda INTEGER REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+    tipo VARCHAR(50) NOT NULL,
+    titulo VARCHAR(255) NOT NULL,
+    mensaje TEXT NOT NULL,
+    datos_json TEXT,
+    leida INTEGER DEFAULT 0,
+    fecha_lectura TIMESTAMP WITH TIME ZONE,
+    fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 11. TABLA AUDITORIA IA
@@ -282,6 +317,8 @@ CREATE INDEX IF NOT EXISTS idx_movimientos_usuario ON MovimientosStock(id_usuari
 CREATE INDEX IF NOT EXISTS idx_alertas_tienda_resuelta ON Alertas(id_tienda, resuelta);
 CREATE INDEX IF NOT EXISTS idx_alertas_tienda_fecha ON Alertas(id_tienda, fecha_creacion DESC);
 CREATE INDEX IF NOT EXISTS idx_alertas_producto ON Alertas(id_producto);
+
+CREATE INDEX IF NOT EXISTS idx_notif_usuario ON NotificacionesUsuario(id_usuario, leida);
 
 CREATE INDEX IF NOT EXISTS idx_ordenes_tienda ON Ordenes_Compra(id_tienda);
 CREATE INDEX IF NOT EXISTS idx_ordenes_detalle_orden ON Ordenes_Detalle(id_orden);

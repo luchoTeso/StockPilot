@@ -9,4 +9,10 @@ router.post('/api/caja/abrir', requireLogin, sanitizeBody, cashRegisterControlle
 router.post('/api/caja/cerrar', requireLogin, sanitizeBody, cashRegisterController.closeSession);
 router.get('/api/caja/historial', requireLogin, cashRegisterController.getHistory);
 
+// Rutas de Egresos / Gastos Menores
+router.post('/api/caja/egreso', requireLogin, sanitizeBody, cashRegisterController.registerExpense);
+router.get('/api/caja/egresos', requireLogin, cashRegisterController.getExpenses);
+router.put('/api/caja/egreso/:id/aprobar', requireLogin, cashRegisterController.approveExpense);
+router.put('/api/caja/egreso/:id/rechazar', requireLogin, cashRegisterController.rejectExpense);
+
 module.exports = router;

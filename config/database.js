@@ -145,10 +145,11 @@ const db = {
         try {
             console.log(`⏳ Auto-migration: Verificando esquema en Neon/PostgreSQL (intento ${attempt}/${maxRetries})...`);
 
-            // 1. Asegurar que id_propietario existe en Tienda
+            // 1. Asegurar que id_propietario y limite_egreso_tendero existen en Tienda
             await pool.query(`
                 ALTER TABLE Tienda 
-                ADD COLUMN IF NOT EXISTS id_propietario INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
+                ADD COLUMN IF NOT EXISTS id_propietario INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
+                ADD COLUMN IF NOT EXISTS limite_egreso_tendero NUMERIC(15, 2) DEFAULT 150000;
             `);
             
             // 2. Asignar el administrador principal como propietario de las tiendas que no tengan uno
@@ -236,8 +237,50 @@ const db = {
 
                 CREATE INDEX IF NOT EXISTS idx_ventas_sesion_caja ON Ventas(id_sesion_caja);
             `);
+            // 6. Asegurar tabla EgresosCaja (Fase 3 - Flujo de Caja Menor)
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS EgresosCaja (
+                    id_egreso SERIAL PRIMARY KEY,
+                    id_sesion_caja INTEGER NOT NULL REFERENCES SesionCaja(id_sesion) ON DELETE CASCADE,
+                    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+                    id_usuario INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
+                    monto NUMERIC(15, 2) NOT NULL,
+                    motivo TEXT NOT NULL,
+                    categoria VARCHAR(50) DEFAULT 'Otro',
+                    foto_soporte TEXT,
+                    estado VARCHAR(50) DEFAULT 'Registrado',
+                    aprobado_por INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL,
+                    fecha_aprobacion TIMESTAMP WITH TIME ZONE,
+                    notas_admin TEXT,
+                    fecha_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                -- Asegurar que la columna notas_admin exista en BDs antiguas
+                ALTER TABLE EgresosCaja ADD COLUMN IF NOT EXISTS notas_admin TEXT;
+
+                CREATE INDEX IF NOT EXISTS idx_egresos_sesion ON EgresosCaja(id_sesion_caja);
+                CREATE INDEX IF NOT EXISTS idx_egresos_tienda ON EgresosCaja(id_tienda);
+            `);
+
+            // 7. Asegurar tabla NotificacionesUsuario (notificaciones dirigidas a usuarios)
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS NotificacionesUsuario (
+                    id_notificacion SERIAL PRIMARY KEY,
+                    id_usuario INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+                    id_tienda INTEGER REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+                    tipo VARCHAR(50) NOT NULL,
+                    titulo VARCHAR(255) NOT NULL,
+                    mensaje TEXT NOT NULL,
+                    datos_json TEXT,
+                    leida INTEGER DEFAULT 0,
+                    fecha_lectura TIMESTAMP WITH TIME ZONE,
+                    fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_notif_usuario ON NotificacionesUsuario(id_usuario, leida);
+            `);
             
-            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA), Índices y SesionCaja POS actualizados exitosamente.');
+            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA), Índices, SesionCaja POS, EgresosCaja y NotificacionesUsuario actualizados exitosamente.');
             return; // Éxito, salir de la función
         } catch (err) {
             console.warn(`⚠️ Auto-migration intento ${attempt}/${maxRetries} falló:`, err.message);
