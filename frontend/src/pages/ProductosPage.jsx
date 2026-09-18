@@ -4,7 +4,6 @@ import { AlertCircle, AlertTriangle, Plus, UploadCloud, ScanBarcode } from 'luci
 
 import { useProductosPage } from '../hooks/useProductosPage';
 import CustomSelect from '../components/CustomSelect';
-import CameraScannerModal from '../components/CameraScannerModal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import ProductTable from '../components/productos/ProductTable';
 import ProductFormModal from '../components/productos/ProductFormModal';
@@ -22,7 +21,7 @@ const ProductosPage = () => {
     isAdmin, loading, productos, categorias, alert, setAlert,
     filtroTexto, setFiltroTexto, filtroCategoria, setFiltroCategoria, filtroEstado, setFiltroEstado,
     uploadLoading, handleFileUpload,
-    cameraScannerOpen, setCameraScannerOpen, handleBarcodeScan,
+    handleBarcodeScan,
     modalOpen, editMode, formLoading, formData, proveedores, handleOpenModal, handleCloseModal, handleSubmitProducto,
     toggleModalOpen, setToggleModalOpen, toggleProducto, setToggleProducto, toggleLoading, submitToggleEstado,
     linkModalOpen, setLinkModalOpen, linkBarcodeCode, linkLoading, submitLinkBarcode, openNewProductWithBarcode,
@@ -100,9 +99,6 @@ const ProductosPage = () => {
                 className={`bg-white hover:bg-slate-50 text-indigo-600 border border-indigo-100 py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform transition-shadow flex items-center gap-2 active:scale-95 ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <UploadCloud size={14} /> {uploadLoading ? 'Cargando...' : 'Importar'}
-              </button>
-              <button onClick={() => setCameraScannerOpen(true)} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 py-3 px-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform transition-shadow flex items-center gap-2 active:scale-95 hidden sm:flex">
-                <ScanBarcode size={14} /> Escanear
               </button>
               <button onClick={() => handleOpenModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-colors transition-transform transition-shadow flex items-center gap-2 active:scale-95">
                 <Plus size={14} /> Registrar Producto
@@ -228,12 +224,6 @@ const ProductosPage = () => {
         onCancel={() => setEliminarModalOpen(false)}
         loading={eliminarLoading}
         icon="trash"
-      />
-
-      <CameraScannerModal 
-        isOpen={cameraScannerOpen} 
-        onClose={() => setCameraScannerOpen(false)} 
-        onScan={handleBarcodeScan} 
       />
 
       <PromoManualModal

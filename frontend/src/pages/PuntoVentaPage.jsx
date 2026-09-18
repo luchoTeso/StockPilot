@@ -6,7 +6,6 @@ import { Trophy, Download, DollarSign, Package, Receipt, Rocket, ShoppingCart, H
 import useBarcodeScanner from '../hooks/useBarcodeScanner';
 import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
-import CameraScannerModal from '../components/CameraScannerModal';
 import { useReactToPrint } from 'react-to-print';
 import PaymentModal from '../components/PaymentModal';
 import TicketPrinter from '../components/TicketPrinter';
@@ -122,7 +121,6 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
   const toast = useToast();
   const [cart, setCart] = useState([]);
   const [loadingPay, setLoadingPay] = useState(false);
-  const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
   const searchInputRef = useRef(null);
   
   // Payment and Ticket State
@@ -356,9 +354,6 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
              >
                <DollarSign size={16} /> Egreso
              </button>
-             <button onClick={() => setCameraScannerOpen(true)} className="w-full sm:w-auto h-12 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-100 px-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap">
-                <ScanBarcode size={16} /> Cámara
-             </button>
            </div>
         </div>
 
@@ -433,15 +428,6 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
            </button>
          </div>
       </div>
-
-      <CameraScannerModal 
-        isOpen={cameraScannerOpen} 
-        onClose={() => setCameraScannerOpen(false)} 
-        onScan={(code) => {
-          setCameraScannerOpen(false);
-          handleBarcodeScan(code);
-        }} 
-      />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}

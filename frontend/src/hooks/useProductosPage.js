@@ -21,10 +21,8 @@ export const useProductosPage = () => {
   const [categorias, setCategorias] = useState([]);
 
   // Alerta Global de Stock
-  const [alert, setAlert] = useState({ show: false, title: '', message: '', isCritical: false });
-
-  // Escáner de Cámara
-  const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
+    // Alerta Global de Stock
+    const [alert, setAlert] = useState({ show: false, title: '', message: '', isCritical: false });
 
   // Modal Agregar / Editar
   const [modalOpen, setModalOpen] = useState(false);
@@ -401,7 +399,6 @@ export const useProductosPage = () => {
     handleFileUpload,
 
     // Modales de UI
-    cameraScannerOpen, setCameraScannerOpen,
     handleBarcodeScan,
 
     // Product Modal
