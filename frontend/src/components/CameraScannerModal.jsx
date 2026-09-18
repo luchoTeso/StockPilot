@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-// html5-qrcode is loaded dynamically
 import { X, Flashlight, FlashlightOff } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
@@ -7,8 +6,15 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
   const [error, setError] = useState('');
   const [torchOn, setTorchOn] = useState(false);
   const [torchAvailable, setTorchAvailable] = useState(false);
-  const scannerRef = useRef(null);
+  const [engineName, setEngineName] = useState('Inicializando...');
+  
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
   const trackRef = useRef(null);
+  const canvasRef = useRef(document.createElement('canvas'));
+  const scanLoopRef = useRef(null);
+  const zxingReaderRef = useRef(null);
+  const nativeDetectorRef = useRef(null);
 
   // Toggle linterna (como en un PDA)
   const toggleTorch = useCallback(async () => {
@@ -26,10 +32,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
     if (!isOpen) return;
 
     let isMounted = true;
-    let html5QrCode = null;
-
-    let lastScannedCode = null;
-    let lastScannedTime = 0;
+    let scanHistory = [];
 
     // Validador matemático de Checksum EAN/UPC (Luhn Mod 10)
     const isValidBarcode = (code) => {
@@ -46,166 +49,177 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
       return checkDigit === ((10 - (sum % 10)) % 10);
     };
 
-    const onScanSuccess = (decodedText) => {
-      if (decodedText && isMounted) {
-        const cleanText = decodedText.trim();
+    // Procesador de escaneo (Pipeline unificado)
+    const handleResult = (decodedText) => {
+      if (!isMounted || !decodedText) return;
+      
+      const cleanText = decodedText.trim();
+      
+      // 1. Descartar basura corta
+      if (cleanText.length < 8) return;
+
+      // 2. Verificación matemática estricta
+      if (!isValidBarcode(cleanText)) return;
+
+      // 3. Consenso de fotogramas (Evita que frames corruptos intermedios rompan el flujo)
+      const now = Date.now();
+      
+      // Limpiar el historial de escaneos más antiguos que 1.5 segundos
+      scanHistory = scanHistory.filter(scan => now - scan.time < 1500);
+      
+      // Añadir la lectura actual
+      scanHistory.push({ code: cleanText, time: now });
+      
+      // Verificar si este mismo código se leyó al menos 2 veces en la ventana de tiempo
+      const matches = scanHistory.filter(scan => scan.code === cleanText);
+      
+      if (matches.length >= 2) {
+        // ¡Confirmado! Consenso alcanzado
+        if (navigator.vibrate) navigator.vibrate(100);
+        onScan(cleanText);
+        scanHistory = []; // Reiniciar
+        stopCamera();
+      }
+    };
+
+    // Loop de escaneo continuo por frames
+    const scanFrame = async () => {
+      if (!isMounted || !videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
+        scanLoopRef.current = requestAnimationFrame(scanFrame);
+        return;
+      }
+
+      try {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
         
-        // 1. Descartar basura corta
-        if (cleanText.length < 8) {
-          console.warn('Descartado (muy corto):', cleanText);
+        // Mantener las proporciones, reducimos la resolución para procesamiento
+        const maxW = 640;
+        let w = video.videoWidth;
+        let h = video.videoHeight;
+        if (w > maxW) {
+          h = Math.round((maxW / w) * h);
+          w = maxW;
+        }
+
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(video, 0, 0, w, h);
+
+        if (nativeDetectorRef.current) {
+          // MOTOR 1: Aceleración por hardware (API Nativa)
+          const barcodes = await nativeDetectorRef.current.detect(canvas);
+          if (barcodes.length > 0) {
+            handleResult(barcodes[0].rawValue);
+          }
+        } else if (zxingReaderRef.current) {
+          // MOTOR 2: Fallback WebAssembly/JS puro (ZXing)
+          try {
+            const result = zxingReaderRef.current.decodeFromCanvas(canvas);
+            handleResult(result.getText());
+          } catch (e) {
+            // ZXing tira error (NotFoundException) en cada frame vacío. Se ignora por diseño.
+          }
+        }
+      } catch (err) {
+        console.warn("Scan frame error:", err);
+      }
+      
+      // Control térmico: 10 FPS en HW, 5 FPS en SW para evitar calentar la batería
+      const delay = nativeDetectorRef.current ? 100 : 200;
+      setTimeout(() => {
+        if (isMounted) scanLoopRef.current = requestAnimationFrame(scanFrame);
+      }, delay);
+    };
+
+    const initCamera = async () => {
+      try {
+        // 1. Feature Detection del motor
+        if ('BarcodeDetector' in window) {
+          try {
+            const formats = await window.BarcodeDetector.getSupportedFormats();
+            if (formats.includes('ean_13')) {
+              nativeDetectorRef.current = new window.BarcodeDetector({
+                formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128']
+              });
+              setEngineName('⚡ Acelerado por HW');
+            }
+          } catch (e) {
+             console.warn("BarcodeDetector API presente pero inoperativo", e);
+          }
+        }
+
+        if (!nativeDetectorRef.current) {
+          const { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } = await import('@zxing/library');
+          const hints = new Map();
+          hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+            BarcodeFormat.EAN_13,
+            BarcodeFormat.EAN_8,
+            BarcodeFormat.UPC_A,
+            BarcodeFormat.UPC_E,
+            BarcodeFormat.CODE_128
+          ]);
+          hints.set(DecodeHintType.TRY_HARDER, true);
+          zxingReaderRef.current = new BrowserMultiFormatReader(hints);
+          setEngineName('📦 ZXing Fallback');
+        }
+
+        // 2. Acceso a la cámara
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1280 }, // Optimizado a 720p para evitar cuello de botella de CPU
+            height: { ideal: 720 },
+            advanced: [{ focusMode: "continuous" }]
+          }
+        });
+        
+        if (!isMounted) {
+          stream.getTracks().forEach(t => t.stop());
           return;
         }
 
-        // 2. Verificación matemática estricta
-        if (!isValidBarcode(cleanText)) {
-          console.warn('Descartado (Checksum inválido - reflejo de luz):', cleanText);
-          return;
+        streamRef.current = stream;
+        trackRef.current = stream.getVideoTracks()[0];
+        
+        // Detectar si tiene linterna (Flash)
+        const capabilities = trackRef.current.getCapabilities?.();
+        if (capabilities?.torch) {
+          setTorchAvailable(true);
         }
 
-        // 3. Confirmación de doble fotograma (Consenso)
-        const now = Date.now();
-        if (lastScannedCode === cleanText && (now - lastScannedTime) < 800) {
-          // ¡Confirmado! Lo leyó intacto 2 veces seguidas
-          if (navigator.vibrate) navigator.vibrate(100);
-          onScan(cleanText);
-          stopScanner();
-        } else {
-          // Es el primer fotograma correcto, lo guardamos a la espera de confirmación
-          lastScannedCode = cleanText;
-          lastScannedTime = now;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.setAttribute('playsinline', true); // Requerido para iOS
+          videoRef.current.play();
+          
+          videoRef.current.onplaying = () => {
+             scanLoopRef.current = requestAnimationFrame(scanFrame);
+          };
         }
+      } catch (err) {
+        console.error("Camera init error:", err);
+        if (isMounted) setError("No se pudo acceder a la cámara. Compruebe los permisos o si otro programa la está usando.");
       }
     };
 
-    const startScanner = async () => {
-      let Html5QrcodeModule;
-      let Html5QrcodeSupportedFormats;
-      try {
-        const module = await import('html5-qrcode');
-        Html5QrcodeModule = module.Html5Qrcode || module.default?.Html5Qrcode || module;
-        Html5QrcodeSupportedFormats = module.Html5QrcodeSupportedFormats || module.default?.Html5QrcodeSupportedFormats;
-      } catch (err) {
-        console.error('Error loading html5-qrcode', err);
-        if (isMounted) setError("Error al cargar la librería de escáner.");
-        return;
+    const stopCamera = () => {
+      if (scanLoopRef.current) cancelAnimationFrame(scanLoopRef.current);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
       }
-      if (!isMounted) return;
-
-      try {
-        // Formatos de código de barras estandarizados para retail (Punto de Venta)
-        // Se removieron ITF, CODE_39 y UPC_E para evitar "falsos positivos" o lecturas fantasma
-        // en empaques de plástico con brillos o arrugas.
-        const formatsToSupport = [
-          Html5QrcodeSupportedFormats?.EAN_13 || 9,
-          Html5QrcodeSupportedFormats?.EAN_8 || 10,
-          Html5QrcodeSupportedFormats?.UPC_A || 14,
-          Html5QrcodeSupportedFormats?.CODE_128 || 5
-        ];
-
-        html5QrCode = new Html5QrcodeModule("reader", {
-          formatsToSupport,
-          // Usar BarcodeDetector nativo del navegador si está disponible
-          // Esto usa decodificación por HARDWARE (como un PDA) en vez de JavaScript
-          useBarCodeDetectorIfSupported: true
-        });
-        scannerRef.current = html5QrCode;
-      } catch (err) {
-        console.error("Error al inicializar Html5Qrcode:", err);
-        if (isMounted) setError("Error al preparar la cámara: " + err.message);
-        return;
-      }
-
-      const scanConfig = {
-        fps: 20,                         // 20 FPS para escaneo agresivo
-        qrbox: { width: 280, height: 140 }, // Rectangular como el láser de un PDA
-        aspectRatio: 1.7778,             // 16:9
-        disableFlip: false,
-        // Solicitar resolución alta para mejor decodificación
-        videoConstraints: {
-          facingMode: "environment",
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          advanced: [{ focusMode: "continuous" }]
-        }
-      };
-
-      try {
-        // Intento 1: Cámara trasera con autoenfoque
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          scanConfig,
-          onScanSuccess,
-          () => {} // ignorar errores de frames sin código
-        );
-
-        // Post-inicio: activar autoenfoque continuo + detectar linterna
-        try {
-          const videoElement = document.querySelector('#reader video');
-          if (videoElement && videoElement.srcObject) {
-            const track = videoElement.srcObject.getVideoTracks()[0];
-            trackRef.current = track;
-            const capabilities = track.getCapabilities?.();
-
-            // Activar autoenfoque continuo
-            if (capabilities?.focusMode?.includes('continuous')) {
-              await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-              console.log('✅ Autoenfoque continuo activado');
-            }
-
-            // Detectar si la linterna está disponible
-            if (capabilities?.torch) {
-              if (isMounted) setTorchAvailable(true);
-              console.log('🔦 Linterna disponible');
-            }
-          }
-        } catch (focusErr) {
-          console.warn('Autoenfoque/linterna no soportado:', focusErr.message);
-        }
-
-      } catch (err) {
-        console.warn("No se encontró cámara trasera, intentando cualquier cámara...", err);
-        try {
-          const cameras = await Html5QrcodeModule.getCameras();
-          if (cameras && cameras.length > 0 && isMounted) {
-            await html5QrCode.start(
-              cameras[0].id,
-              scanConfig,
-              onScanSuccess,
-              () => {}
-            );
-          } else if (isMounted) {
-            throw new Error("No hay cámaras conectadas.");
-          }
-        } catch (fallbackErr) {
-          console.error("Error al iniciar cualquier cámara", fallbackErr);
-          if (isMounted) {
-            setError("No se pudo acceder a la cámara. Verifique permisos o conecte una cámara.");
-          }
-        }
-      }
+      if (isMounted) onClose();
     };
 
-    const stopScanner = () => {
-      if (html5QrCode?.isScanning) {
-        html5QrCode.stop().then(() => {
-          html5QrCode.clear();
-          if (isMounted) onClose();
-        }).catch(err => {
-          console.error("Error deteniendo el escáner", err);
-          if (isMounted) onClose();
-        });
-      } else {
-        if (isMounted) onClose();
-      }
-    };
-
-    startScanner();
+    initCamera();
 
     return () => {
       isMounted = false;
-      trackRef.current = null;
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => html5QrCode.clear()).catch(console.error);
+      if (scanLoopRef.current) cancelAnimationFrame(scanLoopRef.current);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
       }
     };
   }, [isOpen, onScan, onClose]);
@@ -222,10 +236,9 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
             <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 tracking-tight">
               📷 Escanear Código
             </h3>
-            <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Apunte la cámara al código</p>
+            <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Apunte la cámara al producto</p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Botón de Linterna */}
             {torchAvailable && (
               <button 
                 onClick={toggleTorch}
@@ -251,21 +264,31 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
         <div className="px-6 py-4 relative">
           {error && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 rounded-2xl mx-6">
-              <div className="text-rose-500 text-center font-bold p-4 text-sm bg-rose-50 border border-rose-100 rounded-xl">{error}</div>
+              <div className="text-rose-500 text-center font-bold p-4 text-sm bg-rose-50 border border-rose-100 rounded-xl shadow-lg">{error}</div>
             </div>
           )}
-          <div id="reader" className="w-full min-h-[280px] rounded-2xl overflow-hidden border-2 border-dashed border-indigo-200 bg-slate-50"></div>
+          <div className="w-full min-h-[300px] rounded-2xl overflow-hidden border-2 border-dashed border-indigo-200 bg-slate-900 relative">
+            <video 
+              ref={videoRef}
+              className="w-full h-full object-cover absolute inset-0"
+              muted
+              playsInline
+            />
+          </div>
         </div>
 
-        {/* Línea de escaneo animada (visual tipo PDA) */}
+        {/* Línea de escaneo animada */}
         <div className="px-6 pb-6 relative -mt-4 z-20 pointer-events-none">
-          <div className="h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent rounded-full animate-pulse opacity-70"></div>
+          <div className="h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent rounded-full animate-pulse opacity-70 shadow-[0_0_12px_#6366f1]"></div>
         </div>
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-3xl">
-          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-            {typeof BarcodeDetector !== 'undefined' ? '⚡ Acelerado por HW' : '🔍 Modo Estándar'}
+          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-1.5">
+            {engineName === 'Inicializando...' && (
+              <span className="w-2 h-2 border-2 border-slate-300 border-t-indigo-500 rounded-full animate-spin"></span>
+            )}
+            {engineName}
           </span>
           <button
             onClick={onClose}
