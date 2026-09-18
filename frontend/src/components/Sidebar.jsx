@@ -7,7 +7,7 @@ import {
   LayoutDashboard, ShoppingCart, Package, Bell, Store,
   ArrowLeftRight, Truck, TrendingDown, FlaskConical,
   FileText, ScanSearch, Brain, Users, User, LogOut,
-  X, ChevronLeft, ChevronRight
+  X, ChevronLeft, ChevronRight, Megaphone
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -56,6 +56,7 @@ const Sidebar = () => {
 
   if (user?.rol === 'Administrador') {
     links.push({ to: "/movimientos",        text: "Movimientos",      icon: ArrowLeftRight,  id: "nav-movimientos" });
+    links.push({ to: "/comunicados",        text: "Comunicados",      icon: Megaphone });
     links.push({ to: "/proveedores",        text: "Proveedores AI",   icon: Truck });
     links.push({ to: "/analitica-visual",   text: "Analítica Visual", icon: TrendingDown,    id: "nav-analitica-visual" });
     links.push({ to: "/simulador",          text: "Simulador AI",     icon: FlaskConical,    id: "nav-simulador" });

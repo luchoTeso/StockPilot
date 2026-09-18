@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Notification = require('../models/Notification');
-const { requireLogin } = require('../middleware/auth');
+const { requireLogin, requireAdmin } = require('../middleware/auth');
 
 // GET /api/notificaciones — Notificaciones no leídas del usuario
 router.get('/', requireLogin, async (req, res) => {
@@ -49,6 +49,24 @@ router.patch('/read-all', requireLogin, async (req, res) => {
     } catch (error) {
         console.error('Error marcando todas como leídas:', error);
         res.status(500).json({ success: false, error: 'Error al marcar todas como leídas.' });
+    }
+});
+
+// POST /api/notificaciones/broadcast — Enviar notificación a todos los tenderos
+router.post('/broadcast', requireLogin, requireAdmin, async (req, res) => {
+    try {
+        const { titulo, mensaje, prioridad } = req.body;
+        const count = await Notification.broadcast({
+            id_tienda: req.session.tiendaId,
+            tipo: 'anuncio_admin',
+            titulo: `📢 ${titulo}`,
+            mensaje,
+            datos_json: { prioridad: prioridad || 'normal' }
+        });
+        res.json({ success: true, recipients: count });
+    } catch (error) {
+        console.error('Error enviando broadcast:', error);
+        res.status(500).json({ success: false, error: 'Error al enviar comunicado.' });
     }
 });
 

@@ -54,6 +54,7 @@ router.put('/api/productos/:id', requireLogin, sanitizeBody, validateProduct, Pr
 router.put('/api/productos/agregar/:id', requireLogin, sanitizeBody, ProductController.addStock);
 router.put('/api/productos/inhabilitar/:id', requireLogin, ProductController.toggleProductStatus);
 router.put('/api/productos/habilitar/:id', requireLogin, ProductController.toggleProductStatus);
+router.post('/api/promociones', requireLogin, sanitizeBody, ProductController.applyManualPromotion);
 router.delete('/api/productos/:id', requireLogin, ProductController.deleteProduct);
 
 module.exports = router;

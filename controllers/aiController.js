@@ -480,6 +480,26 @@ const aiController = {
         return res.json({ cached: true, promotions: dbCachedPromo });
       }
 
+      // 3.5. Extraer contexto Human-in-the-Loop (Promociones Manuales Previas)
+      let humanInTheLoopContext = "";
+      try {
+        const manualPromos = await db.allAsync(`
+          SELECT pm.descuento_porcentaje, pm.motivo, p.nombre_producto, p.categoria, p.stock_minimo
+          FROM Promociones_Manuales pm
+          JOIN Productos p ON pm.id_producto = p.id_producto
+          WHERE pm.id_tienda = ?
+          ORDER BY pm.fecha_creacion DESC
+          LIMIT 10
+        `, [tiendaId]);
+        
+        if (manualPromos && manualPromos.length > 0) {
+          humanInTheLoopContext = "\n\nEJEMPLOS DE DECISIONES DEL DUEÑO (Aprende de su estilo para sugerir descuentos similares):\n" +
+            manualPromos.map(mp => `- Producto: "${mp.nombre_producto}", Categoria: ${mp.categoria}, Descuento Aplicado: ${mp.descuento_porcentaje}%. Motivo del dueño: "${mp.motivo}"`).join('\n');
+        }
+      } catch (err) {
+        console.error("Error obteniendo promociones manuales para IA:", err);
+      }
+
       // 4. Prompt de Estrategia Comercial
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -487,7 +507,7 @@ const aiController = {
           { 
             role: "system", 
             content: `Eres un Experto en Retail y Estrategia de Ventas. Analizarás productos estancados o en riesgo de pérdida.
-            Tu misión es proponer estrategias COMERCIALES (no logísticas).
+            Tu misión es proponer estrategias COMERCIALES (no logísticas).${humanInTheLoopContext}
             TIPOS PERMITIDOS: 'descuento', 'combo', '2x1', 'liquidacion'.
             REGLAS:
             - Descuento máximo: 30%.

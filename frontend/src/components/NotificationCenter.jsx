@@ -12,11 +12,19 @@ const getSeverityStyles = (severity) => {
     }
 };
 
-const getNotifStyles = (tipo) => {
+const getNotifStyles = (tipo, datos_json = {}) => {
+    if (datos_json?.prioridad === 'urgente') {
+        return 'bg-amber-100 text-amber-600 border-amber-500 animate-pulse';
+    }
     switch (tipo) {
         case 'egreso_aprobado': return 'bg-emerald-100 text-emerald-600 border-emerald-200';
         case 'egreso_rechazado': return 'bg-rose-100 text-rose-600 border-rose-200';
-        default: return 'bg-indigo-100 text-indigo-600 border-indigo-200';
+        case 'anuncio_admin': return 'bg-indigo-100 text-indigo-600 border-indigo-200';
+        case 'orden_enviada': return 'bg-blue-100 text-blue-600 border-blue-200';
+        case 'cambio_precio': return 'bg-purple-100 text-purple-600 border-purple-200';
+        case 'meta_ventas': return 'bg-yellow-100 text-yellow-600 border-yellow-200';
+        case 'discrepancia_caja': return 'bg-rose-100 text-rose-600 border-rose-200';
+        default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
 };
 
@@ -24,7 +32,12 @@ const getNotifIcon = (tipo) => {
     switch (tipo) {
         case 'egreso_aprobado': return <CheckCircle size={18} />;
         case 'egreso_rechazado': return <XCircle size={18} />;
-        default: return <DollarSign size={18} />;
+        case 'anuncio_admin': return <Bell size={18} />;
+        case 'orden_enviada': return <Package size={18} />;
+        case 'cambio_precio': return <DollarSign size={18} />;
+        case 'meta_ventas': return <Zap size={18} />;
+        case 'discrepancia_caja': return <ShieldCheck size={18} />;
+        default: return <Bell size={18} />;
     }
 };
 
@@ -55,8 +68,6 @@ const NotificationCenter = () => {
     }, []);
 
     const playNotificationSound = (isCritical = false) => {
-        if (!audioContextRef.current) return;
-
         const SOUND_URLS = {
             normal: '/sounds/normal.wav',
             critical: '/sounds/critica.wav'
@@ -74,6 +85,10 @@ const NotificationCenter = () => {
 
         // Sintetizador de respaldo (por si falla el internet o el archivo)
         const playSynthesizedFallback = (isCrit) => {
+            if (!audioContextRef.current) {
+                console.warn('[Notificación] AudioContext no inicializado, no se puede usar sintetizador.');
+                return;
+            }
             try {
                 const ctx = audioContextRef.current;
                 if (ctx.state === 'suspended') ctx.resume();
@@ -120,17 +135,27 @@ const NotificationCenter = () => {
             if (alertsRes.data.success) setAlerts(alertsRes.data.alerts.slice(0, 5));
 
             let newNotifCount = 0;
+            let parsedNotifs = [];
+            if (notifsRes.data.success) {
+                parsedNotifs = (notifsRes.data.notifications || []).map(n => {
+                    try {
+                        return { ...n, datos_json: typeof n.datos_json === 'string' ? JSON.parse(n.datos_json) : n.datos_json };
+                    } catch(e) { return n; }
+                });
+                setUserNotifs(parsedNotifs);
+            }
+
             if (notifCountRes.data.success) {
                 newNotifCount = notifCountRes.data.count;
                 setUserNotifCount(newNotifCount);
             }
-            if (notifsRes.data.success) setUserNotifs(notifsRes.data.notifications || []);
 
             // Sound: play if total (alerts + user notifs) increased
             const combinedTotal = newAlertTotal + newNotifCount;
             if (prevCountRef.current !== null && combinedTotal > prevCountRef.current) {
                 const hasCritical = (statsRes.data.success && statsRes.data.stats.critico > 0);
-                playNotificationSound(hasCritical);
+                const hasUrgent = parsedNotifs.some(n => n.datos_json?.prioridad === 'urgente');
+                playNotificationSound(hasCritical || hasUrgent);
             }
             prevCountRef.current = combinedTotal;
         } catch (error) {
@@ -182,6 +207,7 @@ const NotificationCenter = () => {
     };
 
     const totalBadge = stats.total + userNotifCount;
+    const hasUrgent = (stats.critico > 0) || userNotifs.some(n => n.datos_json?.prioridad === 'urgente');
 
     return (
         <div className="relative" ref={dropdownRef}>
@@ -192,12 +218,17 @@ const NotificationCenter = () => {
                     setIsOpen(newOpen);
                     if (newOpen) fetchNotifications();
                 }}
-                className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-colors transition-transform active:scale-90 shadow-lg border-2 ${isOpen ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-200 shadow-slate-200/50'}`}
+                className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-colors transition-transform active:scale-90 shadow-lg border-2 
+                ${isOpen ? 'bg-indigo-600 border-indigo-400 text-white' : 
+                  (hasUrgent ? 'bg-rose-100 border-rose-300 text-rose-600 hover:border-rose-400 animate-pulse' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-200')} 
+                shadow-slate-200/50`}
                 title="Centro de Alertas"
             >
-                <Bell size={20} />
+                <div className={hasUrgent ? 'animate-bounce' : ''}>
+                    <Bell size={20} />
+                </div>
                 {totalBadge > 0 && (
-                    <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-[10px] font-black text-white rounded-full border-2 shadow-md ${isOpen ? 'border-indigo-600' : 'border-white'} ${stats.critico > 0 || userNotifCount > 0 ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`}>
+                    <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-[10px] font-black text-white rounded-full border-2 shadow-md ${isOpen ? 'border-indigo-600' : 'border-white'} ${hasUrgent ? 'bg-rose-500' : 'bg-amber-500'}`}>
                         {totalBadge > 9 ? '+9' : totalBadge}
                     </span>
                 )}
@@ -247,7 +278,7 @@ const NotificationCenter = () => {
                                                 className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
                                             >
                                                 <div className="flex gap-4">
-                                                    <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getNotifStyles(notif.tipo)}`}>
+                                                    <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getNotifStyles(notif.tipo, notif.datos_json)}`}>
                                                         {getNotifIcon(notif.tipo)}
                                                     </div>
                                                     <div className="space-y-1 flex-1 min-w-0">

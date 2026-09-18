@@ -5,11 +5,39 @@ class Notification {
      * Crea una nueva notificación para un usuario
      */
     static async create({ id_usuario, id_tienda, tipo, titulo, mensaje, datos_json = null }) {
+        // Handle datos_json if it's already a string
+        const parsedDatosJson = (typeof datos_json === 'object' && datos_json !== null) 
+            ? JSON.stringify(datos_json) 
+            : datos_json;
+            
         return await db.runAsync(
             `INSERT INTO NotificacionesUsuario (id_usuario, id_tienda, tipo, titulo, mensaje, datos_json)
              VALUES (?, ?, ?, ?, ?, ?) RETURNING id_notificacion`,
-            [id_usuario, id_tienda, tipo, titulo, mensaje, datos_json ? JSON.stringify(datos_json) : null]
+            [id_usuario, id_tienda, tipo, titulo, mensaje, parsedDatosJson]
         );
+    }
+
+    /**
+     * Envía una notificación a todos los tenderos de una tienda
+     */
+    static async broadcast({ id_tienda, tipo, titulo, mensaje, datos_json = null }) {
+        const tenderos = await db.allAsync(
+            'SELECT id_usuario FROM Usuarios WHERE id_tienda = ? AND rol = ?',
+            [id_tienda, 'Tendero']
+        );
+        let count = 0;
+        for (const t of tenderos) {
+            await this.create({ 
+                id_usuario: t.id_usuario, 
+                id_tienda, 
+                tipo, 
+                titulo, 
+                mensaje, 
+                datos_json 
+            });
+            count++;
+        }
+        return count;
     }
 
     /**

@@ -279,8 +279,22 @@ const db = {
 
                 CREATE INDEX IF NOT EXISTS idx_notif_usuario ON NotificacionesUsuario(id_usuario, leida);
             `);
+
+            // 7. Asegurar tabla Promociones Manuales (Human-in-the-Loop)
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS Promociones_Manuales (
+                    id_promocion SERIAL PRIMARY KEY,
+                    id_producto INTEGER NOT NULL REFERENCES Productos(id_producto) ON DELETE CASCADE,
+                    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+                    descuento_porcentaje NUMERIC(5, 2) NOT NULL,
+                    precio_anterior NUMERIC(15, 2),
+                    precio_nuevo NUMERIC(15, 2),
+                    motivo VARCHAR(255),
+                    fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+            `);
             
-            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA), Índices, SesionCaja POS, EgresosCaja y NotificacionesUsuario actualizados exitosamente.');
+            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA), Índices, SesionCaja POS, EgresosCaja, NotificacionesUsuario y Promociones_Manuales actualizados exitosamente.');
             return; // Éxito, salir de la función
         } catch (err) {
             console.warn(`⚠️ Auto-migration intento ${attempt}/${maxRetries} falló:`, err.message);

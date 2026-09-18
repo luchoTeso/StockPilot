@@ -11,6 +11,7 @@ const Sale = require('../models/Sale');
 const Product = require('../models/Product');
 const db = require('../config/database');
 const Alert = require('../models/Alert');
+const Notification = require('../models/Notification');
 
 /**
  * Sale Controller
@@ -151,6 +152,9 @@ class SaleController {
                 await client.query('COMMIT');
                 res.json({ success: true, message: "Venta procesada y stock actualizado" });
 
+                // Evaluamos las metas diarias de forma asíncrona
+                SaleController._checkSalesGoals(id_tienda, id_vendedor).catch(e => console.error('Error metas:', e));
+
                 // Regenerar alertas en background sin bloquear la respuesta
                 Alert.generate(id_tienda).catch(e => console.error('Error regenerando alertas post-venta:', e));
 
@@ -260,6 +264,9 @@ class SaleController {
                 await client.query('COMMIT');
                 res.json({ success: true, message: "Venta registrada correctamente", id_venta });
 
+                // Evaluamos las metas diarias de forma asíncrona
+                SaleController._checkSalesGoals(id_tienda, id_vendedor).catch(e => console.error('Error metas POS:', e));
+
                 // Alertas asíncronas
                 Alert.generate(id_tienda).catch(e => console.error('Error regenerando alertas post-venta POS:', e));
 
@@ -277,6 +284,53 @@ class SaleController {
         } catch (error) {
             console.error('Error en proceso de venta de carrito:', error);
             res.status(500).json({ success: false, error: "Error interno" });
+        }
+    }
+
+    /**
+     * Evalúa las metas de venta diarias y notifica al tendero si aplica.
+     * @private
+     */
+    static async _checkSalesGoals(id_tienda, id_vendedor) {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const result = await db.getAsync(`
+                SELECT SUM(precio_total) as total 
+                FROM Ventas 
+                WHERE id_tienda = ? AND DATE(fecha_salida) = ?
+            `, [id_tienda, today]);
+            
+            const totalVentas = parseFloat(result.total) || 0;
+            
+            // Metas predefinidas (podrían venir de la BD después)
+            const goals = [
+                { limit: 300000, msg: "¡Vas por buen camino! Superaste los $300,000 en ventas hoy. Sigue así. 🚀" },
+                { limit: 500000, msg: "¡Felicidades! Acabas de superar los $500,000 en ventas. ¡Excelente trabajo! 🏆" },
+                { limit: 1000000, msg: "¡Increíble! Rompiste la barrera del $1,000,000. Eres imparable. 🔥" }
+            ];
+
+            for (const goal of goals) {
+                if (totalVentas >= goal.limit) {
+                    // Verificar si ya se notificó esta meta hoy
+                    const alreadyNotified = await db.getAsync(`
+                        SELECT 1 FROM NotificacionesUsuario 
+                        WHERE id_usuario = ? AND tipo = 'meta_ventas' AND datos_json LIKE ? AND DATE(fecha_creacion) = ?
+                    `, [id_vendedor, `%"limit":${goal.limit}%`, today]);
+
+                    if (!alreadyNotified) {
+                        await Notification.create({
+                            id_usuario: id_vendedor,
+                            id_tienda,
+                            tipo: 'meta_ventas',
+                            titulo: '🎯 ¡Meta de Ventas Alcanzada!',
+                            mensaje: goal.msg,
+                            datos_json: { limit: goal.limit, prioridad: 'normal' }
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error evaluando metas de ventas:', error);
         }
     }
 }

@@ -6,13 +6,17 @@ import { useProductosPage } from '../hooks/useProductosPage';
 import CustomSelect from '../components/CustomSelect';
 import CameraScannerModal from '../components/CameraScannerModal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-
 import ProductTable from '../components/productos/ProductTable';
 import ProductFormModal from '../components/productos/ProductFormModal';
+import PromoManualModal from '../components/productos/PromoManualModal';
+import { useState } from 'react';
+import { SYNC_EVENTS, emitSyncEvent } from '../utils/stockSync';
+import { useToast } from '../context/ToastContext';
 
 const ProductosPage = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const toast = useToast();
   
   const {
     isAdmin, loading, productos, categorias, alert, setAlert,
@@ -24,6 +28,24 @@ const ProductosPage = () => {
     linkModalOpen, setLinkModalOpen, linkBarcodeCode, linkLoading, submitLinkBarcode, openNewProductWithBarcode,
     eliminarModalOpen, setEliminarModalOpen, eliminarProductoSel, setEliminarProductoSel, eliminarLoading, submitEliminar
   } = useProductosPage();
+
+  const [promoModalOpen, setPromoModalOpen] = useState(false);
+  const [promoProducto, setPromoProducto] = useState(null);
+
+  const handleOpenPromo = (producto) => {
+    setPromoProducto(producto);
+    setPromoModalOpen(true);
+  };
+
+  const handlePromoSuccess = () => {
+    setPromoModalOpen(false);
+    toast.success(`¡Promoción aplicada! La IA registró tu decisión.`);
+    
+    // Trigger un refetch de los productos disparando el evento de sincronización en lugar de recargar la página.
+    if (promoProducto?.id_producto) {
+      emitSyncEvent(SYNC_EVENTS.PRODUCT_MODIFIED, { id: promoProducto.id_producto });
+    }
+  };
 
   return (
     <div className="animate-fade-in pb-12 space-y-8 font-outfit">
@@ -123,6 +145,7 @@ const ProductosPage = () => {
         onEdit={(p) => handleOpenModal(p)}
         onToggleStatus={(p) => { setToggleProducto(p); setToggleModalOpen(true); }}
         onDelete={(p) => { setEliminarProductoSel(p); setEliminarModalOpen(true); }}
+        onPromote={handleOpenPromo}
       />
 
       <ProductFormModal
@@ -211,6 +234,13 @@ const ProductosPage = () => {
         isOpen={cameraScannerOpen} 
         onClose={() => setCameraScannerOpen(false)} 
         onScan={handleBarcodeScan} 
+      />
+
+      <PromoManualModal
+        isOpen={promoModalOpen}
+        onClose={() => setPromoModalOpen(false)}
+        product={promoProducto}
+        onPromoSuccess={handlePromoSuccess}
       />
     </div>
   );

@@ -3,6 +3,8 @@ const ProductFactory = require('../models/products/ProductFactory');
 const { safeError, verifyProductOwnership } = require('../utils/securityUtils');
 const ExcelJS = require('exceljs');
 const stream = require('stream');
+const Notification = require('../models/Notification');
+const db = require('../config/database');
 
 class ProductController {
     static async bulkUpload(req, res) {
@@ -204,12 +206,17 @@ class ProductController {
                 return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
             
+            const productoActual = await Product.findById(productId);
+            const precioAnterior = parseFloat(productoActual.precio);
+
             const {
                 codigo, codigo_barras, nombre_producto, categoria, subcategoria, tipo_producto,
                 precio, cantidad, stock_minimo, stock_maximo, fecha_vencimiento,
                 frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time,
                 id_proveedor
             } = req.body;
+
+            const precioNuevo = parseFloat(precio);
 
             const productInstance = ProductFactory.create({
                 codigo, codigo_barras, nombre_producto, categoria, subcategoria, tipo_producto,
@@ -229,10 +236,78 @@ class ProductController {
                 return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
 
+            if (precioAnterior !== precioNuevo) {
+                const tenderos = await db.allAsync(
+                    'SELECT id_usuario FROM Usuarios WHERE id_tienda = ? AND rol = ?', [tiendaId, 'Tendero']
+                );
+                for (const t of tenderos) {
+                    await Notification.create({
+                        id_usuario: t.id_usuario,
+                        id_tienda: tiendaId,
+                        tipo: 'cambio_precio',
+                        titulo: '🏷️ Actualización de Precio',
+                        mensaje: `El precio de "${nombre_producto}" cambió de $${precioAnterior.toLocaleString('es-CO')} a $${precioNuevo.toLocaleString('es-CO')}.`,
+                        datos_json: JSON.stringify({ id_producto: productId, precio_anterior: precioAnterior, precio_nuevo: precioNuevo })
+                    });
+                }
+            }
+            
             res.json({ success: true, message: "Producto actualizado correctamente" });
         } catch (error) {
             console.error('Error actualizando producto:', error);
             res.status(500).json({ success: false, error: safeError(error, 'Error al actualizar producto') });
+        }
+    }
+
+    static async applyManualPromotion(req, res) {
+        try {
+            const tiendaId = req.session.tiendaId;
+            const { id_producto, descuento_porcentaje, motivo } = req.body;
+            
+            if (!id_producto || !descuento_porcentaje) {
+                return res.status(400).json({ success: false, error: 'Datos incompletos.' });
+            }
+
+            const ownership = await verifyProductOwnership(id_producto, tiendaId);
+            if (!ownership) {
+                return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+            }
+
+            const productoActual = await Product.findById(id_producto);
+            const precioAnterior = parseFloat(productoActual.precio);
+            
+            // Calcular nuevo precio
+            const descuento = parseFloat(descuento_porcentaje);
+            const precioNuevo = Math.round(precioAnterior - (precioAnterior * (descuento / 100)));
+
+            // Registrar la promoción manual
+            await db.runAsync(`
+                INSERT INTO Promociones_Manuales (id_producto, id_tienda, descuento_porcentaje, precio_anterior, precio_nuevo, motivo)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [id_producto, tiendaId, descuento, precioAnterior, precioNuevo, motivo]);
+
+            // Actualizar precio del producto de forma segura
+            await Product.updatePrice(id_producto, precioNuevo);
+
+            // Notificar a tenderos
+            const tenderos = await db.allAsync(
+                'SELECT id_usuario FROM Usuarios WHERE id_tienda = ? AND rol = ?', [tiendaId, 'Tendero']
+            );
+            for (const t of tenderos) {
+                await Notification.create({
+                    id_usuario: t.id_usuario,
+                    id_tienda: tiendaId,
+                    tipo: 'cambio_precio',
+                    titulo: '🌟 Promoción Aplicada',
+                    mensaje: `El precio de "${productoActual.nombre_producto}" cambió de $${precioAnterior.toLocaleString('es-CO')} a $${precioNuevo.toLocaleString('es-CO')} por descuento del ${descuento}%.`,
+                    datos_json: JSON.stringify({ id_producto: id_producto, precio_anterior: precioAnterior, precio_nuevo: precioNuevo, prioridad: 'normal' })
+                });
+            }
+
+            res.json({ success: true, message: "Promoción aplicada correctamente", precio_nuevo: precioNuevo });
+        } catch (error) {
+            console.error('Error aplicando promoción manual:', error);
+            res.status(500).json({ success: false, error: safeError(error, 'Error al aplicar promoción manual') });
         }
     }
 

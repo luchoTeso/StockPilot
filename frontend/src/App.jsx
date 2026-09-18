@@ -11,6 +11,7 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import AnalisisDetalladoPage from './pages/AnalisisDetalladoPage';
 import RegistroTenderoPage from './pages/RegistroTenderoPage';
+import ComunicadosPage from './pages/ComunicadosPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import LandingPage from './pages/LandingPage';
 import RegisterPage from './pages/RegisterPage';
@@ -119,6 +120,7 @@ function App() {
             <Route path="/proveedores" element={<AdminRoute><ProveedoresPage /></AdminRoute>} />
             <Route path="/analitica-visual" element={<AdminRoute><Suspense fallback={<div className="p-10 text-center animate-pulse text-indigo-500 font-bold uppercase tracking-widest text-[10px]">Cargando módulo de analítica...</div>}><AnalyticsDashboardPage /></Suspense></AdminRoute>} />
             <Route path="/analisis-detallado" element={<AdminRoute><AnalisisDetalladoPage /></AdminRoute>} />
+            <Route path="/comunicados" element={<AdminRoute><ComunicadosPage /></AdminRoute>} />
             <Route path="/simulador" element={<AdminRoute><SimuladorPage /></AdminRoute>} />
             <Route path="/reportes" element={<AdminRoute><ReportesPage /></AdminRoute>} />
             <Route path="/auditoria" element={<AdminRoute><AuditoriaPage /></AdminRoute>} />

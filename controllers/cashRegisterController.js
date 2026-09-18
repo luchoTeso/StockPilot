@@ -63,6 +63,19 @@ class CashRegisterController {
             }
 
             const arqueo = await CashRegister.closeSession(activeSession.id_sesion, monto_cierre_declarado);
+
+            if (Math.abs(arqueo.diferencia) > 5000) {
+                const esFaltante = arqueo.diferencia < 0;
+                await Notification.create({
+                    id_usuario: id_vendedor,
+                    id_tienda,
+                    tipo: 'descuadre_caja',
+                    titulo: esFaltante ? '⚠️ Faltante en Caja' : '💰 Sobrante en Caja',
+                    mensaje: `Tu cierre de caja tuvo un ${esFaltante ? 'faltante' : 'sobrante'} de $${Math.abs(arqueo.diferencia).toLocaleString('es-CO')}. Revisa tus comprobantes.`,
+                    datos_json: JSON.stringify({ diferencia: arqueo.diferencia, id_sesion: activeSession.id_sesion })
+                });
+            }
+
             res.json({ success: true, message: 'Caja cerrada exitosamente (Arqueo completo)', arqueo });
         } catch (error) {
             console.error('Error closing cash register session:', error);

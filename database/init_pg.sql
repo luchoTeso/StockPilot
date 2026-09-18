@@ -253,6 +253,18 @@ CREATE TABLE IF NOT EXISTS Feedback_IA (
     fecha_evaluacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 13. TABLA PROMOCIONES MANUALES (Human-in-the-Loop)
+CREATE TABLE IF NOT EXISTS Promociones_Manuales (
+    id_promocion SERIAL PRIMARY KEY,
+    id_producto INTEGER NOT NULL REFERENCES Productos(id_producto) ON DELETE CASCADE,
+    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+    descuento_porcentaje NUMERIC(5, 2) NOT NULL,
+    precio_anterior NUMERIC(15, 2),
+    precio_nuevo NUMERIC(15, 2),
+    motivo VARCHAR(255),
+    fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 13. TABLA HISTORIAL PRECIOS
 CREATE TABLE IF NOT EXISTS Historial_Precios (
     id SERIAL PRIMARY KEY,

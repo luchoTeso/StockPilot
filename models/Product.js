@@ -98,6 +98,12 @@ class Product {
         return result.changes > 0;
     }
 
+    static async updatePrice(productId, newPrice) {
+        const query = `UPDATE Productos SET precio = ? WHERE id_producto = ?`;
+        const result = await db.runAsync(query, [newPrice, productId]);
+        return result.changes > 0;
+    }
+
     static async toggleStatus(productId, estado) {
         const query = `UPDATE Productos SET estado = ? WHERE id_producto = ?`;
         const result = await db.runAsync(query, [estado, productId]);

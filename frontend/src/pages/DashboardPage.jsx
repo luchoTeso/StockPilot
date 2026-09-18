@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { SYNC_EVENTS, subscribeToSync } from '../utils/stockSync';
@@ -10,6 +10,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
+  const isAdmin = user?.rol === 'Administrador';
   const storeKey = user?.tiendaId ?? 'default';
   const [stats, setStats] = useState({
     totalArticulos: 0,
@@ -220,6 +221,11 @@ const DashboardPage = () => {
                   <p className="text-[9px] text-indigo-600 font-black uppercase tracking-widest mt-1">Recomendaciones Inteligentes</p>
                 </div>
               </div>
+              {isAdmin && (
+                <Link to="/analisis-detallado" className="text-[9px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl hover:bg-indigo-600 hover:text-white transition-colors">
+                  Ver Más →
+                </Link>
+              )}
             </div>
 
             <div className="flex-grow max-h-[340px] overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">

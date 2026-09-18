@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const { OpenAI } = require('openai');
 const transporter = require('../config/mailer');
+const Notification = require('../models/Notification');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'dummy_key_to_prevent_crash_on_startup'
@@ -390,6 +391,16 @@ const suppliersController = {
       };
       await transporter.sendMail(mailOptions);
       await db.runAsync('UPDATE Ordenes_Compra SET estado = ? WHERE id_orden = ?', ['Enviada', ordenId]);
+      
+      // Notificar a los tenderos
+      await Notification.broadcast({
+        id_tienda: tiendaId,
+        tipo: 'orden_enviada',
+        titulo: '📦 Pedido Enviado',
+        mensaje: `Se ha enviado la orden de compra a ${orden.nombre_empresa}. Por favor, estar pendientes de la entrega.`,
+        datos_json: { id_orden: ordenId }
+      });
+
       res.json({ success: true });
     } catch (e) {
       res.status(500).json({ error: e.message });
