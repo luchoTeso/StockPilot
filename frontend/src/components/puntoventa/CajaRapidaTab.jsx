@@ -149,7 +149,8 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
       const payload = { 
         items, 
         metodo_pago: paymentDetails.metodo_pago, 
-        efectivo_recibido: paymentDetails.efectivo_recibido 
+        efectivo_recibido: paymentDetails.efectivo_recibido,
+        id_cliente: paymentDetails.id_cliente
       };
       const response = await axios.post('/api/registrar-venta-carrito', payload);
       toast.success('Venta procesada exitosamente.');
@@ -166,6 +167,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
         metodo_pago: paymentDetails.metodo_pago,
         efectivo_recibido: paymentDetails.efectivo_recibido,
         cambio_devuelto: paymentDetails.efectivo_recibido >= totalCart ? paymentDetails.efectivo_recibido - totalCart : 0,
+        id_cliente: paymentDetails.id_cliente,
         fecha: new Date()
       });
       setTimeout(() => {
@@ -326,6 +328,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
         total={totalCart}
         onConfirm={handleConfirmPayment}
         loading={loadingPay}
+        user={user}
       />
 
       <TicketPrinter 

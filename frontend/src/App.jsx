@@ -3,6 +3,7 @@ import { Suspense, lazy } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
 import LoginPage from './pages/LoginPage';
 import PuntoVentaPage from './pages/PuntoVentaPage';
+import CarteraPage from './pages/CarteraPage';
 import MovimientosPage from './pages/MovimientosPage';
 import ProductosPage from './pages/ProductosPage';
 import ReportesPage from './pages/ReportesPage';
@@ -116,6 +117,7 @@ function App() {
             <Route path="/tiendas" element={<TiendasPage />} />
             <Route path="/perfil" element={<ProfilePage />} />
             {/* Rutas exclusivas de Administrador */}
+            <Route path="/cartera" element={<AdminRoute><CarteraPage /></AdminRoute>} />
             <Route path="/movimientos" element={<AdminRoute><MovimientosPage /></AdminRoute>} />
             <Route path="/proveedores" element={<AdminRoute><ProveedoresPage /></AdminRoute>} />
             <Route path="/analitica-visual" element={<AdminRoute><Suspense fallback={<div className="p-10 text-center animate-pulse text-indigo-500 font-bold uppercase tracking-widest text-[10px]">Cargando módulo de analítica...</div>}><AnalyticsDashboardPage /></Suspense></AdminRoute>} />

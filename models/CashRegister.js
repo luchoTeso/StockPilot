@@ -51,6 +51,19 @@ class CashRegister {
     }
 
     /**
+     * Calcula los abonos en efectivo recibidos durante la sesión actual
+     */
+    static async getSessionAbonosAmount(id_sesion) {
+        const result = await db.getAsync(
+            `SELECT COALESCE(SUM(monto), 0) as total_abonos 
+             FROM Abonos 
+             WHERE id_sesion_caja = ? AND metodo_pago = 'Efectivo'`,
+            [id_sesion]
+        );
+        return parseFloat(result.total_abonos || 0);
+    }
+
+    /**
      * Cierra la sesión de caja comparando lo declarado vs calculado
      */
     static async closeSession(id_sesion, monto_cierre_declarado) {
@@ -59,11 +72,12 @@ class CashRegister {
         if (!sesion) throw new Error("Sesión no encontrada");
         if (sesion.estado === 'Cerrada') throw new Error("La sesión ya está cerrada");
 
-        // 2. Calcular total esperado (Apertura + Ventas en efectivo - Egresos)
+        // 2. Calcular total esperado (Apertura + Ventas en efectivo + Abonos en efectivo - Egresos)
         const ventas_efectivo = await this.getSessionSalesAmount(id_sesion);
+        const abonos_efectivo = await this.getSessionAbonosAmount(id_sesion);
         const egresos = await this.getSessionExpensesTotal(id_sesion);
         const monto_apertura = parseFloat(sesion.monto_apertura || 0);
-        const monto_cierre_calculado = monto_apertura + ventas_efectivo - egresos;
+        const monto_cierre_calculado = monto_apertura + ventas_efectivo + abonos_efectivo - egresos;
         
         // 3. Diferencia
         const diferencia = parseFloat(monto_cierre_declarado) - monto_cierre_calculado;
@@ -83,6 +97,7 @@ class CashRegister {
         return {
             monto_apertura,
             ventas_efectivo,
+            abonos_efectivo,
             egresos,
             monto_cierre_calculado,
             monto_cierre_declarado,

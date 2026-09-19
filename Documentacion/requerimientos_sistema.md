@@ -243,6 +243,16 @@ El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de c
 | RF-060 | El sistema debe permitir al administrador disparar manualmente el resumen semanal de alertas desde la interfaz de Reportes mediante el botón "Enviar Resumen Ahora", ejecutando la misma lógica del cron job pero solo para su tienda | Alta | ✅ |
 | RF-064 | El sistema debe emitir una alerta sonora (chime digital) en tiempo real cada vez que se detecte un incremento en el contador de alertas activas durante el polling del Dashboard, utilizando archivos de audio locales y diferenciando tonos para alertas críticas y normales | Media | ✅ |
 
+### Módulo 16: Gestión de Cartera y Fiados
+
+| ID     | Descripción                                                                                                                                                              | Prioridad | Estado |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------ |
+| RF-071 | El sistema debe permitir registrar ventas como "Fiado", asociándolas obligatoriamente a un cliente y excluyendo dicho monto del efectivo esperado en caja                | Alta | ✅ |
+| RF-072 | El sistema debe mantener un saldo pendiente general por cliente, calculado de forma dinámica como la suma de las compras fiadas menos la suma de los abonos pagados        | Alta | ✅ |
+| RF-073 | El sistema debe permitir registrar abonos (pagos parciales o totales) al saldo de un cliente y sumar el dinero recibido en efectivo a la caja activa del usuario         | Alta | ✅ |
+| RF-074 | El sistema debe contar con un motor de IA que evalúe el historial de pagos y compras fiadas del cliente para generar un nivel de riesgo, clasificación y sugerencia comercial | Alta | ✅ |
+| RF-075 | El sistema debe bloquear el acceso a la interfaz de Cartera y al método de pago "Fiado" para el rol de Tendero, siendo funcionalidad exclusiva del Administrador           | Alta | ✅ |
+
 ---
 
 ## 3.3 Requerimientos No Funcionales
@@ -313,6 +323,6 @@ El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de c
 
 | Categoría          | Total | Implementados | Planeados |
 | ------------------ | ----- | ------------- | --------- |
-| **Funcionales**    | 70    | 70 (100%)     | 0 (0%)    |
+| **Funcionales**    | 75    | 75 (100%)     | 0 (0%)    |
 | **No Funcionales** | 18    | 18 (100%)     | 0 (0%)    |
-| **Total**          | 88    | 88 (100%)     | 0 (0%)    |
+| **Total**          | 93    | 93 (100%)     | 0 (0%)    |

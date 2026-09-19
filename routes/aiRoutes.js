@@ -27,6 +27,9 @@ router.get('/suggest-alerts', requireLogin, aiController.suggestStockAlerts);
 // Tendencia de precios histórica (Gráfica de Variaciones IA)
 router.get('/price-trend', requireLogin, aiController.getPriceTrend);
 
+// Evaluación de Riesgo de Clientes (Fiados)
+router.get('/assess-risk/:id_cliente', requireLogin, aiController.assessClientRisk);
+
 // --- UTILIDADES ---
 router.get('/ping', (req, res) => {
   res.json({ pong: true, time: new Date().toISOString() });

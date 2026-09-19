@@ -82,12 +82,16 @@ class SaleController {
      */
     static async registerSale(req, res) {
         try {
-            const { id_producto, cantidad, metodo_pago, efectivo_recibido } = req.body;
+            const { id_producto, cantidad, metodo_pago, efectivo_recibido, id_cliente } = req.body;
             const id_vendedor = req.session.userId;
             const id_tienda = req.session.tiendaId;
 
             if (!id_vendedor || !id_tienda) {
                 return res.status(401).json({ success: false, error: "Sesión no válida" });
+            }
+
+            if (metodo_pago === 'Fiado' && !id_cliente) {
+                return res.status(400).json({ success: false, error: "El cliente es obligatorio para ventas fiadas." });
             }
 
             const CashRegister = require('../models/CashRegister');
@@ -122,10 +126,13 @@ class SaleController {
                 const cambio = recibido >= total ? recibido - total : 0;
 
                 // 2. Registrar la venta principal
+                const estado_deuda = metodo === 'Fiado' ? 'Pendiente' : 'Pagado';
+                const id_cliente_val = id_cliente || null;
+
                 const saleInsert = await client.query(
-                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida, id_sesion_caja, metodo_pago, efectivo_recibido, cambio_devuelto) 
-                     VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?) RETURNING id_venta`,
-                    [id_vendedor, id_tienda, total, activeSession.id_sesion, metodo, recibido, cambio]
+                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida, id_sesion_caja, metodo_pago, efectivo_recibido, cambio_devuelto, id_cliente, estado_deuda) 
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?) RETURNING id_venta`,
+                    [id_vendedor, id_tienda, total, activeSession.id_sesion, metodo, recibido, cambio, id_cliente_val, estado_deuda]
                 );
                 const id_venta = saleInsert.rows[0].id_venta;
 
@@ -180,7 +187,8 @@ class SaleController {
      */
     static async registerCartSale(req, res) {
         try {
-            const { items, metodo_pago, efectivo_recibido } = req.body;
+            const { items, metodo_pago, efectivo_recibido, id_cliente } = req.body;
+            console.log("PAYLOAD RECEIVED FOR CART SALE:", req.body);
             const id_vendedor = req.session.userId;
             const id_tienda = req.session.tiendaId;
 
@@ -189,6 +197,11 @@ class SaleController {
             }
             if (!Array.isArray(items) || items.length === 0) {
                 return res.status(400).json({ success: false, error: "El carrito está vacío" });
+            }
+            
+            if (metodo_pago === 'Fiado' && !id_cliente) {
+                console.log("ERROR: Cliente no recibido para venta fiada. Payload era:", req.body);
+                return res.status(400).json({ success: false, error: "El cliente es obligatorio para ventas fiadas." });
             }
 
             const CashRegister = require('../models/CashRegister');
@@ -233,11 +246,13 @@ class SaleController {
                 const metodo = metodo_pago || 'Efectivo';
                 const recibido = efectivo_recibido || totalVenta;
                 const cambio = recibido >= totalVenta ? recibido - totalVenta : 0;
+                const estado_deuda = metodo === 'Fiado' ? 'Pendiente' : 'Pagado';
+                const id_cliente_val = id_cliente || null;
 
                 const saleInsert = await client.query(
-                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida, id_sesion_caja, metodo_pago, efectivo_recibido, cambio_devuelto) 
-                     VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?) RETURNING id_venta`,
-                    [id_vendedor, id_tienda, totalVenta, activeSession.id_sesion, metodo, recibido, cambio]
+                    `INSERT INTO Ventas (id_vendedor, id_tienda, precio_total, fecha_salida, id_sesion_caja, metodo_pago, efectivo_recibido, cambio_devuelto, id_cliente, estado_deuda) 
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?) RETURNING id_venta`,
+                    [id_vendedor, id_tienda, totalVenta, activeSession.id_sesion, metodo, recibido, cambio, id_cliente_val, estado_deuda]
                 );
                 const id_venta = saleInsert.rows[0].id_venta;
 
@@ -272,6 +287,7 @@ class SaleController {
 
             } catch (txError) {
                 await client.query('ROLLBACK');
+                console.error('TX ERROR EN REGISTRAR VENTA:', txError);
                 // Errores de validación controlados vs errores SQL
                 const msg = txError.message.includes('Stock') || txError.message.includes('Producto') 
                     ? txError.message 

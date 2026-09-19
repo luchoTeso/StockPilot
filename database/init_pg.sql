@@ -145,15 +145,42 @@ CREATE TABLE IF NOT EXISTS EgresosCaja (
 CREATE INDEX IF NOT EXISTS idx_egresos_sesion ON EgresosCaja(id_sesion_caja);
 CREATE INDEX IF NOT EXISTS idx_egresos_tienda ON EgresosCaja(id_tienda);
 
+-- 5.7. TABLA CLIENTES (FIADOS)
+CREATE TABLE IF NOT EXISTS Clientes (
+    id_cliente SERIAL PRIMARY KEY,
+    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+    nombre VARCHAR(255) NOT NULL,
+    celular VARCHAR(20),
+    limite_credito NUMERIC(15, 2) DEFAULT 0,
+    fecha_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_clientes_tienda ON Clientes(id_tienda);
+
+-- 5.8. TABLA ABONOS (PAGOS DE FIADOS)
+CREATE TABLE IF NOT EXISTS Abonos (
+    id_abono SERIAL PRIMARY KEY,
+    id_cliente INTEGER NOT NULL REFERENCES Clientes(id_cliente) ON DELETE CASCADE,
+    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+    id_sesion_caja INTEGER REFERENCES SesionCaja(id_sesion) ON DELETE SET NULL,
+    monto NUMERIC(15, 2) NOT NULL,
+    metodo_pago VARCHAR(50) DEFAULT 'Efectivo',
+    fecha_abono TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    id_usuario_recibe INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_abonos_cliente ON Abonos(id_cliente);
+CREATE INDEX IF NOT EXISTS idx_abonos_sesion ON Abonos(id_sesion_caja);
+
 -- 6. TABLA VENTAS
 CREATE TABLE IF NOT EXISTS Ventas (
     id_venta SERIAL PRIMARY KEY,
     id_vendedor INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
     id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
     id_sesion_caja INTEGER REFERENCES SesionCaja(id_sesion) ON DELETE SET NULL,
+    id_cliente INTEGER REFERENCES Clientes(id_cliente) ON DELETE SET NULL,
     fecha_salida TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     precio_total NUMERIC(15, 2) NOT NULL,
-    metodo_pago VARCHAR(50) DEFAULT 'Efectivo', -- 'Efectivo', 'Tarjeta', 'Transferencia'
+    metodo_pago VARCHAR(50) DEFAULT 'Efectivo', -- 'Efectivo', 'Tarjeta', 'Transferencia', 'Fiado'
+    estado_deuda VARCHAR(50) DEFAULT 'Pagado', -- 'Pagado', 'Pendiente'
     efectivo_recibido NUMERIC(15, 2) DEFAULT 0,
     cambio_devuelto NUMERIC(15, 2) DEFAULT 0
 );

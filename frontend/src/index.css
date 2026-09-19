@@ -1,11 +1,75 @@
 @import "tailwindcss";
 
+@theme {
+  /* ── Marca ── */
+  --color-tinta: #14173F;
+  --color-tinta-2: #3A3F6E;          /* texto secundario */
+  --color-azul: #252C93;             /* acción principal en superficies claras */
+  --color-azul-hondo: #1C2277;       /* hover / active del azul */
+  --color-papel: #EEF0F8;            /* fondo de app */
+  --color-resaltador: #FFD84A;       /* acción principal en superficies oscuras / CTA puntual */
+  --color-resaltador-hondo: #FFC81A; /* hover del resaltador */
+
+  /* ── Estados: alias semánticos ── */
+  --color-exito: #0B6B45;    --color-exito-suave: #DDF3E9;
+  --color-peligro: #B42A26;  --color-peligro-suave: #FBE3E1;
+  --color-aviso: #8A5300;    --color-aviso-suave: #FFF1D6;
+  --color-ambar: #E08A00;    /* SOLO rellenos, barras e íconos. Nunca texto. */
+
+  /* ── Transitorio: indigo y violet pasan a ser UNA familia (matiz ~236°; 600 = azul) ── */
+  --color-indigo-50: #EFEFFB;  --color-indigo-100: #DEE0F7; --color-indigo-200: #C3C6EF;
+  --color-indigo-300: #989DE2; --color-indigo-400: #6C72D0; --color-indigo-500: #4048BF;
+  --color-indigo-600: #252C93; --color-indigo-700: #1D2272; --color-indigo-800: #151A56;
+  --color-indigo-900: #0E1139; --color-indigo-950: #090B2B;
+  --color-violet-50: #EFEFFB;  --color-violet-100: #DEE0F7; --color-violet-200: #C3C6EF;
+  --color-violet-300: #989DE2; --color-violet-400: #6C72D0; --color-violet-500: #4048BF;
+  --color-violet-600: #252C93; --color-violet-700: #1D2272; --color-violet-800: #151A56;
+  --color-violet-900: #0E1139;
+  --color-purple-50: #EFEFFB;  --color-purple-100: #DEE0F7; --color-purple-200: #C3C6EF;
+  --color-purple-300: #989DE2; --color-purple-400: #6C72D0; --color-purple-500: #4048BF;
+  --color-purple-600: #252C93; --color-purple-700: #1D2272; --color-purple-800: #151A56;
+  --color-purple-900: #0E1139;
+  --color-fuchsia-50: #EFEFFB;  --color-fuchsia-100: #DEE0F7; --color-fuchsia-200: #C3C6EF;
+  --color-fuchsia-300: #989DE2; --color-fuchsia-400: #6C72D0; --color-fuchsia-500: #4048BF;
+  --color-fuchsia-600: #252C93; --color-fuchsia-700: #1D2272; --color-fuchsia-800: #151A56;
+  --color-fuchsia-900: #0E1139;
+
+  /* ── Neutros con matiz azul (permanente): coherentes con tinta y papel ── */
+  --color-slate-50: #F5F6FB;  --color-slate-100: #EEF0F8; --color-slate-200: #DDE0EF;
+  --color-slate-300: #C3C7DE; --color-slate-400: #8F94B8; --color-slate-500: #6A6F99;
+  --color-slate-600: #4F5480; --color-slate-700: #3A3F6E; --color-slate-800: #24295A;
+  --color-slate-900: #14173F; --color-slate-950: #0B0D2B;
+
+  /* ── Estados ya usados con semántica correcta: se realinean al tono nuevo ──
+     emerald = éxito · rose = error · amber = aviso.
+     Esto resuelve 720 ocurrencias sin tocar JSX. */
+  --color-emerald-50: #EAF7F0;  --color-emerald-100: #DDF3E9; --color-emerald-200: #B9E4D0;
+  --color-emerald-300: #8ACFB1; --color-emerald-400: #4FAE87; --color-emerald-500: #1F8A61;
+  --color-emerald-600: #0B6B45; --color-emerald-700: #085538; --color-emerald-800: #06422C;
+  --color-emerald-900: #04301F;
+  --color-rose-50: #FDF0EF;  --color-rose-100: #FBE3E1; --color-rose-200: #F5C3BF;
+  --color-rose-300: #EC9B95; --color-rose-400: #DC6660; --color-rose-500: #C93F39;
+  --color-rose-600: #B42A26; --color-rose-700: #8F201D; --color-rose-800: #6E1917;
+  --color-rose-900: #521311;
+  --color-amber-50: #FFF8E9;  --color-amber-100: #FFF1D6; --color-amber-200: #FFE0A3;
+  --color-amber-300: #FFCE6B; --color-amber-400: #F5AE23; --color-amber-500: #E08A00;
+  --color-amber-600: #B86F00; --color-amber-700: #8A5300; --color-amber-800: #6B4000;
+  --color-amber-900: #4F2F00;
+
+  /* ── Tipografía (ver Fase 3; declararla aquí no cambia nada hasta cargar la fuente) ── */
+  --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+@layer base {
+  body { background-color: var(--color-papel); color: var(--color-tinta); }
+  :focus-visible { outline: 3px solid var(--color-azul); outline-offset: 2px; }
+  [data-surface="dark"] :focus-visible { outline-color: #fff; }
+}
+
 /* === Estilos Globales Personalizados === */
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: #1f2937;
-    background-color: #f8fafc;
     font-family: 'Inter', 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;

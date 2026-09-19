@@ -41,6 +41,7 @@ const alertRoutes = require('./routes/alertRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
 const scheduler = require('./services/schedulerService');
 
 const app = express();
@@ -185,6 +186,7 @@ app.use('/api/alertas', alertRoutes);
 app.use('/api/auditoria', auditRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notificaciones', notificationRoutes);
+app.use('/api', clienteRoutes);
 
 // 🛡️ SEGURIDAD: Servir el Frontend en PRODUCCIÓN
 if (process.env.NODE_ENV === 'production') {

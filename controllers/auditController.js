@@ -18,9 +18,11 @@ const auditController = {
       const params = [tiendaId];
 
       if (fuente === 'dashboard') {
-        whereClause += ' AND a.id_orden IS NULL';
+        whereClause += " AND a.id_orden IS NULL AND (a.motor_ia IS NULL OR (a.motor_ia NOT LIKE '%Fiados%' AND a.impacto_decision NOT LIKE 'Perfil:%'))";
       } else if (fuente === 'proveedor') {
         whereClause += ' AND a.id_orden IS NOT NULL';
+      } else if (fuente === 'fiados') {
+        whereClause += " AND (a.motor_ia LIKE '%Fiados%' OR a.impacto_decision LIKE 'Perfil:%')";
       }
 
       // Total count
@@ -65,10 +67,11 @@ const auditController = {
     try {
       const tiendaId = req.session.tiendaId;
 
-      const [total, fromDashboard, fromProveedores, ultima] = await Promise.all([
+      const [total, fromDashboard, fromProveedores, fromFiados, ultima] = await Promise.all([
         db.getAsync('SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ?', [tiendaId]),
-        db.getAsync('SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ? AND id_orden IS NULL', [tiendaId]),
+        db.getAsync("SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ? AND id_orden IS NULL AND (motor_ia IS NULL OR (motor_ia NOT LIKE '%Fiados%' AND impacto_decision NOT LIKE 'Perfil:%'))", [tiendaId]),
         db.getAsync('SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ? AND id_orden IS NOT NULL', [tiendaId]),
+        db.getAsync("SELECT COUNT(*) as total FROM Auditoria_IA WHERE id_tienda = ? AND (motor_ia LIKE '%Fiados%' OR impacto_decision LIKE 'Perfil:%')", [tiendaId]),
         db.getAsync('SELECT fecha_auditoria FROM Auditoria_IA WHERE id_tienda = ? ORDER BY fecha_auditoria DESC LIMIT 1', [tiendaId])
       ]);
 
@@ -78,6 +81,7 @@ const auditController = {
           total: total.total,
           desde_dashboard: fromDashboard.total,
           desde_proveedores: fromProveedores.total,
+          desde_fiados: fromFiados.total,
           ultima_consulta: ultima ? ultima.fecha_auditoria : null
         }
       });

@@ -15,12 +15,15 @@ erDiagram
     Tienda ||--o{ reportes : "emite"
     Tienda ||--o{ SesionCaja : "gestiona"
     Tienda ||--o{ EgresosCaja : "registra"
+    Tienda ||--o{ Clientes : "registra"
+    Tienda ||--o{ Abonos : "registra"
 
     Usuarios ||--o{ MovimientosStock : "hace"
     Usuarios ||--o{ Ventas : "vende"
     Usuarios ||--o{ Ordenes_Compra : "aprueba"
     Usuarios ||--o{ SesionCaja : "abre"
     Usuarios ||--o{ EgresosCaja : "gestiona"
+    Usuarios ||--o{ Abonos : "recibe"
 
     Proveedores ||--o{ Productos : "provee"
     Proveedores ||--o{ Ordenes_Compra : "recibe"
@@ -40,6 +43,10 @@ erDiagram
 
     SesionCaja ||--o{ Ventas : "contiene"
     SesionCaja ||--o{ EgresosCaja : "contiene"
+    SesionCaja ||--o{ Abonos : "contiene"
+
+    Clientes ||--o{ Ventas : "compra"
+    Clientes ||--o{ Abonos : "paga"
 
     Tienda {
         int id_tienda PK
@@ -129,9 +136,13 @@ erDiagram
         int id_vendedor FK
         int id_tienda FK
         int id_sesion_caja FK
+        int id_cliente FK
         timestamp fecha_salida
         numeric precio_total
         varchar metodo_pago
+        numeric efectivo_recibido
+        numeric cambio_devuelto
+        varchar estado_deuda
     }
 
     VentasProductos {
@@ -261,5 +272,25 @@ erDiagram
         timestamp fecha_registro
         timestamp fecha_aprobacion
         text notas_admin
+    }
+
+    Clientes {
+        int id_cliente PK
+        int id_tienda FK
+        varchar nombre
+        varchar celular
+        numeric limite_credito
+        timestamp fecha_registro
+    }
+
+    Abonos {
+        int id_abono PK
+        int id_cliente FK
+        int id_tienda FK
+        int id_sesion_caja FK
+        numeric monto
+        varchar metodo_pago
+        timestamp fecha_abono
+        int id_usuario_recibe FK
     }
 ```

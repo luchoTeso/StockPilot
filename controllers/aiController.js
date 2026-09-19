@@ -860,6 +860,91 @@ const aiController = {
       console.error('❌ ERROR EN SUGGEST_ALERTS:', e);
       res.status(500).json({ error: safeError(e, 'Error calculando sugerencias de stock') });
     }
+  },
+
+  /**
+   * Evalúa el riesgo crediticio de un cliente basado en su historial de fiados y abonos.
+   * Utiliza OpenAI para perfilar al cliente.
+   * GET /api/ia/assess-risk/:id_cliente
+   */
+  assessClientRisk: async (req, res) => {
+    try {
+      const tiendaId = req.session.tiendaId;
+      if (!tiendaId) return res.status(401).json({ error: "Sesión inválida" });
+      const { id_cliente } = req.params;
+
+      if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.includes('tuLlaveSecreta')) {
+        return res.status(500).json({ error: "La API Key de OpenAI no está configurada correctamente en el archivo .env." });
+      }
+
+      // Obtener datos del cliente, ventas fiadas y abonos
+      const clienteRes = await db.getAsync('SELECT * FROM Clientes WHERE id_cliente = ? AND id_tienda = ?', [id_cliente, tiendaId]);
+      if (!clienteRes) return res.status(404).json({ error: "Cliente no encontrado" });
+
+      const ventasFiadas = await db.allAsync('SELECT id_venta, fecha_salida, precio_total, estado_deuda FROM Ventas WHERE id_cliente = ? AND metodo_pago = ? ORDER BY fecha_salida DESC', [id_cliente, 'Fiado']);
+      const abonos = await db.allAsync('SELECT id_abono, fecha_abono, monto, metodo_pago FROM Abonos WHERE id_cliente = ? ORDER BY fecha_abono DESC', [id_cliente]);
+
+      const total_fiado = ventasFiadas.reduce((sum, v) => sum + Number(v.precio_total), 0);
+      const total_abonado = abonos.reduce((sum, a) => sum + Number(a.monto), 0);
+      const saldo_pendiente = total_fiado - total_abonado;
+
+      const historialAnalisis = {
+        cliente: clienteRes.nombre,
+        limite_credito: clienteRes.limite_credito,
+        total_compras_fiadas: total_fiado,
+        total_pagado: total_abonado,
+        saldo_pendiente_actual: saldo_pendiente,
+        num_compras_fiadas: ventasFiadas.length,
+        num_abonos: abonos.length,
+        fechas_compras: ventasFiadas.map(v => v.fecha_salida),
+        fechas_abonos: abonos.map(a => a.fecha_abono)
+      };
+
+      const systemPrompt = `Eres el 'Motor de Inteligencia de Negocios' de StockPilot. Tu tarea es analizar el historial de créditos (fiados) y abonos de un cliente de una tienda de barrio.
+Tus respuestas deben estar en formato JSON con la siguiente estructura:
+{
+  "perfil": "Buen Pagador" | "Regular" | "Mal Pagador" | "Cliente Nuevo",
+  "riesgo": "Bajo" | "Medio" | "Alto" | "Evaluando",
+  "razon": "Explicación de 1 a 2 oraciones de por qué se asignó este perfil, basándose en su frecuencia de pago y saldo acumulado. ATENCIÓN: Si el cliente tiene 1 o 2 compras fiadas muy recientes y aún no ha abonado, clasifícalo como 'Cliente Nuevo' y riesgo 'Evaluando', NO como 'Mal Pagador'.",
+  "sugerencia": "Ej: Limitar crédito, ofrecer descuentos por pronto pago, etc."
+}`;
+      const userPrompt = `Analiza este historial crediticio y determina el riesgo:\n${JSON.stringify(historialAnalisis, null, 2)}`;
+
+      const gptResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.1
+      });
+
+      const aiData = JSON.parse(gptResponse.choices[0].message.content);
+
+      // Guardar en auditoría IA
+      await db.runAsync(
+        `INSERT INTO Auditoria_IA (id_tienda, motor_ia, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          tiendaId, 
+          'Evaluador Riesgo Fiados v1.0', 
+          userPrompt, 
+          JSON.stringify(historialAnalisis), 
+          JSON.stringify(aiData), 
+          `Perfil: ${aiData.perfil}, Riesgo: ${aiData.riesgo}`, 
+          aiData.razon
+        ]
+      );
+      
+      // Log legado
+      logToAuditFile(tiendaId, null, `Evaluación de riesgo cliente ${clienteRes.nombre}`, `Riesgo: ${aiData.riesgo}`);
+
+      res.json({ success: true, analisis: aiData });
+    } catch (e) {
+      console.error('❌ ERROR EN ASSESS_CLIENT_RISK:', e);
+      res.status(500).json({ error: safeError(e, 'Error evaluando riesgo del cliente con IA') });
+    }
   }
 };
 

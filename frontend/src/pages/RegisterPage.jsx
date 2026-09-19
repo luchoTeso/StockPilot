@@ -73,6 +73,7 @@ const RegisterPage = () => {
 
   return (
     <div
+      data-surface="dark"
       className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden"
       style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)' }}
     >

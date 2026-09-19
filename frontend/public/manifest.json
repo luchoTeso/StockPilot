@@ -4,8 +4,8 @@
   "description": "Gestión inteligente de inventario y ventas para tu negocio.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#4f46e5",
+  "background_color": "#EEF0F8",
+  "theme_color": "#252C93",
   "orientation": "portrait-primary",
   "icons": [
     {

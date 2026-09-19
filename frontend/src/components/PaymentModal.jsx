@@ -1,18 +1,41 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { X, CreditCard, Banknote, Landmark, CheckCircle2 } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
-const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading }) => {
+const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
   const [metodoPago, setMetodoPago] = useState('Efectivo');
   const [efectivoRecibido, setEfectivoRecibido] = useState('');
   const [cambio, setCambio] = useState(0);
+  const [clientes, setClientes] = useState([]);
+  const [selectedClient, setSelectedClient] = useState('');
+  const [loadingClientes, setLoadingClientes] = useState(false);
 
+  
   useEffect(() => {
     if (isOpen) {
       setMetodoPago('Efectivo');
       setEfectivoRecibido('');
       setCambio(0);
+      setSelectedClient('');
+      if (user?.rol === 'Administrador') {
+        fetchClientes();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
+
+  const fetchClientes = async () => {
+    try {
+      setLoadingClientes(true);
+
+      const res = await axios.get('/api/clientes');
+      setClientes(res.data.clientes || []);
+    } catch (error) {
+      console.error('Error cargando clientes', error);
+    } finally {
+      setLoadingClientes(false);
+    }
+  };
 
   useEffect(() => {
     if (metodoPago === 'Efectivo') {
@@ -31,6 +54,9 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading }) => {
       const recibido = parseFloat(efectivoRecibido) || 0;
       return recibido >= total;
     }
+    if (metodoPago === 'Fiado') {
+      return selectedClient !== '';
+    }
     return true; // Para tarjetas o transferencias no hay validación de efectivo
   };
 
@@ -40,6 +66,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading }) => {
       onConfirm({
         metodo_pago: metodoPago,
         efectivo_recibido: metodoPago === 'Efectivo' ? parseFloat(efectivoRecibido) : total,
+        id_cliente: metodoPago === 'Fiado' ? selectedClient : null,
       });
     }
   };
@@ -47,8 +74,12 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading }) => {
   const metodos = [
     { id: 'Efectivo', icon: <Banknote size={24} />, color: 'text-emerald-600', bg: 'bg-emerald-100', border: 'border-emerald-200' },
     { id: 'Tarjeta', icon: <CreditCard size={24} />, color: 'text-blue-600', bg: 'bg-blue-100', border: 'border-blue-200' },
-    { id: 'Transferencia', icon: <Landmark size={24} />, color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-200' },
+    { id: 'Transferencia', icon: <Landmark size={24} />, color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-200' }
   ];
+
+  if (user?.rol === 'Administrador') {
+    metodos.push({ id: 'Fiado', icon: <Banknote size={24} />, color: 'text-orange-600', bg: 'bg-orange-100', border: 'border-orange-200' });
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
@@ -116,6 +147,33 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading }) => {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {metodoPago === 'Fiado' && (
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div>
+                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Seleccionar Cliente</label>
+                  {loadingClientes ? (
+                    <div className="text-sm text-slate-500 font-medium animate-pulse">Cargando clientes...</div>
+                  ) : (
+                    <div className="h-12 border-2 border-slate-200 rounded-xl bg-slate-50 focus-within:border-indigo-500 focus-within:bg-white transition-all shadow-sm">
+                      <CustomSelect
+                        value={selectedClient}
+                        onChange={(val) => setSelectedClient(val)}
+                        placeholder="-- Selecciona un cliente --"
+                        options={clientes.map(c => ({
+                          value: String(c.id_cliente),
+                          label: `${c.nombre} (Cupo: $${Number(c.limite_credito || 0).toLocaleString('es-CO')})`
+                        }))}
+                        className="px-4 text-slate-700 font-bold h-full"
+                      />
+                    </div>
+                  )}
+                  {clientes.length === 0 && !loadingClientes && (
+                    <p className="mt-2 text-xs font-bold text-rose-500">No hay clientes registrados en cartera.</p>
+                  )}
+                </div>
               </div>
             )}
 

@@ -411,6 +411,48 @@
 
 ---
 
+### CU-03.8 — Registrar Venta Fiada
+
+| Campo              | Detalle                                          |
+| ------------------ | ------------------------------------------------ |
+| **Actores**        | Administrador                                    |
+| **Precondiciones** | Sesión de caja abierta, Carrito con productos    |
+| **RF Relacionados**| RF-071, RF-072, RF-075                           |
+
+**Flujo Principal:**
+
+1. El Administrador navega a "Caja Rápida" y selecciona productos.
+2. Al proceder al pago, selecciona el método "Fiado".
+3. Selecciona un cliente registrado de la lista desplegable.
+4. Presiona "Confirmar y Facturar".
+5. El sistema registra la venta descontando el stock pero excluyendo el monto del cuadre de caja (Efectivo Esperado).
+6. El sistema aumenta el saldo de la deuda del cliente por el valor total de la venta.
+
+**Postcondiciones:** Venta registrada, inventario actualizado y deuda de cliente aumentada.
+
+---
+
+### CU-03.9 — Registrar Abono a Cartera
+
+| Campo              | Detalle                                          |
+| ------------------ | ------------------------------------------------ |
+| **Actores**        | Administrador                                    |
+| **Precondiciones** | Sesión de caja abierta, Cliente con deuda previa |
+| **RF Relacionados**| RF-072, RF-073, RF-074, RF-075                   |
+
+**Flujo Principal:**
+
+1. El Administrador navega a la sección de "Cartera / Fiados".
+2. Selecciona a un cliente con saldo pendiente y hace clic en "Registrar Abono".
+3. Ingresa el monto a pagar, seleccionando "Efectivo" como método de pago.
+4. Confirma la operación.
+5. El sistema descuenta el valor pagado de la deuda total del cliente.
+6. El sistema suma el efectivo recibido a la sesión de caja activa actual.
+
+**Postcondiciones:** Deuda de cliente reducida y monto esperado en caja incrementado.
+
+---
+
 ## Paquete CU-04: Motor Predictivo e Inteligencia Artificial
 
 ---

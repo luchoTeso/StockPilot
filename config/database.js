@@ -233,7 +233,9 @@ const db = {
                 ADD COLUMN IF NOT EXISTS id_sesion_caja INTEGER REFERENCES SesionCaja(id_sesion) ON DELETE SET NULL,
                 ADD COLUMN IF NOT EXISTS metodo_pago VARCHAR(50) DEFAULT 'Efectivo',
                 ADD COLUMN IF NOT EXISTS efectivo_recibido DECIMAL(12, 2),
-                ADD COLUMN IF NOT EXISTS cambio_devuelto DECIMAL(12, 2);
+                ADD COLUMN IF NOT EXISTS cambio_devuelto DECIMAL(12, 2),
+                ADD COLUMN IF NOT EXISTS id_cliente INTEGER REFERENCES Clientes(id_cliente) ON DELETE SET NULL,
+                ADD COLUMN IF NOT EXISTS estado_deuda VARCHAR(50) DEFAULT 'Pagado';
 
                 CREATE INDEX IF NOT EXISTS idx_ventas_sesion_caja ON Ventas(id_sesion_caja);
             `);
