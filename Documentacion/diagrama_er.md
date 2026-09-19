@@ -13,10 +13,14 @@ erDiagram
     Tienda ||--o{ Alertas : "genera"
     Tienda ||--o{ Auditoria_IA : "audita"
     Tienda ||--o{ reportes : "emite"
+    Tienda ||--o{ SesionCaja : "gestiona"
+    Tienda ||--o{ EgresosCaja : "registra"
 
     Usuarios ||--o{ MovimientosStock : "hace"
     Usuarios ||--o{ Ventas : "vende"
     Usuarios ||--o{ Ordenes_Compra : "aprueba"
+    Usuarios ||--o{ SesionCaja : "abre"
+    Usuarios ||--o{ EgresosCaja : "gestiona"
 
     Proveedores ||--o{ Productos : "provee"
     Proveedores ||--o{ Ordenes_Compra : "recibe"
@@ -33,6 +37,9 @@ erDiagram
     Ordenes_Compra ||--|{ Ordenes_Detalle : "contiene"
     Ordenes_Compra ||--o{ Auditoria_IA : "auditada_por"
     Ordenes_Compra ||--o{ Feedback_IA : "evaluada_por"
+
+    SesionCaja ||--o{ Ventas : "contiene"
+    SesionCaja ||--o{ EgresosCaja : "contiene"
 
     Tienda {
         int id_tienda PK
@@ -121,8 +128,10 @@ erDiagram
         int id_venta PK
         int id_vendedor FK
         int id_tienda FK
+        int id_sesion_caja FK
         timestamp fecha_salida
         numeric precio_total
+        varchar metodo_pago
     }
 
     VentasProductos {
@@ -223,5 +232,34 @@ erDiagram
         varchar data_hash
         text datos_json
         timestamp actualizado_at
+    }
+
+    SesionCaja {
+        int id_sesion PK
+        int id_tienda FK
+        int id_vendedor FK
+        numeric monto_apertura
+        numeric monto_cierre_declarado
+        numeric monto_cierre_calculado
+        numeric diferencia
+        varchar estado
+        timestamp fecha_apertura
+        timestamp fecha_cierre
+    }
+
+    EgresosCaja {
+        int id_egreso PK
+        int id_sesion_caja FK
+        int id_tienda FK
+        int id_usuario FK
+        numeric monto
+        varchar motivo
+        varchar categoria
+        text foto_soporte
+        varchar estado
+        int aprobado_por FK
+        timestamp fecha_registro
+        timestamp fecha_aprobacion
+        text notas_admin
     }
 ```

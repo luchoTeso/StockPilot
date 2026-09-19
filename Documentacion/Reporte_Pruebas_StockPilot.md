@@ -63,7 +63,7 @@ El análisis de cobertura se concentra exclusivamente en los archivos que contie
 | `middleware/validation.js` | Sanitización estricta para la prevención de ataques XSS. |
 | `controllers/dashboardController.js` | *(Evaluado por extracción)* Funciones de proyección de pérdida económica, nivel de servicio y margen promedio. |
 
-Los demás componentes del proyecto interactúan directamente con la base de datos SQLite y con los objetos HTTP (`req`, `res`). Incluirlos en la métrica de pruebas unitarias sería un anti-patrón (requeriría simulación masiva o *mocking*). Estos son evaluados a nivel de Pruebas de Integración (donde proceda) o Pruebas End-to-End.
+Los demás componentes del proyecto interactúan directamente con la base de datos PostgreSQL (Neon) y con los objetos HTTP (`req`, `res`). Incluirlos en la métrica de pruebas unitarias sería un anti-patrón (requeriría simulación masiva o *mocking*). Estos son evaluados a nivel de Pruebas de Integración (donde proceda) o Pruebas End-to-End.
 
 ---
 

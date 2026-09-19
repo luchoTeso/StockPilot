@@ -1,12 +1,71 @@
-# Requerimientos Sistema
+# Especificación de Requisitos de Software (IEEE 830)
 
-**Proyecto:** StockPilot — Sistema de Gestión de Inventario Inteligente  
-**Versión:** 2026  
-**Última Actualización:** 18 de Mayo de 2026
+**Proyecto:** StockPilot — Sistema de Gestión de Inventario Inteligente
+**Versión:** 2026
+**Última Actualización:** 18 de Mayo de 2026 (Actualizado)
 
 ---
 
-## Requerimientos Funcionales
+## 1. Introducción
+
+### 1.1 Propósito
+El presente documento tiene como propósito definir las especificaciones funcionales y no funcionales para el desarrollo e iteración de **StockPilot**, un sistema web inteligente de gestión de inventarios y punto de venta (POS) para micro y medianas empresas.
+
+### 1.2 Alcance
+Esta especificación de requisitos abarca todas las funcionalidades de StockPilot, desde la gestión básica de productos y autenticación, hasta sus módulos avanzados de predicción de demanda mediante Inteligencia Artificial, control integral de sesiones de caja, y sistema de automatización de alertas.
+
+### 1.3 Personal involucrado
+- **Lucho:** Desarrollador Principal, Arquitecto de Software y Analista.
+
+### 1.4 Definiciones, acrónimos y abreviaturas
+- **POS (Point of Sale):** Punto de venta.
+- **RF / RNF:** Requerimiento Funcional / No Funcional.
+- **ABC / Pareto:** Clasificación de inventario basada en su impacto económico.
+- **COP:** Pesos Colombianos.
+- **Lead Time:** Tiempo de entrega del proveedor.
+
+### 1.5 Referencias
+- Estándar IEEE 830-1998 para Especificaciones de Requisitos de Software.
+- Documento Base de Prácticas de Ingeniería de Sistemas.
+
+### 1.6 Resumen
+El documento se divide en tres partes: una descripción general del sistema (Sección 2), la definición de las interfaces de operación (Sección 3.1), y finalmente el listado exhaustivo de los 70 Requisitos Funcionales y 18 Requisitos No Funcionales del producto.
+
+---
+
+## 2. Descripción General
+
+### 2.1 Perspectiva del producto
+StockPilot es una solución basada en la nube (arquitectura web cliente-servidor) desarrollada sobre Node.js, Express, React y PostgreSQL. Funciona de manera independiente y se concibe como una solución integral (ERP ligero) para comercios.
+
+### 2.2 Funcionalidad del producto
+El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de caja menor, las auditorías, las compras, y proyecta la demanda empleando inteligencia artificial, automatizando también el reporte periódico de métricas.
+
+### 2.3 Características de los usuarios
+- **Administrador:** Dueño o gerente del establecimiento. Control total sobre inventarios, caja, aprobación de egresos, auditorías IA y métricas.
+- **Colaborador:** Vendedor o cajero. Permisos limitados a apertura/cierre de su propia caja, registro de ventas y reportes operativos básicos.
+
+### 2.4 Restricciones
+- El sistema requiere conexión permanente a internet para consultar a la base de datos (PostgreSQL) y la API de Inteligencia Artificial.
+- Funciona exclusivamente a través de navegadores web modernos (Chrome, Firefox, Edge).
+
+### 2.5 Suposiciones y dependencias
+- Se asume que el usuario cuenta con dispositivos con cámara si desea escanear códigos de barras.
+- Se depende de servicios de OpenAI para sugerencias y OpenFoodFacts para la consulta de productos por código.
+
+---
+
+## 3. Requisitos Específicos
+
+### 3.1 Requisitos comunes de las interfaces
+**3.1.1 Interfaces de usuario:** Interfaz tipo Dashboard administrativo con barra de navegación lateral y vistas dedicadas, completamente responsivo.
+**3.1.2 Interfaces de hardware:** Adaptador de red y opcionalmente cámara (webcam o móvil) para escaneo de códigos de barras.
+**3.1.3 Interfaces de software:** Navegador Web compatible con HTML5 y JavaScript.
+**3.1.4 Interfaces de comunicación:** Comunicación HTTP/HTTPS estructurada en arquitectura RESTful (JSON).
+
+---
+
+## 3.2 Requerimientos Funcionales
 
 ---
 
@@ -38,7 +97,7 @@
 
 ---
 
-### Módulo 3: Gestión de Ventas
+### Módulo 3: Gestión de Punto de Venta (POS) y Caja
 
 | ID     | Descripción                                                                                                                                                              | Prioridad | Estado |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------ |
@@ -47,6 +106,10 @@
 | RF-014 | El sistema debe mostrar un ranking de los productos más vendidos (Top Ventas) con cantidades e ingresos totales acumulados                                               | Media     | ✅     |
 | RF-015 | El sistema debe unificar la experiencia de caja y reporte mostrando el historial completo de ventas dentro del Punto de Venta (y en módulo Reportes), exponiendo qué vendedor hizo cada transacción | Media     | ✅     |
 | RF-065 | El Punto de Venta debe permitir agregar productos al carrito mediante escaneo estricto de código o búsqueda predictiva tecleando nombre o fragmentos del SKU             | Alta      | ✅     |
+| RF-066 | El sistema debe forzar al vendedor a abrir una sesión de caja antes de registrar ventas, requiriendo ingresar el monto de apertura inicial                               | Alta      | ✅     |
+| RF-067 | El sistema debe permitir el registro de Egresos de Caja Menor, requiriendo un motivo, monto, categoría y, opcionalmente, la subida de una foto de soporte (evidencia)     | Alta      | ✅     |
+| RF-068 | El sistema debe permitir a los usuarios con rol Administrador aprobar, rechazar o comentar los egresos registrados por los colaboradores desde el panel de Historial Egresos | Alta      | ✅     |
+| RF-069 | El sistema debe registrar el cierre de la sesión de caja, requiriendo declarar el monto final físico, y calculando la diferencia automática respecto a ventas y egresos  | Alta      | ✅     |
 
 ---
 
@@ -168,7 +231,7 @@
 | RF-055 | El sistema debe comparar las cantidades sugeridas por la IA contra las ventas reales posteriores y calcular un factor de precisión por producto (ventas_reales / cantidad_sugerida), con período adaptativo de max(lead_time × 2, 14) días | Alta | ✅ |
 | RF-056 | El sistema debe persistir el factor de precisión en la tabla Feedback_IA y aplicarlo como multiplicador en las siguientes sugerencias para mejorar progresivamente la exactitud, limitando el factor entre 0.2 y 3.0 | Alta | ✅ |
 | RF-057 | El sistema debe mostrar un dashboard de Aprendizaje con nivel de acierto global (%), gráfica de evolución mensual, y tabla de rendimiento por producto con barras de precisión y veredicto (acertado / sugirió de más / sugirió de menos) | Media | ✅ |
-| RF-065 | El sistema debe analizar productos con tendencia bajista, sobrestock o vencimiento próximo y generar sugerencias de promoción comercial (descuento, combo, 2x1, liquidación) mediante IA, priorizando los candidatos con vencimiento más próximo antes de enviarlos al modelo; adicionalmente, debe aplicar un fallback determinístico para garantizar cobertura del 100% de candidatos cuando el modelo omita alguno, mostrando todas las sugerencias en el Panel de Control con impacto financiero estimado | Media | ✅ |
+| RF-070 | El sistema debe analizar productos con tendencia bajista, sobrestock o vencimiento próximo y generar sugerencias de promoción comercial (descuento, combo, 2x1, liquidación) mediante IA, priorizando los candidatos con vencimiento más próximo antes de enviarlos al modelo; adicionalmente, debe aplicar un fallback determinístico para garantizar cobertura del 100% de candidatos cuando el modelo omita alguno, mostrando todas las sugerencias en el Panel de Control con impacto financiero estimado | Media | ✅ |
 
 ---
 
@@ -182,7 +245,7 @@
 
 ---
 
-## Requerimientos No Funcionales
+## 3.3 Requerimientos No Funcionales
 
 ---
 
@@ -246,10 +309,10 @@
 
 ---
 
-## Resumen Estadístico
+## 4. Resumen Estadístico
 
 | Categoría          | Total | Implementados | Planeados |
 | ------------------ | ----- | ------------- | --------- |
-| **Funcionales**    | 65    | 65 (100%)     | 0 (0%)    |
+| **Funcionales**    | 70    | 70 (100%)     | 0 (0%)    |
 | **No Funcionales** | 18    | 18 (100%)     | 0 (0%)    |
-| **Total**          | 83    | 83 (100%)     | 0 (0%)    |
+| **Total**          | 88    | 88 (100%)     | 0 (0%)    |

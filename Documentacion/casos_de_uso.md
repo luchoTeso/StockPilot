@@ -245,7 +245,7 @@
 | ------------------ | ------------------------------------------------ |
 | **Actores**        | Administrador, Colaborador                       |
 | **Precondiciones** | Sesión activa; productos con stock > 0            |
-| **RF Relacionados**| RF-012, RF-013, RF-015                           |
+| **RF Relacionados**| RF-012, RF-013, RF-015, RF-065                   |
 
 **Flujo Principal:**
 
@@ -354,6 +354,60 @@
 - **FA-1:** Sin productos vencidos → Se muestra toast informativo.
 
 **Postcondiciones:** Archivo PDF descargado con auditoría financiera de merma.
+
+---
+
+### CU-03.6 — Abrir y Cerrar Sesión de Caja
+
+| Campo              | Detalle                                          |
+| ------------------ | ------------------------------------------------ |
+| **Actores**        | Administrador, Colaborador                       |
+| **Precondiciones** | Sesión activa en el sistema                      |
+| **RF Relacionados**| RF-066, RF-069                                   |
+
+**Flujo Principal (Apertura):**
+
+1. El usuario navega al módulo "Punto de Venta".
+2. Si no tiene una sesión activa, el sistema muestra el modal de "Apertura de Caja".
+3. El usuario ingresa el monto base (físico) con el que inicia el turno.
+4. Presiona "Abrir Caja".
+5. El sistema registra la apertura y habilita la vista de ventas.
+
+**Flujo Principal (Cierre):**
+
+1. El usuario presiona el botón "Cerrar Caja".
+2. El sistema muestra el modal de cierre.
+3. El usuario declara el monto total en efectivo físico.
+4. El sistema calcula la diferencia entre lo declarado y lo esperado (Apertura + Ventas Efectivo - Egresos).
+5. El sistema registra el cierre y desactiva el POS hasta una nueva apertura.
+
+**Postcondiciones:** Sesión de caja abierta/cerrada con registro de cuadre.
+
+---
+
+### CU-03.7 — Registrar y Gestionar Egresos de Caja Menor
+
+| Campo              | Detalle                                          |
+| ------------------ | ------------------------------------------------ |
+| **Actores**        | Colaborador, Administrador                       |
+| **Precondiciones** | Sesión de caja abierta                           |
+| **RF Relacionados**| RF-067, RF-068                                   |
+
+**Flujo Principal (Registro):**
+
+1. El usuario navega a "Caja Rápida" y selecciona la pestaña "Egresos/Caja Menor".
+2. Completa: Categoría, Monto, Motivo y sube una Foto (opcional).
+3. Presiona "Registrar Egreso".
+4. El sistema asocia el egreso a la sesión de caja actual en estado "Pendiente".
+
+**Flujo Principal (Gestión - Administrador):**
+
+1. El Administrador navega a "Caja Rápida" > "Historial de Egresos".
+2. Selecciona un egreso pendiente y evalúa el soporte fotográfico.
+3. Puede "Aprobar" o "Rechazar", agregando notas opcionales.
+4. El sistema actualiza el estado, afectando el cálculo final del cierre de caja si es aprobado.
+
+**Postcondiciones:** Egreso registrado y/o procesado por un superior.
 
 ---
 
@@ -602,7 +656,7 @@
 | ------------------ | ------------------------------------------------ |
 | **Actores**        | Administrador                                    |
 | **Precondiciones** | Sesión activa; productos con historial de ventas; API Key de OpenAI configurada |
-| **RF Relacionados**| RF-065                                           |
+| **RF Relacionados**| RF-070                                           |
 
 **Flujo Principal:**
 
@@ -723,11 +777,13 @@
 | CU-02.2     | RF-016, RF-017                                   |
 | CU-02.3     | RF-018, RF-019                                   |
 | CU-02.4     | RF-009, RF-011                                   |
-| CU-03.1     | RF-012, RF-013, RF-015                           |
+| CU-03.1     | RF-012, RF-013, RF-015, RF-065                   |
 | CU-03.2     | RF-014                                           |
 | CU-03.3     | RF-044, RF-045, RF-047                           |
 | CU-03.4     | RF-046                                           |
 | CU-03.5     | RF-058                                           |
+| CU-03.6     | RF-066, RF-069                                   |
+| CU-03.7     | RF-067, RF-068                                   |
 | CU-04.1     | RF-020, RF-023, RF-038, RF-039, RF-040, RF-041, RF-042, RF-043 |
 | CU-04.2     | RF-033, RF-034, RF-035, RF-036, RF-037           |
 | CU-04.3     | RF-021, RF-022, RF-024, RF-025, RF-026           |
@@ -737,7 +793,7 @@
 | CU-05.4     | RF-021, RF-052, RF-053, RF-054                   |
 | CU-05.5     | RF-055, RF-056, RF-057                           |
 | CU-05.6     | RF-063                                           |
-| CU-05.7     | RF-065                                           |
+| CU-05.7     | RF-070                                           |
 | CU-06.1     | RF-059                                           |
 | CU-06.2     | RF-060                                           |
 | CU-06.3     | RF-064                                           |

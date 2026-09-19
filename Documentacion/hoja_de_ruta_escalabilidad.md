@@ -75,8 +75,16 @@ flowchart TD
         F3D["Réplicas de lectura (Read Replicas) para reportes"]
     end
 
+    subgraph FASE 4 ["Fase 4: Hiper-Escala (Enterprise SaaS & Aislamiento)"]
+        F4A["CDN Edge (Cloudflare/AWS) para Frontend estático"]
+        F4B["Colas asíncronas para IA y Rate Limiting agresivo"]
+        F4C["APM (Datadog / New Relic) para observabilidad"]
+        F4D["PostgreSQL Table Partitioning & RLS (Row-Level Security)"]
+    end
+
     FASE 1 --> FASE 2
     FASE 2 --> FASE 3
+    FASE 3 --> FASE 4
 ```
 
 ---
@@ -206,6 +214,71 @@ En lugar de que cada contenedor Node.js gestione un pool directo contra PostgreS
 
 ---
 
+### Fase 4: Hiper-Escala (Enterprise SaaS & Aislamiento)
+
+#### 1. Aislamiento Multi-Tenant (RLS y Particionamiento Físico)
+Para proteger la integridad de los datos a gran escala y optimizar consultas sobre tablas con más de 100 millones de filas.
+
+**Configuración de Row-Level Security (RLS) en PostgreSQL:**
+Se debe habilitar RLS en las tablas transaccionales y forzar que el `id_tienda` coincida con una variable de entorno de la transacción de BD.
+```sql
+-- 1. Habilitar RLS en la tabla
+ALTER TABLE Ventas ENABLE ROW LEVEL SECURITY;
+
+-- 2. Crear política estricta
+CREATE POLICY tenant_isolation_policy ON Ventas
+    USING (id_tienda = current_setting('app.current_tenant_id')::integer);
+```
+En Node.js, antes de ejecutar cualquier *query*, se inyecta el tenant (aislado en la transacción):
+```javascript
+// Middleware o Wrapper de BD
+await db.query(`SET LOCAL app.current_tenant_id = ${req.user.id_tienda}`);
+const ventas = await db.query('SELECT * FROM Ventas'); // Solo retornará las suyas automáticamente
+```
+
+#### 2. CDN para Frontend Estático
+Actualmente Node.js sirve los archivos de React (`/dist`). A gran escala, esto consume RAM y ancho de banda del servidor backend innecesariamente.
+- **Implementación:** El *build* de Vite (`npm run build`) se sube a **Cloudflare Pages** o **AWS CloudFront**.
+- **Beneficio:** Los usuarios descargan la interfaz desde un servidor perimetral (Edge) cercano a su ciudad, reduciendo la latencia de carga visual a milisegundos. Node.js se configura exclusivamente como API (solo responde JSON bajo `/api`).
+
+#### 3. Offloading de IA con Colas Asíncronas (BullMQ)
+Evitar cuellos de botella y errores HTTP 429 (*Rate Limit* de OpenAI) aislando las peticiones de IA del hilo principal.
+
+**Implementación con BullMQ y Redis:**
+```javascript
+const { Queue, Worker } = require('bullmq');
+
+// Crear la cola
+const aiQueue = new Queue('ai-recommendations', { connection: redisClient });
+
+// 1. Controller encola el trabajo y responde rápido al Frontend
+app.post('/api/ia/recomendar', async (req, res) => {
+    const job = await aiQueue.add('predict', { tiendaId: req.user.id_tienda });
+    res.json({ status: 'processing', jobId: job.id }); 
+});
+
+// 2. Worker Dedicado (puede correr en otro servidor)
+const aiWorker = new Worker('ai-recommendations', async job => {
+    // Llamada lenta a OpenAI GPT-4o-mini
+    const result = await processOpenAI(job.data);
+    // Guardar resultado en DB o enviar por WebSocket/SSE
+}, { connection: redisClient, concurrency: 5 /* Límite seguro para API OpenAI */ });
+```
+
+#### 4. Observabilidad Avanzada (APM)
+Para detectar *Memory Leaks*, cuellos de botella en DB, y monitorizar la experiencia real del usuario sin depender de logs manuales (`console.log`).
+- **Implementación (Datadog / New Relic):** Se inyecta un agente en la raíz de Node.js.
+```javascript
+// En la línea 1 de app.js (antes de requerir express)
+require('dd-trace').init({
+    logInjection: true,
+    env: process.env.NODE_ENV
+});
+```
+Esto genera automáticamente gráficos de latencia (ej. "el endpoint `/ventas` toma 300ms porque la query SQL toma 280ms"), facilitando la identificación instantánea del problema mencionado en la *Matriz de Decisión*.
+
+---
+
 ## 📊 5. Matriz de Decisión: ¿Cuándo activar cada fase?
 
 | Síntoma / Métrica | Causa | Acción Inmediata |
@@ -215,6 +288,8 @@ En lugar de que cada contenedor Node.js gestione un pool directo contra PostgreS
 | **La base de datos aumenta de tamaño rápidamente (GBs en semanas).** | Almacenamiento de fotos en Base64 en Postgres. | **Activar Fase 2:** Mudar a Cloudinary o AWS S3. |
 | **Error `too many clients already` en logs de PostgreSQL.** | Pool saturado al desplegar más servidores o reiniciar réplicas. | **Activar Fase 3:** Configurar PgBouncer. |
 | **Usuarios reportan recibir 2 o más correos idénticos del cron.** | Múltiples instancias de Node.js corriendo el scheduler a la vez. | **Activar Fase 3:** Cerrojo distribuido con `pg_advisory_lock` o worker aislado. |
+| **Consultas demoran más de 3 segundos en tablas de Ventas (>50M filas)** | Índices sobrepasados por el volumen (I/O). | **Activar Fase 4:** Particionamiento de Tablas y RLS. |
+| **Gastos disparados o bloqueos en la API de OpenAI (Rate Limit 429)** | Peticiones síncronas bloqueando el Event Loop y picos de tráfico. | **Activar Fase 4:** Cola BullMQ + SSE/Webhooks para IA. |
 
 ---
 
