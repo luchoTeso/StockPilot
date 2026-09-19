@@ -7,7 +7,7 @@ import { Search, LayoutDashboard, Building2, X } from 'lucide-react';
 const AuditoriaPage = () => {
   const toast = useToast();
   const [logs, setLogs] = useState([]);
-  const [stats, setStats] = useState({ total: 0, desde_dashboard: 0, desde_proveedores: 0, ultima_consulta: null });
+  const [stats, setStats] = useState({ total: 0, desde_dashboard: 0, desde_proveedores: 0, desde_fiados: 0, ultima_consulta: null });
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [filtroFuente, setFiltroFuente] = useState('');
@@ -93,6 +93,10 @@ const AuditoriaPage = () => {
           <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Desde Proveedores</p>
           <p className="text-3xl font-black text-indigo-700 mt-1">{stats.desde_proveedores}</p>
         </div>
+        <div className="bg-fuchsia-50 rounded-2xl p-5 border border-fuchsia-100">
+          <p className="text-[9px] font-black text-fuchsia-500 uppercase tracking-widest">Desde Fiados</p>
+          <p className="text-3xl font-black text-fuchsia-700 mt-1">{stats.desde_fiados || 0}</p>
+        </div>
         <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Última Consulta</p>
           <p className="text-sm font-black text-slate-700 mt-2">{formatFecha(stats.ultima_consulta)}</p>
@@ -102,7 +106,7 @@ const AuditoriaPage = () => {
       {/* Filtros */}
       <div className="flex items-center gap-3 mb-6">
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filtrar:</p>
-        {['', 'dashboard', 'proveedor'].map(f => (
+        {['', 'dashboard', 'proveedor', 'fiados'].map(f => (
           <button
             key={f}
             onClick={() => setFiltroFuente(f)}
@@ -112,7 +116,7 @@ const AuditoriaPage = () => {
                 : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'
             }`}
           >
-            {f === '' ? 'Todas' : f === 'dashboard' ? 'Dashboard' : 'Proveedores'}
+            {f === '' ? 'Todas' : f === 'dashboard' ? 'Dashboard' : f === 'proveedor' ? 'Proveedores' : 'Fiados'}
           </button>
         ))}
       </div>
@@ -122,24 +126,29 @@ const AuditoriaPage = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
-                <th className="p-6 pl-8">Fecha y Hora</th>
-                <th className="p-6">Origen</th>
-                <th className="p-6">Motor utilizado</th>
-                <th className="p-6">Productos</th>
-                <th className="p-6">Resultado</th>
-                <th className="p-6 pr-8 text-right">Revisar</th>
+              <tr className="bg-slate-900 text-[10px] text-white font-black uppercase tracking-widest">
+                <th className="p-6 pl-8 rounded-tl-3xl text-left">Fecha y Hora</th>
+                <th className="p-6 text-left">Origen</th>
+                <th className="p-6 text-left">Productos</th>
+                <th className="p-6 text-left">Resultado</th>
+                <th className="p-6 pr-8 text-right rounded-tr-3xl">Revisar</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
               {loading ? (
-                <tr><td colSpan="6" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Consultando Registros de Auditoría...</td></tr>
+                <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Consultando Registros de Auditoría...</td></tr>
               ) : logs.length === 0 ? (
-                <tr><td colSpan="6" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px]">No hay registros de auditoría</td></tr>
+                <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-[10px]">No hay registros de auditoría</td></tr>
               ) : logs.map(log => {
                 const datosBase = parseSafe(log.datos_base_json);
-                const productCount = Array.isArray(datosBase) ? datosBase.length : 0;
-                const fuente = log.id_orden ? 'Proveedor' : 'Dashboard';
+                let productCount = Array.isArray(datosBase) ? datosBase.length : (datosBase && datosBase.items ? datosBase.items.length : 0);
+                
+                let fuente = 'Dashboard';
+                if (log.id_orden) fuente = 'Proveedor';
+                else if (log.motor_ia?.includes('Fiados') || log.impacto_decision?.startsWith('Perfil:')) {
+                  fuente = 'Fiados';
+                  productCount = 1; // Un cliente
+                }
 
                 return (
                   <tr key={log.id_auditoria} className="hover:bg-slate-50 transition-colors group">
@@ -147,19 +156,20 @@ const AuditoriaPage = () => {
                       <p className="font-black text-slate-800 text-sm">{formatFecha(log.fecha_auditoria)}</p>
                     </td>
                     <td className="p-6">
-                      <span className={`inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${
                         fuente === 'Dashboard' 
                           ? 'bg-violet-50 text-violet-600 border border-violet-100' 
+                          : fuente === 'Fiados'
+                          ? 'bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-100'
                           : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
                       }`}>
                         {fuente === 'Dashboard'
-                          ? <span className="flex items-center gap-1"><LayoutDashboard size={10} /> Dashboard</span>
-                          : <span className="flex items-center gap-1"><Building2 size={10} /> {log.proveedor_nombre || 'Proveedor'}</span>
+                          ? <><LayoutDashboard size={10} /> Dashboard</>
+                          : fuente === 'Fiados'
+                          ? <><Building2 size={10} /> Fiados</>
+                          : <><Building2 size={10} /> {log.proveedor_nombre || 'Proveedor'}</>
                         }
                       </span>
-                    </td>
-                    <td className="p-6 text-slate-600 font-bold text-xs truncate max-w-[180px]" title={log.prompt_utilizado}>
-                      {log.prompt_utilizado || '---'}
                     </td>
                     <td className="p-6">
                       <span className="bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-[10px] font-black">{productCount} ítems</span>
@@ -237,7 +247,7 @@ const AuditoriaPage = () => {
               </div>
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Motor</p>
-                <p className="text-sm font-bold text-slate-800 mt-1">{detailModal.prompt_utilizado}</p>
+                <p className="text-sm font-bold text-slate-800 mt-1">{detailModal.motor_ia || detailModal.prompt_utilizado?.substring(0, 30) + '...' || 'N/A'}</p>
               </div>
               {detailModal.proveedor_nombre && (
                 <div className="col-span-2 bg-indigo-50 rounded-xl p-3 border border-indigo-100">
@@ -255,12 +265,44 @@ const AuditoriaPage = () => {
               </div>
             </div>
 
-            {/* Tabla de productos evaluados */}
-            <div className="px-6 pb-6">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Productos Evaluados</p>
-              <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
-                <table className="w-full text-left text-sm">
-                  <thead>
+            {/* Contenido Dinámico por Tipo */}
+            {(() => {
+              const isFiados = detailModal.motor_ia?.includes('Fiados') || detailModal.impacto_decision?.startsWith('Perfil:');
+              const isEstrategia = detailModal.prompt_utilizado?.includes('Estrategia Directa');
+              
+              if (isFiados) {
+                const aiData = parseSafe(detailModal.sugerencia_ia_json);
+                const perfil = aiData.perfil || 'Desconocido';
+                const riesgo = aiData.riesgo || 'Desconocido';
+                const sugerencia = aiData.sugerencia || detailModal.impacto_decision;
+                
+                return (
+                  <div className="px-6 pb-6">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Evaluación Crediticia</p>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Perfil de Cliente</p>
+                        <p className={`text-lg font-black ${perfil.includes('Buen') ? 'text-emerald-600' : perfil.includes('Mal') ? 'text-rose-600' : 'text-amber-500'}`}>{perfil}</p>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Nivel de Riesgo</p>
+                        <p className={`text-lg font-black ${riesgo === 'Bajo' ? 'text-emerald-600' : riesgo === 'Alto' ? 'text-rose-600' : 'text-amber-500'}`}>{riesgo}</p>
+                      </div>
+                    </div>
+                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
+                      <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Sugerencia IA</p>
+                      <p className="text-sm font-bold text-indigo-900 leading-snug">{sugerencia}</p>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="px-6 pb-6">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Productos Evaluados</p>
+                  <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
+                    <table className="w-full text-left text-sm">
+                      <thead>
                     <tr className="bg-slate-800 text-[9px] text-white font-black uppercase tracking-widest">
                       <th className="px-4 py-3">Producto</th>
                       <th className="px-4 py-3 text-center">Base</th>
@@ -287,18 +329,21 @@ const AuditoriaPage = () => {
                           const id = s.id || s.id_producto || itemBase?.id || itemBase?.id_producto || '';
                           const displayName = name || (id ? `Producto #${id}` : 'Producto');
                           
+                          const formatVal = (val) => isEstrategia && !isNaN(val) ? `$${Number(val).toLocaleString()}` : val.toLocaleString();
+                          const baseText = baseVal !== '---' ? formatVal(baseVal) : '---';
+                          const finalVal = s.final || s.nuevo_precio || s.discountedPrice || '---';
+                          const finalText = finalVal !== '---' ? formatVal(finalVal) : '---';
+                          
                           return (
                             <tr key={displayName} className="hover:bg-white transition-colors">
                               <td className="px-4 py-3 font-bold text-slate-800 uppercase italic text-[11px] tracking-tight">{displayName}</td>
-                              <td className="px-4 py-3 text-center font-black text-slate-600">${baseVal.toLocaleString()}</td>
+                              <td className="px-4 py-3 text-center font-black text-slate-600">{baseText}</td>
                               <td className="px-4 py-3 text-center">
                                 <span className={`font-black ${(s.adjustment || s.ajuste || '').toString().includes('+') || (s.discount && s.type !== 'discount') ? 'text-emerald-600' : 'text-rose-600'}`}>
                                   {s.adjustment || s.ajuste || (s.discount ? `-${s.discount}%` : '---')}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-center font-black text-indigo-600">
-                                ${(s.final || s.nuevo_precio || s.discountedPrice || '---').toLocaleString()}
-                              </td>
+                              <td className="px-4 py-3 text-center font-black text-indigo-600">{finalText}</td>
                               <td className="px-4 py-3 text-xs text-slate-500 italic leading-snug">{s.reason || s.razon || detailModal.razon_ia}</td>
                             </tr>
                           );
@@ -313,6 +358,8 @@ const AuditoriaPage = () => {
                 </table>
               </div>
             </div>
+              );
+            })()}
 
             {/* Footer */}
             <div className="px-6 pb-6">

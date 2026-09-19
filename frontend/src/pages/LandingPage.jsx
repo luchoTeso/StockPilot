@@ -1,469 +1,539 @@
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import { Store, Rocket, Bot, BarChart2, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Store } from 'lucide-react';
 
-const LandingPage = () => {
-  const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
-  const [visibleSections, setVisibleSections] = useState(new Set());
-  const observerRef = useRef(null);
+/* ------------------------------------------------------------------
+   StockPilot — Landing
+   Idea: el mundo de la tienda de barrio. El héroe es la tirilla de caja
+   con lo que la IA sugiere hoy; el azul es el del esfero con que se
+   anota el cuaderno; el amarillo es el resaltador.
+   Todo lo demás (secciones, tipografía, listas) se mantiene callado.
+------------------------------------------------------------------- */
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setVisibleSections(prev => new Set([...prev, entry.target.dataset.section]));
-          }
-        });
-      },
-      { threshold: 0.15 }
-    );
-    document.querySelectorAll('[data-section]').forEach(el => observerRef.current.observe(el));
-    return () => observerRef.current?.disconnect();
-  }, []);
-
-  const isVisible = (id) => visibleSections.has(id);
-
-  return (
-    <div style={{
-      fontFamily: "'Outfit', 'Inter Tight', system-ui, sans-serif",
-      background: '#1e293b',
-      color: '#f8fafc',
-      overflowX: 'hidden',
-      minHeight: '100vh',
-    }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap');
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        .reveal {
-          opacity: 0;
-          transform: translateY(28px);
-          transition: opacity 0.65s cubic-bezier(.22,1,.36,1), transform 0.65s cubic-bezier(.22,1,.36,1);
-        }
-        .reveal.visible {
-          opacity: 1;
-          transform: none;
-        }
-        .reveal-delay-1 { transition-delay: 0.1s; }
-        .reveal-delay-2 { transition-delay: 0.2s; }
-        .reveal-delay-3 { transition-delay: 0.3s; }
-        .reveal-delay-4 { transition-delay: 0.4s; }
-
-        .nav-blur {
-          background: rgba(30,41,59,0.0);
-          backdrop-filter: none;
-          transition: background 0.3s, backdrop-filter 0.3s, border-color 0.3s;
-          border-bottom: 1px solid transparent;
-        }
-        .nav-blur.scrolled {
-          background: rgba(30,41,59,0.85);
-          backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(99,102,241,0.15);
-        }
-
-        .hero-glow {
-          position: absolute;
-          border-radius: 50%;
-          pointer-events: none;
-          filter: blur(90px);
-        }
-
-        .stat-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 20px;
-          padding: 28px 24px;
-          transition: background 0.2s, border-color 0.2s, transform 0.2s;
-        }
-        .stat-card:hover {
-          background: rgba(255,255,255,0.07);
-          border-color: rgba(99,102,241,0.3);
-          transform: translateY(-3px);
-        }
-
-        .feature-card {
-          background: #1e293b;
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 24px;
-          padding: 36px 32px;
-          transition: border-color 0.25s, transform 0.25s;
-        }
-        .feature-card:hover {
-          border-color: rgba(99,102,241,0.4);
-          transform: translateY(-4px);
-        }
-
-        .btn-primary {
-          background: #6366f1;
-          color: #fff;
-          border: none;
-          border-radius: 14px;
-          padding: 16px 32px;
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: background 0.2s, transform 0.15s;
-          font-family: inherit;
-        }
-        .btn-primary:hover { background: #5254cc; }
-        .btn-primary:active { transform: scale(0.97); }
-
-        .btn-ghost {
-          background: rgba(255,255,255,0.05);
-          color: #cbd5e1;
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 14px;
-          padding: 16px 32px;
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: background 0.2s;
-          font-family: inherit;
-        }
-        .btn-ghost:hover { background: rgba(255,255,255,0.09); }
-
-        .module-chip {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 12px 16px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 12px;
-          font-size: 12px;
-          font-weight: 700;
-          color: #94a3b8;
-          transition: border-color 0.2s, color 0.2s;
-        }
-        .module-chip:hover { border-color: rgba(99,102,241,0.3); color: #c7d2fe; }
-
-        .light-section {
-          background: #f8fafc;
-          color: #0f172a;
-        }
-        .light-section .section-label { color: #6366f1; }
-        .light-section .section-title { color: #0f172a; }
-        .light-section .section-sub { color: #64748b; }
-
-        .cred-card {
-          background: #1e293b;
-          border: 1px solid rgba(99,102,241,0.2);
-          border-radius: 20px;
-          padding: 28px;
-        }
-
-        .pulse-dot {
-          width: 8px; height: 8px;
-          background: #10b981;
-          border-radius: 50%;
-          animation: pulse-green 2s infinite;
-        }
-        @keyframes pulse-green {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
-          50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
-        }
-
-        .mockup-bar { width: 100%; height: 36px; background: #1e293b; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; padding: 0 16px; gap: 8px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
-
-        @media (max-width: 768px) {
-          .hero-btns { flex-direction: column; }
-          .stats-grid { grid-template-columns: 1fr 1fr !important; }
-          .features-grid { grid-template-columns: 1fr !important; }
-          .demo-grid { grid-template-columns: 1fr !important; }
-          .hero-title { font-size: clamp(36px, 10vw, 64px) !important; }
-        }
-      `}</style>
-
-      {/* NAV */}
-      <nav className={`nav-blur${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: '0 24px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 36, height: 36, background: '#6366f1', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Store size={18} /></div>
-            <span style={{ fontWeight: 900, fontSize: 15, letterSpacing: '-0.02em', fontStyle: 'italic', textTransform: 'uppercase', color: '#f8fafc' }}>StockPilot</span>
-          </div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <button className="btn-ghost" style={{ padding: '10px 20px' }} onClick={() => navigate('/login')}>Iniciar sesión</button>
-            <button className="btn-primary" style={{ padding: '10px 20px' }} onClick={() => navigate('/register')}>Probar ahora</button>
-          </div>
+const DECISIONES = [
+  {
+    pregunta: '¿Qué pido?',
+    texto:
+      'Analiza tu historial de ventas, calcula cuánto vas a necesitar y arma la orden de compra para cada proveedor sin pasarte de tu presupuesto.',
+    muestra: (
+      <>
+        <p className="sp-s-name">Arroz Roa 5 kg</p>
+        <p className="sp-s-line">
+          <span className="sp-pill sp-pill-ok">Alta demanda</span>
+          <strong>+42 ud</strong>
+        </p>
+      </>
+    ),
+  },
+  {
+    pregunta: '¿Qué remato?',
+    texto:
+      'Encuentra lo que se está quedando quieto o está por vencer y propone un descuento, un 2x1 o un combo. Tú activas la oferta cuando quieras.',
+    muestra: (
+      <>
+        <p className="sp-s-name">Yogurt 200 g</p>
+        <p className="sp-s-line">
+          <span className="sp-pill sp-pill-desc">-15%</span>
+          <span>
+            Recuperas <strong>$28.560</strong>
+          </span>
+        </p>
+      </>
+    ),
+  },
+  {
+    pregunta: '¿A quién le fío?',
+    texto:
+      'Revisa cómo paga cada cliente y te dice si puedes darle más crédito o si conviene cobrarle antes. Menos cartera perdida.',
+    muestra: (
+      <>
+        <p className="sp-s-name">Marta R.</p>
+        <p className="sp-s-line">
+          <span className="sp-pill sp-pill-risk">Riesgo alto</span>
+          <span>
+            Debe <strong>$86.000</strong>
+          </span>
+        </p>
+      </>
+    ),
+  },
+  {
+    pregunta: '¿Qué tan segura está?',
+    texto:
+      'Cada sugerencia trae su nivel de confianza y guarda los datos en que se basó, para que puedas revisar cuándo, por qué y qué decidiste.',
+    muestra: (
+      <>
+        <p className="sp-s-name">Aceite Girasol 1 L</p>
+        <p className="sp-s-line">
+          <span>Confianza</span>
+          <strong>52%</strong>
+        </p>
+        <div className="sp-bar" role="img" aria-label="Confianza de 52%">
+          <span style={{ width: '52%' }} />
         </div>
-      </nav>
+      </>
+    ),
+  },
+];
 
-      {/* HERO */}
-      <section style={{ position: 'relative', paddingTop: 160, paddingBottom: 100, textAlign: 'center', overflow: 'hidden' }}>
-        <div className="hero-glow" style={{ width: 500, height: 400, background: 'rgba(99,102,241,0.15)', top: -80, left: '50%', transform: 'translateX(-50%)' }} />
-        <div className="hero-glow" style={{ width: 300, height: 300, background: 'rgba(167,139,250,0.08)', top: 200, right: '10%' }} />
+const GRUPOS = [
+  { 
+    titulo: 'Vender', 
+    items: ['Punto de venta (POS)', 'Gestión de cajeros', 'Lector de códigos de barras', 'Historial de ventas y caja'] 
+  },
+  {
+    titulo: 'Controlar el inventario',
+    items: ['Gestión de inventarios', 'Kardex y movimientos', 'Monitor de agotamiento', 'Gestión de proveedores'],
+  },
+  {
+    titulo: 'Decidir con IA',
+    items: [
+      'Motor de predicción',
+      'Órdenes a proveedor',
+      'Estratega de promociones',
+      'Evaluador de riesgo (fiados)',
+      'Simulador de riesgos',
+      'Feedback adaptativo',
+    ],
+  },
+  {
+    titulo: 'Administrar',
+    items: [
+      'Dashboard analítico',
+      'Auditoría transparente',
+      'Roles y permisos',
+      'Soporte multi-tienda',
+      'Reportes PDF y Excel',
+      'Automatización de tareas',
+    ],
+  },
+];
 
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 100, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 32 }}>
-            <div className="pulse-dot" />
-            <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a5b4fc' }}>Desplegado en Render · v3.0</span>
-          </div>
+const USUARIOS = [
+  { rol: 'Administrador', usuario: 'Carlos Admin' },
+  { rol: 'Colaborador', usuario: 'María' },
+];
 
-          <h1 className="hero-title" style={{ fontSize: 'clamp(42px, 7vw, 80px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 24 }}>
-            El sistema operativo<br />
-            <span style={{ color: '#818cf8' }}>para tu inventario</span>
-          </h1>
+const FICHA = [
+  ['Metodología', 'Scrum, 5 sprints en 10 semanas'],
+  ['Requerimientos', '95: 75 funcionales y 20 no funcionales'],
+  ['Pruebas', '64 casos ejecutados al cierre'],
+  ['Inteligencia artificial', 'GPT-4o-mini'],
+  ['Datos', 'PostgreSQL'],
+];
 
-          <p style={{ fontSize: 18, color: '#94a3b8', fontWeight: 500, maxWidth: 580, margin: '0 auto 40px', lineHeight: 1.65 }}>
-            Control de inventario en tiempo real, predicciones con IA y analítica financiera. Diseñado para microempresas de víveres en Bogotá.
-          </p>
+const VERSION_4 = [
+  'Panel maestro multi-sucursal',
+  'Planes de suscripción',
+  'API pública para integraciones',
+  'App móvil nativa',
+];
 
-          <div className="hero-btns" style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <button className="btn-primary" onClick={() => navigate('/register')}>Registrar mi tienda →</button>
-            <button className="btn-ghost" onClick={() => document.getElementById('demo').scrollIntoView({ behavior: 'smooth' })}>Explorar demo</button>
-          </div>
+const LandingPage = () => (
+  <div className="sp">
+    <style>{CSS}</style>
+
+    {/* ───────── Hero ───────── */}
+    <nav className="sp-navbar" aria-label="Principal">
+      <div className="sp-wrap sp-nav">
+        <Link to="/" className="sp-brand" aria-label="StockPilot, inicio">
+          <span className="sp-brand-mark" aria-hidden="true">
+            <Store size={20} />
+          </span>
+          <span className="sp-brand-text">StockPilot</span>
+        </Link>
+        <div className="sp-nav-actions">
+          <Link to="/login" className="sp-link">
+            Iniciar sesión
+          </Link>
+          <Link to="/register" className="sp-btn sp-btn-line sp-nav-cta">
+            Crear mi tienda
+          </Link>
         </div>
+      </div>
+    </nav>
 
-        {/* Dashboard Mockup */}
-        <div style={{ maxWidth: 900, margin: '72px auto 0', padding: '0 24px', position: 'relative', zIndex: 1 }}>
-          <div style={{ background: '#1e293b', borderRadius: 24, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-            <div className="mockup-bar">
-              <div className="dot" style={{ background: '#f87171' }} />
-              <div className="dot" style={{ background: '#fbbf24' }} />
-              <div className="dot" style={{ background: '#34d399' }} />
-              <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 6, height: 20, marginLeft: 12, display: 'flex', alignItems: 'center', paddingLeft: 12 }}>
-                <span style={{ fontSize: 10, color: '#475569', fontWeight: 700 }}>🔒 stockpilot.onrender.com/dashboard</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', height: 380 }}>
-              {/* Sidebar */}
-              <div style={{ width: 180, background: '#334155', borderRight: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '0 8px' }}>
-                  <span style={{ fontSize: 16 }}>🏪</span>
-                  <span style={{ fontWeight: 900, fontSize: 11, letterSpacing: '-0.01em', fontStyle: 'italic', textTransform: 'uppercase' }}>StockPilot</span>
-                </div>
-                {[['📊','Vista General', true], ['💰','Ventas', false], ['📦','Catálogo', false], ['🚨','Monitor Alertas', false], ['🔧','Proveedores', false]].map(([ico, label, active]) => (
-                  <div key={label} style={{ padding: '9px 12px', borderRadius: 10, background: active ? '#6366f1' : 'transparent', color: active ? '#fff' : '#cbd5e1', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>{ico}</span>{label}
-                  </div>
-                ))}
-              </div>
-              {/* Content */}
-              <div style={{ flex: 1, background: '#f8fafc', padding: '24px 20px', overflow: 'hidden' }}>
-                <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#1e293b', marginBottom: 4, fontStyle: 'italic' }}>Vista General</p>
-                <p style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>Resumen actual de tu negocio</p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
-                  {[['Productos','18','#1e293b','Catálogo'], ['Valor Inventario','$2.3M','#6366f1','Inventario'], ['Alertas','3','#ef4444','URGENTE'], ['Ventas Hoy','$354K','#10b981','Hoy']].map(([label, val, color, sub]) => (
-                    <div key={label} style={{ background: '#fff', borderRadius: 14, padding: '12px 14px', border: '1px solid #f1f5f9', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-                      <p style={{ fontSize: 8, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{label}</p>
-                      <p style={{ fontSize: 18, fontWeight: 900, color, letterSpacing: '-0.03em', fontStyle: 'italic', marginBottom: 2 }}>{val}</p>
-                      <p style={{ fontSize: 8, color, fontWeight: 800, textTransform: 'uppercase' }}>{sub}</p>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ background: '#ffffff', borderRadius: 16, padding: '16px 18px', color: '#1e293b', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <div style={{ width: 32, height: 32, background: '#6366f1', color: '#fff', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🚀</div>
-                    <div>
-                      <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: '-0.01em', color: '#0f172a' }}>Consejero IA</p>
-                      <p style={{ fontSize: 8, color: '#4f46e5', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Recomendaciones inteligentes</p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    {[['Arroz Roa 5kg', 'ALTA DEMANDA', '+42 ud sugeridas'], ['Aceite Girasol 1L', 'BAJA ROTACIÓN', 'Revisar stock']].map(([prod, tag, action]) => (
-                      <div key={prod} style={{ background: '#f8fafc', borderRadius: 10, padding: '10px 12px', border: '1px solid #e2e8f0' }}>
-                        <p style={{ fontSize: 9, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', marginBottom: 4 }}>{prod}</p>
-                        <span style={{ fontSize: 8, fontWeight: 800, background: tag.includes('ALTA') ? '#d1fae5' : '#fee2e2', color: tag.includes('ALTA') ? '#059669' : '#dc2626', padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase' }}>{tag}</span>
-                        <p style={{ fontSize: 8, color: '#64748b', marginTop: 6, fontWeight: 700 }}>{action}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+    <header className="sp-hero">
+      <div className="sp-wrap">
+        <div className="sp-hero-grid">
+          <div>
+            <h1 className="sp-h1">
+              <span>Qué pedir.</span>
+              <span>Qué rematar.</span>
+              <span>A quién fiarle.</span>
+            </h1>
+            <p className="sp-lead">
+              StockPilot lee tus ventas y tu inventario y te deja listas tres decisiones: el pedido a proveedores, las
+              ofertas y el crédito de cada cliente. Tú eliges qué aprobar.
+            </p>
+            <div className="sp-cta-row">
+              <Link to="/register" className="sp-btn sp-btn-primary">
+                Crear mi tienda
+              </Link>
+              <a href="#como" className="sp-link">
+                Ver cómo funciona
+              </a>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* MÉTRICAS REALES */}
-      <section data-section="stats" style={{ padding: '80px 24px', position: 'relative' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className={`reveal${isVisible('stats') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 56 }}>
-            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Construido con criterio de ingeniería</p>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic' }}>Lo que hay dentro</h2>
-          </div>
-          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-            {[
-              ['15', 'Módulos funcionales', 'Desde autenticación hasta retroalimentación IA'],
-              ['83', 'Requerimientos', '65 funcionales + 18 no funcionales implementados'],
-              ['100%', 'Cobertura QA', '56 casos de prueba ejecutados al cierre'],
-              ['5', 'Sprints Scrum', '10 semanas de desarrollo con entregas verificadas'],
-            ].map(([num, label, sub], i) => (
-              <div key={label} className={`stat-card reveal${isVisible('stats') ? ' visible' : ''} reveal-delay-${i+1}`}>
-                <p style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: 900, letterSpacing: '-0.04em', fontStyle: 'italic', color: '#818cf8', marginBottom: 8 }}>{num}</p>
-                <p style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#e2e8f0', marginBottom: 6 }}>{label}</p>
-                <p style={{ fontSize: 11, color: '#475569', fontWeight: 500, lineHeight: 1.5 }}>{sub}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+          {/* La tirilla: único momento animado de la página (se imprime al cargar) */}
+          <figure className="sp-print">
+            <figcaption className="sp-sr">Ejemplo de las sugerencias de StockPilot para un día</figcaption>
+            <div className="sp-slot" aria-hidden="true" />
+            <div className="sp-paper">
+              <div className="sp-receipt">
+                <p className="sp-r-center sp-r-name">StockPilot</p>
+                <p className="sp-r-center">Sugerencias de hoy</p>
+                <hr className="sp-r-hr" />
 
-      {/* FEATURES */}
-      <section data-section="features" style={{ padding: '80px 24px', background: 'rgba(255,255,255,0.02)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className={`reveal${isVisible('features') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 56 }}>
-            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Arquitectura modular</p>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Tres capas de inteligencia</h2>
-            <p style={{ fontSize: 16, color: '#64748b', maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>Cada capa resuelve un problema real del tendero bogotano.</p>
-          </div>
-          <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-            {[
-              { icon: <Bot size={24} />, color: '#818cf8', title: 'Copiloto IA (GPT-4o-mini)', desc: 'Analiza el inventario y genera recomendaciones de reabastecimiento en lenguaje natural, con guardrails por clasificación ABC y auditoría completa de cada decisión del modelo.', tag: 'Motor predictivo' },
-              { icon: <BarChart2 size={24} />, color: '#34d399', title: 'Analítica en tiempo real', desc: 'Dashboard con valor del inventario, ventas del día, proyección de agotamiento por producto y nivel de servicio. Actualizado en cada transacción registrada.', tag: 'Centro analítico' },
-              { icon: <Search size={24} />, color: '#f472b6', title: 'Auditoría transparente', desc: 'Cada decisión de la IA queda registrada con su prompt, respuesta y ajuste aplicado. La retroalimentación adaptativa mejora las sugerencias con cada ciclo.', tag: 'Trazabilidad total' },
-            ].map(({ icon, color, title, desc, tag }, i) => (
-              <div key={title} className={`feature-card reveal${isVisible('features') ? ' visible' : ''} reveal-delay-${i+1}`}>
-                <div style={{ width: 52, height: 52, background: `${color}18`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>{icon}</div>
-                <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color, marginBottom: 12, display: 'block' }}>{tag}</span>
-                <h3 style={{ fontSize: 17, fontWeight: 900, letterSpacing: '-0.02em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 12, color: '#f1f5f9' }}>{title}</h3>
-                <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.7, fontWeight: 500 }}>{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+                <p className="sp-r-head">Pedir a proveedores</p>
+                <ul>
+                  <li className="sp-r-row">
+                    <span>Arroz Roa 5 kg</span>
+                    <span>+42 ud</span>
+                  </li>
+                  <li className="sp-r-row">
+                    <span>Huevos x30</span>
+                    <span>+12 ud</span>
+                  </li>
+                </ul>
+                <hr className="sp-r-hr" />
 
-      {/* MÓDULOS */}
-      <section data-section="modules" style={{ padding: '80px 24px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className={`reveal${isVisible('modules') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 48 }}>
-            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Todo incluido</p>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic' }}>15 módulos operativos</h2>
-          </div>
-          <div className={`reveal${isVisible('modules') ? ' visible' : ''} reveal-delay-2`} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
-            {[
-              ['🔐', 'Autenticación y roles'],
-              ['📦', 'Gestión de productos'],
-              ['💰', 'Registro de ventas'],
-              ['📋', 'Control de movimientos'],
-              ['🏪', 'Gestión multi-tienda'],
-              ['🧠', 'Motor de predicción IA'],
-              ['🛒', 'Órdenes de compra'],
-              ['🚨', 'Alertas inteligentes'],
-              ['📊', 'Dashboard analítico'],
-              ['📄', 'Reportes y exportación'],
-              ['🚚', 'Gestión de proveedores'],
-              ['👥', 'Gestión de colaboradores'],
-              ['🧪', 'Simulador de escenarios'],
-              ['🔄', 'Retroalimentación IA'],
-              ['📧', 'Automatización semanal'],
-            ].map(([ico, label]) => (
-              <div key={label} className="module-chip">
-                <span style={{ fontSize: 15 }}>{ico}</span>
-                <span>{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+                <p className="sp-r-head">Rematar esta semana</p>
+                <ul>
+                  <li className="sp-r-row">
+                    <span>Yogurt 200 g</span>
+                    <span>{'-15%\u00A0\u00A0$28.560'}</span>
+                  </li>
+                  <li className="sp-r-row">
+                    <span>Leche UHT 1 L</span>
+                    <span>{'-25%\u00A0\u00A0$25.200'}</span>
+                  </li>
+                </ul>
+                <hr className="sp-r-hr" />
 
-      {/* DEMO */}
-      <section id="demo" data-section="demo" style={{ padding: '80px 24px', background: 'rgba(255,255,255,0.02)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className={`reveal${isVisible('demo') ? ' visible' : ''}`} style={{ textAlign: 'center', marginBottom: 56 }}>
-            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Sistema desplegado</p>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Acceso al demo</h2>
-            <p style={{ fontSize: 16, color: '#64748b', maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>Sistema operativo en Render con base de datos PostgreSQL persistente.</p>
-          </div>
-          <div className="demo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            {/* Credenciales */}
-            <div className={`cred-card reveal${isVisible('demo') ? ' visible' : ''} reveal-delay-1`}>
-              <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 24 }}>Credenciales de prueba</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 14, padding: '18px 20px' }}>
-                  <p style={{ fontSize: 9, fontWeight: 900, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10 }}>Administrador</p>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>Usuario: <span style={{ color: '#fff', fontWeight: 900 }}>Carlos Admin</span></p>
-                  <p style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>Contraseña: consultar al autor</p>
-                </div>
-                <div style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 14, padding: '18px 20px' }}>
-                  <p style={{ fontSize: 9, fontWeight: 900, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10 }}>Colaborador</p>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>Usuario: <span style={{ color: '#fff', fontWeight: 900 }}>María</span></p>
-                  <p style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>Contraseña: consultar al autor</p>
-                </div>
+                <p className="sp-r-head">Fiados</p>
+                <ul>
+                  <li>
+                    <p className="sp-r-row">
+                      <span>Marta R.</span>
+                      <span>No fiar más</span>
+                    </p>
+                    <p className="sp-r-note">debe $86.000, 3 semanas sin abonar</p>
+                  </li>
+                  <li>
+                    <p className="sp-r-row">
+                      <span>Julián P.</span>
+                      <span>Puede fiar</span>
+                    </p>
+                    <p className="sp-r-note">debe $40.000, paga a tiempo</p>
+                  </li>
+                </ul>
+                <hr className="sp-r-hr" />
+
+                <p className="sp-r-row sp-r-total">
+                  <span>Capital por recuperar</span>
+                  <span>$53.760</span>
+                </p>
+                <hr className="sp-r-hr" />
+                <p className="sp-r-center">Tú decides qué aprobar.</p>
+                <p className="sp-r-center sp-r-note">Ejemplo con datos ficticios</p>
               </div>
             </div>
-            {/* CTA */}
-            <div className={`reveal${isVisible('demo') ? ' visible' : ''} reveal-delay-2`} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ flex: 1, background: '#6366f1', borderRadius: 20, padding: '32px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>Registra tu tienda</p>
-                  <h3 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', fontStyle: 'italic', textTransform: 'uppercase', lineHeight: 1.2, marginBottom: 16 }}>Empieza a operar en minutos</h3>
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, fontWeight: 500 }}>Crea tu tienda, carga tus productos y deja que la IA empiece a sugerir pedidos basados en tu ritmo de ventas real.</p>
-                </div>
-                <button onClick={() => navigate('/register')} style={{ marginTop: 24, background: '#fff', color: '#4f46e5', border: 'none', borderRadius: 12, padding: '14px 24px', fontSize: 11, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.2s' }}>
-                  Registrar mi tienda →
-                </button>
-              </div>
-              {/* Roadmap */}
-              <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px 28px' }}>
-                <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#6366f1', marginBottom: 16 }}>Roadmap v4</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {['Panel maestro multi-sucursal', 'Planes de suscripción', 'API pública para integraciones', 'App móvil nativa'].map(item => (
-                    <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 14, color: '#6366f1' }}>→</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8' }}>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          </figure>
         </div>
-      </section>
+      </div>
+    </header>
 
-      {/* CTA FINAL */}
-      <section data-section="cta" style={{ padding: '100px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div className="hero-glow" style={{ width: 600, height: 400, background: 'rgba(99,102,241,0.12)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
-        <div className={`reveal${isVisible('cta') ? ' visible' : ''}`} style={{ maxWidth: 640, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ width: 72, height: 72, background: '#6366f1', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px' }}><Rocket size={32} /></div>
-          <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 900, letterSpacing: '-0.03em', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 20, lineHeight: 1.1 }}>
-            Haz que tu inventario<br />
-            <span style={{ color: '#818cf8' }}>trabaje para ti.</span>
+    <main>
+      {/* ───────── Las cuatro preguntas ───────── */}
+      <section id="como" className="sp-sec" aria-labelledby="como-t">
+        <div className="sp-wrap">
+          <h2 id="como-t" className="sp-h2">
+            Las decisiones que hoy tomas de memoria
           </h2>
-          <p style={{ fontSize: 16, color: '#64748b', marginBottom: 40, lineHeight: 1.65, fontWeight: 500 }}>
-            La transformación digital de tu negocio empieza con datos. Crea tu tienda y empieza a tomar decisiones basadas en tu inventario real.
-          </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button className="btn-primary" onClick={() => navigate('/register')}>Acceder al demo</button>
-            <button className="btn-ghost" onClick={() => navigate('/login')}>Ya tengo cuenta</button>
+          <ul className="sp-rows">
+            {DECISIONES.map(({ pregunta, texto, muestra }) => (
+              <li key={pregunta} className="sp-row">
+                <h3 className="sp-q">{pregunta}</h3>
+                <p className="sp-row-text">{texto}</p>
+                <div className="sp-sample">{muestra}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ───────── Módulos ───────── */}
+      <section className="sp-sec sp-mod" aria-labelledby="mod-t">
+        <div className="sp-wrap sp-mod-grid">
+          <div className="sp-mod-intro">
+            <h2 id="mod-t" className="sp-h2">
+              18 módulos en un solo sistema
+            </h2>
+            <p>Vender, controlar el inventario, decidir con IA y administrar la tienda sin cambiar de aplicación.</p>
+          </div>
+          <div className="sp-groups">
+            {GRUPOS.map(({ titulo, items }) => (
+              <div key={titulo} className="sp-group">
+                <h3>{titulo}</h3>
+                <ul>
+                  {items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
-          <div style={{ width: 32, height: 32, background: '#1e293b', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Store size={16} /></div>
-          <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: '-0.01em', fontStyle: 'italic', textTransform: 'uppercase' }}>StockPilot</span>
+      {/* ───────── Demo + CTA final ───────── */}
+      <section id="demo" className="sp-sec sp-demo" aria-labelledby="demo-t">
+        <div className="sp-wrap sp-demo-grid">
+          <div>
+            <h2 id="demo-t" className="sp-h2">
+              Pruébalo con una tienda de ejemplo
+            </h2>
+            <p className="sp-demo-copy">
+              Entra con uno de los usuarios de prueba, o crea tu propia tienda, carga tus productos y deja que la IA
+              empiece a sugerir pedidos según tu ritmo de ventas real.
+            </p>
+            <div className="sp-cta-row">
+              <Link to="/register" className="sp-btn sp-btn-primary">
+                Crear mi tienda
+              </Link>
+              <Link to="/login" className="sp-link">
+                Ya tengo cuenta
+              </Link>
+            </div>
+          </div>
+
+          <div className="sp-slip">
+            <p className="sp-slip-title">Usuarios de prueba</p>
+            {USUARIOS.map(({ rol, usuario }) => (
+              <div key={rol} className="sp-slip-user">
+                <h3>{rol}</h3>
+                <dl>
+                  <div>
+                    <dt>Usuario</dt>
+                    <dd>{usuario}</dd>
+                  </div>
+                  <div>
+                    <dt>Contraseña</dt>
+                    <dd>consultar al autor</dd>
+                  </div>
+                </dl>
+              </div>
+            ))}
+          </div>
         </div>
-        <p style={{ fontSize: 11, color: '#334155', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Práctica de Ingeniería IV · Universidad Central · 2026</p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
-          {['Términos', 'Privacidad', 'Contacto'].map(link => (
-            <span key={link} style={{ fontSize: 12, color: '#334155', cursor: 'pointer', transition: 'color 0.2s', fontWeight: 600 }}
-              onMouseEnter={e => e.target.style.color = '#94a3b8'}
-              onMouseLeave={e => e.target.style.color = '#334155'}
-            >{link}</span>
-          ))}
+      </section>
+    </main>
+
+    {/* ───────── Ficha del proyecto + pie ───────── */}
+    <footer className="sp-ficha" aria-labelledby="ficha-t">
+      <div className="sp-wrap">
+        <h2 id="ficha-t" className="sp-h2">
+          Ficha del proyecto
+        </h2>
+        <div className="sp-ficha-grid">
+          <dl className="sp-spec">
+            {FICHA.map(([dt, dd]) => (
+              <div key={dt}>
+                <dt>{dt}</dt>
+                <dd>{dd}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="sp-next">
+            <h3>Lo que viene en la v4</h3>
+            <ul>
+              {VERSION_4.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <p style={{ fontSize: 11, color: '#1e293b', marginTop: 20 }}>© 2026 StockPilot</p>
-      </footer>
-    </div>
-  );
-};
+        <div className="sp-foot">
+          <span>StockPilot v3.0</span>
+          <span>Práctica de Ingeniería IV, Universidad Central, 2026</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+);
+
+/* Nota: si prefieres, mueve este @import a index.html con <link rel="preconnect"> + <link rel="stylesheet">. */
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* Los resets usan :where() para tener especificidad 0 y no pisar las clases de abajo */
+:where(.sp) :where(h1, h2, h3, p, ul, dl, dd, hr, figure) { margin: 0; padding: 0; }
+:where(.sp) ul { list-style: none; }
+:where(.sp) a { color: inherit; }
+
+.sp {
+  --azul: #252C93;       /* azul esfero: el índigo del producto, más hondo */
+  --tinta: #14173F;      /* texto y fondos oscuros */
+  --tinta-2: #3A3F6E;   /* texto secundario */
+  --papel: #EEF0F8;      /* papel de cuaderno */
+  --tirilla: #FDFDFB;    /* papel térmico */
+  --resaltador: #FFD84A; /* acción y énfasis */
+  --ambar: #E08A00;
+  --ring: var(--azul);
+
+  font-family: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--tinta);
+  background: var(--papel);
+  line-height: 1.55;
+  min-height: 100vh;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+.sp *, .sp *::before, .sp *::after { box-sizing: border-box; }
+.sp :focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+.sp [id] { scroll-margin-top: 88px; }
+.sp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sp-wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+/* Botones y enlaces */
+.sp-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0 24px; border-radius: 6px;
+  border: 2px solid transparent; font: inherit; font-weight: 700; font-size: 1rem;
+  text-decoration: none; cursor: pointer;
+  transition: background-color .15s, border-color .15s, transform .1s;
+}
+.sp-btn:active { transform: translateY(1px); }
+.sp-btn-primary { background: var(--resaltador); color: var(--tinta); }
+.sp-btn-primary:hover { background: #FFC81A; }
+.sp-btn-line { min-height: 40px; padding: 0 18px; border-color: rgba(255,255,255,.6); color: #fff; }
+.sp-btn-line:hover { border-color: #fff; background: rgba(255,255,255,.1); }
+.sp-link { font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.sp-link:hover { text-decoration-color: var(--resaltador); }
+
+/* Titulares: Archivo condensado, en minúscula normal */
+.sp-h2 {
+  max-width: 16em; font-weight: 800; font-stretch: 75%;
+  font-size: clamp(2.2rem, 4.6vw, 3.6rem); line-height: .98; letter-spacing: -.005em;
+}
+
+/* ── Hero ── */
+.sp-hero { --ring: #fff; background: var(--azul); color: #fff; padding-bottom: 104px; }
+/* Nav pegajoso: mismo azul del hero, así arriba no se nota la unión y al bajar queda como barra sólida (sin blur ni JS) */
+.sp-navbar { --ring: #fff; position: sticky; top: 0; z-index: 50; background: var(--azul); color: #fff; }
+.sp-nav { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.sp-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 800; font-stretch: 75%; font-size: 1.7rem; letter-spacing: -.005em; }
+.sp-brand-mark { width: 38px; height: 38px; border-radius: 10px; background: #fff; color: var(--azul); display: grid; place-items: center; }
+.sp-nav-actions { display: flex; align-items: center; gap: 22px; }
+
+.sp-hero-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr); gap: 64px; align-items: center; padding-top: 56px; }
+.sp-h1 { font-weight: 800; font-stretch: 75%; font-size: clamp(3.1rem, 7.4vw, 6.5rem); line-height: .92; letter-spacing: -.01em; }
+.sp-h1 span { display: block; }
+.sp-lead { margin-top: 32px; max-width: 33rem; font-size: 1.2rem; line-height: 1.5; color: rgba(255,255,255,.88); }
+.sp-cta-row { margin-top: 36px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
+
+/* Tirilla */
+.sp-print { width: min(100%, 360px); justify-self: end; }
+.sp-slot { position: relative; z-index: 2; height: 14px; margin: 0 -14px; border-radius: 8px; background: var(--tinta); box-shadow: inset 0 -3px 0 rgba(255,255,255,.12); }
+.sp-paper { margin: -4px 8px 0; filter: drop-shadow(0 26px 22px rgba(6,8,64,.4)); transform: rotate(1deg); transform-origin: top center; }
+.sp-receipt {
+  padding: 24px 22px 40px; background: var(--tirilla); color: var(--tinta);
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: .8125rem; line-height: 1.5;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
+          mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
+  animation: sp-print 2.8s steps(36, end) .4s both;
+}
+@keyframes sp-print { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+.sp-r-center { text-align: center; }
+.sp-r-name { font-size: 1rem; font-weight: 600; }
+.sp .sp-r-hr { border: 0; border-top: 1px dashed rgba(20,23,63,.45); margin: 14px 0; }
+.sp-r-head { font-weight: 600; margin-bottom: 6px; }
+.sp-r-row { display: flex; justify-content: space-between; gap: 12px; }
+.sp-r-row span:last-child { white-space: nowrap; text-align: right; }
+.sp-r-note { padding-left: 12px; margin-bottom: 6px; font-size: .75rem; color: var(--tinta-2); }
+.sp-r-center.sp-r-note { padding-left: 0; margin-bottom: 0; }
+.sp-r-total { font-weight: 600; }
+.sp-r-total span:last-child { margin-right: -6px; padding: 0 6px; background: linear-gradient(transparent 10%, var(--resaltador) 10% 90%, transparent 90%); }
+
+/* ── Secciones ── */
+.sp-sec { padding: 112px 0; }
+
+.sp-rows { margin-top: 56px; border-bottom: 2px solid var(--tinta); }
+.sp-row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr); gap: 16px 40px; align-items: start; padding: 36px 0; border-top: 2px solid var(--tinta); }
+.sp-q { font-weight: 800; font-stretch: 75%; font-size: clamp(2.4rem, 5vw, 4.4rem); line-height: .92; }
+.sp-row-text { max-width: 36rem; font-size: 1.05rem; color: var(--tinta-2); }
+
+/* Muestras: réplicas pequeñas de la interfaz real */
+.sp-sample { display: grid; gap: 8px; padding: 14px 16px; background: #fff; border: 1px solid rgba(37,44,147,.3); border-radius: 14px; }
+.sp-s-name { font-size: .95rem; font-weight: 800; }
+.sp-s-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .9rem; }
+.sp-s-line strong { font-weight: 800; }
+.sp-pill { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .75rem; font-weight: 700; }
+.sp-pill-ok { background: #DDF3E9; color: #0B6B45; }
+.sp-pill-risk { background: #FBE3E1; color: #B42A26; }
+.sp-pill-desc { background: var(--azul); color: #fff; }
+.sp-bar { height: 6px; border-radius: 6px; background: #E3E6F3; overflow: hidden; }
+.sp-bar span { display: block; height: 100%; background: var(--ambar); }
+
+/* Módulos */
+.sp-mod { background: #fff; }
+.sp-mod-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 64px; align-items: start; }
+.sp-mod-intro p { margin-top: 20px; max-width: 26rem; font-size: 1.05rem; color: var(--tinta-2); }
+.sp-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 48px; }
+.sp-group h3, .sp-next h3 { margin-bottom: 8px; padding-top: 12px; border-top: 4px solid var(--azul); font-size: 1.1rem; font-weight: 800; }
+.sp-group li, .sp-next li { padding: 9px 0; border-bottom: 1px solid rgba(20,23,63,.14); font-size: .98rem; }
+
+/* Demo */
+.sp-demo { --ring: #fff; background: var(--tinta); color: #fff; }
+.sp-demo-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 72px; align-items: center; }
+.sp-demo-copy { margin-top: 24px; max-width: 32rem; font-size: 1.1rem; color: rgba(255,255,255,.82); }
+.sp-slip { padding: 28px 28px 32px; background: var(--resaltador); color: var(--tinta); font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: .9rem; transform: rotate(-1.5deg); box-shadow: 0 18px 30px rgba(0,0,0,.35); }
+.sp-slip-title { margin-bottom: 18px; font-weight: 600; }
+.sp-slip-user + .sp-slip-user { margin-top: 22px; padding-top: 22px; border-top: 1px dashed rgba(20,23,63,.5); }
+.sp-slip-user h3 { margin-bottom: 10px; font-family: 'Archivo', system-ui, sans-serif; font-weight: 800; font-stretch: 75%; font-size: 1.7rem; line-height: 1; }
+.sp-slip dl > div { display: flex; justify-content: space-between; gap: 16px; padding: 3px 0; }
+.sp-slip dt { color: var(--tinta-2); }
+.sp-slip dd { font-weight: 600; text-align: right; }
+
+/* Ficha y pie */
+.sp-ficha { padding: 112px 0 40px; }
+.sp-ficha-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 72px; margin-top: 48px; align-items: start; }
+.sp-spec { border-bottom: 1px solid rgba(20,23,63,.2); }
+.sp-spec > div { display: grid; grid-template-columns: 11rem 1fr; gap: 16px; padding: 14px 0; border-top: 1px solid rgba(20,23,63,.2); }
+.sp-spec dt { font-weight: 700; }
+.sp-spec dd { color: var(--tinta-2); }
+.sp-next li { display: flex; align-items: center; gap: 12px; }
+.sp-next li::before { content: ''; flex: none; width: 14px; height: 14px; border: 2px solid var(--tinta); border-radius: 3px; }
+.sp-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin-top: 96px; padding-top: 24px; border-top: 2px solid var(--tinta); font-size: .9rem; color: var(--tinta-2); }
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .sp-hero-grid { grid-template-columns: 1fr; gap: 56px; }
+  .sp-print { justify-self: center; }
+  .sp-row { grid-template-columns: 1fr; }
+  .sp-mod-grid, .sp-demo-grid, .sp-ficha-grid { grid-template-columns: 1fr; gap: 48px; }
+}
+@media (max-width: 600px) {
+  .sp-wrap { padding: 0 20px; }
+  .sp-hero { padding-bottom: 72px; }
+  .sp-nav { height: 64px; }
+  .sp-sec { padding: 72px 0; }
+  .sp-ficha { padding: 72px 0 32px; }
+  .sp-groups { grid-template-columns: 1fr; }
+  .sp-spec > div { grid-template-columns: 1fr; gap: 2px; }
+  .sp-foot { margin-top: 64px; }
+}
+@media (max-width: 520px) {
+  .sp-brand-text { display: none; }
+  .sp-nav-actions { gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-receipt { animation: none; }
+  .sp-btn { transition: none; }
+}
+`;
 
 export default LandingPage;
