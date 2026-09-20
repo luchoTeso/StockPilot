@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { safeError } = require('../utils/securityUtils');
+const { seleccionarCandidatosReabastecimiento, esRecomendacionAccionable } = require('../utils/recomendacionesDashboard');
 
 // Inicializar cliente OpenAI con la clave del entorno o una clave falsa para evitar crasheos al arrancar sin la variable
 const openai = new OpenAI({
@@ -166,7 +167,7 @@ const aiController = {
         return res.json({ cached: true, recommendations: tiendaCache.recommendations });
       }
       // 2. BD (sobrevive reinicios de Railway — evita llamada a OpenAI si los datos no cambiaron)
-      const dbCached = await dbCacheGet(`RECS_${tiendaId}`, currentHash);
+      const dbCached = await dbCacheGet(`RECS_V2_${tiendaId}`, currentHash);
       if (dbCached) {
         aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: dbCached, timestamp: new Date() };
         return res.json({ cached: true, recommendations: dbCached });
@@ -210,7 +211,16 @@ const aiController = {
         };
       });
 
-      const contextItemsForAI = contextItemsFull.slice(0, 15);
+      // Solo se analizan los productos que realmente necesitan reposición (base_load > 0), los más urgentes primero.
+      // Antes se enviaban los 8 más facturados aunque tuvieran stock de sobra: la IA "sugería aumentar" y se veía "+0u".
+      const contextItemsForAI = seleccionarCandidatosReabastecimiento(contextItemsFull, 8);
+
+      // Sin productos por reponer no hay nada que sugerir: se responde vacío y se evita una llamada a OpenAI.
+      if (contextItemsForAI.length === 0) {
+        aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: [], timestamp: new Date() };
+        dbCacheSet(`RECS_V2_${tiendaId}`, currentHash, []);
+        return res.json({ cached: false, recommendations: [] });
+      }
 
       // 4. Llamada a OpenAI (Contexto Estructurado)
       const completion = await openai.chat.completions.create({
@@ -226,7 +236,7 @@ const aiController = {
           },
           { 
             role: "user", 
-            content: `Analiza y ajusta estos ítems críticos: ${JSON.stringify(contextItemsForAI.slice(0, 8))}` 
+            content: `Analiza y ajusta estos ítems críticos: ${JSON.stringify(contextItemsForAI)}` 
           }
         ],
         response_format: { type: "json_object" }
@@ -242,11 +252,12 @@ const aiController = {
 
       const rawAdjustments = Array.isArray(aiResponse.adjustments) ? aiResponse.adjustments : [];
       const finalRecommendations = rawAdjustments.map(adj => {
-        const original = contextItemsFull.find(i => i.id === adj.id);
+        // La IA a veces devuelve el id como texto ("12") o omite el ajuste: se compara como texto y se tolera un ajuste ausente.
+        const original = contextItemsFull.find(i => String(i.id) === String(adj.id));
         if (!original) return null;
 
         // Extraer número del ajuste
-        const adjNum = parseInt(adj.adjustment.replace(/[^0-9-]/g, '')) || 0;
+        const adjNum = parseInt(String(adj.adjustment ?? '').replace(/[^0-9-]/g, '')) || 0;
         
         // Guardrails Dinámicos (Clamping)
         let limit = original.abc === 'A' ? 100 : (original.abc === 'B' ? 50 : 20);
@@ -268,7 +279,7 @@ const aiController = {
 
         // Decision Log (Audit Trail) → BD en vez de archivo
         return result;
-      }).filter(r => r !== null);
+      }).filter(esRecomendacionAccionable); // descarta nulos y sugerencias de 0 unidades
 
       if (finalRecommendations.length === 0) {
         throw new Error("No se generaron recomendaciones válidas");
@@ -290,7 +301,7 @@ const aiController = {
 
       // 6. Guardar en memoria y en BD (persiste entre reinicios)
       aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: finalRecommendations, timestamp: new Date() };
-      dbCacheSet(`RECS_${tiendaId}`, currentHash, finalRecommendations);
+      dbCacheSet(`RECS_V2_${tiendaId}`, currentHash, finalRecommendations);
 
       res.json({ cached: false, recommendations: finalRecommendations });
 

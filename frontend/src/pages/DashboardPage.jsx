@@ -240,8 +240,8 @@ const DashboardPage = () => {
                     <div key={rec.id || rec.product} className="bg-slate-50/70 border-4 border-azul p-5 rounded-[1.5rem] hover:border-azul-hondo hover:bg-azul/10 hover:shadow-md transition-all duration-200 group flex flex-col">
                       <div className="flex justify-between items-start mb-3 gap-2">
                         <span className="text-tinta font-black text-sm uppercase tracking-tight leading-tight flex-1">{rec.product}</span>
-                        <span className={`shrink-0 text-[9px] font-black px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
-                          {rec.trend === 'alcista' ? 'ALTA DEMANDA' : 'BAJA ROTACIÓN'}
+                        <span className={`shrink-0 text-[9px] font-black px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : rec.trend === 'bajista' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                          {rec.trend === 'alcista' ? 'ALTA DEMANDA' : rec.trend === 'bajista' ? 'BAJA ROTACIÓN' : 'DEMANDA ESTABLE'}
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-600 mt-2 font-medium leading-relaxed italic">"{rec.reason}"</p>
