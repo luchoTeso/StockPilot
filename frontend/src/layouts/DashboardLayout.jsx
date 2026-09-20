@@ -94,7 +94,7 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="flex w-full min-h-screen bg-[#f8fafc] font-outfit overflow-x-hidden relative">
+    <div className="flex w-full min-h-screen bg-papel font-outfit overflow-x-hidden relative">
       
       {/* 📱 Mobile Top Bar (Only < 768px) */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-[150] flex items-center justify-between px-6 shadow-sm">

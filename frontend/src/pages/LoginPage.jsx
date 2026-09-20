@@ -56,12 +56,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div data-surface="dark" className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)' }}>
-      {/* Orbes decorativos */}
-      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-15%] left-[-10%] w-[400px] h-[400px] bg-violet-500/15 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute top-[50%] left-[50%] w-[300px] h-[300px] bg-sky-500/10 rounded-full blur-[80px] pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
-
+    <div data-surface="dark" className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden bg-tinta">
       <div className="w-full max-w-[440px] animate-fade-in relative z-10">
         <div className="bg-white p-10 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-200 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600"></div>
@@ -107,7 +102,7 @@ const LoginPage = () => {
                 <label htmlFor="token2FA" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Código de 6 Dígitos</label>
                 <input id="token2FA" type="text" maxLength="6" value={token2FA} onChange={e => setToken2FA(e.target.value.replace(/\D/g, ''))} required placeholder="000000" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl tracking-[0.5em] font-black focus:border-indigo-600 outline-none transition-colors" />
               </div>
-              <button type="submit" className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 transition-transform transition-colors">
+              <button type="submit" className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] mt-4 active:scale-95 transition-transform transition-colors">
                 Verificar Código
               </button>
               <button type="button" onClick={() => {setIs2FA(false); setToken2FA(''); setError('');}} className="w-full mt-2 py-3 text-slate-400 hover:text-slate-600 text-[10px] font-bold uppercase tracking-widest transition-colors">
@@ -126,7 +121,7 @@ const LoginPage = () => {
                 <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors" />
               </div>
 
-              <button type="submit" className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 transition-transform transition-colors">
+              <button type="submit" className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] mt-4 active:scale-95 transition-transform transition-colors">
                 Ingresar a mi Negocio
               </button>
             </form>

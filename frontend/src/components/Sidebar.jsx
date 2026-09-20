@@ -86,7 +86,7 @@ const Sidebar = () => {
       {/* Sidebar Principal */}
       <div data-surface="dark" className={`
         fixed left-0 top-0 h-screen z-[200]
-        bg-[#334155] text-white py-6 flex flex-col justify-between
+        bg-tinta text-white py-6 flex flex-col justify-between
         shadow-2xl transition-[width,transform] duration-300 ease-in-out font-outfit
         ${sidebarWidth}
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
@@ -111,9 +111,9 @@ const Sidebar = () => {
             aria-label={isCollapsed ? "Expandir menú" : "Colapsar menú"}
             className={`
               hidden md:flex absolute top-10 -right-4 w-8 h-8 rounded-full
-              bg-indigo-600 hover:bg-indigo-700 text-white
-              items-center justify-center transition-transform transition-colors shadow-xl shadow-indigo-500/40
-              active:scale-90 border-2 border-[#334155] z-[120] hover:scale-110
+              bg-resaltador hover:bg-resaltador-hondo text-tinta
+              items-center justify-center transition-transform transition-colors shadow-md
+              active:scale-90 border-2 border-tinta z-[120] hover:scale-110
             `}
             title={isCollapsed ? "Expandir" : "Colapsar"}
           >
@@ -160,9 +160,9 @@ const Sidebar = () => {
                               }
                               setIsStoreDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${t.id_tienda === user.tiendaId ? 'bg-indigo-600/20 text-indigo-300 font-bold' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                            className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${t.id_tienda === user.tiendaId ? 'bg-white/10 text-white font-bold' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
                           >
-                            <Store size={12} className={t.id_tienda === user.tiendaId ? 'text-indigo-400' : 'text-slate-500'} />
+                            <Store size={12} className={t.id_tienda === user.tiendaId ? 'text-resaltador' : 'text-slate-500'} />
                             <span className="truncate">{t.nombre_establecimiento}</span>
                           </button>
                         ))}
@@ -190,8 +190,8 @@ const Sidebar = () => {
                 className={({ isActive }) =>
                   `flex items-center group py-3 transition-colors transition-shadow duration-300 rounded-xl relative mb-1 ${isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
                   } ${isActive
-                    ? 'bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/20'
-                    : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                    ? 'border-l-4 border-resaltador bg-white/10 text-white font-bold'
+                    : 'border-l-4 border-transparent text-white/70 hover:bg-white/10 hover:text-white'
                   }`
                 }
               >

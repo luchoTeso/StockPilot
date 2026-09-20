@@ -97,16 +97,12 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div data-surface="dark" className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)' }}>
-      
-      {/* Orbes decorativos */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-rose-500/15 blur-[120px] rounded-full pointer-events-none"></div>
+    <div data-surface="dark" className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden bg-tinta">
 
       <div className="w-full max-w-[440px] animate-fade-in relative z-10">
         <div className="bg-white p-10 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-200 relative overflow-hidden">
           
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-rose-500"></div>
+          <div className="absolute top-0 left-0 w-full h-2 bg-azul"></div>
           
           <button 
             onClick={() => navigate('/login')}
@@ -144,7 +140,7 @@ const ForgotPasswordPage = () => {
                 />
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl mt-4 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl mt-4 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50">
                 {isLoading ? 'Procesando...' : 'Recuperar mi Cuenta'}
               </button>
             </form>
