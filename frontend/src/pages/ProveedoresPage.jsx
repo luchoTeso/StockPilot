@@ -25,16 +25,16 @@ const ProveedoresPage = () => {
   } = useProveedoresPage();
 
   return (
-    <div className="pb-32 space-y-8 animate-fade-in font-outfit">
+    <div className="pb-32 space-y-8 animate-fade-in">
       
       {/* HEADER PREMIUM */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 relative">
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-azul/10 text-azul rounded-xl flex items-center justify-center shadow-inner border border-azul/30">
+            <div className="w-10 h-10 bg-azul/10 text-azul rounded-lg flex items-center justify-center shadow-inner border border-azul/30">
               <Building2 size={20} />
             </div>
-            <h1 className="text-4xl font-black text-tinta tracking-tighter uppercase italic">Red de Proveedores</h1>
+            <h1 className="titular text-4xl text-tinta">Red de Proveedores</h1>
           </div>
           <p className="text-sm font-bold text-slate-400 max-w-xl">
             Gestiona tus compras apoyado en el Copiloto IA. Revisa qué productos necesitas pedir y genera tus órdenes de abastecimiento al instante.
@@ -43,7 +43,7 @@ const ProveedoresPage = () => {
         
         <button 
           onClick={() => handleOpenSupplierModal()}
-          className="bg-azul hover:bg-azul-hondo text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl transition-colors transition-shadow transition-transform flex items-center gap-2 active:scale-95 z-20"
+          className="bg-azul hover:bg-azul-hondo text-white px-8 py-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform flex items-center gap-2 active:scale-95 z-20"
         >
           <Plus size={14} /> Registrar Proveedor
         </button>

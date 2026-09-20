@@ -96,10 +96,10 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div data-surface="dark" className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden bg-tinta">
+    <div data-surface="dark" className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-tinta">
 
       <div className="w-full max-w-[440px] animate-fade-in relative z-10">
-        <div className="bg-white p-10 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-200 relative overflow-hidden">
+        <div className="bg-white p-10 md:p-12 rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden">
           
           <div className="absolute top-0 left-0 w-full h-2 bg-azul"></div>
           
@@ -111,13 +111,13 @@ const ForgotPasswordPage = () => {
           </button>
 
           <div className="text-center mb-10 mt-6">
-            <div className="w-20 h-20 bg-azul/10 text-azul rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-azul/30">
+            <div className="w-20 h-20 bg-azul/10 text-azul rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-azul/30">
                {step === 1 ? <Mail size={36} /> : step === 2 ? <KeyRound size={36} /> : <Sparkles size={36} />}
             </div>
-            <h1 className="text-3xl font-black text-tinta tracking-tighter italic uppercase">
+            <h1 className="titular text-3xl text-tinta">
               {step === 1 ? 'Recuperación' : step === 2 ? 'Verificación' : 'Nueva Clave'}
             </h1>
-            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">
+            <p className="text-slate-400 font-bold text-xs mt-2">
               {step === 1 ? 'Envío de código de seguridad' : step === 2 ? 'Ingrese el código recibido' : 'Establezca sus credenciales'}
             </p>
           </div>
@@ -135,11 +135,11 @@ const ForgotPasswordPage = () => {
                   onChange={e => setEmail(e.target.value)} 
                   required 
                   placeholder="ejemplo@stockpilot.com" 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
                 />
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl mt-4 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold shadow-lg mt-4 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50">
                 {isLoading ? 'Procesando...' : 'Recuperar mi Cuenta'}
               </button>
             </form>
@@ -167,12 +167,12 @@ const ForgotPasswordPage = () => {
                     value={digit}
                     onChange={(e) => handleCodeChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-xl text-xl text-center font-black text-azul focus:border-azul focus:bg-azul/10 outline-none transition-colors"
+                    className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-lg text-xl text-center font-bold text-azul focus:border-azul focus:bg-azul/10 outline-none transition-colors"
                   />
                 ))}
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg mt-8 active:scale-95 transition-colors transition-transform disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul text-white rounded-lg text-xs font-bold shadow-lg mt-8 active:scale-95 transition-colors transition-transform disabled:opacity-50">
                 {isLoading ? 'Validando Token...' : 'Confirmar Identidad'}
               </button>
             </form>
@@ -191,7 +191,7 @@ const ForgotPasswordPage = () => {
                   required 
                   placeholder="••••••••" 
                   minLength={6}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
                 />
               </div>
 
@@ -205,11 +205,11 @@ const ForgotPasswordPage = () => {
                   required 
                   placeholder="••••••••" 
                   minLength={6}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
                 />
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg mt-4 active:scale-95 transition-colors transition-transform disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold shadow-lg mt-4 active:scale-95 transition-colors transition-transform disabled:opacity-50">
                 {isLoading ? 'Asegurando credenciales...' : 'Restaurar mi Acceso'}
               </button>
             </form>

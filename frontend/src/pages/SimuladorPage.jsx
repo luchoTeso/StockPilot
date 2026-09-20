@@ -162,18 +162,18 @@ const SimuladorPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 pb-32 max-w-[1600px] mx-auto space-y-8 animate-fade-in font-outfit">
+    <div className="p-4 md:p-8 pb-32 max-w-[1600px] mx-auto space-y-8 animate-fade-in">
       
       {/* HEADER ESTRATÉGICO */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-azul text-white rounded-2xl flex items-center justify-center shadow-xl">
+            <div className="w-12 h-12 bg-azul text-white rounded-2xl flex items-center justify-center shadow-lg">
               <FlaskConical size={22} />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-tinta tracking-tighter uppercase italic">Simulador de Escenarios</h1>
-              <p className="text-[10px] font-black text-azul uppercase tracking-[0.2em] bg-azul/10 px-2 py-0.5 rounded-full inline-block">Proyecta tus futuras compras</p>
+              <h1 className="titular text-3xl text-tinta">Simulador de Escenarios</h1>
+              <p className="text-xs font-bold text-azul bg-azul/10 px-2 py-0.5 rounded-full inline-block">Proyecta tus futuras compras</p>
             </div>
           </div>
           <p className="text-sm font-bold text-slate-400 max-w-xl">
@@ -184,7 +184,7 @@ const SimuladorPage = () => {
         <button 
           onClick={() => setShowConvertModal(true)}
           disabled={simulatedData.activeCount === 0}
-          className="bg-emerald-500 hover:bg-exito text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-3"
+          className="bg-emerald-500 hover:bg-exito text-white px-8 py-4 rounded-lg font-bold text-xs shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-3"
         >
           <Package size={16} /> Convertir en Orden Real
         </button>
@@ -194,13 +194,13 @@ const SimuladorPage = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
         {/* Controles */}
-        <div className="xl:col-span-2 bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="xl:col-span-2 bg-white p-8 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-10">
           
           {/* Slider Cobertura */}
           <div className="space-y-6">
             <div className="flex justify-between items-end">
               <label htmlFor="days" className="text-xs font-semibold text-slate-600">Días de Cobertura Deseada</label>
-              <span className="text-3xl font-black text-azul">{days} <span className="text-sm text-slate-400">días</span></span>
+              <span className="text-3xl font-bold text-azul">{days} <span className="text-sm text-slate-400">días</span></span>
             </div>
             <input 
               id="days"
@@ -212,7 +212,7 @@ const SimuladorPage = () => {
               onChange={(e) => setDays(parseInt(e.target.value))}
               className="w-full h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-azul"
             />
-            <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase italic">
+            <div className="flex justify-between text-xs font-bold text-slate-400">
               <span>7 días (Mín)</span>
               <span>45 días (Med)</span>
               <span>90 días (Máx)</span>
@@ -231,36 +231,36 @@ const SimuladorPage = () => {
                 type="number"
                 value={budget}
                 onChange={(e) => setBudget(parseInt(e.target.value) || 0)}
-                className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-2xl text-tinta focus:border-azul outline-none transition-colors transition-shadow"
+                className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-lg font-bold text-2xl text-tinta focus:border-azul outline-none transition-colors transition-shadow"
               />
             </div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+            <p className="text-xs text-slate-400 font-bold">
               ⚠️ Si el presupuesto no te alcanza, el sistema priorizará la compra de los productos que te dejan más ganancia (Tipo A).
             </p>
           </div>
         </div>
 
         {/* Resumen KPIs */}
-        <div className="bg-azul p-8 rounded-[2rem] shadow-xl flex flex-col justify-between text-white relative overflow-hidden">
+        <div className="bg-azul p-8 rounded-2xl shadow-lg flex flex-col justify-between text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full"></div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Costo Total Simulado</p>
-            <h2 className="text-4xl font-black tracking-tighter">${simulatedData.totalCost.toLocaleString()}</h2>
+            <p className="text-xs font-bold opacity-60 mb-1">Costo Total Simulado</p>
+            <h2 className="titular text-4xl">${simulatedData.totalCost.toLocaleString()}</h2>
             
             <div className="mt-6 flex gap-4">
-              <div className="bg-white/10 rounded-xl p-3 flex-grow border border-white/5">
-                <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Items Incluidos</p>
-                <p className="text-xl font-black">{simulatedData.activeCount}</p>
+              <div className="bg-white/10 rounded-2xl p-3 flex-grow border border-white/5">
+                <p className="text-xs font-bold opacity-60">Items Incluidos</p>
+                <p className="text-xl font-bold">{simulatedData.activeCount}</p>
               </div>
-              <div className="bg-white/10 rounded-xl p-3 flex-grow border border-white/5">
-                <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Excluidos</p>
-                <p className="text-xl font-black text-rose-300">{simulatedData.excludedCount}</p>
+              <div className="bg-white/10 rounded-2xl p-3 flex-grow border border-white/5">
+                <p className="text-xs font-bold opacity-60">Excluidos</p>
+                <p className="text-xl font-bold text-rose-300">{simulatedData.excludedCount}</p>
               </div>
             </div>
           </div>
 
           <div className="mt-6 space-y-2">
-            <div className="flex justify-between text-[10px] font-black uppercase">
+            <div className="flex justify-between text-xs font-bold">
               <span>Uso del Presupuesto</span>
               <span>{Math.round((simulatedData.totalCost / (budget || 1)) * 100)}%</span>
             </div>
@@ -275,16 +275,16 @@ const SimuladorPage = () => {
       </div>
 
       {/* TABLA DE PRODUCTOS */}
-      <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-          <h3 className="text-xl font-black text-tinta leading-none uppercase tracking-tighter italic">¿Qué y cuánto comprar?</h3>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Calculado a partir de tu ritmo de ventas mensual</p>
+          <h3 className="titular text-xl text-tinta">¿Qué y cuánto comprar?</h3>
+          <p className="text-xs font-bold text-slate-400">Calculado a partir de tu ritmo de ventas mensual</p>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
+              <tr className="bg-slate-50/50 text-xs font-bold text-slate-400">
                 <th className="p-6 border-b border-slate-100 w-16">Inc.</th>
                 <th className="p-6 border-b border-slate-100">Producto</th>
                 <th className="p-6 border-b border-slate-100 text-center">Tipo</th>
@@ -316,12 +316,12 @@ const SimuladorPage = () => {
                   </td>
                   <td className="p-6">
                     <div className="flex flex-col">
-                      <span className="text-sm font-black text-tinta uppercase leading-none">{p.nombre}</span>
-                      <span className="text-[9px] font-bold text-slate-400 mt-1">{p.categoria}</span>
+                      <span className="text-sm font-bold text-tinta leading-none">{p.nombre}</span>
+                      <span className="text-xs font-bold text-slate-400 mt-1">{p.categoria}</span>
                     </div>
                   </td>
                   <td className="p-6 text-center">
-                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black whitespace-nowrap ${
+                    <span className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap ${
                       p.category === 'A' ? 'bg-azul/10 text-azul' : 
                       p.category === 'B' ? 'bg-slate-100 text-slate-600' : 
                       'bg-slate-50 text-slate-400'
@@ -330,10 +330,10 @@ const SimuladorPage = () => {
                     </span>
                   </td>
                   <td className="p-6 text-center text-sm font-bold text-slate-600">{(Number(p.stock_actual) || 0)} ud</td>
-                  <td className="p-6 text-center text-sm font-bold text-slate-400 italic">{(Number(p.velocity) || 0).toFixed(1)} /día</td>
+                  <td className="p-6 text-center text-sm font-bold text-slate-400">{(Number(p.velocity) || 0).toFixed(1)} /día</td>
                   <td className="p-6 text-center">
                     <div className="flex flex-col items-center">
-                      <span className={`text-sm font-black ${
+                      <span className={`text-sm font-bold ${
                         p.days_to_exhaust < 7 ? 'text-rose-500' : 
                         p.days_to_exhaust < 15 ? 'text-amber-500' : 'text-emerald-500'
                       }`}>
@@ -348,16 +348,16 @@ const SimuladorPage = () => {
                     </div>
                   </td>
                   <td className="p-6 text-center">
-                    <div className={`inline-block px-4 py-2 rounded-xl border-2 font-black text-lg transition-colors ${
+                    <div className={`inline-block px-4 py-2 rounded-2xl border-2 font-bold text-lg transition-colors ${
                       p.needed > 0 ? 'border-exito-suave bg-emerald-50 text-exito' : 'border-slate-100 bg-slate-50 text-slate-300'
                     }`}>
-                      {p.needed} <span className="text-[10px] uppercase">ud</span>
+                      {p.needed} <span className="text-xs">ud</span>
                     </div>
                     {p.isExcludedBudget && (
-                      <p className="text-[8px] font-black text-rose-500 uppercase mt-1">Fuera de Presupuesto</p>
+                      <p className="text-xs font-bold text-rose-500 mt-1">Fuera de Presupuesto</p>
                     )}
                   </td>
-                  <td className="p-6 text-right font-black text-tinta-2">
+                  <td className="p-6 text-right font-bold text-tinta-2">
                     ${p.simulatedCost.toLocaleString()}
                   </td>
                 </tr>
@@ -370,12 +370,12 @@ const SimuladorPage = () => {
       {/* MODAL: SELECCIONAR PROVEEDOR Y CONVERTIR */}
       {showConvertModal && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-md" onClick={() => setShowConvertModal(false)}></div>
+          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setShowConvertModal(false)}></div>
           
-          <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl relative z-10 p-8 animate-scale-in border border-slate-100">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-lg relative z-10 p-8 animate-scale-in border border-slate-100">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h2 className="text-2xl font-black text-tinta tracking-tighter uppercase italic">Confirmar Ejecución</h2>
+                <h2 className="titular text-2xl text-tinta">Confirmar Ejecución</h2>
                 <p className="text-xs font-bold text-slate-400">Selecciona el proveedor para procesar la orden.</p>
               </div>
               <button onClick={() => setShowConvertModal(false)} aria-label="Cerrar modal" className="text-2xl text-slate-300 hover:text-rose-500 transition-colors">×</button>
@@ -383,18 +383,18 @@ const SimuladorPage = () => {
 
             <div className="space-y-6">
               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <div className="flex justify-between text-xs font-black uppercase text-slate-500 mb-4">
+                <div className="flex justify-between text-xs font-bold text-slate-500 mb-4">
                   <span>Resumen de Simulación</span>
                   <span>{days} días</span>
                 </div>
                 <div className="flex justify-between items-end">
                   <span className="text-sm font-bold text-slate-600">Total a Invertir</span>
-                  <span className="text-3xl font-black text-azul">${simulatedData.totalCost.toLocaleString()}</span>
+                  <span className="text-3xl font-bold text-azul">${simulatedData.totalCost.toLocaleString()}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <span className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Seleccionar Proveedor</span>
+                <span className="block text-xs font-bold text-slate-400 ml-1">Seleccionar Proveedor</span>
                 <div className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus-within:border-azul transition-colors">
                   <CustomSelect 
                     value={selectedSupplierId}
@@ -406,7 +406,7 @@ const SimuladorPage = () => {
                     placeholder="-- Elige un proveedor --"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 font-bold italic ml-1">
+                <p className="text-xs text-slate-400 font-bold ml-1">
                   * Solo se incluirán los productos de la simulación vinculados al proveedor elegido.
                 </p>
               </div>
@@ -415,14 +415,14 @@ const SimuladorPage = () => {
                 <button 
                   onClick={handleConvertToOrder}
                   disabled={isSubmitting || !selectedSupplierId}
-                  className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-lg font-bold text-xs shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                 >
                   {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : '✓'} 
                   Confirmar y Crear Orden
                 </button>
                 <button 
                   onClick={() => setShowConvertModal(false)}
-                  className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-colors"
+                  className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg font-bold text-xs transition-colors"
                 >
                   Cancelar
                 </button>

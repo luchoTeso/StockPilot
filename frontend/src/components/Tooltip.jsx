@@ -24,7 +24,7 @@ const Tooltip = ({ text, children, className = "", align = "center" }) => {
       {children}
       {isVisible && text && (
         <div className={`absolute bottom-full ${alignClasses} mb-3 w-max max-w-[250px] sm:max-w-xs z-[100] animate-fade-in pointer-events-none`}>
-          <div className="bg-tinta text-white text-[10px] font-black uppercase tracking-widest px-4 py-3 rounded-xl shadow-2xl border border-slate-700 text-center leading-relaxed normal-case">
+          <div className="bg-tinta text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-lg border border-slate-700 text-center leading-relaxed normal-case">
             {text}
           </div>
           {/* Triángulo flotante (Flecha) */}

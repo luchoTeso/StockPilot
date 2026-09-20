@@ -191,18 +191,18 @@ const MovimientosPage = () => {
   }, [productoId, productos]);
 
   return (
-    <div className="animate-fade-in pb-12 space-y-8 font-outfit">
+    <div className="animate-fade-in pb-12 space-y-8">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div>
-          <h2 className="text-4xl font-black text-tinta tracking-tighter italic uppercase">Movimientos de Inventario</h2>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Registro completo de entradas, salidas y auditoría de stock (Kardex)</p>
+          <h2 className="titular text-4xl text-tinta">Movimientos de Inventario</h2>
+          <p className="text-slate-500 font-bold text-xs mt-1">Registro completo de entradas, salidas y auditoría de stock (Kardex)</p>
         </div>
         <button
           type="button"
           onClick={() => setShowHelpModal(true)}
-          className="bg-azul/10 hover:bg-azul/10 text-azul border border-azul/30 py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm flex items-center gap-2.5 transition-all active:scale-95"
+          className="bg-azul/10 hover:bg-azul/10 text-azul border border-azul/30 py-3 px-6 rounded-lg text-xs font-bold shadow-sm flex items-center gap-2.5 transition-all active:scale-95"
         >
           <HelpCircle size={18} className="text-azul" />
           <span>¿Para qué sirve esta ventana?</span>
@@ -216,16 +216,16 @@ const MovimientosPage = () => {
           { label: 'Salidas de Producto', value: resumen.salidas, icon: PackageMinus, color: 'text-azul', bg: 'bg-azul/10' },
           { label: 'Ajustes Manuales', value: resumen.ajustes, icon: SlidersHorizontal, color: 'text-amber-500', bg: 'bg-amber-50' }
         ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 flex items-center gap-4 transition-shadow transition-transform hover:-translate-y-1 hover:shadow-2xl hover:border-slate-200">
+          <div key={stat.label} className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 flex items-center gap-4 transition-shadow transition-transform hover:shadow-lg hover:border-slate-200">
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${stat.bg} ${stat.color}`}>
               {(() => { const Icon = stat.icon; return <Icon size={26} />; })()}
             </div>
             <div className="min-w-0 flex-1 flex flex-col justify-center">
               <Tooltip text={stat.label} className="w-full min-w-0">
-                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 truncate w-full">{stat.label}</p>
+                 <p className="text-xs font-bold text-slate-400 mb-1 truncate w-full">{stat.label}</p>
               </Tooltip>
               <Tooltip text={String(stat.value)} className="w-full min-w-0 flex-1">
-                 <h3 className={`text-3xl font-black tracking-tighter italic ${stat.color} truncate w-full`}>{stat.value}</h3>
+                 <h3 className={`titular text-3xl ${stat.color} truncate w-full`}>{stat.value}</h3>
               </Tooltip>
             </div>
           </div>
@@ -235,14 +235,14 @@ const MovimientosPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Formulario Registrar Movimiento */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 lg:sticky lg:top-6 max-h-[85vh] flex flex-col overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 lg:sticky lg:top-6 max-h-[85vh] flex flex-col overflow-hidden">
             <div className="p-6 lg:p-8 overflow-y-auto scrollbar-hide flex-1">
-              <h3 className="text-2xl font-black text-tinta tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100 shrink-0">Registrar Movimiento</h3>
+              <h3 className="titular text-2xl text-tinta mb-6 pb-4 border-b border-slate-100 shrink-0">Registrar Movimiento</h3>
               
               <form onSubmit={registrarMovimiento} className="space-y-5">
               
               <div>
-                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tipo de Movimiento</span>
+                <span className="block text-xs font-bold text-slate-400 mb-2">Tipo de Movimiento</span>
                 <CustomSelect 
                   value={tipo} 
                   onChange={(val) => setTipo(val)}
@@ -257,7 +257,7 @@ const MovimientosPage = () => {
               </div>
 
               <div>
-                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Producto</span>
+                <span className="block text-xs font-bold text-slate-400 mb-2">Producto</span>
                 <CustomSelect 
                   value={productoId} 
                   onChange={(val) => setProductoId(val)}
@@ -288,12 +288,12 @@ const MovimientosPage = () => {
                   value={cantidad} 
                   onChange={(e) => setCantidad(e.target.value)} 
                   placeholder={tipo === 'Ajuste' ? 'Ej: -5 o +10' : 'Ej: 20'} 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none text-tinta transition-colors" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta transition-colors" 
                 />
               </div>
 
               <div>
-                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Motivo o Justificación</span>
+                <span className="block text-xs font-bold text-slate-400 mb-2">Motivo o Justificación</span>
                 <CustomSelect 
                   value={observacion} 
                   onChange={(val) => setObservacion(val)}
@@ -307,7 +307,7 @@ const MovimientosPage = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting || !tipo || !productoId || !cantidad || !observacion} 
-                  className="w-full bg-emerald-500 hover:bg-exito text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                  className="w-full bg-emerald-500 hover:bg-exito text-white p-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                 >
                   {isSubmitting ? 'Procesando...' : 'Ejecutar Movimiento'}
                 </button>
@@ -322,7 +322,7 @@ const MovimientosPage = () => {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Filtros Historial */}
-          <div className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-xl flex flex-wrap gap-4 items-center">
+          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-lg flex flex-wrap gap-4 items-center">
             <CustomSelect 
               value={filtroTipo} 
               onChange={val => setFiltroTipo(val)}
@@ -354,18 +354,18 @@ const MovimientosPage = () => {
             <button 
               type="button" 
               onClick={limpiarFiltros} 
-              className="bg-tinta hover:bg-tinta text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
+              className="bg-tinta hover:bg-tinta text-white p-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
             >
               Limpiar
             </button>
           </div>
 
           {/* Tabla Premium */}
-          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-tinta text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
+                  <tr className="bg-tinta text-xs font-bold text-white whitespace-nowrap">
                     <th className="p-6 pl-8">Fecha</th>
                     <th className="p-6">Tipo</th>
                     <th className="p-6">Producto</th>
@@ -377,9 +377,9 @@ const MovimientosPage = () => {
                 </thead>
                 <tbody className="text-sm divide-y divide-slate-50">
                   {loadingMovimientos ? (
-                    <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold animate-pulse tracking-widest uppercase text-[10px]">Consultando registros...</td></tr>
+                    <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold animate-pulse text-xs">Consultando registros...</td></tr>
                   ) : movimientos.length === 0 ? (
-                    <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold italic">No se encontraron movimientos registrados en este período.</td></tr>
+                    <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold">No se encontraron movimientos registrados en este período.</td></tr>
                   ) : (
                     movimientos.map((m) => {
                       const isSalida = m.tipo_movimiento === 'Salida';
@@ -397,16 +397,16 @@ const MovimientosPage = () => {
                         <tr key={m.id_movimiento || `${m.id_producto}-${m.fecha_movimiento}`} className="hover:bg-slate-50 transition-colors">
                           <td className="p-6 pl-8 font-medium text-slate-500 whitespace-nowrap">{formatearFecha(m.fecha_movimiento)}</td>
                           <td className="p-6">
-                            <span className={`inline-block px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest ${badgeClass}`}>
+                            <span className={`inline-block px-3 py-1 rounded-2xl text-xs font-bold ${badgeClass}`}>
                               {m.tipo_movimiento}
                             </span>
                           </td>
-                          <td className="p-6 font-black text-tinta">{m.nombre_producto}</td>
+                          <td className="p-6 font-bold text-tinta">{m.nombre_producto}</td>
                           <td className="p-6 text-slate-500 font-medium">{m.categoria || '-'}</td>
-                          <td className={`p-6 text-center font-black text-lg tracking-tighter ${textColor}`}>{cantidadDisplay}</td>
-                          <td className="p-6 text-slate-500 text-xs italic max-w-[200px] truncate" title={m.observacion}>{m.observacion || '-'}</td>
+                          <td className={`p-6 text-center font-bold text-lg ${textColor}`}>{cantidadDisplay}</td>
+                          <td className="p-6 text-slate-500 text-xs max-w-[200px] truncate" title={m.observacion}>{m.observacion || '-'}</td>
                           <td className="p-6 pr-8 text-slate-500 font-bold flex items-center gap-2">
-                            <div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[10px] text-slate-600 font-black">
+                            <div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-xs text-slate-600 font-bold">
                               {(m.nombre_usuario || '?')[0].toUpperCase()}
                             </div>
                             <span className="truncate max-w-[100px]" title={m.nombre_usuario}>{m.nombre_usuario || '-'}</span>
@@ -424,21 +424,21 @@ const MovimientosPage = () => {
 
       {/* Modal Educativo: ¿Cuándo y para qué usar Movimientos? */}
       {showHelpModal && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-scale-in overflow-hidden border border-slate-100">
+        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-lg animate-scale-in overflow-hidden border border-slate-100">
             <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-100 bg-slate-50">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-azul text-white rounded-2xl flex items-center justify-center shadow-md">
                   <ShieldCheck size={24} />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-tinta tracking-tighter uppercase italic">Guía de Movimientos (Kardex)</h3>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-azul">La cámara de seguridad de tu inventario</p>
+                  <h3 className="titular text-2xl text-tinta">Guía de Movimientos (Kardex)</h3>
+                  <p className="text-xs font-bold text-azul">La cámara de seguridad de tu inventario</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowHelpModal(false)}
-                className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm"
+                className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm"
               >
                 &times;
               </button>
@@ -446,16 +446,16 @@ const MovimientosPage = () => {
 
             <div className="p-6 md:p-8 overflow-y-auto space-y-6 text-slate-600 font-medium text-sm">
               <p className="text-tinta-2 font-bold leading-relaxed">
-                Esta ventana registra <strong className="text-azul font-black">cada unidad física</strong> que entra o sale de tu negocio, con fecha exacta y el usuario que lo hizo. Úsala principalmente en estas 4 situaciones:
+                Esta ventana registra <strong className="text-azul font-bold">cada unidad física</strong> que entra o sale de tu negocio, con fecha exacta y el usuario que lo hizo. Úsala principalmente en estas 4 situaciones:
               </p>
 
               <div className="space-y-4">
                 <div className="p-5 bg-emerald-50/70 border border-exito-suave rounded-2xl flex gap-4 items-start">
-                  <div className="w-10 h-10 bg-exito-suave text-exito rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 bg-exito-suave text-exito rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                     <PackagePlus size={20} />
                   </div>
                   <div>
-                    <h4 className="font-black text-emerald-800 text-xs uppercase tracking-widest mb-1">1. Entrada de Mercancía (Compras / Proveedores)</h4>
+                    <h4 className="font-bold text-emerald-800 text-xs mb-1">1. Entrada de Mercancía (Compras / Proveedores)</h4>
                     <p className="text-xs text-emerald-700 leading-relaxed font-bold">
                       Cuando recibes cajas o pedidos de proveedores y necesitas sumar stock a tu bodega con constancia de quién lo recibió.
                     </p>
@@ -463,23 +463,23 @@ const MovimientosPage = () => {
                 </div>
 
                 <div className="p-5 bg-rose-50/70 border border-peligro-suave rounded-2xl flex gap-4 items-start">
-                  <div className="w-10 h-10 bg-peligro-suave text-peligro rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 bg-peligro-suave text-peligro rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                     <AlertOctagon size={20} />
                   </div>
                   <div>
-                    <h4 className="font-black text-rose-800 text-xs uppercase tracking-widest mb-1">2. Mermas, Daños, Vencimientos o Pérdidas (Salida Manual)</h4>
+                    <h4 className="font-bold text-rose-800 text-xs mb-1">2. Mermas, Daños, Vencimientos o Pérdidas (Salida Manual)</h4>
                     <p className="text-xs text-rose-700 leading-relaxed font-bold">
-                      Si un producto se rompe, se vence o se pierde, <span className="underline font-black">NO debes registrarlo como venta</span> (porque descuadraría el dinero de caja). Regístralo aquí como <strong>Salida manual</strong> para restar el stock justificadamente.
+                      Si un producto se rompe, se vence o se pierde, <span className="underline font-bold">NO debes registrarlo como venta</span> (porque descuadraría el dinero de caja). Regístralo aquí como <strong>Salida manual</strong> para restar el stock justificadamente.
                     </p>
                   </div>
                 </div>
 
                 <div className="p-5 bg-amber-50/70 border border-aviso-suave rounded-2xl flex gap-4 items-start">
-                  <div className="w-10 h-10 bg-aviso-suave text-aviso rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 bg-aviso-suave text-aviso rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                     <RefreshCw size={20} />
                   </div>
                   <div>
-                    <h4 className="font-black text-amber-800 text-xs uppercase tracking-widest mb-1">3. Ajustes de Conteo Físico (Auditoría de Fin de Mes)</h4>
+                    <h4 className="font-bold text-amber-800 text-xs mb-1">3. Ajustes de Conteo Físico (Auditoría de Fin de Mes)</h4>
                     <p className="text-xs text-amber-800 leading-relaxed font-bold">
                       Al contar físicamente las vitrinas, si tienes más o menos unidades que el sistema, haces un <strong>Ajuste (+ o -)</strong> con la justificación "Inventario Físico" para sincronizar la realidad con la app.
                     </p>
@@ -487,11 +487,11 @@ const MovimientosPage = () => {
                 </div>
 
                 <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex gap-4 items-start">
-                  <div className="w-10 h-10 bg-slate-200 text-tinta-2 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 bg-slate-200 text-tinta-2 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                     <ShieldCheck size={20} />
                   </div>
                   <div>
-                    <h4 className="font-black text-tinta text-xs uppercase tracking-widest mb-1">4. ¿Por qué también aparecen las Ventas aquí?</h4>
+                    <h4 className="font-bold text-tinta text-xs mb-1">4. ¿Por qué también aparecen las Ventas aquí?</h4>
                     <p className="text-xs text-slate-600 leading-relaxed">
                       El <em>Historial de Ventas</em> se enfoca en el dinero que pagó el cliente. Esta tabla se enfoca en la <strong>auditoría física</strong>: muestra qué cajero despachó el producto, permitiendo rastrear robos o descuadres entre vendedores.
                     </p>
@@ -503,7 +503,7 @@ const MovimientosPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowHelpModal(false)}
-                  className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg transition-colors"
+                  className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold shadow-lg transition-colors"
                 >
                   Entendido, volver a Movimientos
                 </button>

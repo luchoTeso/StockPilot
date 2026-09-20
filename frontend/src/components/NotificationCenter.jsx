@@ -218,7 +218,7 @@ const NotificationCenter = () => {
                     setIsOpen(newOpen);
                     if (newOpen) fetchNotifications();
                 }}
-                className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-colors transition-transform active:scale-90 shadow-lg border-2 
+                className={`relative w-12 h-12 flex items-center justify-center rounded-lg transition-colors transition-transform active:scale-90 shadow-lg border-2 
                 ${isOpen ? 'bg-azul border-azul text-white' : 
                   (hasUrgent ? 'bg-peligro-suave border-rose-300 text-peligro hover:border-rose-400 animate-pulse' : 'bg-white border-slate-100 text-tinta-2 hover:border-azul/30')} 
                 shadow-slate-200/50`}
@@ -228,7 +228,7 @@ const NotificationCenter = () => {
                     <Bell size={20} />
                 </div>
                 {totalBadge > 0 && (
-                    <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-[10px] font-black text-white rounded-full border-2 shadow-md ${isOpen ? 'border-azul' : 'border-white'} ${hasUrgent ? 'bg-rose-500' : 'bg-ambar'}`}>
+                    <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-xs font-bold text-white rounded-full border-2 shadow-md ${isOpen ? 'border-azul' : 'border-white'} ${hasUrgent ? 'bg-rose-500' : 'bg-ambar'}`}>
                         {totalBadge > 9 ? '+9' : totalBadge}
                     </span>
                 )}
@@ -239,11 +239,11 @@ const NotificationCenter = () => {
                 <div
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
-                    className="fixed top-16 right-4 sm:top-20 sm:right-12 w-[calc(100vw-2rem)] sm:w-96 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-azul/20 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-4 duration-300 origin-top-right flex flex-col max-h-[calc(100vh-5rem)]"
+                    className="fixed top-16 right-4 sm:top-20 sm:right-12 w-[calc(100vw-2rem)] sm:w-96 bg-white/95 rounded-2xl shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-azul/20 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-4 duration-300 origin-top-right flex flex-col max-h-[calc(100vh-5rem)]"
                 >
                     <div className="p-5 border-b border-azul/30 flex items-center justify-between bg-azul/10">
-                        <h3 className="font-black text-tinta text-[10px] uppercase tracking-[0.2em] italic">Notificaciones Activas</h3>
-                        <span className="bg-azul px-3 py-1 rounded-full text-[9px] font-black text-white uppercase tracking-widest shadow-md">
+                        <h3 className="font-bold text-tinta text-xs">Notificaciones Activas</h3>
+                        <span className="bg-azul px-3 py-1 rounded-full text-xs font-bold text-white shadow-md">
                             {totalBadge} Alertas
                         </span>
                     </div>
@@ -252,7 +252,7 @@ const NotificationCenter = () => {
                         {loading && alerts.length === 0 && userNotifs.length === 0 ? (
                             <div className="p-12 text-center">
                                 <div className="w-10 h-10 border-4 border-azul border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sincronizando IA...</p>
+                                <p className="text-xs font-bold text-slate-400">Sincronizando IA...</p>
                             </div>
                         ) : (alerts.length > 0 || userNotifs.length > 0) ? (
                             <div className="divide-y divide-slate-50">
@@ -260,11 +260,11 @@ const NotificationCenter = () => {
                                 {userNotifs.length > 0 && (
                                     <>
                                         <div className="px-5 pt-3 pb-1 flex items-center justify-between">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">🔔 Mensajes para ti</span>
+                                            <span className="text-xs font-bold text-slate-400">🔔 Mensajes para ti</span>
                                             {userNotifCount > 1 && (
                                                 <button
                                                     onClick={handleMarkAllRead}
-                                                    className="text-[9px] font-black text-azul hover:text-azul uppercase tracking-widest transition-colors"
+                                                    className="text-xs font-bold text-azul hover:text-azul transition-colors"
                                                 >
                                                     Marcar todo leído
                                                 </button>
@@ -278,24 +278,24 @@ const NotificationCenter = () => {
                                                 className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-azul"
                                             >
                                                 <div className="flex gap-4">
-                                                    <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getNotifStyles(notif.tipo, notif.datos_json)}`}>
+                                                    <div className={`shrink-0 w-10 h-10 rounded-lg border flex items-center justify-center shadow-sm ${getNotifStyles(notif.tipo, notif.datos_json)}`}>
                                                         {getNotifIcon(notif.tipo)}
                                                     </div>
                                                     <div className="space-y-1 flex-1 min-w-0">
                                                         <div className="flex justify-between items-start">
-                                                            <p className="text-[12px] font-black text-tinta leading-tight group-hover:text-azul transition-colors uppercase tracking-tight">
+                                                            <p className="text-[12px] font-bold text-tinta leading-tight group-hover:text-azul transition-colors">
                                                                 {notif.titulo}
                                                             </p>
-                                                            <span className="text-[9px] font-bold text-slate-300 whitespace-nowrap ml-2">
+                                                            <span className="text-xs font-bold text-slate-300 whitespace-nowrap ml-2">
                                                                 {new Date(notif.fecha_creacion).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
                                                         </div>
-                                                        <p className="text-[11px] font-bold text-slate-500 leading-snug">
+                                                        <p className="text-xs font-bold text-slate-500 leading-snug">
                                                             {notif.mensaje}
                                                         </p>
                                                         <div className="flex items-center gap-1.5 mt-2">
                                                             <span className="w-1 h-1 rounded-full bg-azul"></span>
-                                                            <p className="text-[9px] font-black text-azul uppercase tracking-widest">
+                                                            <p className="text-xs font-bold text-azul">
                                                                 Click para marcar leída
                                                             </p>
                                                         </div>
@@ -311,7 +311,7 @@ const NotificationCenter = () => {
                                     <>
                                         {userNotifs.length > 0 && (
                                             <div className="px-5 pt-3 pb-1">
-                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">📦 Alertas de Inventario</span>
+                                                <span className="text-xs font-bold text-slate-400">📦 Alertas de Inventario</span>
                                             </div>
                                         )}
                                         {alerts.map((alert) => {
@@ -331,22 +331,22 @@ const NotificationCenter = () => {
                                                     className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-azul"
                                                 >
                                                     <div className="flex gap-4">
-                                                        <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getSeverityStyles(alert.severidad)}`}>
+                                                        <div className={`shrink-0 w-10 h-10 rounded-lg border flex items-center justify-center shadow-sm ${getSeverityStyles(alert.severidad)}`}>
                                                             {alert.tipo.includes('vencimiento') ? <Calendar size={18} /> : <Package size={18} />}
                                                         </div>
                                                         <div className="space-y-1">
                                                             <div className="flex justify-between items-start">
-                                                                <p className="text-[12px] font-black text-tinta leading-tight group-hover:text-azul transition-colors uppercase tracking-tight">
+                                                                <p className="text-[12px] font-bold text-tinta leading-tight group-hover:text-azul transition-colors">
                                                                     {alert.nombre_producto || 'Producto Desconocido'}
                                                                 </p>
-                                                                <span className="text-[9px] font-black text-azul group-hover:translate-x-1 transition-transform">→</span>
+                                                                <span className="text-xs font-bold text-azul group-hover:translate-x-1 transition-transform">→</span>
                                                             </div>
-                                                            <p className="text-[11px] font-bold text-slate-500 leading-snug lowercase first-letter:uppercase">
+                                                            <p className="text-xs font-bold text-slate-500 leading-snug lowercase first-letter:uppercase">
                                                                 {alert.mensaje}
                                                             </p>
                                                             <div className="flex items-center gap-1.5 mt-2">
                                                                 <span className="w-1 h-1 rounded-full bg-azul"></span>
-                                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                                                <p className="text-xs font-bold text-slate-400">
                                                                     Resolución Sugerida: <span className="text-azul">{isStockAlert ? 'Reabastecer' : 'Promocionar'}</span>
                                                                 </p>
                                                             </div>
@@ -361,8 +361,8 @@ const NotificationCenter = () => {
                         ) : (
                             <div className="p-16 text-center">
                                 <div className="text-5xl mb-4 grayscale opacity-50">🛡️</div>
-                                <p className="text-[10px] font-black text-tinta uppercase tracking-[0.3em]">Stock Blindado</p>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase mt-2">IA en vigilancia constante</p>
+                                <p className="text-xs font-bold text-tinta">Stock Blindado</p>
+                                <p className="text-xs font-bold text-slate-400 mt-2">IA en vigilancia constante</p>
                             </div>
                         )}
                     </div>
@@ -375,7 +375,7 @@ const NotificationCenter = () => {
                             setIsOpen(false);
                             setTimeout(() => navigate('/alertas'), 10);
                         }}
-                        className="w-full p-5 bg-azul text-[10px] font-black text-white uppercase tracking-widest hover:bg-azul-hondo transition-colors shadow-inner relative z-50 cursor-pointer"
+                        className="w-full p-5 bg-azul text-xs font-bold text-white hover:bg-azul-hondo transition-colors shadow-inner relative z-50 cursor-pointer"
                     >
                         Ingresar al Centro de Control de Alertas ⚡
                     </button>

@@ -211,25 +211,25 @@ const ProductFormModal = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 font-outfit">
-      <div className="absolute inset-0 bg-tinta/60 backdrop-blur-md" onClick={onClose} role="presentation" aria-hidden="true"></div>
-      <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-2xl animate-scale-in relative z-10 transition-transform transition-opacity">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={onClose} role="presentation" aria-hidden="true"></div>
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-lg animate-scale-in relative z-10 transition-transform transition-opacity">
         <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-slate-50">
           <div>
-            <h3 className="text-2xl font-black text-tinta tracking-tighter uppercase italic">
+            <h3 className="titular text-2xl text-tinta">
               {editMode
                 ? 'Editar Producto'
                 : selectedProduct
                   ? 'Recepción de Mercancía (+Stock)'
                   : 'Registrar o Ingresar Producto'}
             </h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+            <p className="text-xs font-bold text-slate-400 mt-0.5">
               {selectedProduct
                 ? 'Sumar existencias a un artículo ya registrado'
                 : 'Escanea, busca o crea un artículo nuevo'}
             </p>
           </div>
-          <button onClick={onClose} type="button" className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm">&times;</button>
+          <button onClick={onClose} type="button" className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8">
@@ -237,7 +237,7 @@ const ProductFormModal = ({
            * BÚSQUEDA INSTANTÁNEA PREDICTIVA (SOLO EN MODO REGISTRO)
            * ========================================================= */}
           {!editMode && (
-            <div className="mb-8 p-6 bg-azul/5 border border-azul/30 rounded-3xl relative">
+            <div className="mb-8 p-6 bg-azul/5 border border-azul/30 rounded-2xl relative">
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Search size={14} className="text-azul" />
@@ -247,7 +247,7 @@ const ProductFormModal = ({
                   <button
                     type="button"
                     onClick={handleResetToNewProduct}
-                    className="text-[9px] font-black uppercase tracking-wider text-slate-500 hover:text-peligro bg-white px-2.5 py-1 rounded-xl border border-slate-200 transition-colors flex items-center gap-1 shadow-sm"
+                    className="text-xs font-bold uppercase tracking-wide text-slate-500 hover:text-peligro bg-white px-2.5 py-1 rounded-lg border border-slate-200 transition-colors flex items-center gap-1 shadow-sm"
                   >
                     <RotateCcw size={10} /> Crear Nuevo Producto
                   </button>
@@ -264,7 +264,7 @@ const ProductFormModal = ({
                     setShowDropdown(true);
                   }}
                   onFocus={() => setShowDropdown(true)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-white border border-azul/30 rounded-2xl text-xs font-bold text-tinta placeholder:text-slate-400 focus:outline-none focus:border-azul focus:ring-2 focus:ring-azul/30 shadow-sm transition-all"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white border border-azul/30 rounded-lg text-xs font-bold text-tinta placeholder:text-slate-400 focus:outline-none focus:border-azul focus:ring-2 focus:ring-azul/30 shadow-sm transition-all"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-azul">
                   <Search size={16} />
@@ -272,7 +272,7 @@ const ProductFormModal = ({
 
                 {/* Menú flotante de resultados predictivos */}
                 {showDropdown && searchTerm.trim() && (
-                  <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden max-h-56 overflow-y-auto">
+                  <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden max-h-56 overflow-y-auto">
                     {matchingProducts.length > 0 ? (
                       matchingProducts.map(p => (
                         <button
@@ -282,18 +282,18 @@ const ProductFormModal = ({
                           className="w-full text-left px-5 py-3.5 hover:bg-azul/5 border-b border-slate-50 flex justify-between items-center transition-colors group"
                         >
                           <div>
-                            <p className="font-bold text-tinta text-xs group-hover:text-azul transition-colors uppercase">{p.nombre_producto}</p>
-                            <p className="text-[10px] text-slate-400 font-mono tracking-widest mt-0.5">
+                            <p className="font-bold text-tinta text-xs group-hover:text-azul transition-colors">{p.nombre_producto}</p>
+                            <p className="text-xs text-slate-400 font-mono mt-0.5">
                               {p.codigo_barras || p.codigo || 'SIN CÓDIGO'} • Stock actual: <strong className="text-exito font-sans">{p.cantidad} ud</strong>
                             </p>
                           </div>
-                          <span className="font-black text-azul text-xs">${Number(p.precio || p.precio_unitario || 0).toLocaleString('es-CO')}</span>
+                          <span className="font-bold text-azul text-xs">${Number(p.precio || p.precio_unitario || 0).toLocaleString('es-CO')}</span>
                         </button>
                       ))
                     ) : (
                       <div className="p-4 text-center">
                         <p className="text-xs font-bold text-slate-500 mb-1">No se encontró ningún producto con ese nombre o código.</p>
-                        <p className="text-[10px] font-bold text-azul uppercase tracking-wider">
+                        <p className="text-xs font-bold text-azul">
                           Completa el formulario abajo para registrarlo como nuevo.
                         </p>
                       </div>
@@ -306,22 +306,22 @@ const ProductFormModal = ({
               {selectedProduct ? (
                 <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm animate-fade-in">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                    <div className="w-10 h-10 bg-emerald-500 text-white rounded-lg flex items-center justify-center shrink-0 shadow-sm">
                       <CheckCircle2 size={22} />
                     </div>
                     <div>
-                      <p className="text-xs font-black text-tinta uppercase tracking-tight">{selectedProduct.nombre_producto}</p>
-                      <p className="text-[10px] font-bold text-emerald-800">
-                        Stock actual en bodega: <strong className="text-sm font-black text-exito">{selectedProduct.cantidad}</strong> unidades
+                      <p className="text-xs font-bold text-tinta">{selectedProduct.nombre_producto}</p>
+                      <p className="text-xs font-bold text-emerald-800">
+                        Stock actual en bodega: <strong className="text-sm font-bold text-exito">{selectedProduct.cantidad}</strong> unidades
                       </p>
                     </div>
                   </div>
-                  <span className="self-start sm:self-auto text-[9px] font-black uppercase tracking-widest bg-emerald-200 text-emerald-800 px-3 py-1 rounded-xl">
+                  <span className="self-start sm:self-auto text-xs font-bold bg-emerald-200 text-emerald-800 px-3 py-1 rounded-2xl">
                     Modo: Entrada de Mercancía
                   </span>
                 </div>
               ) : (
-                <p className="text-[9px] font-bold text-azul/80 mt-2 flex items-center gap-1">
+                <p className="text-xs font-bold text-azul/80 mt-2 flex items-center gap-1">
                   <span>💡 Si el producto es nuevo, puedes saltarte este buscador y llenar los campos directamente abajo.</span>
                 </p>
               )}
@@ -335,7 +335,7 @@ const ProductFormModal = ({
             <div className="space-y-2">
               <label htmlFor="input_codigo_barras" className="text-xs font-semibold text-slate-600 ml-1 flex justify-between items-center">
                 <span>Código de Barras (EAN/UPC)</span>
-                <span className="text-azul font-bold lowercase tracking-normal text-[9px] bg-azul/10 px-2 py-0.5 rounded border border-azul/30">obligatorio</span>
+                <span className="text-azul font-bold lowercase tracking-normal text-xs bg-azul/10 px-2 py-0.5 rounded border border-azul/30">obligatorio</span>
               </label>
               <input
                 id="input_codigo_barras"
@@ -343,20 +343,20 @@ const ProductFormModal = ({
                 type="text"
                 value={formData.codigo_barras || ''}
                 onChange={e => setFormData({ ...formData, codigo_barras: e.target.value })}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-tinta focus:border-azul outline-none transition-colors"
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-tinta focus:border-azul outline-none transition-colors"
                 placeholder="Ej: 7702007031002"
               />
 
               {/* Alerta si el código ingresado ya pertenece a otro producto */}
               {barcodeMatch && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 animate-fade-in mt-1">
-                  <span className="text-amber-900 font-bold text-[10px] leading-tight">
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 animate-fade-in mt-1">
+                  <span className="text-amber-900 font-bold text-xs leading-tight">
                     ⚠️ Este código ya pertenece a: <strong>{barcodeMatch.nombre_producto}</strong>
                   </span>
                   <button
                     type="button"
                     onClick={() => handleSelectExisting(barcodeMatch)}
-                    className="text-[9px] font-black uppercase tracking-wider text-azul hover:text-tinta bg-white px-2.5 py-1 rounded-lg border border-azul/30 transition-colors shadow-sm shrink-0"
+                    className="text-xs font-bold uppercase tracking-wide text-azul hover:text-tinta bg-white px-2.5 py-1 rounded-lg border border-azul/30 transition-colors shadow-sm shrink-0"
                   >
                     Sumar Stock Aquí →
                   </button>
@@ -367,14 +367,14 @@ const ProductFormModal = ({
             <div className="space-y-2">
               <label htmlFor="input_codigo" className="text-xs font-semibold text-slate-600 ml-1 flex justify-between items-center">
                 <span>SKU / Referencia Interna</span>
-                <span className="text-slate-400 font-bold lowercase tracking-normal text-[9px]">(opcional)</span>
+                <span className="text-slate-400 font-bold lowercase tracking-normal text-xs">(opcional)</span>
               </label>
               <input
                 id="input_codigo"
                 type="text"
                 value={formData.codigo || ''}
                 onChange={e => setFormData({ ...formData, codigo: e.target.value })}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-tinta focus:border-azul outline-none transition-colors"
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-tinta focus:border-azul outline-none transition-colors"
                 placeholder="Opcional (Ej: REF-001)"
               />
             </div>
@@ -388,7 +388,7 @@ const ProductFormModal = ({
               type="text"
               value={formData.nombre_producto}
               onChange={e => setFormData({ ...formData, nombre_producto: e.target.value })}
-              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-tinta focus:border-azul outline-none transition-colors"
+              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-tinta focus:border-azul outline-none transition-colors"
               placeholder="Ej: Arroz roa 500g"
             />
           </div>
@@ -402,7 +402,7 @@ const ProductFormModal = ({
                 value={formData.categoria}
                 onChange={e => setFormData({ ...formData, categoria: e.target.value })}
                 placeholder="Escribe o selecciona..."
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-tinta focus:border-azul outline-none transition-colors"
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-tinta focus:border-azul outline-none transition-colors"
               />
               <datalist id="lista_categorias">
                 {categorias.map(c => <option key={c} value={c} />)}
@@ -410,7 +410,7 @@ const ProductFormModal = ({
             </div>
             <div className="space-y-2">
               <label htmlFor="input_subcategoria" className="text-xs font-semibold text-slate-600 ml-1">Subcategoría <span className="text-slate-400">(Opcional)</span></label>
-              <input id="input_subcategoria" type="text" value={formData.subcategoria} onChange={e => setFormData({ ...formData, subcategoria: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-tinta focus:border-azul outline-none transition-colors" />
+              <input id="input_subcategoria" type="text" value={formData.subcategoria} onChange={e => setFormData({ ...formData, subcategoria: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-tinta focus:border-azul outline-none transition-colors" />
             </div>
           </div>
 
@@ -433,7 +433,7 @@ const ProductFormModal = ({
             </div>
             {formData.tipo_producto === 'Perecedero' && (
               <div className="space-y-2 animate-bounce-in relative">
-                <label htmlFor="input_fecha_vencimiento" className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Fecha de Vencimiento 📅</label>
+                <label htmlFor="input_fecha_vencimiento" className="text-xs font-bold text-rose-500 ml-1">Fecha de Vencimiento 📅</label>
                 <CustomDatePicker
                   id="input_fecha_vencimiento"
                   value={formData.fecha_vencimiento}
@@ -450,22 +450,22 @@ const ProductFormModal = ({
            * ========================================================= */}
           {selectedProduct ? (
             /* MODO ENTRADA DE STOCK PARA PRODUCTO EXISTENTE */
-            <div className="mt-8 sm:mt-10 mb-8 p-7 sm:p-8 bg-emerald-50/40 border-2 border-emerald-300 rounded-[2.5rem] shadow-sm animate-scale-in space-y-6">
+            <div className="mt-8 sm:mt-10 mb-8 p-7 sm:p-8 bg-emerald-50/40 border-2 border-emerald-300 rounded-2xl shadow-sm animate-scale-in space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-emerald-200/70">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-sm shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm shrink-0">
                     <PackagePlus size={18} />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black uppercase tracking-wider text-emerald-900">
+                    <h4 className="font-bold text-xs text-emerald-900">
                       Recepción de Inventario
                     </h4>
-                    <p className="text-[10px] font-bold text-emerald-700">
+                    <p className="text-xs font-bold text-emerald-700">
                       Indica las unidades que llegaron y ajusta el precio si cambió
                     </p>
                   </div>
                 </div>
-                <span className="self-start sm:self-auto px-3 py-1 bg-white text-emerald-800 rounded-xl text-[10px] font-black uppercase tracking-wider border border-emerald-200 shadow-sm">
+                <span className="self-start sm:self-auto px-3 py-1 bg-white text-emerald-800 rounded-2xl text-xs font-bold border border-emerald-200 shadow-sm">
                   Bodega: {selectedProduct.cantidad} ud
                 </span>
               </div>
@@ -474,7 +474,7 @@ const ProductFormModal = ({
                 <div className="space-y-3">
                   <label htmlFor="input_precio" className="text-xs font-semibold text-slate-600 ml-1 flex justify-between items-center">
                     <span>Precio de Venta</span>
-                    <span className="text-slate-400 font-bold lowercase tracking-normal text-[9px] bg-white px-2 py-0.5 rounded border border-slate-200">(editable si cambió)</span>
+                    <span className="text-slate-400 font-bold lowercase tracking-normal text-xs bg-white px-2 py-0.5 rounded border border-slate-200">(editable si cambió)</span>
                   </label>
                   <input
                     id="input_precio"
@@ -484,15 +484,15 @@ const ProductFormModal = ({
                     min="0"
                     value={formData.precio_unitario}
                     onChange={e => setFormData({ ...formData, precio_unitario: e.target.value })}
-                    className="w-full p-4 bg-white border border-azul/30 rounded-2xl text-lg font-black text-azul focus:border-azul outline-none transition-colors shadow-sm"
+                    className="w-full p-4 bg-white border border-azul/30 rounded-lg text-lg font-bold text-azul focus:border-azul outline-none transition-colors shadow-sm"
                     placeholder="0.00"
                   />
                 </div>
 
                 <div className="space-y-3">
-                  <label htmlFor="input_cantidad_ingreso" className="text-[10px] font-black text-emerald-800 uppercase tracking-widest ml-1 flex justify-between items-center">
+                  <label htmlFor="input_cantidad_ingreso" className="text-xs font-bold text-emerald-800 ml-1 flex justify-between items-center">
                     <span>📦 Unidades a Ingresar (+)</span>
-                    <span className="text-emerald-800 font-black text-[10px] bg-emerald-200/80 px-2 py-0.5 rounded">
+                    <span className="text-emerald-800 font-bold text-xs bg-emerald-200/80 px-2 py-0.5 rounded">
                       Nuevo Total: {Number(selectedProduct.cantidad || 0) + Number(cantidadIngreso || 0)} ud
                     </span>
                   </label>
@@ -503,11 +503,11 @@ const ProductFormModal = ({
                     min="1"
                     value={cantidadIngreso}
                     onChange={e => setCantidadIngreso(e.target.value)}
-                    className="w-full p-4 bg-white border-2 border-emerald-500 rounded-2xl text-2xl font-black text-emerald-700 outline-none focus:ring-4 focus:ring-emerald-200 shadow-sm transition-all"
+                    className="w-full p-4 bg-white border-2 border-emerald-500 rounded-lg text-2xl font-bold text-emerald-700 outline-none focus:ring-4 focus:ring-emerald-200 shadow-sm transition-all"
                     placeholder="Ej: 10, 50, 100"
                     autoFocus
                   />
-                  <p className="text-[9px] text-emerald-700 font-bold ml-1">
+                  <p className="text-xs text-emerald-700 font-bold ml-1">
                     Se sumarán a las {selectedProduct.cantidad} unidades actuales en bodega y quedará registrado en Movimientos.
                   </p>
                 </div>
@@ -526,12 +526,12 @@ const ProductFormModal = ({
                   min="0"
                   value={formData.precio_unitario}
                   onChange={e => setFormData({ ...formData, precio_unitario: e.target.value })}
-                  className="w-full p-4 bg-azul/5 border border-azul/30 rounded-2xl text-lg font-black text-azul focus:border-azul outline-none transition-colors"
+                  className="w-full p-4 bg-azul/5 border border-azul/30 rounded-lg text-lg font-bold text-azul focus:border-azul outline-none transition-colors"
                   placeholder="0.00"
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="input_stock_inicial" className="text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">
+                <label htmlFor="input_stock_inicial" className="text-xs font-bold text-emerald-400 ml-1">
                   {editMode ? 'Stock Actual' : 'Stock Inicial'}
                 </label>
                 <input
@@ -542,10 +542,10 @@ const ProductFormModal = ({
                   disabled={editMode}
                   value={formData.cantidad}
                   onChange={e => setFormData({ ...formData, cantidad: e.target.value })}
-                  className={`w-full p-4 bg-emerald-50/50 border border-exito-suave rounded-2xl text-lg font-black text-emerald-700 outline-none transition-colors ${editMode ? 'opacity-50 cursor-not-allowed' : 'focus:border-emerald-500'}`}
+                  className={`w-full p-4 bg-emerald-50/50 border border-exito-suave rounded-lg text-lg font-bold text-emerald-700 outline-none transition-colors ${editMode ? 'opacity-50 cursor-not-allowed' : 'focus:border-emerald-500'}`}
                   placeholder="0"
                 />
-                {editMode && <span className="text-[9px] font-bold text-exito bg-exito-suave px-2 py-0.5 rounded uppercase mt-1 inline-flex items-center gap-1"><Lock size={10} /> Protegido. Para sumar stock abre la ventana de registrar producto.</span>}
+                {editMode && <span className="text-xs font-bold text-exito bg-exito-suave px-2 py-0.5 rounded uppercase mt-1 inline-flex items-center gap-1"><Lock size={10} /> Protegido. Para sumar stock abre la ventana de registrar producto.</span>}
               </div>
             </div>
           )}
@@ -557,32 +557,32 @@ const ProductFormModal = ({
             <div className="mb-8">
               <details className="group">
                 <summary className="flex items-center gap-2 cursor-pointer select-none py-3 px-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-azul/30 transition-colors">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1"><Settings size={12} /> Configuración de Alertas y Stock Mínimo</span>
+                  <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><Settings size={12} /> Configuración de Alertas y Stock Mínimo</span>
                   <span className="ml-auto text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                 </summary>
                 <div className="mt-4 p-5 bg-azul/10 border border-azul/30 rounded-2xl space-y-5">
-                  <p className="text-[9px] font-bold text-slate-500 leading-relaxed flex items-center justify-between">
+                  <p className="text-xs font-bold text-slate-500 leading-relaxed flex items-center justify-between">
                     <span>Estos valores determinan cuándo se activan las alertas de reposición de este producto.</span>
                     <button
                       type="button"
                       onClick={handleSuggestAlerts}
                       disabled={isSuggesting}
-                      className="ml-4 px-3 py-1.5 bg-azul hover:bg-azul-hondo disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg font-bold text-[10px] flex items-center gap-1.5 transition-colors shadow-sm"
+                      className="ml-4 px-3 py-1.5 bg-azul hover:bg-azul-hondo disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
                     >
                       {isSuggesting ? 'Calculando...' : '✨ Sugerir con IA'}
                     </button>
                   </p>
 
                   {aiError && (
-                    <div className="p-3 bg-rose-50/50 border border-peligro-suave rounded-xl flex items-start gap-2">
+                    <div className="p-3 bg-rose-50/50 border border-peligro-suave rounded-2xl flex items-start gap-2">
                       <span className="text-rose-500 mt-0.5 text-xs">⚠️</span>
-                      <p className="text-[10px] text-peligro font-bold">{aiError}</p>
+                      <p className="text-xs text-peligro font-bold">{aiError}</p>
                     </div>
                   )}
                   {aiSuccess && (
-                    <div className="p-3 bg-emerald-50/50 border border-exito-suave rounded-xl flex items-start gap-2">
+                    <div className="p-3 bg-emerald-50/50 border border-exito-suave rounded-2xl flex items-start gap-2">
                       <span className="text-emerald-500 mt-0.5 text-xs">✨</span>
-                      <p className="text-[10px] text-exito font-bold">{aiSuccess}</p>
+                      <p className="text-xs text-exito font-bold">{aiSuccess}</p>
                     </div>
                   )}
 
@@ -609,7 +609,7 @@ const ProductFormModal = ({
                       <label htmlFor="input_stock_minimo" className="text-xs font-semibold text-slate-600 ml-1 flex items-center gap-1">
                         Stock Mínimo
                         <Tooltip text="Cantidad mínima antes de activar alerta amarilla (Pedir más)">
-                          <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
+                          <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow" >i</span>
                         </Tooltip>
                       </label>
                       <input
@@ -621,15 +621,15 @@ const ProductFormModal = ({
                           setFormData({ ...formData, stock_minimo: e.target.value });
                           setUpdatedFields(prev => prev.filter(f => f !== 'stock_minimo'));
                         }}
-                        className={`w-full p-3 border rounded-xl text-sm font-black outline-none text-center transition-all duration-500 ${updatedFields.includes('stock_minimo') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-amber-200 text-aviso focus:border-ambar'}`}
+                        className={`w-full p-3 border rounded-lg text-sm font-bold outline-none text-center transition-all duration-500 ${updatedFields.includes('stock_minimo') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-amber-200 text-aviso focus:border-ambar'}`}
                       />
-                      <p className="text-[8px] text-slate-400 font-bold text-center">Avisa cuándo comprar</p>
+                      <p className="text-xs text-slate-400 font-bold text-center">Avisa cuándo comprar</p>
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="input_stock_seguridad" className="text-xs font-semibold text-slate-600 ml-1 flex items-center gap-1">
                         Stock Seguridad
                         <Tooltip text="Colchón de emergencia. Si baja de aquí, se activa alerta roja (Agotado)">
-                          <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
+                          <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow" >i</span>
                         </Tooltip>
                       </label>
                       <input
@@ -641,15 +641,15 @@ const ProductFormModal = ({
                           setFormData({ ...formData, stock_seguridad: e.target.value });
                           setUpdatedFields(prev => prev.filter(f => f !== 'stock_seguridad'));
                         }}
-                        className={`w-full p-3 border rounded-xl text-sm font-black outline-none text-center transition-all duration-500 ${updatedFields.includes('stock_seguridad') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-rose-200 text-peligro focus:border-rose-500'}`}
+                        className={`w-full p-3 border rounded-lg text-sm font-bold outline-none text-center transition-all duration-500 ${updatedFields.includes('stock_seguridad') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-rose-200 text-peligro focus:border-rose-500'}`}
                       />
-                      <p className="text-[8px] text-slate-400 font-bold text-center">Avisa riesgo de quiebre</p>
+                      <p className="text-xs text-slate-400 font-bold text-center">Avisa riesgo de quiebre</p>
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="input_lead_time" className="text-xs font-semibold text-slate-600 ml-1 flex items-center gap-1">
                         Días Recepción
                         <Tooltip text="Días que tarda el proveedor en entregarte este producto" align="right">
-                          <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow hover:-translate-y-0.5" >i</span>
+                          <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow" >i</span>
                         </Tooltip>
                       </label>
                       <input
@@ -661,9 +661,9 @@ const ProductFormModal = ({
                           setFormData({ ...formData, lead_time: e.target.value });
                           setUpdatedFields(prev => prev.filter(f => f !== 'lead_time'));
                         }}
-                        className={`w-full p-3 border rounded-xl text-sm font-black outline-none text-center transition-all duration-500 ${updatedFields.includes('lead_time') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-azul/30 text-azul focus:border-azul'}`}
+                        className={`w-full p-3 border rounded-lg text-sm font-bold outline-none text-center transition-all duration-500 ${updatedFields.includes('lead_time') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-azul/30 text-azul focus:border-azul'}`}
                       />
-                      <p className="text-[8px] text-slate-400 font-bold text-center">Días de entrega</p>
+                      <p className="text-xs text-slate-400 font-bold text-center">Días de entrega</p>
                     </div>
                   </div>
                 </div>
@@ -675,13 +675,13 @@ const ProductFormModal = ({
            * BOTONES DE ACCIÓN
            * ========================================================= */}
           <div className="flex gap-4 pt-8 border-t border-slate-100">
-            <button type="button" onClick={onClose} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors">
+            <button type="button" onClick={onClose} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors">
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={`flex-[2] py-4 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${selectedProduct
+              className={`flex-[2] py-4 text-white rounded-lg text-xs font-bold shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${selectedProduct
                   ? 'bg-exito hover:bg-emerald-700'
                   : 'bg-azul hover:bg-azul-hondo'
                 }`}

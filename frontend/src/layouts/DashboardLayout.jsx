@@ -49,26 +49,26 @@ const DashboardLayout = () => {
   const renderForce2FA = () => {
     if (!user?.needs2FASetup) return null;
     return (
-      <div className="fixed inset-0 bg-tinta/95 z-[9999] flex items-center justify-center p-6">
-        <form onSubmit={handleVerify2FA} className="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl animate-scale-in text-center">
+      <div className="fixed inset-0 bg-tinta/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-6">
+        <form onSubmit={handleVerify2FA} className="bg-white w-full max-w-md p-10 rounded-2xl shadow-lg animate-scale-in text-center">
           <div className="w-16 h-16 bg-azul/10 text-azul rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield size={32} />
           </div>
-          <h2 className="text-2xl font-black text-tinta tracking-tighter uppercase mb-2">Configurar Seguridad</h2>
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-6 leading-relaxed">
+          <h2 className="titular text-2xl text-tinta mb-2">Configurar Seguridad</h2>
+          <p className="text-xs text-slate-500 font-bold mb-6 leading-relaxed">
             Como Administrador, es obligatorio configurar 2FA antes de continuar.<br/>
             1. Descarga Google Authenticator.<br/>
             2. Escanea el código QR.
           </p>
 
           {qrCodeUrl ? (
-            <img src={qrCodeUrl} alt="Código QR 2FA" className="mx-auto w-48 h-48 border-4 border-slate-100 rounded-xl mb-6 shadow-sm" />
+            <img src={qrCodeUrl} alt="Código QR 2FA" className="mx-auto w-48 h-48 border-4 border-slate-100 rounded-2xl mb-6 shadow-sm" />
           ) : (
-            <div className="w-48 h-48 bg-slate-100 animate-pulse mx-auto rounded-xl mb-6"></div>
+            <div className="w-48 h-48 bg-slate-100 animate-pulse mx-auto rounded-2xl mb-6"></div>
           )}
 
           <div className="space-y-1 mb-8 text-left">
-            <label htmlFor="totp-token-layout" className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">3. Ingresa el código de 6 dígitos</label>
+            <label htmlFor="totp-token-layout" className="text-xs font-bold text-slate-600 ml-1">3. Ingresa el código de 6 dígitos</label>
             <input
               id="totp-token-layout"
               type="text"
@@ -77,13 +77,13 @@ const DashboardLayout = () => {
               required
               placeholder="000000"
               onChange={e => setTotpToken(e.target.value.replace(/\D/g, ''))}
-              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] font-black focus:border-azul outline-none"
+              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-center text-2xl font-bold focus:border-azul outline-none"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-colors"
+            className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold shadow-lg transition-colors"
           >
             Verificar y Activar
           </button>
@@ -93,7 +93,7 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="flex w-full min-h-screen bg-papel font-outfit overflow-x-hidden relative">
+    <div className="flex w-full min-h-screen bg-papel overflow-x-hidden relative">
       
       {/* 📱 Mobile Top Bar (Only < 768px) */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-[150] flex items-center justify-between px-6 shadow-sm">
@@ -101,7 +101,7 @@ const DashboardLayout = () => {
           <div className="w-8 h-8 bg-azul text-white rounded-lg flex items-center justify-center shadow-md">
             <Store size={16} />
           </div>
-          <span className="font-black text-tinta tracking-tighter uppercase text-sm italic underline decoration-azul underline-offset-4">StockPilot</span>
+          <span className="font-bold text-tinta text-sm underline decoration-azul underline-offset-4">StockPilot</span>
         </div>
         <div className="flex items-center gap-4">
           <div className="mt-1">
@@ -110,7 +110,7 @@ const DashboardLayout = () => {
           <button
             onClick={toggleSidebar}
             aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
-            className="w-10 h-10 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center border border-slate-200 active:scale-95 transition-transform"
+            className="w-10 h-10 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center border border-slate-200 active:scale-95 transition-transform"
           >
             {isOpen ? <X size={18} /> : <Menu size={18} />}
           </button>

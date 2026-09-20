@@ -34,22 +34,22 @@ const HistorialCajaTab = () => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8">
-      <h2 className="text-3xl font-black italic tracking-tighter uppercase text-tinta mb-6">Historial de Sesiones de Caja</h2>
+    <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+      <h2 className="titular text-3xl text-tinta mb-6">Historial de Sesiones de Caja</h2>
       
       {loading ? (
         <div className="animate-pulse space-y-4">
-          <div className="h-12 bg-slate-100 rounded-xl"></div>
-          <div className="h-12 bg-slate-100 rounded-xl"></div>
-          <div className="h-12 bg-slate-100 rounded-xl"></div>
+          <div className="h-12 bg-slate-100 rounded-lg"></div>
+          <div className="h-12 bg-slate-100 rounded-lg"></div>
+          <div className="h-12 bg-slate-100 rounded-lg"></div>
         </div>
       ) : history.length === 0 ? (
-        <p className="text-center text-slate-400 font-bold py-8 uppercase tracking-widest text-sm">No hay registros de sesiones de caja.</p>
+        <p className="text-center text-slate-400 font-bold py-8 text-sm">No hay registros de sesiones de caja.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="border-b border-slate-100 text-[10px] font-black tracking-widest text-slate-400 uppercase bg-slate-50/50">
+              <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 bg-slate-50/50">
                 <th className="p-4">Estado</th>
                 <th className="p-4">Apertura</th>
                 <th className="p-4">Cierre</th>
@@ -67,7 +67,7 @@ const HistorialCajaTab = () => {
                 return (
                   <tr key={s.id_sesion} className="hover:bg-slate-50 transition-colors">
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                         s.estado === 'Abierta' ? 'bg-exito-suave text-emerald-700' : 'bg-slate-200 text-tinta-2'
                       }`}>
                         {s.estado}
@@ -79,7 +79,7 @@ const HistorialCajaTab = () => {
                     <td className="p-4 text-right text-azul font-bold">{formatCurrency(s.monto_apertura)}</td>
                     <td className="p-4 text-right text-slate-600">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_calculado) : '---'}</td>
                     <td className="p-4 text-right text-tinta font-bold">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_declarado) : '---'}</td>
-                    <td className={`p-4 text-right font-black ${isDescuadre ? (diff < 0 ? 'text-peligro' : 'text-amber-500') : 'text-emerald-500'}`}>
+                    <td className={`p-4 text-right font-bold ${isDescuadre ? (diff < 0 ? 'text-peligro' : 'text-amber-500') : 'text-emerald-500'}`}>
                       {s.estado === 'Cerrada' ? formatCurrency(diff) : '---'}
                     </td>
                   </tr>

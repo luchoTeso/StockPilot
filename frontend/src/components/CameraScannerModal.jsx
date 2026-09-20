@@ -228,21 +228,21 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
 
   return createPortal(
     <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200 border border-slate-100">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200 border border-slate-100">
         
         {/* Header */}
         <div className="px-6 py-5 flex justify-between items-center border-b border-slate-50">
           <div>
-            <h3 className="text-lg font-black text-tinta flex items-center gap-2 tracking-tight">
+            <h3 className="titular text-lg text-tinta flex items-center gap-2">
               📷 Escanear Código
             </h3>
-            <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Apunte la cámara al producto</p>
+            <p className="text-xs font-bold text-slate-400 mt-1">Apunte la cámara al producto</p>
           </div>
           <div className="flex items-center gap-2">
             {torchAvailable && (
               <button 
                 onClick={toggleTorch}
-                className={`p-3 rounded-xl transition-all ${torchOn 
+                className={`p-3 rounded-lg transition-all ${torchOn 
                   ? 'bg-aviso-suave text-amber-600 shadow-inner' 
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                 title={torchOn ? 'Apagar linterna' : 'Encender linterna'}
@@ -253,7 +253,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
             <button 
               onClick={onClose}
               aria-label="Cerrar modal de escáner"
-              className="p-3 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-500 rounded-xl transition-colors"
+              className="p-3 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-500 rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -264,7 +264,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
         <div className="px-6 py-4 relative">
           {error && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 rounded-2xl mx-6">
-              <div className="text-rose-500 text-center font-bold p-4 text-sm bg-rose-50 border border-peligro-suave rounded-xl shadow-lg">{error}</div>
+              <div className="text-rose-500 text-center font-bold p-4 text-sm bg-rose-50 border border-peligro-suave rounded-2xl shadow-lg">{error}</div>
             </div>
           )}
           <div className="w-full min-h-[300px] rounded-2xl overflow-hidden border-2 border-dashed border-azul/30 bg-tinta relative">
@@ -283,8 +283,8 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-3xl">
-          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-1.5">
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl">
+          <span className="text-xs text-slate-400 font-bold flex items-center gap-1.5">
             {engineName === 'Inicializando...' && (
               <span className="w-2 h-2 border-2 border-slate-300 border-t-azul rounded-full animate-spin"></span>
             )}
@@ -292,7 +292,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
           </span>
           <button
             onClick={onClose}
-            className="px-5 py-2.5 text-xs font-black text-slate-500 hover:text-tinta-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-sm active:scale-95"
+            className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-tinta-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors shadow-sm active:scale-95"
           >
             Cancelar
           </button>
