@@ -40,6 +40,15 @@
 
   /* ── Tipografía (ver Fase 3; declararla aquí no cambia nada hasta cargar la fuente) ── */
   --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+}
+
+/* Titulares: Archivo condensado, peso 800, en minúscula normal */
+@utility titular {
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: -0.005em;
+  line-height: 1;
 }
 
 @layer base {
@@ -52,30 +61,15 @@
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-family: var(--font-sans);
     margin: 0;
     padding: 0;
 }
 
-/* Textura de grano premium para el fondo principal */
+/* Contenedor principal: la textura de grano se retiró en la Fase 3 (costo de render sin aporte); se conservan las reglas de layout. */
 .grain-bg {
     position: relative;
     overflow: hidden;
-}
-
-.grain-bg::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.12'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 256px 256px;
 }
 
 .grain-bg>*:not([class*="absolute"]) {
@@ -112,4 +106,14 @@ body {
 .scrollbar-premium::-webkit-scrollbar-thumb:hover {
     background: #94a3b8; /* slate-400 */
     background-clip: content-box;
+}
+
+/* Respetar la preferencia del sistema de reducir movimiento (sin !important: el CSS sin capa gana a @layer utilities) */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
+        scroll-behavior: auto;
+    }
 }
