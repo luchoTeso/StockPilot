@@ -13,6 +13,7 @@ axios.get('/api/csrf-token').then(response => {
 
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components -- el hook se exporta junto a su Provider
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {

@@ -1,7 +1,6 @@
-const http = require('http');
 const db = require('./config/database');
 const bcrypt = require('bcrypt');
-const app = require('./app');
+require('./app'); // efecto secundario: levanta el servidor
 
 const PORT = process.env.PORT || 3000;
 

@@ -157,7 +157,6 @@ const suppliersController = {
   // Generar Orden Inteligente (IA)
   generateSmartOrder: async (req, res) => {
     try {
-      const { proveedorId } = req.params;
       const { recomendaciones_matematicas, presupuesto_maximo } = req.body;
       if (!recomendaciones_matematicas || recomendaciones_matematicas.length === 0) return res.status(400).json({ success: false, error: 'No hay productos para analizar.' });
       const totalCost = recomendaciones_matematicas.reduce((acc, curr) => acc + curr.presupuesto_estimado, 0);

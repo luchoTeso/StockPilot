@@ -140,7 +140,7 @@ const NotificationCenter = () => {
                 parsedNotifs = (notifsRes.data.notifications || []).map(n => {
                     try {
                         return { ...n, datos_json: typeof n.datos_json === 'string' ? JSON.parse(n.datos_json) : n.datos_json };
-                    } catch(e) { return n; }
+                    } catch { return n; }
                 });
                 setUserNotifs(parsedNotifs);
             }

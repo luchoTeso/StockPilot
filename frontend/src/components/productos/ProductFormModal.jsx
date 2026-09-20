@@ -169,6 +169,8 @@ const ProductFormModal = ({
         setFormData(defaultData);
       }
     }
+    // Solo al abrir o cambiar el producto: defaultData es un objeto nuevo en cada render y reiniciaría el formulario.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, initialData]);
 
   if (!isOpen) return null;

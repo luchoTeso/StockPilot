@@ -20,21 +20,20 @@ const DashboardLayout = () => {
   const [totpToken, setTotpToken] = useState('');
 
   useEffect(() => {
-    if (user?.needs2FASetup && !qrCodeUrl) {
-      handleGenerate2FA();
-    }
-  }, [user]);
-
-  const handleGenerate2FA = async () => {
-    try {
-      const { data } = await axios.post('/api/2fa/generate');
-      if (data.success) {
-        setQrCodeUrl(data.qrCode);
+    if (!user?.needs2FASetup || qrCodeUrl) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await axios.post('/api/2fa/generate');
+        if (data.success && !cancelled) {
+          setQrCodeUrl(data.qrCode);
+        }
+      } catch {
+        if (!cancelled) toast.error('Error generando configuración 2FA');
       }
-    } catch (err) {
-      toast.error('Error generando configuración 2FA');
-    }
-  };
+    })();
+    return () => { cancelled = true; };
+  }, [user?.needs2FASetup, qrCodeUrl, toast]);
 
   const handleVerify2FA = async (e) => {
     e.preventDefault();

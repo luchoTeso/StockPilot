@@ -8,7 +8,6 @@ import { Mail, KeyRound, Sparkles } from 'lucide-react';
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: Correo, 2: Código, 3: Nueva Clave
   const [email, setEmail] = useState('');
-  const [rol, setRol] = useState(''); // Es importante saber si es admin o tendero
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

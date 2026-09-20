@@ -1,3 +1,4 @@
+/* global document */
 const { test, expect } = require('@playwright/test');
 
 test.describe('Flujo Principal (Happy Paths)', () => {

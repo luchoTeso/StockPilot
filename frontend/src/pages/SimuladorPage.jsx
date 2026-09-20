@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { useSidebar } from '../context/SidebarContext';
 import CustomSelect from '../components/CustomSelect';
 import { FlaskConical, Package } from 'lucide-react';
 
@@ -14,7 +13,6 @@ const SimuladorPage = () => {
   const [days, setDays] = useState(30);
   const [budget, setBudget] = useState(5000000); // 5M default
   const [excludedIds, setExcludedIds] = useState(new Set());
-  const { isCollapsed: isSidebarCollapsed } = useSidebar();
   
   // Modal state
   const [showConvertModal, setShowConvertModal] = useState(false);
@@ -148,7 +146,7 @@ const SimuladorPage = () => {
         setShowConvertModal(false);
         navigate('/proveedores');
       }
-    } catch (e) {
+    } catch {
       toast.error('Error al convertir simulación');
     } finally {
       setIsSubmitting(false);

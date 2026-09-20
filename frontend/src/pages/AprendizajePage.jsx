@@ -101,7 +101,6 @@ const AprendizajePage = () => {
     };
 
     const globalAccuracy = factorToAccuracy(metrics.global.promedio);
-    const globalColor = getAccuracyColor(globalAccuracy);
 
     if (loading) {
         return (

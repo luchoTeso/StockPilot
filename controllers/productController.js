@@ -33,7 +33,7 @@ class ProductController {
             let headerRow = null;
             let colIndexes = {};
             
-            worksheet.eachRow((row, rowNumber) => {
+            worksheet.eachRow((row) => {
                 if (!headerRow && row.hasValues) {
                     headerRow = row;
                     row.eachCell((cell, colNumber) => {

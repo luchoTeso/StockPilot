@@ -88,7 +88,7 @@ describe('Motor Matemático de Alertas (Alert.js)', () => {
       ];
 
       const resultado = calcularClasificacionABC(productos);
-      const total = 30000 + 27000 + 24000 + 15000 + 3000; // 99,000
+      // Total = 30000 + 27000 + 24000 + 15000 + 3000 = 99,000
 
       // Prod 1: 30k/99k = 30.3% → A
       // Prod 2: 57k/99k = 57.6% → A

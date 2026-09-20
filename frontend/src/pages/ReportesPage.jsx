@@ -161,7 +161,7 @@ const ReportesPage = () => {
           const { data } = await axios.delete(`/api/reportes/${id}`);
           toast.success(data.message || 'Reporte eliminado');
           cargarUsuarioYReportes();
-        } catch (err) {
+        } catch {
           toast.error('Error al eliminar el reporte');
         }
       },
@@ -189,7 +189,7 @@ const ReportesPage = () => {
           try {
             const errorParse = JSON.parse(reader.result);
             toast.error(errorParse.error || 'Error al descargar el archivo');
-          } catch (e) {
+          } catch {
             toast.error('Error interno procesando la descarga.');
           }
         };

@@ -102,7 +102,7 @@ export const useProveedoresPage = () => {
       if (res.data.success) {
         setForecastData(res.data.recomendaciones_matematicas);
       }
-    } catch (e) {
+    } catch {
       toast.error('Error calculando la demanda base');
     } finally {
       setIsForecastLoading(false);
@@ -188,7 +188,7 @@ export const useProveedoresPage = () => {
     try {
       const res = await axios.get(`/api/ordenes/${orden.id_orden}`);
       if (res.data.success) setOrdenDetail(res.data.rows || res.data.data);
-    } catch (e) {
+    } catch {
       toast.error('No se pudo cargar el detalle');
     }
   };
@@ -241,7 +241,7 @@ export const useProveedoresPage = () => {
         setShowOrderModal(false);
         fetchHistory();
       }
-    } catch (e) {
+    } catch {
       toast.error('Ocurrió un error guardando la Orden');
     } finally {
       setIsSubmitting(false);
@@ -350,7 +350,7 @@ export const useProveedoresPage = () => {
       }
       setShowSupplierModal(false);
       fetchProveedores();
-    } catch (error) {
+    } catch {
       toast.error('Error al guardar el proveedor');
     } finally {
       setSupplierLoading(false);
@@ -364,7 +364,7 @@ export const useProveedoresPage = () => {
       toast.success('Proveedor inhabilitado');
       setSupplierToDelete(null);
       fetchProveedores();
-    } catch (error) {
+    } catch {
       toast.error('No se pudo inhabilitar el proveedor');
     } finally {
       setSupplierLoading(false);

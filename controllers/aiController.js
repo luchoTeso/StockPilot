@@ -49,7 +49,9 @@ const dbCacheGet = async (clave, currentHash) => {
   try {
     const row = await db.getAsync('SELECT datos_json, data_hash FROM Cache_IA WHERE clave = ?', [clave]);
     if (row && row.data_hash === currentHash) return JSON.parse(row.datos_json);
-  } catch (_) {}
+  } catch {
+    // La caché en BD es opcional: ante cualquier fallo se recalcula.
+  }
   return null;
 };
 
@@ -61,7 +63,9 @@ const dbCacheSet = async (clave, currentHash, datos) => {
        ON CONFLICT (clave) DO UPDATE SET data_hash = EXCLUDED.data_hash, datos_json = EXCLUDED.datos_json, actualizado_at = CURRENT_TIMESTAMP`,
       [clave, currentHash, JSON.stringify(datos)]
     );
-  } catch (_) {}
+  } catch {
+    // La caché en BD es opcional: si no se puede guardar, no se interrumpe la respuesta.
+  }
 };
 
 /**
@@ -232,7 +236,7 @@ const aiController = {
       let aiResponse;
       try {
         aiResponse = JSON.parse(completion.choices[0].message.content);
-      } catch (e) {
+      } catch {
         throw new Error("Fallo en parsing IA");
       }
 

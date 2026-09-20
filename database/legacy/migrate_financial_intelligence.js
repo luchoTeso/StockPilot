@@ -23,7 +23,7 @@ async function migrate() {
             await runMutation('ALTER TABLE Productos ADD COLUMN precio_original REAL');
             await runMutation('ALTER TABLE Productos ADD COLUMN fecha_fin_promocion TEXT');
             console.log('    ✓ precio_original y fecha_fin_promocion inyectados.');
-        } catch (e) { console.log('    ~ Columnas en Productos ya existen o error menor.'); }
+        } catch { console.log('    ~ Columnas en Productos ya existen o error menor.'); }
 
         // 2. Columnas en Ordenes_Compra (Deuda)
         console.log('  - Inyectando columnas en Ordenes_Compra...');
@@ -31,7 +31,7 @@ async function migrate() {
             await runMutation("ALTER TABLE Ordenes_Compra ADD COLUMN estado_pago TEXT DEFAULT 'Pendiente'");
             await runMutation('ALTER TABLE Ordenes_Compra ADD COLUMN monto_pagado REAL DEFAULT 0');
             console.log('    ✓ estado_pago y monto_pagado inyectados.');
-        } catch (e) { console.log('    ~ Columnas en Ordenes_Compra ya existen o error menor.'); }
+        } catch { console.log('    ~ Columnas en Ordenes_Compra ya existen o error menor.'); }
 
         // 3. Tabla Historial_Precios
         console.log('  - Creando tabla Historial_Precios...');

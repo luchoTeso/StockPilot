@@ -30,6 +30,7 @@ export const SidebarProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- el hook se exporta junto a su Provider
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {

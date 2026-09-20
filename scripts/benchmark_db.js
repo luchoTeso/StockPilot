@@ -111,7 +111,7 @@ async function benchmark() {
         const CONCURRENT_REQUESTS = 100;
         const startStress = Date.now();
         
-        const promises = Array.from({ length: CONCURRENT_REQUESTS }).map((_, i) => {
+        const promises = Array.from({ length: CONCURRENT_REQUESTS }).map(() => {
             return pool.query(
                 'SELECT id_producto, nombre_producto, cantidad, precio FROM Productos WHERE id_tienda = $1 LIMIT 20',
                 [tiendaId]

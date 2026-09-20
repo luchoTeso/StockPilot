@@ -68,7 +68,7 @@ const AlertasPage = () => {
         toast.success(`Motor de reglas ejecutado. Se generaron ${res.data.generadas} alertas nuevas.`);
         await fetchAlertas();
       }
-    } catch (e) {
+    } catch {
       toast.error('Falló el procesamiento matemático de alertas.');
     } finally {
       setIsGenerating(false);
@@ -83,7 +83,7 @@ const AlertasPage = () => {
         setAlertas(alertas.filter(a => a.id_alerta !== idAlerta));
         await fetchAlertas(); // Recargar stats
       }
-    } catch (e) {
+    } catch {
       toast.error('No se pudo archivar la alerta');
     }
   };

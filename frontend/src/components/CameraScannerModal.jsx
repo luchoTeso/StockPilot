@@ -118,7 +118,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
           try {
             const result = zxingReaderRef.current.decodeFromCanvas(canvas);
             handleResult(result.getText());
-          } catch (e) {
+          } catch {
             // ZXing tira error (NotFoundException) en cada frame vacío. Se ignora por diseño.
           }
         }

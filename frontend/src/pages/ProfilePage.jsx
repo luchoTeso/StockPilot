@@ -6,7 +6,7 @@ import CustomSelect from '../components/CustomSelect';
 import { User, Lock, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 
 const ProfilePage = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const toast = useToast();
   const fileInputRef = useRef(null);
 
@@ -43,7 +43,7 @@ const ProfilePage = () => {
         setQrCodeUrl(data.qrCode);
         setShow2FAModal(true);
       }
-    } catch (err) {
+    } catch {
       toast.error('Error generando configuración 2FA');
     }
   };
@@ -150,7 +150,7 @@ const ProfilePage = () => {
         await axios.put('/api/perfil', { ...profileData, foto_url: base64String });
         setProfileData(prev => ({ ...prev, foto_url: base64String }));
         toast.success('Foto de perfil actualizada');
-      } catch (err) {
+      } catch {
         toast.error('Error al guardar foto');
       }
     };

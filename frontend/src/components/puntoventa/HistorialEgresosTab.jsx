@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
@@ -20,30 +20,30 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
   const [limiteEgreso, setLimiteEgreso] = useState(user?.limiteEgresoTendero || 150000);
   const [savingLimit, setSavingLimit] = useState(false);
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axios.get('/api/caja/egresos');
       if (res.data.success) {
         setExpenses(res.data.expenses);
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al cargar egresos.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchExpenses();
-  }, []);
+  }, [fetchExpenses]);
 
   const handleApprove = async (id) => {
     try {
       await axios.put(`/api/caja/egreso/${id}/aprobar`);
       toast.success('Egreso aprobado');
       fetchExpenses();
-    } catch (error) {
+    } catch {
       toast.error('Error al aprobar.');
     }
   };
@@ -60,7 +60,7 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
       toast.success('Egreso rechazado');
       setRejectExpenseId(null);
       fetchExpenses();
-    } catch (error) {
+    } catch {
       toast.error('Error al rechazar.');
     }
   };

@@ -48,7 +48,7 @@ const alertController = {
       const alertaId = req.params.id;
       await Alert.resolve(alertaId, tiendaId);
       res.json({ success: true, message: 'Alerta archivada.' });
-    } catch (e) {
+    } catch {
       res.status(500).json({ success: false, error: 'Error al archivar la alerta.' });
     }
   }

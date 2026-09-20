@@ -207,7 +207,8 @@ app.use((req, res) => {
 });
 
 // Manejo de errores global
-app.use((err, req, res, next) => {
+// Express identifica los manejadores de error por aridad (4 args): `_next` debe quedarse aunque no se use.
+app.use((err, req, res, _next) => {
     // 🛡️ Manejo de errores generalizado para subida de archivos (Multer)
     if (err instanceof multer.MulterError) {
         // LIMIT_FILE_SIZE amerita un 413, otros problemas (ej: LIMIT_FIELD_KEY) un 400
@@ -242,7 +243,7 @@ app.use((err, req, res, next) => {
 });
 
 // Manejo de rechazos no controlados
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
     logger.fatal({ reason }, '❌ RECHAZO NO MANEJADO');
 });
 

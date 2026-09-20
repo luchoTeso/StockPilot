@@ -106,7 +106,7 @@ const RegistroTenderoPage = () => {
         toast.success(data.message || 'Datos de acceso actualizados');
         cancelEdit();
       } else {
-        const { data } = await axios.post('/api/tendero', formData);
+        await axios.post('/api/tendero', formData);
         toast.success('Nuevo colaborador registrado con éxito');
         setFormData({
           id_usuario: '', nombres: '', genero: '', correo: '', celular: '', usuario: '', contrasena: ''
@@ -129,7 +129,7 @@ const RegistroTenderoPage = () => {
           await axios.delete(`/api/tendero/${id}`);
           toast.success('Miembro del equipo eliminado');
           cargarTenderos();
-        } catch (err) {
+        } catch {
           toast.error('Error al suspender operador');
         }
       },

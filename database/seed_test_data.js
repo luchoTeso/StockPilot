@@ -33,7 +33,7 @@ function randomInt(min, max) {
 // =============================================
 // PRODUCTOS — 40 productos realistas
 // =============================================
-function getProductos(tiendaId) {
+function getProductos() {
     return [
         { codigo: 'GR001', nombre: 'Arroz Diana 1Kg', categoria: 'Granos y cereales', subcategoria: 'Arroz', tipo: 'Grano', precio: 4500, costo: 3200, cantidad: 85, stock_min: 20, stock_max: 150, vencimiento: daysFromNow(180), frecuencia: 7, rotacion: 'A', stock_seguridad: 15, lead_time: 3 },
         { codigo: 'GR002', nombre: 'Arroz Roa 5Kg', categoria: 'Granos y cereales', subcategoria: 'Arroz', tipo: 'Grano', precio: 19500, costo: 14000, cantidad: 30, stock_min: 10, stock_max: 60, vencimiento: daysFromNow(180), frecuencia: 7, rotacion: 'A', stock_seguridad: 8, lead_time: 4 },
@@ -113,6 +113,7 @@ async function seed() {
         const provId = provResult.lastID;
 
         // 4. Productos
+        const productosData = getProductos();
         const productPromises = productosData.map(p => 
             db.runAsync(
                 `INSERT INTO Productos (codigo, nombre_producto, categoria, subcategoria, tipo_producto, precio, cantidad, id_tienda, stock_minimo, stock_maximo, fecha_vencimiento, frecuencia_compra_dias, costo_compra, stock_seguridad, lead_time, id_proveedor)

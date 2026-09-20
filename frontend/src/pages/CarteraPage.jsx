@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { Users, DollarSign, Brain, Plus, Search, CheckCircle2, History } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 const CarteraPage = () => {
-  const { user } = useAuth();
   const toast = useToast();
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,21 +24,21 @@ const CarteraPage = () => {
   const [loadingAi, setLoadingAi] = useState(false);
   const [submittingAbono, setSubmittingAbono] = useState(false);
 
-  useEffect(() => {
-    fetchClientes();
-  }, []);
-
-  const fetchClientes = async () => {
+  const fetchClientes = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await axios.get('/api/clientes');
       setClientes(data.clientes || []);
-    } catch (error) {
+    } catch {
       toast.error('Error al cargar la cartera de clientes.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchClientes();
+  }, [fetchClientes]);
 
   const handleCreateClient = async (e) => {
     e.preventDefault();
@@ -50,7 +48,7 @@ const CarteraPage = () => {
       setIsClientModalOpen(false);
       setNuevoCliente({ nombre: '', celular: '', limite_credito: 0 });
       fetchClientes();
-    } catch (error) {
+    } catch {
       toast.error('Error al crear el cliente.');
     }
   };
@@ -83,7 +81,7 @@ const CarteraPage = () => {
     try {
       const { data } = await axios.get(`/api/ia/assess-risk/${cliente.id_cliente}`);
       setAiAnalysis(data.analisis);
-    } catch (error) {
+    } catch {
       toast.error('Error al evaluar riesgo con IA.');
       setIsAiModalOpen(false);
     } finally {

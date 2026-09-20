@@ -34,6 +34,8 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
       setMontoApertura('');
       setMontoCierre('');
     }
+    // Solo al abrir el modal: fetchSession se recrea en cada render y onStatusChange viene del padre.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleOpenRegister = async (e) => {

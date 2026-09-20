@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -282,22 +282,6 @@ export const useProductosPage = () => {
       toast.error(`${err.response?.data?.error || err.message}`);
     } finally {
       setLinkLoading(false);
-    }
-  };
-
-  const submitAgregarStock = async (cantidadStock) => {
-    if (stockLoading) return;
-    setStockLoading(true);
-    try {
-      await axios.put(`/api/productos/agregar/${stockProducto.id_producto}`, { cantidad: cantidadStock });
-      toast.success('Stock actualizado');
-      setStockModalOpen(false);
-      cargarProductos();
-      emitSyncEvent(SYNC_EVENTS.STOCK_UPDATED, { id: stockProducto.id_producto });
-    } catch (err) {
-      toast.error(`${err.response?.data?.error || err.message}`);
-    } finally {
-      setStockLoading(false);
     }
   };
 

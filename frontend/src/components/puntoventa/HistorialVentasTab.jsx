@@ -67,6 +67,8 @@ const HistorialVentasTab = () => {
     };
   }, [cargarVentasIniciales]);
 
+  // TODO: paginación pendiente de conectar a un botón "cargar más" (hoy solo se carga la primera página).
+  // eslint-disable-next-line no-unused-vars
   const cargarMasVentas = async () => {
     if (isLoading || currentOffset >= totalVentasServer) return;
     setIsLoading(true);
@@ -144,7 +146,7 @@ const HistorialVentasTab = () => {
       
       setTopProductos(ordenados);
       setModalMasVendidos(true);
-    } catch (error) {
+    } catch {
       toast.error('No se pudo sincronizar el ranking con el motor IA');
     }
   };
@@ -155,7 +157,7 @@ const HistorialVentasTab = () => {
       if (response.data.success) {
         window.location.href = `/api/exportar/descargar/${response.data.filename}`;
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al exportar ventas: Valida tu sesión.');
     }
   };

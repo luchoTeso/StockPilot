@@ -36,7 +36,6 @@ class AuthController {
             
             // Regenerar Session ID para prevenir Session Fixation (OWASP A07)
             await new Promise((resolve, reject) => {
-                const oldSession = req.session;
                 req.session.regenerate((err) => {
                     if (err) return reject(err);
                     resolve();
@@ -122,7 +121,7 @@ class AuthController {
 
         try {
             const {
-                name, id, gender, email, phone,
+                name, gender, email, phone,
                 store_name, store_address, username, password
             } = req.body;
 
@@ -292,10 +291,7 @@ class AuthController {
             }
 
             // Verificar contraseña actual
-            const userFull = await User.findById(userId);
-            // El findById original no trae la contraseña por seguridad, necesito una forma de obtenerla
-            // Pero User.js ya tiene bcrypt. Voy a re-usar una lógica de búsqueda que traiga todo.
-            
+            // findById no trae la contraseña por seguridad: se consulta el hash directamente.
             const query = `SELECT contrasena FROM Usuarios WHERE id_usuario = ?`;
             const db = require('../config/database');
             const row = await db.getAsync(query, [userId]);

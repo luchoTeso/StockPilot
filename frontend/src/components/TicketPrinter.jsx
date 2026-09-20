@@ -1,6 +1,8 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
 
 const TicketPrinter = forwardRef(({ ticketData }, ref) => {
+  // Respaldo si el ticket no trae fecha: se fija una sola vez (Date.now() en el render no es puro).
+  const [fechaRespaldo] = useState(() => Date.now());
   if (!ticketData) return null;
 
   const { items, total, id_venta, metodo_pago, efectivo_recibido, cambio_devuelto, fecha } = ticketData;
@@ -22,7 +24,7 @@ const TicketPrinter = forwardRef(({ ticketData }, ref) => {
         <div style={{ textAlign: 'center', marginBottom: '10px' }}>
           <h2 style={{ margin: '0', fontSize: '18px', fontWeight: 'bold' }}>{storeName}</h2>
           <p style={{ margin: '2px 0', fontSize: '12px' }}>Ticket de Venta #{String(id_venta).padStart(6, '0')}</p>
-          <p style={{ margin: '2px 0', fontSize: '12px' }}>{new Date(fecha || Date.now()).toLocaleString('es-CO')}</p>
+          <p style={{ margin: '2px 0', fontSize: '12px' }}>{new Date(fecha || fechaRespaldo).toLocaleString('es-CO')}</p>
         </div>
 
         <div style={{ borderTop: '1px dashed black', borderBottom: '1px dashed black', margin: '10px 0', padding: '5px 0' }}>

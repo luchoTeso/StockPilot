@@ -21,10 +21,9 @@ const ProductosPage = () => {
     isAdmin, loading, productos, categorias, alert, setAlert,
     filtroTexto, setFiltroTexto, filtroCategoria, setFiltroCategoria, filtroEstado, setFiltroEstado,
     uploadLoading, handleFileUpload,
-    handleBarcodeScan,
     modalOpen, editMode, formLoading, formData, proveedores, handleOpenModal, handleCloseModal, handleSubmitProducto,
     toggleModalOpen, setToggleModalOpen, toggleProducto, setToggleProducto, toggleLoading, submitToggleEstado,
-    linkModalOpen, setLinkModalOpen, linkBarcodeCode, linkLoading, submitLinkBarcode, openNewProductWithBarcode,
+    linkModalOpen, setLinkModalOpen, linkBarcodeCode, submitLinkBarcode, openNewProductWithBarcode,
     eliminarModalOpen, setEliminarModalOpen, eliminarProductoSel, setEliminarProductoSel, eliminarLoading, submitEliminar
   } = useProductosPage();
 
