@@ -6,7 +6,6 @@ import CustomSelect from './CustomSelect';
 const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
   const [metodoPago, setMetodoPago] = useState('Efectivo');
   const [efectivoRecibido, setEfectivoRecibido] = useState('');
-  const [cambio, setCambio] = useState(0);
   const [clientes, setClientes] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [loadingClientes, setLoadingClientes] = useState(false);
@@ -16,7 +15,6 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
     if (isOpen) {
       setMetodoPago('Efectivo');
       setEfectivoRecibido('');
-      setCambio(0);
       setSelectedClient('');
       if (user?.rol === 'Administrador') {
         fetchClientes();
@@ -38,14 +36,10 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
   };
 
   useEffect(() => {
-    if (metodoPago === 'Efectivo') {
-      const recibido = parseFloat(efectivoRecibido) || 0;
-      setCambio(recibido >= total ? recibido - total : 0);
-    } else {
+    if (metodoPago !== 'Efectivo') {
       setEfectivoRecibido('');
-      setCambio(0);
     }
-  }, [efectivoRecibido, total, metodoPago]);
+  }, [metodoPago]);
 
   if (!isOpen) return null;
 
@@ -180,10 +174,10 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
             <button
               type="submit"
               disabled={!isFormValid() || loading}
-              className="w-full h-16 flex items-center justify-center gap-3 bg-tinta hover:bg-slate-800 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+              className="w-full h-16 flex items-center justify-center gap-3 bg-resaltador hover:bg-resaltador-hondo text-tinta ring-1 ring-tinta/25 rounded-2xl font-black text-lg tracking-wider uppercase transition-all disabled:bg-slate-200 disabled:text-slate-500 disabled:ring-0 disabled:cursor-not-allowed mt-8"
             >
               {loading ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-tinta"></div>
               ) : (
                 <>
                   <CheckCircle2 size={24} />

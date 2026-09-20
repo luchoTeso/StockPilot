@@ -58,6 +58,24 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
     ).slice(0, 8); // Limitar a 8 resultados para no saturar la pantalla
   }, [searchTerm, allProducts]);
 
+  const addToCart = useCallback((product) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id_producto === product.id_producto);
+      if (existing) {
+        if (existing.cantidadCart + 1 > product.cantidad) {
+          toast.error('Stock insuficiente en bodega.');
+          return prev;
+        }
+        return prev.map(item => item.id_producto === product.id_producto ? { ...item, cantidadCart: item.cantidadCart + 1 } : item);
+      }
+      if (product.cantidad < 1) {
+        toast.error('Producto agotado.');
+        return prev;
+      }
+      return [{ ...product, cantidadCart: 1 }, ...prev];
+    });
+  }, [toast]);
+
   const handleSelectProduct = (product) => {
     if (product.estado !== 'Disponible') {
       toast.error(`El producto ${product.nombre_producto} no está disponible.`);
@@ -84,30 +102,12 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
         addToCart(product);
         toast.success(`Añadido: ${product.nombre_producto}`);
       }
-    } catch (error) {
+    } catch {
       toast.error('Producto no encontrado en la base de datos.');
     }
-  }, [toast]);
+  }, [toast, addToCart]);
 
   useBarcodeScanner(handleBarcodeScan);
-
-  const addToCart = (product) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id_producto === product.id_producto);
-      if (existing) {
-        if (existing.cantidadCart + 1 > product.cantidad) {
-          toast.error('Stock insuficiente en bodega.');
-          return prev;
-        }
-        return prev.map(item => item.id_producto === product.id_producto ? { ...item, cantidadCart: item.cantidadCart + 1 } : item);
-      }
-      if (product.cantidad < 1) {
-        toast.error('Producto agotado.');
-        return prev;
-      }
-      return [{ ...product, cantidadCart: 1 }, ...prev];
-    });
-  };
 
   const updateQuantity = (id, delta) => {
     setCart(prev => prev.map(item => {
@@ -315,7 +315,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
            <button 
              onClick={handleOpenPayment}
              disabled={cart.length === 0 || loadingPay}
-             className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed text-white p-5 rounded-2xl font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-colors active:scale-95 shadow-xl"
+             className="w-full bg-resaltador hover:bg-resaltador-hondo text-tinta ring-1 ring-tinta/25 disabled:bg-slate-200 disabled:text-slate-500 disabled:ring-0 disabled:cursor-not-allowed p-5 rounded-2xl font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-colors active:scale-95 shadow-xl"
            >
              {loadingPay ? 'Procesando...' : <><CreditCard size={20} /> Cobrar</>}
            </button>
