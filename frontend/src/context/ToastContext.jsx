@@ -15,10 +15,10 @@ const icons = {
 };
 
 const bgColors = {
-  success: 'linear-gradient(135deg, #10b981, #059669)',
-  error: 'linear-gradient(135deg, #ef4444, #dc2626)',
-  warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
-  info: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+  success: 'var(--color-exito)',
+  error: 'var(--color-peligro)',
+  warning: 'var(--color-aviso)', // ámbar puro no alcanza contraste con texto blanco (2,7:1)
+  info: 'var(--color-azul)',
 };
 
 const titles = {

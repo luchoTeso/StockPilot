@@ -50,12 +50,12 @@ const DashboardLayout = () => {
   const renderForce2FA = () => {
     if (!user?.needs2FASetup) return null;
     return (
-      <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[9999] flex items-center justify-center p-6">
+      <div className="fixed inset-0 bg-tinta/95 z-[9999] flex items-center justify-center p-6">
         <form onSubmit={handleVerify2FA} className="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl animate-scale-in text-center">
-          <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-azul/10 text-azul rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield size={32} />
           </div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Configurar Seguridad</h2>
+          <h2 className="text-2xl font-black text-tinta tracking-tighter uppercase mb-2">Configurar Seguridad</h2>
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-6 leading-relaxed">
             Como Administrador, es obligatorio configurar 2FA antes de continuar.<br/>
             1. Descarga Google Authenticator.<br/>
@@ -78,13 +78,13 @@ const DashboardLayout = () => {
               required
               placeholder="000000"
               onChange={e => setTotpToken(e.target.value.replace(/\D/g, ''))}
-              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] font-black focus:border-indigo-500 outline-none"
+              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] font-black focus:border-azul outline-none"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-colors"
+            className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-colors"
           >
             Verificar y Activar
           </button>
@@ -99,10 +99,10 @@ const DashboardLayout = () => {
       {/* 📱 Mobile Top Bar (Only < 768px) */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-[150] flex items-center justify-between px-6 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shadow-md">
+          <div className="w-8 h-8 bg-azul text-white rounded-lg flex items-center justify-center shadow-md">
             <Store size={16} />
           </div>
-          <span className="font-black text-slate-800 tracking-tighter uppercase text-sm italic underline decoration-indigo-500 underline-offset-4">StockPilot</span>
+          <span className="font-black text-tinta tracking-tighter uppercase text-sm italic underline decoration-azul underline-offset-4">StockPilot</span>
         </div>
         <div className="flex items-center gap-4">
           <div className="mt-1">
@@ -136,9 +136,6 @@ const DashboardLayout = () => {
             </div>
         </header>
 
-        {/* Elemento decorativo de fondo */}
-        <div className="!absolute top-0 right-0 w-1/3 h-1/3 bg-indigo-50/50 blur-3xl -z-10 pointer-events-none"></div>
-        
         {/* Contenedor Fluido */}
         <div className="p-4 md:p-8 lg:px-12 lg:pb-12 lg:pt-2 max-w-7xl xl:max-w-[1600px] mx-auto w-full flex-grow flex flex-col gap-8">
           <Outlet />

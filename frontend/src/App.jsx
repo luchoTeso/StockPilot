@@ -120,13 +120,13 @@ function App() {
             <Route path="/cartera" element={<AdminRoute><CarteraPage /></AdminRoute>} />
             <Route path="/movimientos" element={<AdminRoute><MovimientosPage /></AdminRoute>} />
             <Route path="/proveedores" element={<AdminRoute><ProveedoresPage /></AdminRoute>} />
-            <Route path="/analitica-visual" element={<AdminRoute><Suspense fallback={<div className="p-10 text-center animate-pulse text-indigo-500 font-bold uppercase tracking-widest text-[10px]">Cargando módulo de analítica...</div>}><AnalyticsDashboardPage /></Suspense></AdminRoute>} />
+            <Route path="/analitica-visual" element={<AdminRoute><Suspense fallback={<div className="p-10 text-center animate-pulse text-azul font-bold uppercase tracking-widest text-[10px]">Cargando módulo de analítica...</div>}><AnalyticsDashboardPage /></Suspense></AdminRoute>} />
             <Route path="/analisis-detallado" element={<AdminRoute><AnalisisDetalladoPage /></AdminRoute>} />
             <Route path="/comunicados" element={<AdminRoute><ComunicadosPage /></AdminRoute>} />
             <Route path="/simulador" element={<AdminRoute><SimuladorPage /></AdminRoute>} />
             <Route path="/reportes" element={<AdminRoute><ReportesPage /></AdminRoute>} />
             <Route path="/auditoria" element={<AdminRoute><AuditoriaPage /></AdminRoute>} />
-            <Route path="/aprendizaje" element={<AdminRoute><Suspense fallback={<div className="p-10 text-center animate-pulse text-indigo-500 font-bold uppercase tracking-widest text-[10px]">Cargando módulo de IA...</div>}><AprendizajePage /></Suspense></AdminRoute>} />
+            <Route path="/aprendizaje" element={<AdminRoute><Suspense fallback={<div className="p-10 text-center animate-pulse text-azul font-bold uppercase tracking-widest text-[10px]">Cargando módulo de IA...</div>}><AprendizajePage /></Suspense></AdminRoute>} />
             <Route path="/registro-tendero" element={<AdminRoute><RegistroTenderoPage /></AdminRoute>} />
           </Route>
         </Routes>

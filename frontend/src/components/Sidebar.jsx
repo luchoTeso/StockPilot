@@ -77,7 +77,7 @@ const Sidebar = () => {
       {isOpen && (
         <div
           role="presentation"
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] md:hidden transition-opacity"
+          className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-[100] md:hidden transition-opacity"
           onClick={closeSidebar}
           onKeyDown={(e) => { if (e.key === 'Escape') closeSidebar(); }}
         />
@@ -123,7 +123,7 @@ const Sidebar = () => {
           {/* Logo */}
           <div className="flex flex-col items-center w-full relative">
             <div className={`
-              bg-white text-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/10 transition-[width,height,background-color,color]
+              bg-white text-azul rounded-2xl flex items-center justify-center shadow-lg transition-[width,height,background-color,color]
               ${isCollapsed ? 'w-10 h-10' : 'w-16 h-16 mb-4'}
             `}>
               <Store size={isCollapsed ? 20 : 32} />
@@ -138,11 +138,11 @@ const Sidebar = () => {
                   <div className="mt-3 relative w-full">
                     <button 
                       onClick={() => setIsStoreDropdownOpen(!isStoreDropdownOpen)}
-                      className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-800/80 border border-slate-600/60 hover:bg-slate-800 hover:border-indigo-400/60 rounded-xl transition-all shadow-inner group"
+                      className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-800/80 border border-slate-600/60 hover:bg-slate-800 hover:border-white/40 rounded-xl transition-all shadow-inner group"
                     >
                       <div className="flex flex-col items-start overflow-hidden">
                         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Tienda Activa</span>
-                        <span className="text-xs font-bold text-white truncate max-w-[130px] leading-tight mt-0.5 group-hover:text-indigo-300 transition-colors">
+                        <span className="text-xs font-bold text-white truncate max-w-[130px] leading-tight mt-0.5 group-hover:text-resaltador transition-colors">
                           {user?.tiendaNombre || 'Cargando...'}
                         </span>
                       </div>
@@ -170,7 +170,7 @@ const Sidebar = () => {
                     )}
                   </div>
                 ) : (
-                  <p className="text-[9px] font-bold text-indigo-300 uppercase tracking-[0.3em] mt-1">Inteligencia Stock</p>
+                  <p className="text-[9px] font-bold text-white/70 uppercase tracking-[0.3em] mt-1">Inteligencia Stock</p>
                 )}
               </div>
             )}
@@ -206,7 +206,7 @@ const Sidebar = () => {
                     </div>
 
                     {!isCollapsed && link.to === "/alertas" && alertCount > 0 && (
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm ${isActive ? 'bg-white text-indigo-600' : 'bg-rose-500 text-white animate-pulse'}`}>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm ${isActive ? 'bg-white text-azul' : 'bg-rose-500 text-white animate-pulse'}`}>
                         {alertCount}
                       </span>
                     )}

@@ -106,16 +106,16 @@ const ForgotPasswordPage = () => {
           
           <button 
             onClick={() => navigate('/login')}
-            className="absolute top-8 left-8 text-slate-400 hover:text-indigo-600 transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
+            className="absolute top-8 left-8 text-slate-400 hover:text-azul transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
           >
             &larr;
           </button>
 
           <div className="text-center mb-10 mt-6">
-            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-indigo-100">
+            <div className="w-20 h-20 bg-azul/10 text-azul rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-azul/30">
                {step === 1 ? <Mail size={36} /> : step === 2 ? <KeyRound size={36} /> : <Sparkles size={36} />}
             </div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tighter italic uppercase">
+            <h1 className="text-3xl font-black text-tinta tracking-tighter italic uppercase">
               {step === 1 ? 'Recuperación' : step === 2 ? 'Verificación' : 'Nueva Clave'}
             </h1>
             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">
@@ -128,7 +128,7 @@ const ForgotPasswordPage = () => {
             <form onSubmit={handleSendCode} className="space-y-6 animate-scale-in origin-bottom">
 
               <div className="space-y-1">
-                <label htmlFor="email" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
+                <label htmlFor="email" className="text-xs font-semibold text-slate-600 ml-1">Correo Electrónico</label>
                 <input 
                   id="email"
                   type="email" 
@@ -136,7 +136,7 @@ const ForgotPasswordPage = () => {
                   onChange={e => setEmail(e.target.value)} 
                   required 
                   placeholder="ejemplo@stockpilot.com" 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors text-slate-800" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
                 />
               </div>
 
@@ -153,7 +153,7 @@ const ForgotPasswordPage = () => {
                 <p className="text-sm font-medium text-slate-500">
                   Hemos enviado un código de 6 dígitos a:
                   <br/>
-                  <strong className="text-slate-800 block mt-1">{email}</strong>
+                  <strong className="text-tinta block mt-1">{email}</strong>
                 </p>
               </div>
 
@@ -168,12 +168,12 @@ const ForgotPasswordPage = () => {
                     value={digit}
                     onChange={(e) => handleCodeChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-xl text-xl text-center font-black text-indigo-600 focus:border-indigo-600 focus:bg-indigo-50 outline-none transition-colors"
+                    className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-xl text-xl text-center font-black text-azul focus:border-azul focus:bg-azul/10 outline-none transition-colors"
                   />
                 ))}
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-200 mt-8 active:scale-95 transition-colors transition-transform disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg mt-8 active:scale-95 transition-colors transition-transform disabled:opacity-50">
                 {isLoading ? 'Validando Token...' : 'Confirmar Identidad'}
               </button>
             </form>
@@ -183,7 +183,7 @@ const ForgotPasswordPage = () => {
           {step === 3 && (
             <form onSubmit={handleResetPassword} className="space-y-6 animate-scale-in origin-bottom">
               <div className="space-y-1">
-                <label htmlFor="new-password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nueva Contraseña</label>
+                <label htmlFor="new-password" className="text-xs font-semibold text-slate-600 ml-1">Nueva Contraseña</label>
                 <input 
                   id="new-password"
                   type="password" 
@@ -192,12 +192,12 @@ const ForgotPasswordPage = () => {
                   required 
                   placeholder="••••••••" 
                   minLength={6}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors text-slate-800" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
                 />
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="confirm-password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Confirmar Contraseña</label>
+                <label htmlFor="confirm-password" className="text-xs font-semibold text-slate-600 ml-1">Confirmar Contraseña</label>
                 <input 
                   id="confirm-password"
                   type="password" 
@@ -206,11 +206,11 @@ const ForgotPasswordPage = () => {
                   required 
                   placeholder="••••••••" 
                   minLength={6}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors text-slate-800" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none transition-colors text-tinta" 
                 />
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full py-5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 mt-4 active:scale-95 transition-colors transition-transform disabled:opacity-50">
+              <button type="submit" disabled={isLoading} className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg mt-4 active:scale-95 transition-colors transition-transform disabled:opacity-50">
                 {isLoading ? 'Asegurando credenciales...' : 'Restaurar mi Acceso'}
               </button>
             </form>

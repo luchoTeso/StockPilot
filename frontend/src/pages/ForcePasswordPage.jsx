@@ -53,19 +53,19 @@ const ForcePasswordPage = () => {
     <div data-surface="dark" className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden bg-tinta">
       <div className="w-full max-w-[440px] animate-fade-in relative z-10">
         <div className="bg-white p-10 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-200 relative overflow-hidden text-center">
-          <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600"></div>
+          <div className="absolute top-0 left-0 w-full h-2 bg-azul"></div>
           
-          <div className="w-20 h-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-xl shadow-indigo-600/25 animate-bounce-slow cursor-default">
+          <div className="w-20 h-20 bg-azul text-white rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-xl animate-bounce-slow cursor-default">
               <Hand size={36} />
           </div>
 
-          <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase mb-2">¡Bienvenido!</h1>
+          <h1 className="text-4xl font-black text-tinta tracking-tighter italic uppercase mb-2">¡Bienvenido!</h1>
           <p className="text-slate-400 text-xs font-bold tracking-widest uppercase mb-8">Por seguridad, ingresa una nueva contraseña secreta para acceder.</p>
           
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             
             <div className="space-y-1">
-              <label htmlFor="new-password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 block">Nueva Contraseña Secreta</label>
+              <label htmlFor="new-password" className="text-xs font-semibold text-slate-600 ml-1 block">Nueva Contraseña Secreta</label>
               <div className="relative">
                 <input
                   id="new-password"
@@ -75,7 +75,7 @@ const ForcePasswordPage = () => {
                   value={formData.newPassword}
                   onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                   placeholder="Escribe al menos 6 caracteres"
-                  className="w-full p-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors"
+                  className="w-full p-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none transition-colors"
                 />
                 <button 
                   type="button" 
@@ -89,7 +89,7 @@ const ForcePasswordPage = () => {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="confirm-password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 block">Repite tu Contraseña</label>
+              <label htmlFor="confirm-password" className="text-xs font-semibold text-slate-600 ml-1 block">Repite tu Contraseña</label>
               <input
                 id="confirm-password"
                 required
@@ -98,14 +98,14 @@ const ForcePasswordPage = () => {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 placeholder="Vuelve a escribirla igual"
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-600 outline-none transition-colors"
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 mt-4 active:scale-95 disabled:opacity-50 transition-transform transition-colors"
+              className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg mt-4 active:scale-95 disabled:opacity-50 transition-transform transition-colors"
             >
               {isSubmitting ? 'VERIFICANDO...' : 'EMPEZAR A TRABAJAR'}
             </button>
@@ -113,7 +113,7 @@ const ForcePasswordPage = () => {
           </form>
 
           <div className="mt-8 text-center border-t border-slate-100 pt-8">
-            <button onClick={logout} className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-400 transition-colors">
+            <button onClick={logout} className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-azul transition-colors">
               Cerrar Sesión por ahora
             </button>
           </div>

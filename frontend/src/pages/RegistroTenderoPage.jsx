@@ -65,8 +65,8 @@ const RegistroTenderoPage = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] animate-fade-in text-center font-outfit">
         <div className="mb-6 flex justify-center text-rose-400"><ShieldOff size={80} /></div>
-        <h2 className="text-4xl font-black text-rose-600 tracking-tighter uppercase italic mb-4">Acceso Denegado</h2>
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-rose-100 max-w-md">
+        <h2 className="text-4xl font-black text-peligro tracking-tighter uppercase italic mb-4">Acceso Denegado</h2>
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-peligro-suave max-w-md">
           <p className="text-slate-500 font-medium mb-2">Sección Restringida</p>
           <p className="text-slate-500 font-medium text-sm">La creación de usuarios y accesos es exclusiva para el administrador de la tienda.</p>
         </div>
@@ -143,8 +143,8 @@ const RegistroTenderoPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Miembros del Equipo</h2>
-          <span className="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-sm mt-2 border border-indigo-200">
+          <h2 className="text-4xl font-black text-tinta tracking-tighter italic uppercase">Miembros del Equipo</h2>
+          <span className="inline-block bg-azul/10 text-azul px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-sm mt-2 border border-azul/30">
             Gestión de usuarios y permisos de la tienda
           </span>
         </div>
@@ -156,28 +156,28 @@ const RegistroTenderoPage = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 lg:sticky lg:top-6 flex flex-col overflow-hidden">
             <div className="p-6 lg:p-8 flex-1">
-              <h3 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100">
+              <h3 className="text-2xl font-black text-tinta tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100">
                 {editMode ? 'Editar Información' : 'Registrar Colaborador'}
               </h3>
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="nombres" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Nombres Completos <span className="text-rose-500">*</span></label>
-                  <input id="nombres" required type="text" value={formData.nombres} onChange={e => setFormData({...formData, nombres: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Carlos Mendoza..." />
+                  <label htmlFor="nombres" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombres Completos <span className="text-rose-500">*</span></label>
+                  <input id="nombres" required type="text" value={formData.nombres} onChange={e => setFormData({...formData, nombres: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Ej. Carlos Mendoza..." />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="celular" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Celular <span className="text-rose-500">*</span></label>
-                    <input id="celular" required type="tel" value={formData.celular} onChange={e => setFormData({...formData, celular: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="+57 320..." />
+                    <label htmlFor="celular" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Celular <span className="text-rose-500">*</span></label>
+                    <input id="celular" required type="tel" value={formData.celular} onChange={e => setFormData({...formData, celular: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="+57 320..." />
                   </div>
                   <div className="z-10 relative">
-                    <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Género <span className="text-rose-500">*</span></span>
+                    <span className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Género <span className="text-rose-500">*</span></span>
                     <div className="h-14">
                        <CustomSelect 
                          value={formData.genero} 
                          onChange={v => setFormData({...formData, genero: v})} 
-                         className="h-full bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+                         className="h-full bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-azul text-tinta"
                          options={[
                            { value: 'Masculino', label: 'Masculino' },
                            { value: 'Femenino', label: 'Femenino' },
@@ -191,24 +191,24 @@ const RegistroTenderoPage = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="correo" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Correo Corporativo <span className="text-rose-500">*</span></label>
-                  <input id="correo" required type="email" value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="colaborador@stockpilot.com" />
+                  <label htmlFor="correo" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Correo Corporativo <span className="text-rose-500">*</span></label>
+                  <input id="correo" required type="email" value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="colaborador@stockpilot.com" />
                 </div>
 
-                <div className="bg-indigo-50/50 p-4 border border-indigo-100 rounded-[2rem] space-y-4">
-                  <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center flex items-center justify-center gap-1"><Lock size={10} /> Datos para Ingresar al Sistema</h4>
+                <div className="bg-azul/5 p-4 border border-azul/30 rounded-[2rem] space-y-4">
+                  <h4 className="text-[10px] font-black text-azul uppercase tracking-widest pl-1 mb-2 text-center flex items-center justify-center gap-1"><Lock size={10} /> Datos para Ingresar al Sistema</h4>
                   
                   <div>
-                    <label htmlFor="usuario" className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Nombre de Usuario <span className="text-rose-500">*</span></label>
-                    <input id="usuario" required type="text" value={formData.usuario} onChange={e => setFormData({...formData, usuario: e.target.value})} className="w-full p-4 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Ej. cx.mendoza" />
+                    <label htmlFor="usuario" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombre de Usuario <span className="text-rose-500">*</span></label>
+                    <input id="usuario" required type="text" value={formData.usuario} onChange={e => setFormData({...formData, usuario: e.target.value})} className="w-full p-4 bg-white border border-azul/30 rounded-xl text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Ej. cx.mendoza" />
                   </div>
 
                   {!editMode && (
                     <div>
-                      <label htmlFor="contrasena" className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-2">Contraseña de Acceso <span className="text-rose-500">*</span></label>
+                      <label htmlFor="contrasena" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Contraseña de Acceso <span className="text-rose-500">*</span></label>
                       <div className="relative">
-                        <input id="contrasena" required minLength="8" type={showPassword ? 'text' : 'password'} value={formData.contrasena} onChange={e => setFormData({...formData, contrasena: e.target.value})} className="w-full p-4 pr-12 bg-white border border-indigo-100 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-indigo-900" placeholder="Mínimo 8 dígitos" />
-                        <button type="button" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors">
+                        <input id="contrasena" required minLength="8" type={showPassword ? 'text' : 'password'} value={formData.contrasena} onChange={e => setFormData({...formData, contrasena: e.target.value})} className="w-full p-4 pr-12 bg-white border border-azul/30 rounded-xl text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Mínimo 8 dígitos" />
+                        <button type="button" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-azul transition-colors">
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
@@ -217,7 +217,7 @@ const RegistroTenderoPage = () => {
                 </div>
 
                 <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'}`}>
+                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600' : 'bg-azul hover:bg-azul-hondo'}`}>
                     {editMode ? <Save size={14} /> : <UserPlus size={14} />}
                     {isSubmitting ? 'GUARDANDO...' : (editMode ? 'GUARDAR CAMBIOS' : 'CREAR ACCESO')}
                   </button>
@@ -236,8 +236,8 @@ const RegistroTenderoPage = () => {
         <div className="lg:col-span-2 space-y-6">
           
           <div className="flex items-center justify-between bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-               <Users size={18} className="text-indigo-500" /> Equipo Registrado
+             <h3 className="text-xl font-bold text-tinta flex items-center gap-2">
+               <Users size={18} className="text-azul" /> Equipo Registrado
              </h3>
              <div className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-inner">
                {tenderos.length} PERSONAS
@@ -248,7 +248,7 @@ const RegistroTenderoPage = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
+                  <tr className="bg-tinta text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
                     <th className="p-6 pl-8">Nombre del Colaborador</th>
                     <th className="p-6">Medios de Contacto</th>
                     <th className="p-6 text-center">Género</th>
@@ -265,16 +265,16 @@ const RegistroTenderoPage = () => {
                     tenderos.map(t => (
                       <tr key={t.id_usuario} className="hover:bg-slate-50 transition-colors group">
                         <td className="p-6 pl-8 flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg text-white font-black shadow-lg shrink-0 ${t.genero === 'Femenino' ? 'bg-rose-400 shadow-rose-200' : 'bg-indigo-400 shadow-indigo-200'}`}>
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg text-white font-black shadow-lg shrink-0 ${t.genero === 'Femenino' ? 'bg-rose-400' : 'bg-azul'}`}>
                              {t.nombres.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <strong className="block text-lg font-black text-slate-800 tracking-tighter mb-1">{t.nombres}</strong>
+                            <strong className="block text-lg font-black text-tinta tracking-tighter mb-1">{t.nombres}</strong>
                             <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">ID #{t.id_usuario}</span>
                           </div>
                         </td>
                         <td className="p-6">
-                           <div className="text-sm font-medium text-slate-700">{t.celular}</div>
+                           <div className="text-sm font-medium text-tinta-2">{t.celular}</div>
                            <div className="text-xs text-slate-500 font-bold italic">{t.correo}</div>
                         </td>
                         <td className="p-6 text-center">
@@ -282,15 +282,15 @@ const RegistroTenderoPage = () => {
                              {t.genero}
                            </span>
                         </td>
-                        <td className="p-6 text-center text-indigo-600 font-black">
+                        <td className="p-6 text-center text-azul font-black">
                            @{t.usuario}
                         </td>
                         <td className="p-6 pr-8">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Información">
+                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-aviso-suave flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Información">
                               <Pencil size={16} />
                             </button>
-                            <button onClick={() => eliminarTendero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
+                            <button onClick={() => eliminarTendero(t.id_usuario)} className="w-10 h-10 rounded-xl bg-rose-50 text-peligro hover:bg-peligro hover:text-white border border-peligro-suave flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Acceso">
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -306,13 +306,13 @@ const RegistroTenderoPage = () => {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4 font-outfit">
+        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4 font-outfit">
           <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden transform animate-scale-in border border-white">
-            <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-rose-100 bg-rose-50' : 'border-amber-100 bg-amber-50'}`}>
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-rose-100 text-rose-600 shadow-rose-200' : 'bg-amber-100 text-amber-600 shadow-amber-200'}`}>
+            <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-peligro-suave bg-rose-50' : 'border-aviso-suave bg-amber-50'}`}>
+              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-peligro-suave text-peligro' : 'bg-aviso-suave text-amber-600'}`}>
                  {modalConfig.type === 'danger' ? <Trash2 size={32} /> : <AlertTriangle size={32} />}
               </div>
-              <h3 className={`text-2xl font-black tracking-tighter italic uppercase ${modalConfig.type === 'danger' ? 'text-rose-600' : 'text-amber-600'}`}>
+              <h3 className={`text-2xl font-black tracking-tighter italic uppercase ${modalConfig.type === 'danger' ? 'text-peligro' : 'text-amber-600'}`}>
                 {modalConfig.title}
               </h3>
             </div>
@@ -333,8 +333,8 @@ const RegistroTenderoPage = () => {
                 }}
                 className={`flex-1 px-4 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-transform transition-shadow hover:-translate-y-1 active:scale-95 ${
                   modalConfig.type === 'danger' 
-                    ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-200' 
-                    : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'
+                    ? 'bg-rose-500 hover:bg-peligro' 
+                    : 'bg-amber-500 hover:bg-amber-600'
                 }`}
               >
                 Confirmar
