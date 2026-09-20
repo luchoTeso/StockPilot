@@ -53,9 +53,9 @@ const ProductosPage = () => {
         <button 
           type="button"
           onClick={() => navigate('/alertas')}
-          className={`w-full text-left group relative flex flex-col md:flex-row items-center gap-6 p-8 rounded-[2.5rem] mb-10 shadow-2xl border backdrop-blur-xl animate-fade-in cursor-pointer hover:shadow-indigo-500/10 transition-colors transition-transform transition-shadow transform hover:-translate-y-1 outline-none focus:ring-4 focus:ring-indigo-500/50 ${alert.isCritical ? 'bg-rose-50/80 border-rose-100 text-rose-800' : 'bg-amber-50/80 border-amber-100 text-amber-800'}`}
+          className={`w-full text-left group relative flex flex-col md:flex-row items-center gap-6 p-8 rounded-[2.5rem] mb-10 shadow-2xl border backdrop-blur-xl animate-fade-in cursor-pointer transition-colors transition-transform transition-shadow transform hover:-translate-y-1 outline-none focus:ring-4 focus:ring-azul/50 ${alert.isCritical ? 'bg-rose-50/80 border-peligro-suave text-rose-800' : 'bg-amber-50/80 border-aviso-suave text-amber-800'}`}
         >
-          <div className={`w-16 h-16 rounded-3xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-rose-100 border-white text-rose-600 animate-bounce' : 'bg-amber-100 border-white text-amber-600 rotate-12'}`}>
+          <div className={`w-16 h-16 rounded-3xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-peligro-suave border-white text-peligro animate-bounce' : 'bg-aviso-suave border-white text-amber-600 rotate-12'}`}>
             {alert.isCritical ? <AlertCircle size={32} /> : <AlertTriangle size={32} />}
           </div>
           <div className="flex-1 text-center md:text-left">
@@ -67,7 +67,7 @@ const ProductosPage = () => {
              <button 
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setAlert({ ...alert, show: false }); }} 
-                className="w-12 h-12 flex items-center justify-center rounded-2xl hover:bg-black/5 transition-colors transition-transform font-black text-2xl hover:scale-110 active:scale-90 outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-12 h-12 flex items-center justify-center rounded-2xl hover:bg-black/5 transition-colors transition-transform font-black text-2xl hover:scale-110 active:scale-90 outline-none focus:ring-2 focus:ring-azul/30"
                 title="Cerrar"
                 aria-label="Cerrar alerta"
              >
@@ -80,7 +80,7 @@ const ProductosPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-6 md:pb-8">
         <div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Tus Productos</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-tinta tracking-tighter italic uppercase">Tus Productos</h2>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Listado completo de lo que vendes</p>
         </div>
         <div className="flex gap-2">
@@ -96,11 +96,11 @@ const ProductosPage = () => {
               <button 
                 onClick={() => fileInputRef.current?.click()} 
                 disabled={uploadLoading}
-                className={`bg-white hover:bg-slate-50 text-indigo-600 border border-indigo-100 py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform transition-shadow flex items-center gap-2 active:scale-95 ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`bg-white hover:bg-slate-50 text-azul border border-azul/30 py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform transition-shadow flex items-center gap-2 active:scale-95 ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <UploadCloud size={14} /> {uploadLoading ? 'Cargando...' : 'Importar'}
               </button>
-              <button onClick={() => handleOpenModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-colors transition-transform transition-shadow flex items-center gap-2 active:scale-95">
+              <button onClick={() => handleOpenModal()} className="bg-azul hover:bg-azul-hondo text-white py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-colors transition-transform transition-shadow flex items-center gap-2 active:scale-95">
                 <Plus size={14} /> Registrar Producto
               </button>
             </>
@@ -110,7 +110,7 @@ const ProductosPage = () => {
 
       {/* Top Bar (Filtros) */}
       <div className="bg-white p-3 sm:p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
-          <input type="text" aria-label="Buscar código o nombre" placeholder="Buscar código o nombre..." value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} className="w-full sm:flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none" />
+          <input type="text" aria-label="Buscar código o nombre" placeholder="Buscar código o nombre..." value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} className="w-full sm:flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none" />
           <CustomSelect
             value={filtroCategoria}
             onChange={val => setFiltroCategoria(val)}
@@ -119,7 +119,7 @@ const ProductosPage = () => {
               { value: '', label: 'Todas las categorías' },
               ...categorias.map(c => ({ value: c, label: c }))
             ]}
-            className="w-full sm:flex-1 sm:min-w-[160px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+            className="w-full sm:flex-1 sm:min-w-[160px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-azul text-tinta"
           />
           <CustomSelect
             value={filtroEstado}
@@ -130,7 +130,7 @@ const ProductosPage = () => {
               { value: 'Disponible', label: 'Operativo' },
               { value: 'Inactivo', label: 'Suspendido' }
             ]}
-            className="w-full sm:flex-1 sm:min-w-[140px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+            className="w-full sm:flex-1 sm:min-w-[140px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-azul text-tinta"
           />
       </div>
 
@@ -160,15 +160,15 @@ const ProductosPage = () => {
       {/* Modal de Vinculación de Código de Barras */}
       {linkModalOpen && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setLinkModalOpen(false)}></div>
+          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setLinkModalOpen(false)}></div>
           <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-2xl relative z-10 animate-scale-in">
-             <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic mb-4">Código Escaneado</h3>
-             <p className="text-slate-600 font-bold mb-6">Hemos detectado el código <span className="bg-slate-100 text-slate-800 px-2 py-1 rounded font-mono">{linkBarcodeCode}</span>, pero no está registrado.</p>
+             <h3 className="text-2xl font-black text-tinta tracking-tighter uppercase italic mb-4">Código Escaneado</h3>
+             <p className="text-slate-600 font-bold mb-6">Hemos detectado el código <span className="bg-slate-100 text-tinta px-2 py-1 rounded font-mono">{linkBarcodeCode}</span>, pero no está registrado.</p>
              
              <div className="space-y-4">
-                <button onClick={() => openNewProductWithBarcode(linkBarcodeCode)} className="w-full text-left p-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-300 transition-colors group">
-                   <h4 className="font-black text-indigo-700 uppercase tracking-widest text-sm mb-1 group-hover:text-indigo-800">Crear Producto Nuevo</h4>
-                   <p className="text-xs font-bold text-indigo-500">Usar este EAN para registrar un artículo que no existe en el sistema.</p>
+                <button onClick={() => openNewProductWithBarcode(linkBarcodeCode)} className="w-full text-left p-4 rounded-2xl border-2 border-azul/30 bg-azul/10 hover:bg-azul/10 hover:border-azul/30 transition-colors group">
+                   <h4 className="font-black text-azul uppercase tracking-widest text-sm mb-1 group-hover:text-azul">Crear Producto Nuevo</h4>
+                   <p className="text-xs font-bold text-azul">Usar este EAN para registrar un artículo que no existe en el sistema.</p>
                 </button>
                 
                 <div className="relative flex items-center py-2">
@@ -178,7 +178,7 @@ const ProductosPage = () => {
                 </div>
 
                 <div className="p-4 rounded-2xl border-2 border-slate-200 bg-slate-50">
-                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-2">Selecciona un producto existente</label>
+                   <label className="block text-xs font-semibold text-slate-600 ml-1 mb-2">Selecciona un producto existente</label>
                    <CustomSelect
                       value=""
                       onChange={(val) => {
@@ -189,7 +189,7 @@ const ProductosPage = () => {
                         { value: '', label: 'Seleccione para vincular...' },
                         ...productos.map(p => ({ value: p.id_producto, label: `${p.nombre_producto} (SKU: ${p.codigo})` }))
                       ]}
-                      className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+                      className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold focus-within:border-azul text-tinta"
                    />
                    <p className="text-xs text-slate-500 mt-2 font-bold leading-tight">Asignará el EAN escaneado al producto seleccionado para futuros escaneos.</p>
                 </div>
@@ -216,7 +216,7 @@ const ProductosPage = () => {
       <ConfirmDialog
         isOpen={eliminarModalOpen}
         title="Eliminar Producto"
-        message={<>Vas a eliminar permanentemente este producto. Esta acción <span className="text-rose-600 font-black uppercase underline decoration-2 underline-offset-2">no se puede deshacer</span>.</>}
+        message={<>Vas a eliminar permanentemente este producto. Esta acción <span className="text-peligro font-black uppercase underline decoration-2 underline-offset-2">no se puede deshacer</span>.</>}
         highlightText={eliminarProductoSel?.nombre_producto}
         highlightColor="rose"
         confirmText="Borrar Definitivamente"

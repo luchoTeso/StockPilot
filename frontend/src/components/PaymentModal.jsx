@@ -72,20 +72,20 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
   };
 
   const metodos = [
-    { id: 'Efectivo', icon: <Banknote size={24} />, color: 'text-emerald-600', bg: 'bg-emerald-100', border: 'border-emerald-200' },
-    { id: 'Tarjeta', icon: <CreditCard size={24} />, color: 'text-blue-600', bg: 'bg-blue-100', border: 'border-blue-200' },
-    { id: 'Transferencia', icon: <Landmark size={24} />, color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-200' }
+    { id: 'Efectivo', icon: <Banknote size={24} />, color: 'text-exito', bg: 'bg-exito-suave', border: 'border-emerald-200' },
+    { id: 'Tarjeta', icon: <CreditCard size={24} />, color: 'text-azul', bg: 'bg-azul/10', border: 'border-azul/30' },
+    { id: 'Transferencia', icon: <Landmark size={24} />, color: 'text-azul', bg: 'bg-azul/10', border: 'border-azul/30' }
   ];
 
   if (user?.rol === 'Administrador') {
-    metodos.push({ id: 'Fiado', icon: <Banknote size={24} />, color: 'text-orange-600', bg: 'bg-orange-100', border: 'border-orange-200' });
+    metodos.push({ id: 'Fiado', icon: <Banknote size={24} />, color: 'text-amber-600', bg: 'bg-aviso-suave', border: 'border-amber-200' });
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
       <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-black text-2xl text-slate-800 italic uppercase tracking-tighter">Completar Pago</h3>
+          <h3 className="font-black text-2xl text-tinta italic uppercase tracking-tighter">Completar Pago</h3>
           <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors shadow-sm">
             <X size={20} />
           </button>
@@ -94,7 +94,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
         <div className="p-8">
           <div className="text-center mb-8">
             <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mb-2">Total a Cobrar</p>
-            <p className="text-5xl font-black text-indigo-600 tracking-tighter">
+            <p className="text-5xl font-black text-azul tracking-tighter">
               ${Number(total).toLocaleString('es-CO')}
             </p>
           </div>
@@ -113,7 +113,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                   }`}
                 >
                   <div className={`${m.color} mb-2`}>{m.icon}</div>
-                  <span className="font-black text-xs uppercase tracking-wider text-slate-700">{m.id}</span>
+                  <span className="font-black text-xs uppercase tracking-wider text-tinta-2">{m.id}</span>
                 </button>
               ))}
             </div>
@@ -121,14 +121,14 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
             {metodoPago === 'Efectivo' && (
               <div className="space-y-4 pt-4 border-t border-slate-100">
                 <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Efectivo Recibido</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-2">Efectivo Recibido</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-emerald-600">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-exito">$</span>
                     <input
                       type="number"
                       value={efectivoRecibido}
                       onChange={(e) => setEfectivoRecibido(e.target.value)}
-                      className="w-full pl-10 pr-4 py-4 text-3xl font-black text-slate-800 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                      className="w-full pl-10 pr-4 py-4 text-3xl font-black text-tinta bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                       placeholder="0"
                       autoFocus
                     />
@@ -136,9 +136,9 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                 </div>
 
                 {parseFloat(efectivoRecibido) > 0 && (
-                  <div className={`p-4 rounded-2xl border ${parseFloat(efectivoRecibido) >= total ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+                  <div className={`p-4 rounded-2xl border ${parseFloat(efectivoRecibido) >= total ? 'bg-emerald-50 border-exito-suave' : 'bg-rose-50 border-peligro-suave'}`}>
                     <div className="flex justify-between items-center">
-                      <span className={`font-black text-xs uppercase tracking-widest ${parseFloat(efectivoRecibido) >= total ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      <span className={`font-black text-xs uppercase tracking-widest ${parseFloat(efectivoRecibido) >= total ? 'text-exito' : 'text-peligro'}`}>
                         {parseFloat(efectivoRecibido) >= total ? 'Cambio a devolver' : 'Falta dinero'}
                       </span>
                       <span className={`text-2xl font-black ${parseFloat(efectivoRecibido) >= total ? 'text-emerald-700' : 'text-rose-700'}`}>
@@ -153,11 +153,11 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
             {metodoPago === 'Fiado' && (
               <div className="space-y-4 pt-4 border-t border-slate-100">
                 <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Seleccionar Cliente</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-2">Seleccionar Cliente</label>
                   {loadingClientes ? (
                     <div className="text-sm text-slate-500 font-medium animate-pulse">Cargando clientes...</div>
                   ) : (
-                    <div className="h-12 border-2 border-slate-200 rounded-xl bg-slate-50 focus-within:border-indigo-500 focus-within:bg-white transition-all shadow-sm">
+                    <div className="h-12 border-2 border-slate-200 rounded-xl bg-slate-50 focus-within:border-azul focus-within:bg-white transition-all shadow-sm">
                       <CustomSelect
                         value={selectedClient}
                         onChange={(val) => setSelectedClient(val)}
@@ -166,7 +166,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                           value: String(c.id_cliente),
                           label: `${c.nombre} (Cupo: $${Number(c.limite_credito || 0).toLocaleString('es-CO')})`
                         }))}
-                        className="px-4 text-slate-700 font-bold h-full"
+                        className="px-4 text-tinta-2 font-bold h-full"
                       />
                     </div>
                   )}
@@ -180,7 +180,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
             <button
               type="submit"
               disabled={!isFormValid() || loading}
-              className="w-full h-16 flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+              className="w-full h-16 flex items-center justify-center gap-3 bg-tinta hover:bg-slate-800 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>

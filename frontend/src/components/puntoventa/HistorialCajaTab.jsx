@@ -35,7 +35,7 @@ const HistorialCajaTab = () => {
 
   return (
     <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8">
-      <h2 className="text-3xl font-black italic tracking-tighter uppercase text-slate-800 mb-6">Historial de Sesiones de Caja</h2>
+      <h2 className="text-3xl font-black italic tracking-tighter uppercase text-tinta mb-6">Historial de Sesiones de Caja</h2>
       
       {loading ? (
         <div className="animate-pulse space-y-4">
@@ -68,18 +68,18 @@ const HistorialCajaTab = () => {
                   <tr key={s.id_sesion} className="hover:bg-slate-50 transition-colors">
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                        s.estado === 'Abierta' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'
+                        s.estado === 'Abierta' ? 'bg-exito-suave text-emerald-700' : 'bg-slate-200 text-tinta-2'
                       }`}>
                         {s.estado}
                       </span>
                     </td>
                     <td className="p-4 text-slate-600">{formatDate(s.fecha_apertura)}</td>
                     <td className="p-4 text-slate-600">{formatDate(s.fecha_cierre)}</td>
-                    <td className="p-4 font-bold text-slate-800">{s.vendedor_nombre || `ID: ${s.id_vendedor}`}</td>
-                    <td className="p-4 text-right text-indigo-700 font-bold">{formatCurrency(s.monto_apertura)}</td>
+                    <td className="p-4 font-bold text-tinta">{s.vendedor_nombre || `ID: ${s.id_vendedor}`}</td>
+                    <td className="p-4 text-right text-azul font-bold">{formatCurrency(s.monto_apertura)}</td>
                     <td className="p-4 text-right text-slate-600">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_calculado) : '---'}</td>
-                    <td className="p-4 text-right text-slate-800 font-bold">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_declarado) : '---'}</td>
-                    <td className={`p-4 text-right font-black ${isDescuadre ? (diff < 0 ? 'text-rose-600' : 'text-amber-500') : 'text-emerald-500'}`}>
+                    <td className="p-4 text-right text-tinta font-bold">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_declarado) : '---'}</td>
+                    <td className={`p-4 text-right font-black ${isDescuadre ? (diff < 0 ? 'text-peligro' : 'text-amber-500') : 'text-emerald-500'}`}>
                       {s.estado === 'Cerrada' ? formatCurrency(diff) : '---'}
                     </td>
                   </tr>

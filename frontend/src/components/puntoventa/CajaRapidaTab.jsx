@@ -188,7 +188,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
         {/* Acciones de escaneo y búsqueda */}
         <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between relative z-20">
            <div className="flex-1 w-full relative">
-             <h3 className="font-black text-xl italic uppercase tracking-tighter text-slate-800 mb-2">Buscar o Escanear Producto</h3>
+             <h3 className="font-black text-xl italic uppercase tracking-tighter text-tinta mb-2">Buscar o Escanear Producto</h3>
              <div className="relative">
                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                  <Search size={18} className="text-slate-400" />
@@ -196,7 +196,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
                <input
                  type="text"
                  placeholder="Escribe el nombre o código, o escanea..."
-                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-tinta-2 focus:outline-none focus:border-azul focus:ring-2 focus:ring-azul/30 transition-all"
                  value={searchTerm}
                  onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -217,10 +217,10 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
                          className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b border-slate-50 flex justify-between items-center transition-colors"
                        >
                          <div>
-                           <p className="font-bold text-slate-700 text-sm">{p.nombre_producto}</p>
+                           <p className="font-bold text-tinta-2 text-sm">{p.nombre_producto}</p>
                            <p className="text-[10px] text-slate-400 uppercase tracking-widest">{p.codigo || 'SIN CÓDIGO'} • Stock: {p.cantidad}</p>
                          </div>
-                         <span className="font-black text-indigo-600">${Number(p.precio_venta || p.precio_unitario || p.precio || 0).toLocaleString('es-CO')}</span>
+                         <span className="font-black text-azul">${Number(p.precio_venta || p.precio_unitario || p.precio || 0).toLocaleString('es-CO')}</span>
                        </button>
                      ))
                    ) : (
@@ -243,7 +243,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
                  }
                  setIsExpenseModalOpen(true);
                }} 
-               className="w-full sm:w-auto h-12 bg-rose-50 hover:bg-rose-500 text-rose-600 hover:text-white border border-rose-100 px-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
+               className="w-full sm:w-auto h-12 bg-rose-50 hover:bg-rose-500 text-peligro hover:text-white border border-peligro-suave px-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors transition-transform flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
              >
                <DollarSign size={16} /> Egreso
              </button>
@@ -253,8 +253,8 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
         {/* Tabla Carrito */}
         <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden min-h-[400px] flex flex-col">
            <div className="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-             <h3 className="font-black text-slate-700 tracking-tighter uppercase italic">Items Actuales</h3>
-             <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{cart.length} Productos</span>
+             <h3 className="font-black text-tinta-2 tracking-tighter uppercase italic">Items Actuales</h3>
+             <span className="bg-azul/10 text-azul px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{cart.length} Productos</span>
            </div>
            
            <div className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -267,18 +267,18 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
                 cart.map(item => (
                   <div key={item.id_producto} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow gap-4">
                      <div className="flex-1 w-full">
-                       <p className="font-black text-slate-800 text-sm uppercase">{item.nombre_producto}</p>
+                       <p className="font-black text-tinta text-sm uppercase">{item.nombre_producto}</p>
                        <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Stock disponible: {item.cantidad}</p>
                      </div>
                      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                       <p className="font-black text-indigo-600 text-lg">${Number(item.precio || item.precio_unitario || 0).toLocaleString('es-CO')}</p>
+                       <p className="font-black text-azul text-lg">${Number(item.precio || item.precio_unitario || 0).toLocaleString('es-CO')}</p>
                        <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200">
                           <button onClick={() => updateQuantity(item.id_producto, -1)} className="p-2 text-slate-500 hover:text-rose-500 transition-colors"><Minus size={16} /></button>
-                          <span className="w-8 text-center font-black text-slate-700">{item.cantidadCart}</span>
+                          <span className="w-8 text-center font-black text-tinta-2">{item.cantidadCart}</span>
                           <button onClick={() => updateQuantity(item.id_producto, 1)} className="p-2 text-slate-500 hover:text-emerald-500 transition-colors"><Plus size={16} /></button>
                        </div>
-                       <p className="font-black text-emerald-600 text-lg min-w-[100px] text-right">${((item.precio || item.precio_unitario || 0) * item.cantidadCart).toLocaleString('es-CO')}</p>
-                       <button onClick={() => removeFromCart(item.id_producto)} className="p-2 text-rose-300 hover:text-rose-600 bg-rose-50 rounded-xl transition-colors"><X size={16} /></button>
+                       <p className="font-black text-exito text-lg min-w-[100px] text-right">${((item.precio || item.precio_unitario || 0) * item.cantidadCart).toLocaleString('es-CO')}</p>
+                       <button onClick={() => removeFromCart(item.id_producto)} className="p-2 text-rose-300 hover:text-peligro bg-rose-50 rounded-xl transition-colors"><X size={16} /></button>
                      </div>
                   </div>
                 ))
@@ -288,22 +288,22 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
       </div>
 
       {/* Columna Derecha: Resumen de Pago */}
-      <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8 flex flex-col text-slate-800 relative overflow-hidden">
+      <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8 flex flex-col text-tinta relative overflow-hidden">
          {/* Fondo decorativo */}
          <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
          
          <div className="flex justify-between items-center mb-8 relative z-10">
-           <h2 className="text-3xl font-black italic tracking-tighter uppercase text-slate-800">Resumen</h2>
+           <h2 className="text-3xl font-black italic tracking-tighter uppercase text-tinta">Resumen</h2>
          </div>
          
          <div className="flex-1 space-y-6 relative z-10">
            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
              <span className="text-slate-500 font-bold uppercase tracking-widest text-xs">Subtotal</span>
-             <span className="font-black text-xl text-slate-800">${cartTotal.toLocaleString('es-CO')}</span>
+             <span className="font-black text-xl text-tinta">${cartTotal.toLocaleString('es-CO')}</span>
            </div>
            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
              <span className="text-slate-500 font-bold uppercase tracking-widest text-xs">Total Items</span>
-             <span className="font-black text-xl text-slate-800">{cartItemsCount}</span>
+             <span className="font-black text-xl text-tinta">{cartItemsCount}</span>
            </div>
            <div className="flex justify-between items-center pt-4">
              <span className="text-slate-600 font-black uppercase tracking-[0.2em] text-sm">Total a Pagar</span>
@@ -315,7 +315,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
            <button 
              onClick={handleOpenPayment}
              disabled={cart.length === 0 || loadingPay}
-             className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-500 text-white p-5 rounded-2xl font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-colors active:scale-95 shadow-xl shadow-emerald-500/20"
+             className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed text-white p-5 rounded-2xl font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-colors active:scale-95 shadow-xl"
            >
              {loadingPay ? 'Procesando...' : <><CreditCard size={20} /> Cobrar</>}
            </button>

@@ -33,9 +33,9 @@ const ScrollToTopButton = () => {
         fixed bottom-8 right-8 z-[200]
         w-14 h-14 aspect-square
         flex items-center justify-center
-        bg-indigo-600 hover:bg-indigo-700 text-white 
-        rounded-full shadow-[0_10px_40px_-10px_rgba(79,70,229,0.5)]
-        hover:shadow-[0_15px_50px_-10px_rgba(79,70,229,0.6)]
+        bg-azul hover:bg-azul-hondo text-white 
+        rounded-full shadow-lg
+        hover:shadow-xl
         transition-transform transition-opacity transition-shadow transition-colors duration-500 ease-out transform
         hover:-translate-y-2 active:scale-90 group
         ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0 pointer-events-none'}

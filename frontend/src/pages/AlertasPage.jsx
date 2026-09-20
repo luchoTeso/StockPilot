@@ -5,8 +5,8 @@ import { AlertCircle, AlertTriangle, Info, ShieldCheck, RefreshCw } from 'lucide
 
 const SeveridadColors = {
   critico: 'bg-rose-50 text-rose-700 border-rose-200',
-  advertencia: 'bg-amber-50 text-amber-700 border-amber-200',
-  info: 'bg-blue-50 text-blue-700 border-blue-200'
+  advertencia: 'bg-amber-50 text-aviso border-amber-200',
+  info: 'bg-azul/10 text-azul border-azul/30'
 };
 
 const SeveridadIcon = {
@@ -94,13 +94,12 @@ const AlertasPage = () => {
     <div className="p-8 pb-32 max-w-7xl mx-auto space-y-8 animate-fade-in font-outfit">
       {/* HEADER PREMIUM */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative">
-        <div className="absolute -top-10 -left-10 w-40 h-40 bg-rose-500/10 blur-[50px] rounded-full pointer-events-none"></div>
         <div className="relative z-10 w-full mb-4 md:mb-0">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shadow-inner border border-rose-100">
+            <div className="w-10 h-10 bg-rose-50 text-peligro rounded-xl flex items-center justify-center shadow-inner border border-peligro-suave">
               <AlertCircle size={20} />
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Centro de Alertas</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-tinta tracking-tighter uppercase italic">Centro de Alertas</h1>
           </div>
           <p className="text-sm font-bold text-slate-600">
             Monitoreo constante e inteligente de stock bajo, excesos o problemas en ventas.
@@ -111,7 +110,7 @@ const AlertasPage = () => {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-300 transition-colors transition-shadow disabled:opacity-50"
+            className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-azul hover:bg-azul-hondo text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-300 transition-colors transition-shadow disabled:opacity-50"
           >
             {isGenerating ? 'Buscando problemas...' : <><RefreshCw size={13} className="inline mr-1" />Actualizar Alertas</>}
           </button>
@@ -122,7 +121,7 @@ const AlertasPage = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 z-10 relative">
         <button
           onClick={() => setFilter('todas')}
-          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'todas' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
+          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'todas' ? 'bg-azul/10 border-azul/30 text-azul shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-80 mb-1">Todas</p>
           <p className="text-3xl font-black">{stats.total}</p>
@@ -130,7 +129,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('critico')}
-          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-rose-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
+          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'critico' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><AlertCircle size={10} /> Críticas</p>
           <p className="text-3xl font-black">{stats.critico}</p>
@@ -138,7 +137,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('advertencia')}
-          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-amber-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
+          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'advertencia' ? 'bg-amber-50 border-amber-300 text-aviso shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><AlertTriangle size={10} /> Advertencias</p>
           <p className="text-3xl font-black">{stats.advertencia}</p>
@@ -146,7 +145,7 @@ const AlertasPage = () => {
 
         <button
           onClick={() => setFilter('info')}
-          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'info' ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-blue-200 shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'}`}
+          className={`w-full h-24 sm:h-28 flex flex-col justify-center items-center p-3 sm:p-4 rounded-2xl border-2 transition-colors transition-shadow ${filter === 'info' ? 'bg-azul/10 border-azul/30 text-azul shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-azul/30'}`}
         >
           <p className="text-[10px] uppercase font-black tracking-widest opacity-100 mb-1 flex items-center justify-center gap-1"><Info size={10} /> Sobrestock</p>
           <p className="text-3xl font-black">{stats.info}</p>
@@ -156,11 +155,11 @@ const AlertasPage = () => {
       {/* LISTA DE ALERTAS */}
       <div className="space-y-4">
         {loading ? (
-          <div className="flex items-center justify-center h-40"><div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full"></div></div>
+          <div className="flex items-center justify-center h-40"><div className="animate-spin w-8 h-8 border-4 border-azul border-t-transparent rounded-full"></div></div>
         ) : filteredAlertas.length === 0 ? (
           <div className="p-12 text-center bg-white border border-dashed border-slate-300 rounded-[2rem]">
             <div className="mb-4 flex justify-center text-slate-300"><ShieldCheck size={48} /></div>
-            <p className="text-lg font-black text-slate-800 tracking-tight">No tienes ninguna alerta activa aquí.</p>
+            <p className="text-lg font-black text-tinta tracking-tight">No tienes ninguna alerta activa aquí.</p>
             <p className="text-sm font-bold text-slate-400 mt-1">El inventario está en perfecto estado y cubierto.</p>
           </div>
         ) : (
@@ -169,9 +168,9 @@ const AlertasPage = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   {(() => { const Icon = SeveridadIcon[alerta.severidad]; return <Icon size={20} />; })()}
-                  <h3 className="text-lg font-black uppercase tracking-tight">{alerta.nombre_producto} <span className="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded ml-2 shadow-sm">{alerta.codigo}</span></h3>
+                  <h3 className="text-lg font-black uppercase tracking-tight">{alerta.nombre_producto} <span className="text-[10px] bg-tinta text-white px-2 py-0.5 rounded ml-2 shadow-sm">{alerta.codigo}</span></h3>
                 </div>
-                <p className="text-sm font-bold opacity-100 text-slate-800 leading-relaxed max-w-3xl">
+                <p className="text-sm font-bold opacity-100 text-tinta leading-relaxed max-w-3xl">
                   {alerta.mensaje}
                 </p>
                 <p className="text-[10px] font-black uppercase tracking-widest mt-4 opacity-80 text-slate-600">
@@ -181,7 +180,7 @@ const AlertasPage = () => {
 
               <button
                 onClick={() => handleResolve(alerta.id_alerta)}
-                className="px-6 py-3 bg-white/60 hover:bg-white text-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors border border-transparent hover:border-slate-200 shrink-0"
+                className="px-6 py-3 bg-white/60 hover:bg-white text-tinta rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors border border-transparent hover:border-slate-200 shrink-0"
               >
                 ✓ Marcar Resuelta
               </button>

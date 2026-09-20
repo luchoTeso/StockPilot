@@ -156,8 +156,8 @@ const DashboardPage = () => {
   return (
     <div className="animate-fade-in space-y-6 pb-20">
       <header className="mb-10">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Vista General</h1>
-        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1 decoration-indigo-200 underline underline-offset-8">Resumen Actual de tu Negocio</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-tinta tracking-tighter italic uppercase">Vista General</h1>
+        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1 decoration-azul underline underline-offset-8">Resumen Actual de tu Negocio</p>
       </header>
 
       {/* Métricas Principales */}
@@ -166,7 +166,7 @@ const DashboardPage = () => {
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate" title="Productos">Productos</p>
           <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
-            <p className="text-2xl lg:text-xl xl:text-3xl font-black text-slate-800 tracking-tighter break-all">{stats.totalArticulos || 0}</p>
+            <p className="text-2xl lg:text-xl xl:text-3xl font-black text-tinta tracking-tighter break-all">{stats.totalArticulos || 0}</p>
             <span className="text-[10px] text-emerald-500 font-bold shrink-0">Catálogo</span>
           </div>
         </div>
@@ -175,7 +175,7 @@ const DashboardPage = () => {
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate" title="Valor Inventario">Valor Inventario</p>
           <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
-            <p className="text-2xl lg:text-xl xl:text-2xl font-black text-indigo-600 tracking-tighter break-all" title={`$${Number(stats.valorInventario || 0).toLocaleString('es-CO')}`}>
+            <p className="text-2xl lg:text-xl xl:text-2xl font-black text-azul tracking-tighter break-all" title={`$${Number(stats.valorInventario || 0).toLocaleString('es-CO')}`}>
               ${Number(stats.valorInventario || 0).toLocaleString('es-CO')}
             </p>
             <span className="text-[10px] text-slate-400 font-bold shrink-0">Valor Total</span>
@@ -197,7 +197,7 @@ const DashboardPage = () => {
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Ventas de Hoy</p>
           <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
-            <p className="text-2xl lg:text-xl xl:text-2xl font-black text-emerald-600 tracking-tighter break-all" title={`$${Number(stats.ventasHoy || 0).toLocaleString('es-CO')}`}>
+            <p className="text-2xl lg:text-xl xl:text-2xl font-black text-exito tracking-tighter break-all" title={`$${Number(stats.ventasHoy || 0).toLocaleString('es-CO')}`}>
               ${Number(stats.ventasHoy || 0).toLocaleString('es-CO')}
             </p>
             <div className="text-right shrink-0">
@@ -210,19 +210,19 @@ const DashboardPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Asistente Estratégico IA */}
-        <section className="lg:col-span-2 bg-white rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 text-slate-800 shadow-xl relative overflow-hidden border border-slate-100">
-          <div className="absolute top-0 right-0 p-6 opacity-5 text-indigo-500"><Bot size={96} /></div>
+        <section className="lg:col-span-2 bg-white rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 text-tinta shadow-xl relative overflow-hidden border border-slate-100">
+          <div className="absolute top-0 right-0 p-6 opacity-5 text-azul"><Bot size={96} /></div>
           <div className="relative z-10 h-full flex flex-col">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6 md:mb-8">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-indigo-600 text-white rounded-3xl flex items-center justify-center shadow-lg shadow-indigo-600/20"><Rocket size={24} /></div>
+                <div className="w-14 h-14 bg-azul text-white rounded-3xl flex items-center justify-center shadow-lg"><Rocket size={24} /></div>
                 <div>
-                  <h2 className="text-2xl font-black tracking-tighter uppercase italic text-slate-900">Consejero IA</h2>
-                  <p className="text-[9px] text-indigo-600 font-black uppercase tracking-widest mt-1">Recomendaciones Inteligentes</p>
+                  <h2 className="text-2xl font-black tracking-tighter uppercase italic text-tinta">Consejero IA</h2>
+                  <p className="text-[9px] text-azul font-black uppercase tracking-widest mt-1">Recomendaciones Inteligentes</p>
                 </div>
               </div>
               {isAdmin && (
-                <Link to="/analisis-detallado" className="text-[9px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl hover:bg-indigo-600 hover:text-white transition-colors">
+                <Link to="/analisis-detallado" className="text-[9px] font-black uppercase tracking-widest text-azul bg-azul/10 px-4 py-2 rounded-xl hover:bg-azul-hondo hover:text-white transition-colors">
                   Ver Más →
                 </Link>
               )}
@@ -237,22 +237,22 @@ const DashboardPage = () => {
               ) : recommendations.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {recommendations.slice(0, 10).map((rec) => (
-                    <div key={rec.id || rec.product} className="bg-slate-50/70 border-4 border-indigo-400 p-5 rounded-[1.5rem] hover:border-indigo-800 hover:bg-indigo-50/30 hover:shadow-md hover:shadow-indigo-500/5 transition-all duration-200 group flex flex-col">
+                    <div key={rec.id || rec.product} className="bg-slate-50/70 border-4 border-azul p-5 rounded-[1.5rem] hover:border-azul-hondo hover:bg-azul/10 hover:shadow-md transition-all duration-200 group flex flex-col">
                       <div className="flex justify-between items-start mb-3 gap-2">
-                        <span className="text-slate-900 font-black text-sm uppercase tracking-tight leading-tight flex-1">{rec.product}</span>
+                        <span className="text-tinta font-black text-sm uppercase tracking-tight leading-tight flex-1">{rec.product}</span>
                         <span className={`shrink-0 text-[9px] font-black px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
                           {rec.trend === 'alcista' ? 'ALTA DEMANDA' : 'BAJA ROTACIÓN'}
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-600 mt-2 font-medium leading-relaxed italic">"{rec.reason}"</p>
-                      <div className="mt-auto pt-4 border-t border-indigo-100">
+                      <div className="mt-auto pt-4 border-t border-azul/30">
                         <div className="flex justify-between text-[10px] mb-2 font-black uppercase tracking-widest">
-                          <span className="text-slate-500">Sugerido: <b className="text-slate-900 text-base font-black italic tracking-tighter">+{rec.final}u</b></span>
+                          <span className="text-slate-500">Sugerido: <b className="text-tinta text-base font-black italic tracking-tighter">+{rec.final}u</b></span>
                           <span className={getConfidenceColor(rec.confidence)}>Confianza: {rec.confidence}%</span>
                         </div>
                         <div className="h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
                           <div
-                            className={`h-full opacity-90 transition-colors duration-1000 ${rec.confidence >= 90 ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-amber-500'}`}
+                            className={`h-full opacity-90 transition-colors duration-1000 ${rec.confidence >= 90 ? 'bg-exito' : 'bg-ambar'}`}
                             style={{ width: `${rec.confidence}%` }}
                           ></div>
                         </div>
@@ -271,19 +271,19 @@ const DashboardPage = () => {
 
         {/* Estado del Inventario */}
         <section className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 self-start">
-          <h2 className="text-slate-800 font-black text-xs uppercase tracking-[0.3em] mb-8 border-b border-slate-50 pb-4 flex items-center gap-2">
+          <h2 className="text-tinta font-black text-xs uppercase tracking-[0.3em] mb-8 border-b border-slate-50 pb-4 flex items-center gap-2">
             <AlertCircle size={14} className="text-rose-500" /> Estado del Inventario
           </h2>
           <div className="space-y-6">
             <button
               type="button"
               onClick={() => navigate('/alertas')}
-              className={`w-full text-left p-6 rounded-[1.5rem] transition-colors transition-shadow transition-transform duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] outline-none focus:ring-4 focus:ring-indigo-500/50 ${stats.alertasCriticas > 0 ? 'bg-rose-50 border border-rose-100 shadow-xl shadow-rose-100/50 hover:shadow-rose-200/50' : (stats.alertasAdvertencia > 0 ? 'bg-amber-50 border border-amber-100 shadow-xl shadow-amber-100/50' : 'bg-emerald-50 border border-emerald-100 hover:shadow-lg')}`}
+              className={`w-full text-left p-6 rounded-[1.5rem] transition-colors transition-shadow transition-transform duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] outline-none focus:ring-4 focus:ring-azul/50 ${stats.alertasCriticas > 0 ? 'bg-rose-50 border border-peligro-suave shadow-xl' : (stats.alertasAdvertencia > 0 ? 'bg-amber-50 border border-aviso-suave shadow-xl' : 'bg-emerald-50 border border-exito-suave hover:shadow-lg')}`}
             >
               <div className="flex items-center gap-4">
-                <div className={`w-4 h-4 rounded-full ${stats.alertasCriticas > 0 ? 'bg-rose-500 animate-ping' : (stats.alertasAdvertencia > 0 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_15px_#10b981]')}`}></div>
+                <div className={`w-4 h-4 rounded-full ${stats.alertasCriticas > 0 ? 'bg-rose-500 animate-ping' : (stats.alertasAdvertencia > 0 ? 'bg-ambar animate-pulse' : 'bg-exito')}`}></div>
                 <div>
-                  <h3 className="text-base font-black tracking-tight text-slate-800">
+                  <h3 className="text-base font-black tracking-tight text-tinta">
                     {stats.alertasCriticas > 0 ? `${stats.alertasCriticas} Productos Agotados` : (stats.alertasAdvertencia > 0 ? `${stats.alertasAdvertencia} Próximos a Agotarse` : 'Inventario Óptimo')}
                   </h3>
                   <p className="text-xs text-slate-400 mt-1 font-medium">
@@ -297,26 +297,26 @@ const DashboardPage = () => {
               <button
                 type="button"
                 onClick={() => navigate('/analitica-visual')}
-                className="w-full text-left bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 cursor-pointer relative overflow-hidden group hover:scale-[1.02] transition-transform outline-none focus:ring-4 focus:ring-indigo-500/50"
+                className="w-full text-left bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 cursor-pointer relative overflow-hidden group hover:scale-[1.02] transition-transform outline-none focus:ring-4 focus:ring-azul/50"
               >
-                <div className="absolute -top-1 -right-1 p-4 opacity-5 group-hover:scale-125 transition-transform text-indigo-600"><BarChart2 size={40} /></div>
-                <h4 className="text-xl font-black italic tracking-tighter uppercase mb-4 text-slate-800">Centro<br /><span className="text-indigo-600">Analítico</span></h4>
-                <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">Ver Detalles →</span>
+                <div className="absolute -top-1 -right-1 p-4 opacity-5 group-hover:scale-125 transition-transform text-azul"><BarChart2 size={40} /></div>
+                <h4 className="text-xl font-black italic tracking-tighter uppercase mb-4 text-tinta">Centro<br /><span className="text-azul">Analítico</span></h4>
+                <span className="text-[10px] font-black uppercase tracking-widest bg-azul/10 text-azul px-3 py-1 rounded-full border border-azul/30">Ver Detalles →</span>
               </button>
             )}
 
             {/* Margen Promedio (Movido a Sidebar & Convertido a Blanco) */}
             <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 flex flex-col justify-between min-w-0 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-150 transition-transform text-slate-800"><DollarSign size={40} /></div>
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-150 transition-transform text-tinta"><DollarSign size={40} /></div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate relative z-10">Margen de Ganancia</p>
               <div className="flex items-end justify-between mt-2 gap-2 relative z-10">
-                <p className="text-3xl font-black text-slate-800 tracking-tighter">
+                <p className="text-3xl font-black text-tinta tracking-tighter">
                   {stats.margenPromedio ? Number(stats.margenPromedio).toFixed(1) : 0}%
                 </p>
                 <div className="flex flex-col items-end mb-1">
                   <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">Promedio General</span>
-                  <div className="w-16 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                    <div className="h-full bg-indigo-500 shadow-[0_0_8px_#6366f1]" style={{ width: `${stats.margenPromedio || 0}%` }}></div>
+                  <div className="w-16 h-1 bg-slate-200 rounded-full mt-1 overflow-hidden">
+                    <div className="h-full bg-ambar" style={{ width: `${stats.margenPromedio || 0}%` }}></div>
                   </div>
                 </div>
               </div>
@@ -326,14 +326,14 @@ const DashboardPage = () => {
       </div>
 
       {/* Oportunidades de Promoción IA */}
-      <section className="bg-white rounded-[2.5rem] p-8 text-slate-800 shadow-xl relative overflow-hidden border border-slate-100">
-        <div className="absolute top-0 right-0 p-6 opacity-5 text-indigo-500"><DollarSign size={96} /></div>
+      <section className="bg-white rounded-[2.5rem] p-8 text-tinta shadow-xl relative overflow-hidden border border-slate-100">
+        <div className="absolute top-0 right-0 p-6 opacity-5 text-azul"><DollarSign size={96} /></div>
         <div className="relative z-10">
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 bg-indigo-600 text-white rounded-3xl flex items-center justify-center shadow-lg shadow-indigo-600/20"><Target size={24} /></div>
+            <div className="w-14 h-14 bg-azul text-white rounded-3xl flex items-center justify-center shadow-lg"><Target size={24} /></div>
             <div>
-              <h2 className="text-2xl font-black tracking-tighter uppercase italic text-slate-900">Estrategias de Venta</h2>
-              <p className="text-[9px] text-indigo-600 font-black uppercase tracking-widest mt-1">Sugerencias para optimizar la rotación e ingresos</p>
+              <h2 className="text-2xl font-black tracking-tighter uppercase italic text-tinta">Estrategias de Venta</h2>
+              <p className="text-[9px] text-azul font-black uppercase tracking-widest mt-1">Sugerencias para optimizar la rotación e ingresos</p>
             </div>
           </div>
 
@@ -347,14 +347,14 @@ const DashboardPage = () => {
                 <div key={promo.id || promo.productName} className="bg-slate-50 border border-slate-200/80 p-6 rounded-[2rem] hover:bg-slate-100/80 transition-colors flex flex-col group h-full shadow-sm">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">PROPUESTA IA</span>
-                      <span className="text-[9px] font-black bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 inline-flex items-center gap-1 w-fit uppercase tabular-nums">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-azul">PROPUESTA IA</span>
+                      <span className="text-[9px] font-black bg-azul/10 text-azul px-2 py-0.5 rounded border border-azul/30 inline-flex items-center gap-1 w-fit uppercase tabular-nums">
                         <Target size={9} /> {promo.type === 'discount' ? 'Descuento Directo' : (promo.type === 'liquidation' ? 'Liquidación' : promo.type)}
                       </span>
                     </div>
                     <span className="text-[9px] font-black bg-slate-200/60 px-2 py-0.5 rounded text-slate-600 flex items-center gap-1"><Clock size={9} /> {promo.duration_days}d</span>
                   </div>
-                  <h3 className="text-xl font-black tracking-tighter leading-tight italic uppercase text-slate-900 mb-2">
+                  <h3 className="text-xl font-black tracking-tighter leading-tight italic uppercase text-tinta mb-2">
                     {promo.type === 'combo' && promo.complementary_name
                       ? `${promo.productName} + ${promo.complementary_name}`
                       : promo.productName}
@@ -365,14 +365,14 @@ const DashboardPage = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Dinero a Recuperar</p>
-                        <p className="text-xl font-black text-slate-900">${promo.impact.toLocaleString()}</p>
+                        <p className="text-xl font-black text-tinta">${promo.impact.toLocaleString()}</p>
                       </div>
-                      <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-xs shadow-md shadow-indigo-600/20">-{promo.discount}%</div>
+                      <div className="w-12 h-12 bg-azul text-white rounded-2xl flex items-center justify-center font-black text-xs shadow-md">-{promo.discount}%</div>
                     </div>
                     <button
                       onClick={() => handleApplyStrategy(promo)}
                       disabled={applyingStrategy === promo.id}
-                      className="w-full py-4 rounded-xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 active:scale-95"
+                      className="w-full py-4 rounded-xl bg-azul text-white text-[10px] font-black uppercase tracking-widest hover:bg-azul-hondo transition-colors shadow-lg active:scale-95"
                     >
                       {applyingStrategy === promo.id
                         ? <span className="flex items-center justify-center gap-1"><Zap size={12} /> Procesando...</span>
@@ -394,18 +394,18 @@ const DashboardPage = () => {
       {/* STRATEGY MODAL */}
       {showModal && selectedPromo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowModal(false)} role="presentation" aria-hidden="true"></div>
-          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200 text-slate-800">
-            <div className="bg-indigo-600 p-8 text-white relative">
+          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setShowModal(false)} role="presentation" aria-hidden="true"></div>
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200 text-tinta">
+            <div className="bg-azul p-8 text-white relative">
               <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={64} /></div>
               <h3 className="text-2xl font-black tracking-tighter uppercase italic">Activar Promoción</h3>
-              <p className="text-[10px] font-black text-indigo-100 uppercase tracking-widest mt-1">Detalles de la Sugerencia</p>
+              <p className="text-[10px] font-black text-white/80 uppercase tracking-widest mt-1">Detalles de la Sugerencia</p>
             </div>
 
             <div className="p-8 space-y-8">
               <div className="space-y-2 text-center sm:text-left">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intervenir Producto</p>
-                <p className="text-2xl font-black text-slate-900 tracking-tight uppercase italic">{selectedPromo.productName}</p>
+                <p className="text-2xl font-black text-tinta tracking-tight uppercase italic">{selectedPromo.productName}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-8 py-6 border-y border-slate-100">
@@ -414,8 +414,8 @@ const DashboardPage = () => {
                   <p className="text-2xl font-black text-slate-400 line-through opacity-60 italic">${selectedPromo.originalPrice?.toLocaleString()}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Nuevo Precio</p>
-                  <p className="text-3xl font-black text-slate-900 tracking-tighter italic border-b-2 border-emerald-500/50 pb-1 inline-block">
+                  <p className="text-[10px] font-black text-exito uppercase tracking-widest">Nuevo Precio</p>
+                  <p className="text-3xl font-black text-tinta tracking-tighter italic border-b-2 border-emerald-500/50 pb-1 inline-block">
                     ${Math.round(selectedPromo.originalPrice * (1 - customDiscount / 100)).toLocaleString('es-CO')}
                   </p>
                 </div>
@@ -424,7 +424,7 @@ const DashboardPage = () => {
               <div className="space-y-3 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 shadow-inner">
                 <div className="flex justify-between items-center">
                   <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Ajustar Descuento</p>
-                  <span className="text-[14px] font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-200">{customDiscount}% OFF</span>
+                  <span className="text-[14px] font-black text-azul bg-azul/10 px-3 py-1 rounded-xl border border-azul/30">{customDiscount}% OFF</span>
                 </div>
                 <input
                   type="range"
@@ -433,17 +433,17 @@ const DashboardPage = () => {
                   step="1"
                   value={customDiscount}
                   onChange={(e) => setCustomDiscount(Number(e.target.value))}
-                  className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-azul focus:outline-none focus:ring-2 focus:ring-azul/50"
                 />
                 <div className="flex justify-between text-[8px] font-bold text-slate-400 uppercase tracking-widest">
                   <span>0%</span>
-                  <span className={customDiscount === selectedPromo.discount ? 'text-indigo-600 font-black' : ''}>Sugerido IA: {selectedPromo.discount}%</span>
+                  <span className={customDiscount === selectedPromo.discount ? 'text-azul font-black' : ''}>Sugerido IA: {selectedPromo.discount}%</span>
                   <span>90%</span>
                 </div>
               </div>
 
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 flex justify-between items-center">
-                <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Ahorro para el Cliente</p>
+                <p className="text-[10px] font-black text-azul uppercase tracking-widest">Ahorro para el Cliente</p>
                 <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">-${Math.round(selectedPromo.originalPrice * (customDiscount / 100)).toLocaleString('es-CO')} COP</span>
               </div>
 
@@ -452,7 +452,7 @@ const DashboardPage = () => {
                 <button
                   onClick={confirmExecution}
                   disabled={applyingStrategy}
-                  className="flex-[1.5] bg-indigo-600 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50"
+                  className="flex-[1.5] bg-azul text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-azul-hondo transition-colors shadow-lg disabled:opacity-50"
                 >
                   {applyingStrategy ? 'Procesando...' : 'Ejecutar Ahora'}
                 </button>
@@ -465,10 +465,10 @@ const DashboardPage = () => {
       {/* WELCOME ALERT MODAL */}
       {welcomeAlert && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-in fade-in duration-500">
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onClick={() => setWelcomeAlert(null)}></div>
-          <div className={`relative z-10 w-full max-w-xl rounded-[3rem] p-8 md:p-12 shadow-2xl text-center transform animate-in zoom-in-95 duration-500 ${welcomeAlert.type === 'critical' ? 'bg-rose-600 text-white shadow-[0_0_50px_rgba(225,29,72,0.3)]' :
-              welcomeAlert.type === 'warning' ? 'bg-amber-500 text-white shadow-[0_0_50px_rgba(245,158,11,0.3)]' :
-                'bg-emerald-500 text-white shadow-[0_0_50px_rgba(16,185,129,0.3)]'
+          <div className="absolute inset-0 bg-tinta/90 backdrop-blur-md" onClick={() => setWelcomeAlert(null)}></div>
+          <div className={`relative z-10 w-full max-w-xl rounded-[3rem] p-8 md:p-12 shadow-2xl text-center transform animate-in zoom-in-95 duration-500 ${welcomeAlert.type === 'critical' ? 'bg-peligro text-white' :
+              welcomeAlert.type === 'warning' ? 'bg-aviso text-white' :
+                'bg-exito text-white'
             }`}>
             <div className="mx-auto w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mb-6 shadow-inner">
               <welcomeAlert.icon size={48} className="text-white drop-shadow-md" />
@@ -477,7 +477,7 @@ const DashboardPage = () => {
             <p className="text-lg md:text-xl font-medium text-white/90 leading-relaxed mb-10">{welcomeAlert.message}</p>
             <button
               onClick={() => setWelcomeAlert(null)}
-              className="w-full py-5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl text-sm"
+              className="w-full py-5 bg-tinta hover:bg-slate-800 active:scale-95 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl text-sm"
             >
               Entendido
             </button>

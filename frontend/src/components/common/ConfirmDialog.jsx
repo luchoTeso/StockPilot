@@ -26,40 +26,40 @@ const ConfirmDialog = ({
 
   const colors = {
     rose: {
-      bg: 'bg-rose-100',
-      text: 'text-rose-600',
-      shadow: 'shadow-rose-100/50',
-      border: 'border-rose-100',
-      btn: 'bg-rose-600 hover:bg-rose-700 shadow-rose-200',
-      highlightBg: 'bg-rose-50 text-rose-700 border-rose-100'
+      bg: 'bg-peligro-suave',
+      text: 'text-peligro',
+      shadow: '',
+      border: 'border-peligro-suave',
+      btn: 'bg-peligro hover:bg-rose-700',
+      highlightBg: 'bg-rose-50 text-rose-700 border-peligro-suave'
     },
     amber: {
-      bg: 'bg-amber-100',
+      bg: 'bg-aviso-suave',
       text: 'text-amber-500',
-      shadow: 'shadow-amber-100/50',
-      border: 'border-amber-100',
-      btn: 'bg-amber-500 hover:bg-amber-600 shadow-amber-200',
-      highlightBg: 'bg-amber-50 text-amber-700 border-amber-100'
+      shadow: '',
+      border: 'border-aviso-suave',
+      btn: 'bg-ambar hover:bg-amber-600',
+      highlightBg: 'bg-amber-50 text-aviso border-aviso-suave'
     },
     emerald: {
-      bg: 'bg-emerald-100',
+      bg: 'bg-exito-suave',
       text: 'text-emerald-500',
-      shadow: 'shadow-emerald-100/50',
-      border: 'border-emerald-100',
-      btn: 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200',
-      highlightBg: 'bg-emerald-50 text-emerald-700 border-emerald-100'
+      shadow: '',
+      border: 'border-exito-suave',
+      btn: 'bg-emerald-500 hover:bg-exito',
+      highlightBg: 'bg-emerald-50 text-emerald-700 border-exito-suave'
     }
   };
 
   const theme = colors[highlightColor] || colors.rose;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-tinta/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div className={`bg-white rounded-[3rem] w-full max-w-sm shadow-2xl animate-scale-in p-8 text-center border-4 ${theme.border}`}>
          <div className={`w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-xl ${theme.bg} ${theme.text} ${theme.shadow}`}>
             {getIcon()}
          </div>
-         <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">{title}</h3>
+         <h3 className="text-2xl font-black text-tinta tracking-tighter uppercase mb-2">{title}</h3>
          <p className="text-xs font-bold text-slate-500 mb-6">{message}</p>
          
          {highlightText && (

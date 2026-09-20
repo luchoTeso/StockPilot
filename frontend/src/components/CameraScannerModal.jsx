@@ -227,13 +227,13 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+    <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200 border border-slate-100">
         
         {/* Header */}
         <div className="px-6 py-5 flex justify-between items-center border-b border-slate-50">
           <div>
-            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 tracking-tight">
+            <h3 className="text-lg font-black text-tinta flex items-center gap-2 tracking-tight">
               📷 Escanear Código
             </h3>
             <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Apunte la cámara al producto</p>
@@ -243,7 +243,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
               <button 
                 onClick={toggleTorch}
                 className={`p-3 rounded-xl transition-all ${torchOn 
-                  ? 'bg-amber-100 text-amber-600 shadow-inner' 
+                  ? 'bg-aviso-suave text-amber-600 shadow-inner' 
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                 title={torchOn ? 'Apagar linterna' : 'Encender linterna'}
               >
@@ -264,10 +264,10 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
         <div className="px-6 py-4 relative">
           {error && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 rounded-2xl mx-6">
-              <div className="text-rose-500 text-center font-bold p-4 text-sm bg-rose-50 border border-rose-100 rounded-xl shadow-lg">{error}</div>
+              <div className="text-rose-500 text-center font-bold p-4 text-sm bg-rose-50 border border-peligro-suave rounded-xl shadow-lg">{error}</div>
             </div>
           )}
-          <div className="w-full min-h-[300px] rounded-2xl overflow-hidden border-2 border-dashed border-indigo-200 bg-slate-900 relative">
+          <div className="w-full min-h-[300px] rounded-2xl overflow-hidden border-2 border-dashed border-azul/30 bg-tinta relative">
             <video 
               ref={videoRef}
               className="w-full h-full object-cover absolute inset-0"
@@ -279,20 +279,20 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
 
         {/* Línea de escaneo animada */}
         <div className="px-6 pb-6 relative -mt-4 z-20 pointer-events-none">
-          <div className="h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent rounded-full animate-pulse opacity-70 shadow-[0_0_12px_#6366f1]"></div>
+          <div className="h-1 bg-resaltador rounded-full animate-pulse opacity-70"></div>
         </div>
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-3xl">
           <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-1.5">
             {engineName === 'Inicializando...' && (
-              <span className="w-2 h-2 border-2 border-slate-300 border-t-indigo-500 rounded-full animate-spin"></span>
+              <span className="w-2 h-2 border-2 border-slate-300 border-t-azul rounded-full animate-spin"></span>
             )}
             {engineName}
           </span>
           <button
             onClick={onClose}
-            className="px-5 py-2.5 text-xs font-black text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-sm active:scale-95"
+            className="px-5 py-2.5 text-xs font-black text-slate-500 hover:text-tinta-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-sm active:scale-95"
           >
             Cancelar
           </button>

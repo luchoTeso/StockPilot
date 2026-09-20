@@ -39,13 +39,13 @@ const PuntoVentaPage = () => {
         <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 shadow-inner">
           <button
             onClick={() => setActiveTab('caja')}
-            className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'caja' ? 'bg-white text-indigo-600 shadow-md scale-100' : 'text-slate-500 hover:text-slate-800 scale-95'}`}
+            className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'caja' ? 'bg-white text-azul shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
           >
             <ShoppingCart size={16} /> Caja Rápida (POS)
           </button>
           <button
             onClick={() => setActiveTab('historial')}
-            className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'historial' ? 'bg-white text-emerald-600 shadow-md scale-100' : 'text-slate-500 hover:text-slate-800 scale-95'}`}
+            className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'historial' ? 'bg-white text-exito shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
           >
             <History size={16} /> Historial
           </button>
@@ -53,13 +53,13 @@ const PuntoVentaPage = () => {
             <>
             <button
               onClick={() => setActiveTab('historial_caja')}
-              className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'historial_caja' ? 'bg-white text-rose-600 shadow-md scale-100' : 'text-slate-500 hover:text-slate-800 scale-95'}`}
+              className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'historial_caja' ? 'bg-white text-peligro shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
             >
               <DollarSign size={16} /> Historial Caja
             </button>
             <button
               onClick={() => setActiveTab('egresos')}
-              className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'egresos' ? 'bg-white text-orange-600 shadow-md scale-100' : 'text-slate-500 hover:text-slate-800 scale-95'}`}
+              className={`px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${activeTab === 'egresos' ? 'bg-white text-amber-600 shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
             >
               <History size={16} /> Egresos
             </button>
@@ -72,8 +72,8 @@ const PuntoVentaPage = () => {
           onClick={() => setIsCashRegisterOpen(true)}
           className={`px-5 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
             isSessionActive 
-              ? 'bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 shadow-sm' 
-              : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/20'
+              ? 'bg-rose-50 text-peligro border border-rose-200 hover:bg-peligro-suave shadow-sm' 
+              : 'bg-emerald-500 text-white hover:bg-exito shadow-md'
           }`}
         >
           {isSessionActive ? (

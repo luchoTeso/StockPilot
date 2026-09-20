@@ -143,23 +143,23 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
       {/* Header Calendario (Mes y Año) */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-black text-slate-800 italic uppercase tracking-tighter">
+          <span className="text-lg font-black text-tinta italic uppercase tracking-tighter">
             {meses[currentMonth.getMonth()]}
           </span>
           <button
             type="button"
             onClick={(e) => { e.preventDefault(); setMode(mode === 'years' ? 'days' : 'years'); }}
-            className="text-lg font-black text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-0.5 rounded-lg transition-colors italic tracking-tighter flex items-center gap-1"
+            className="text-lg font-black text-azul hover:text-azul hover:bg-azul/10 px-2 py-0.5 rounded-lg transition-colors italic tracking-tighter flex items-center gap-1"
           >
             {currentMonth.getFullYear()}
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${mode === 'years' ? 'rotate-180' : ''}`}><path d="m6 9 6 6 6-6"/></svg>
           </button>
         </div>
         <div className="flex gap-2">
-          <button onClick={prevMonth} className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 flex items-center justify-center font-bold transition-colors">
+          <button onClick={prevMonth} className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-azul/10 hover:text-azul flex items-center justify-center font-bold transition-colors">
             &larr;
           </button>
-          <button onClick={nextMonth} className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 flex items-center justify-center font-bold transition-colors">
+          <button onClick={nextMonth} className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-azul/10 hover:text-azul flex items-center justify-center font-bold transition-colors">
             &rarr;
           </button>
         </div>
@@ -177,8 +177,8 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
               }}
               className={`py-2 rounded-xl text-sm font-bold transition-colors ${
                 y === currentMonth.getFullYear() 
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 hover:bg-indigo-700' 
-                  : 'text-slate-700 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600'
+                  ? 'bg-azul text-white shadow-md hover:bg-azul-hondo' 
+                  : 'text-tinta-2 bg-slate-50 hover:bg-azul/10 hover:text-azul'
               }`}
             >
               {y}
@@ -208,8 +208,8 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
                   key={dayId}
                   onClick={(e) => { e.preventDefault(); selectDate(currentMonth.getFullYear(), currentMonth.getMonth(), day); }}
                   className={`relative flex items-center justify-center w-full aspect-square text-sm font-bold rounded-xl transition-all ${isSelected
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-105'
-                      : (isToday ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100' : 'text-slate-700 hover:bg-slate-100 hover:-translate-y-0.5')
+                      ? 'bg-azul text-white shadow-lg hover:bg-azul-hondo hover:scale-105'
+                      : (isToday ? 'bg-emerald-50 text-exito border border-emerald-200 hover:bg-exito-suave' : 'text-tinta-2 hover:bg-slate-100 hover:-translate-y-0.5')
                     }`}
                 >
                   {day}
@@ -233,7 +233,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
             const today = new Date();
             selectDate(today.getFullYear(), today.getMonth(), today.getDate());
           }}
-          className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors"
+          className="text-[10px] font-black uppercase tracking-widest text-azul hover:text-azul transition-colors"
         >
           Hoy
         </button>
@@ -248,7 +248,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
       <button
         ref={buttonRef}
         type="button"
-        className={`w-full flex items-center justify-between p-4 bg-slate-50 border rounded-2xl text-sm font-bold outline-none transition-colors transition-shadow ${isOpen ? 'border-indigo-500 shadow-lg shadow-indigo-100' : 'border-slate-200'} ${value ? 'text-slate-800' : 'text-slate-400'}`}
+        className={`w-full flex items-center justify-between p-4 bg-slate-50 border rounded-2xl text-sm font-bold outline-none transition-colors transition-shadow ${isOpen ? 'border-azul shadow-lg' : 'border-slate-200'} ${value ? 'text-tinta' : 'text-slate-400'}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{displayValue}</span>

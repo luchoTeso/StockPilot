@@ -47,11 +47,11 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200 border border-slate-100">
                 <div className="px-6 py-5 flex justify-between items-center border-b border-slate-50">
                     <div>
-                        <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 tracking-tight">
+                        <h3 className="text-lg font-black text-tinta flex items-center gap-2 tracking-tight">
                             <Tag className="text-amber-500 w-5 h-5" /> Promoción Manual
                         </h3>
                         <p className="text-xs font-bold text-slate-400 mt-1 tracking-wider uppercase">Enseñando a la IA</p>
@@ -63,14 +63,14 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {error && (
-                        <div className="bg-rose-50 border border-rose-200 text-rose-600 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                        <div className="bg-rose-50 border border-rose-200 text-peligro p-3 rounded-xl text-xs font-bold flex items-center gap-2">
                             <X className="w-4 h-4" /> {error}
                         </div>
                     )}
 
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Producto</p>
-                        <p className="font-black text-slate-800">{product.nombre_producto}</p>
+                        <p className="font-black text-tinta">{product.nombre_producto}</p>
                         
                         <div className="flex items-center gap-4 mt-3">
                             <div>
@@ -79,20 +79,20 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Nuevo Precio</p>
-                                <p className="font-black text-emerald-600 text-lg">${precioNuevo.toLocaleString('es-CO')}</p>
+                                <p className="font-black text-exito text-lg">${precioNuevo.toLocaleString('es-CO')}</p>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-2">Porcentaje de Descuento (%)</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-2">Porcentaje de Descuento (%)</label>
                         <div className="flex items-center gap-2 mb-3">
                             {[10, 20, 30, 50].map(pct => (
                                 <button
                                     key={pct}
                                     type="button"
                                     onClick={() => setDescuento(pct.toString())}
-                                    className={`flex-1 py-2 rounded-xl text-xs font-black transition-colors border ${descuento === pct.toString() ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                                    className={`flex-1 py-2 rounded-xl text-xs font-black transition-colors border ${descuento === pct.toString() ? 'bg-aviso-suave text-aviso border-amber-300' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                                 >
                                     {pct}%
                                 </button>
@@ -104,7 +104,7 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
                                 type="number"
                                 value={descuento}
                                 onChange={(e) => setDescuento(e.target.value)}
-                                className="w-full pl-9 pr-4 py-3 bg-white border-2 border-slate-100 rounded-xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-400 outline-none transition-all font-bold text-slate-700"
+                                className="w-full pl-9 pr-4 py-3 bg-white border-2 border-slate-100 rounded-xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-400 outline-none transition-all font-bold text-tinta-2"
                                 placeholder="Otro porcentaje..."
                                 min="1"
                                 max="99"
@@ -113,12 +113,12 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-2">Motivo de la promoción</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-2">Motivo de la promoción</label>
                         <p className="text-[10px] text-slate-400 mb-2 font-medium">Esta justificación alimentará a la IA para aprender de tus decisiones.</p>
                         <textarea
                             value={motivo}
                             onChange={(e) => setMotivo(e.target.value)}
-                            className="w-full px-4 py-3 bg-white border-2 border-slate-100 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 outline-none transition-all font-medium text-sm text-slate-700 resize-none h-24 shadow-inner"
+                            className="w-full px-4 py-3 bg-white border-2 border-slate-100 rounded-xl focus:ring-4 focus:ring-azul/10 focus:border-azul outline-none transition-all font-medium text-sm text-tinta-2 resize-none h-24 shadow-inner"
                             placeholder="Ej: Producto próximo a vencer, liquidación de temporada, exceso de stock..."
                         />
                     </div>
@@ -126,7 +126,7 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex items-center justify-center gap-2 bg-slate-800 text-white font-black py-4 rounded-xl hover:bg-slate-700 active:scale-95 transition-all shadow-xl shadow-slate-900/10 disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-2 bg-azul text-white font-black py-4 rounded-xl hover:bg-azul-hondo active:scale-95 transition-all shadow-xl shadow-slate-900/10 disabled:opacity-50"
                     >
                         {loading ? 'Aplicando...' : (
                             <>

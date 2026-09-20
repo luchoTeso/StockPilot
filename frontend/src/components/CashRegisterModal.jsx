@@ -86,10 +86,10 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
       <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 relative">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-black text-2xl text-slate-800 italic uppercase tracking-tighter">
+          <h3 className="font-black text-2xl text-tinta italic uppercase tracking-tighter">
             {session ? 'Cerrar Caja (Arqueo)' : 'Abrir Caja'}
           </h3>
           <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors shadow-sm">
@@ -100,29 +100,29 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
         <div className="p-8">
           {loading ? (
             <div className="flex justify-center p-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-azul"></div>
             </div>
           ) : session ? (
             <form onSubmit={handleCloseRegister} className="space-y-6">
               <div className="text-center mb-6">
                 <Lock size={48} className="mx-auto text-rose-500 mb-4" />
                 <p className="text-slate-500 font-bold">Sesión Abierta desde:</p>
-                <p className="font-black text-slate-800">{new Date(session.fecha_apertura).toLocaleString('es-CO')}</p>
-                <p className="text-slate-500 text-sm mt-2">Fondo inicial: <span className="font-bold text-slate-700">${Number(session.monto_apertura).toLocaleString('es-CO')}</span></p>
-                <div className="bg-rose-50 border border-rose-100 p-3 rounded-xl mt-3 text-[11px] text-rose-600 font-bold">
+                <p className="font-black text-tinta">{new Date(session.fecha_apertura).toLocaleString('es-CO')}</p>
+                <p className="text-slate-500 text-sm mt-2">Fondo inicial: <span className="font-bold text-tinta-2">${Number(session.monto_apertura).toLocaleString('es-CO')}</span></p>
+                <div className="bg-rose-50 border border-peligro-suave p-3 rounded-xl mt-3 text-[11px] text-peligro font-bold">
                    <p>💡 Nota: Los egresos registrados durante el turno se restarán automáticamente del monto esperado.</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Efectivo Total en Cajón</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-2">Efectivo Total en Cajón</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-400">$</span>
                   <input
                     type="number"
                     value={montoCierre}
                     onChange={(e) => setMontoCierre(e.target.value)}
-                    className="w-full pl-10 pr-4 py-4 text-3xl font-black text-slate-800 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
+                    className="w-full pl-10 pr-4 py-4 text-3xl font-black text-tinta bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
                     placeholder="0"
                     autoFocus
                   />
@@ -133,7 +133,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 flex items-center justify-center gap-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all shadow-lg shadow-rose-500/30"
+                className="w-full h-14 flex items-center justify-center gap-3 bg-peligro hover:bg-rose-500 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all shadow-lg"
               >
                 <Calculator size={20} /> Realizar Arqueo
               </button>
@@ -147,14 +147,14 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Base de Caja Inicial</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-2">Base de Caja Inicial</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-400">$</span>
                   <input
                     type="number"
                     value={montoApertura}
                     onChange={(e) => setMontoApertura(e.target.value)}
-                    className="w-full pl-10 pr-4 py-4 text-3xl font-black text-slate-800 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    className="w-full pl-10 pr-4 py-4 text-3xl font-black text-tinta bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                     placeholder="0"
                     autoFocus
                   />
@@ -164,7 +164,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/30"
+                className="w-full h-14 flex items-center justify-center gap-3 bg-exito hover:bg-emerald-500 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all shadow-lg"
               >
                 <Landmark size={20} /> Abrir Turno
               </button>

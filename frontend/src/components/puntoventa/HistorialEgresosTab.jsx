@@ -87,7 +87,7 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
   return (
     <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-6 border-b border-slate-100 pb-6">
-          <h2 className="text-3xl font-black italic tracking-tighter uppercase text-slate-800">Gestión de Egresos</h2>
+          <h2 className="text-3xl font-black italic tracking-tighter uppercase text-tinta">Gestión de Egresos</h2>
           
           <div className="flex flex-wrap items-center gap-4">
              <button
@@ -100,7 +100,7 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
                  }
                  setIsExpenseModalOpen(true);
                }}
-               className="h-11 px-5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-rose-500/20 flex items-center gap-2 whitespace-nowrap active:scale-95"
+               className="h-11 px-5 bg-rose-500 hover:bg-peligro text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg flex items-center gap-2 whitespace-nowrap active:scale-95"
              >
                <DollarSign size={16} /> Registrar Egreso
              </button>
@@ -114,7 +114,7 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
                      type="number" 
                      value={limiteEgreso}
                      onChange={(e) => setLimiteEgreso(e.target.value)}
-                     className="pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 w-32 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
+                     className="pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-tinta-2 w-32 focus:outline-none focus:border-azul focus:ring-2 focus:ring-azul/30 transition-all"
                    />
                  </div>
                </div>
@@ -122,7 +122,7 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
                  type="button"
                  onClick={handleSaveLimit} 
                  disabled={savingLimit || !limiteEgreso}
-                 className="h-10 mt-1 sm:mt-5 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg shadow-indigo-500/20 disabled:opacity-50 flex items-center justify-center whitespace-nowrap"
+                 className="h-10 mt-1 sm:mt-5 px-4 bg-azul hover:bg-azul-hondo text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg disabled:opacity-50 flex items-center justify-center whitespace-nowrap"
                >
                  {savingLimit ? 'Guardando...' : 'Guardar'}
                </button>
@@ -162,18 +162,18 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
                   </td>
                   <td className="p-4">
                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                        e.estado === 'Aprobado' ? 'bg-emerald-100 text-emerald-700' : e.estado === 'Rechazado' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+                        e.estado === 'Aprobado' ? 'bg-exito-suave text-emerald-700' : e.estado === 'Rechazado' ? 'bg-peligro-suave text-rose-700' : 'bg-aviso-suave text-aviso'
                      }`}>
                         {e.estado}
                      </span>
                   </td>
-                  <td className="p-4 text-slate-700">{e.usuario_nombre}</td>
+                  <td className="p-4 text-tinta-2">{e.usuario_nombre}</td>
                   <td className="p-4 text-slate-600 font-bold">{e.categoria}</td>
                   <td className="p-4 text-slate-500 max-w-[200px] truncate" title={e.motivo}>{e.motivo}</td>
                   <td className="p-4 text-right font-black text-rose-500">${Number(e.monto).toLocaleString('es-CO')}</td>
                   <td className="p-4 text-center">
                     {e.foto_soporte ? (
-                      <button onClick={() => setPreviewImage(e.foto_soporte)} className="text-indigo-500 hover:text-indigo-700 underline text-xs font-bold uppercase tracking-widest">
+                      <button onClick={() => setPreviewImage(e.foto_soporte)} className="text-azul hover:text-azul underline text-xs font-bold uppercase tracking-widest">
                         Ver Foto
                       </button>
                     ) : (
@@ -183,8 +183,8 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
                   <td className="p-4 text-center flex justify-center items-center gap-2">
                     {e.estado === 'Registrado' ? (
                       <>
-                        <button onClick={() => handleApprove(e.id_egreso)} className="bg-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors">Aprobar</button>
-                        <button onClick={() => handleRejectClick(e.id_egreso)} className="bg-rose-100 text-rose-600 hover:bg-rose-500 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors">Rechazar</button>
+                        <button onClick={() => handleApprove(e.id_egreso)} className="bg-exito-suave text-exito hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors">Aprobar</button>
+                        <button onClick={() => handleRejectClick(e.id_egreso)} className="bg-peligro-suave text-peligro hover:bg-rose-500 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors">Rechazar</button>
                       </>
                     ) : (
                       <div className="flex flex-col items-center gap-1">
@@ -228,24 +228,24 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
       {rejectExpenseId && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center gap-3">
+            <div className="p-6 bg-peligro text-white flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md shrink-0">
                 <AlertTriangle size={20} className="text-white" />
               </div>
               <div>
                 <h3 className="font-black text-lg">Rechazar Egreso</h3>
-                <p className="text-rose-100 text-xs font-medium">Por favor indica el motivo del rechazo.</p>
+                <p className="text-peligro-suave text-xs font-medium">Por favor indica el motivo del rechazo.</p>
               </div>
             </div>
             
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Motivo del rechazo (Opcional)</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-2">Motivo del rechazo (Opcional)</label>
                 <textarea
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   placeholder="Ej: El recibo no es válido, monto incorrecto..."
-                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rose-400 focus:bg-white transition-colors resize-none h-24 font-medium text-slate-700 placeholder-slate-400"
+                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rose-400 focus:bg-white transition-colors resize-none h-24 font-medium text-tinta-2 placeholder-slate-400"
                 ></textarea>
               </div>
               
@@ -260,7 +260,7 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
                 <button
                   type="button"
                   onClick={confirmReject}
-                  className="flex-1 px-4 py-3 rounded-xl bg-rose-500 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-600 hover:-translate-y-0.5 transition-all"
+                  className="flex-1 px-4 py-3 rounded-xl bg-rose-500 text-white font-black text-xs uppercase tracking-widest shadow-lg hover:bg-peligro hover:-translate-y-0.5 transition-all"
                 >
                   Confirmar Rechazo
                 </button>

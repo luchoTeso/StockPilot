@@ -6,24 +6,24 @@ import { Bell, Package, Calendar, ShieldCheck, Zap, DollarSign, CheckCircle, XCi
 
 const getSeverityStyles = (severity) => {
     switch (severity) {
-        case 'critico': return 'bg-rose-100 text-rose-600 border-rose-200';
-        case 'advertencia': return 'bg-amber-100 text-amber-600 border-amber-200';
-        default: return 'bg-indigo-100 text-indigo-600 border-indigo-200';
+        case 'critico': return 'bg-peligro-suave text-peligro border-rose-200';
+        case 'advertencia': return 'bg-aviso-suave text-amber-600 border-amber-200';
+        default: return 'bg-azul/10 text-azul border-azul/30';
     }
 };
 
 const getNotifStyles = (tipo, datos_json = {}) => {
     if (datos_json?.prioridad === 'urgente') {
-        return 'bg-amber-100 text-amber-600 border-amber-500 animate-pulse';
+        return 'bg-aviso-suave text-amber-600 border-ambar animate-pulse';
     }
     switch (tipo) {
-        case 'egreso_aprobado': return 'bg-emerald-100 text-emerald-600 border-emerald-200';
-        case 'egreso_rechazado': return 'bg-rose-100 text-rose-600 border-rose-200';
-        case 'anuncio_admin': return 'bg-indigo-100 text-indigo-600 border-indigo-200';
-        case 'orden_enviada': return 'bg-blue-100 text-blue-600 border-blue-200';
-        case 'cambio_precio': return 'bg-purple-100 text-purple-600 border-purple-200';
-        case 'meta_ventas': return 'bg-yellow-100 text-yellow-600 border-yellow-200';
-        case 'discrepancia_caja': return 'bg-rose-100 text-rose-600 border-rose-200';
+        case 'egreso_aprobado': return 'bg-exito-suave text-exito border-emerald-200';
+        case 'egreso_rechazado': return 'bg-peligro-suave text-peligro border-rose-200';
+        case 'anuncio_admin': return 'bg-azul/10 text-azul border-azul/30';
+        case 'orden_enviada': return 'bg-azul/10 text-azul border-azul/30';
+        case 'cambio_precio': return 'bg-azul/10 text-azul border-azul/30';
+        case 'meta_ventas': return 'bg-aviso-suave text-amber-600 border-amber-200';
+        case 'discrepancia_caja': return 'bg-peligro-suave text-peligro border-rose-200';
         default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
 };
@@ -219,8 +219,8 @@ const NotificationCenter = () => {
                     if (newOpen) fetchNotifications();
                 }}
                 className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-colors transition-transform active:scale-90 shadow-lg border-2 
-                ${isOpen ? 'bg-indigo-600 border-indigo-400 text-white' : 
-                  (hasUrgent ? 'bg-rose-100 border-rose-300 text-rose-600 hover:border-rose-400 animate-pulse' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-200')} 
+                ${isOpen ? 'bg-azul border-azul text-white' : 
+                  (hasUrgent ? 'bg-peligro-suave border-rose-300 text-peligro hover:border-rose-400 animate-pulse' : 'bg-white border-slate-100 text-tinta-2 hover:border-azul/30')} 
                 shadow-slate-200/50`}
                 title="Centro de Alertas"
             >
@@ -228,7 +228,7 @@ const NotificationCenter = () => {
                     <Bell size={20} />
                 </div>
                 {totalBadge > 0 && (
-                    <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-[10px] font-black text-white rounded-full border-2 shadow-md ${isOpen ? 'border-indigo-600' : 'border-white'} ${hasUrgent ? 'bg-rose-500' : 'bg-amber-500'}`}>
+                    <span className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 flex items-center justify-center text-[10px] font-black text-white rounded-full border-2 shadow-md ${isOpen ? 'border-azul' : 'border-white'} ${hasUrgent ? 'bg-rose-500' : 'bg-ambar'}`}>
                         {totalBadge > 9 ? '+9' : totalBadge}
                     </span>
                 )}
@@ -239,11 +239,11 @@ const NotificationCenter = () => {
                 <div
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
-                    className="fixed top-16 right-4 sm:top-20 sm:right-12 w-[calc(100vw-2rem)] sm:w-96 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-indigo-100/50 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-4 duration-300 origin-top-right flex flex-col max-h-[calc(100vh-5rem)]"
+                    className="fixed top-16 right-4 sm:top-20 sm:right-12 w-[calc(100vw-2rem)] sm:w-96 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-azul/20 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-4 duration-300 origin-top-right flex flex-col max-h-[calc(100vh-5rem)]"
                 >
-                    <div className="p-5 border-b border-indigo-50 flex items-center justify-between bg-gradient-to-r from-indigo-50/50 to-white">
-                        <h3 className="font-black text-slate-800 text-[10px] uppercase tracking-[0.2em] italic">Notificaciones Activas</h3>
-                        <span className="bg-indigo-600 px-3 py-1 rounded-full text-[9px] font-black text-white uppercase tracking-widest shadow-md shadow-indigo-100">
+                    <div className="p-5 border-b border-azul/30 flex items-center justify-between bg-azul/10">
+                        <h3 className="font-black text-tinta text-[10px] uppercase tracking-[0.2em] italic">Notificaciones Activas</h3>
+                        <span className="bg-azul px-3 py-1 rounded-full text-[9px] font-black text-white uppercase tracking-widest shadow-md">
                             {totalBadge} Alertas
                         </span>
                     </div>
@@ -251,7 +251,7 @@ const NotificationCenter = () => {
                     <div className="flex-1 overflow-y-auto scrollbar-premium min-h-0">
                         {loading && alerts.length === 0 && userNotifs.length === 0 ? (
                             <div className="p-12 text-center">
-                                <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <div className="w-10 h-10 border-4 border-azul border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sincronizando IA...</p>
                             </div>
                         ) : (alerts.length > 0 || userNotifs.length > 0) ? (
@@ -264,7 +264,7 @@ const NotificationCenter = () => {
                                             {userNotifCount > 1 && (
                                                 <button
                                                     onClick={handleMarkAllRead}
-                                                    className="text-[9px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest transition-colors"
+                                                    className="text-[9px] font-black text-azul hover:text-azul uppercase tracking-widest transition-colors"
                                                 >
                                                     Marcar todo leído
                                                 </button>
@@ -275,7 +275,7 @@ const NotificationCenter = () => {
                                                 key={`notif-${notif.id_notificacion}`}
                                                 onClick={() => handleMarkNotifRead(notif.id_notificacion)}
                                                 type="button"
-                                                className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
+                                                className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-azul"
                                             >
                                                 <div className="flex gap-4">
                                                     <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getNotifStyles(notif.tipo, notif.datos_json)}`}>
@@ -283,7 +283,7 @@ const NotificationCenter = () => {
                                                     </div>
                                                     <div className="space-y-1 flex-1 min-w-0">
                                                         <div className="flex justify-between items-start">
-                                                            <p className="text-[12px] font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
+                                                            <p className="text-[12px] font-black text-tinta leading-tight group-hover:text-azul transition-colors uppercase tracking-tight">
                                                                 {notif.titulo}
                                                             </p>
                                                             <span className="text-[9px] font-bold text-slate-300 whitespace-nowrap ml-2">
@@ -294,8 +294,8 @@ const NotificationCenter = () => {
                                                             {notif.mensaje}
                                                         </p>
                                                         <div className="flex items-center gap-1.5 mt-2">
-                                                            <span className="w-1 h-1 rounded-full bg-indigo-400"></span>
-                                                            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+                                                            <span className="w-1 h-1 rounded-full bg-azul"></span>
+                                                            <p className="text-[9px] font-black text-azul uppercase tracking-widest">
                                                                 Click para marcar leída
                                                             </p>
                                                         </div>
@@ -328,7 +328,7 @@ const NotificationCenter = () => {
                                                         setTimeout(() => navigate(targetPath), 10);
                                                     }}
                                                     type="button"
-                                                    className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-indigo-500"
+                                                    className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-azul"
                                                 >
                                                     <div className="flex gap-4">
                                                         <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${getSeverityStyles(alert.severidad)}`}>
@@ -336,18 +336,18 @@ const NotificationCenter = () => {
                                                         </div>
                                                         <div className="space-y-1">
                                                             <div className="flex justify-between items-start">
-                                                                <p className="text-[12px] font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
+                                                                <p className="text-[12px] font-black text-tinta leading-tight group-hover:text-azul transition-colors uppercase tracking-tight">
                                                                     {alert.nombre_producto || 'Producto Desconocido'}
                                                                 </p>
-                                                                <span className="text-[9px] font-black text-indigo-400 group-hover:translate-x-1 transition-transform">→</span>
+                                                                <span className="text-[9px] font-black text-azul group-hover:translate-x-1 transition-transform">→</span>
                                                             </div>
                                                             <p className="text-[11px] font-bold text-slate-500 leading-snug lowercase first-letter:uppercase">
                                                                 {alert.mensaje}
                                                             </p>
                                                             <div className="flex items-center gap-1.5 mt-2">
-                                                                <span className="w-1 h-1 rounded-full bg-indigo-400"></span>
+                                                                <span className="w-1 h-1 rounded-full bg-azul"></span>
                                                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                                                    Resolución Sugerida: <span className="text-indigo-500">{isStockAlert ? 'Reabastecer' : 'Promocionar'}</span>
+                                                                    Resolución Sugerida: <span className="text-azul">{isStockAlert ? 'Reabastecer' : 'Promocionar'}</span>
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -361,7 +361,7 @@ const NotificationCenter = () => {
                         ) : (
                             <div className="p-16 text-center">
                                 <div className="text-5xl mb-4 grayscale opacity-50">🛡️</div>
-                                <p className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">Stock Blindado</p>
+                                <p className="text-[10px] font-black text-tinta uppercase tracking-[0.3em]">Stock Blindado</p>
                                 <p className="text-[9px] font-bold text-slate-400 uppercase mt-2">IA en vigilancia constante</p>
                             </div>
                         )}
@@ -375,7 +375,7 @@ const NotificationCenter = () => {
                             setIsOpen(false);
                             setTimeout(() => navigate('/alertas'), 10);
                         }}
-                        className="w-full p-5 bg-indigo-600 text-[10px] font-black text-white uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-inner relative z-50 cursor-pointer"
+                        className="w-full p-5 bg-azul text-[10px] font-black text-white uppercase tracking-widest hover:bg-azul-hondo transition-colors shadow-inner relative z-50 cursor-pointer"
                     >
                         Ingresar al Centro de Control de Alertas ⚡
                     </button>
