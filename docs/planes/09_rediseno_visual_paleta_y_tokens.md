@@ -1,6 +1,6 @@
 # Plan 09: Rediseño Visual — Paleta "cuaderno del tendero" y Sistema de Tokens
 
-**Estado:** Fases 0, 1, 1b y 2 implementadas y verificadas. Fase 3 (tipografía y forma) y Fase 4 (matriz de verificación completa) pendientes.
+**Estado:** Fases 0, 1, 1b y 2 implementadas y verificadas. **Fase 3 (tipografía y forma): ver plan 12.** Fase 4 (matriz de verificación completa) pendiente.
 **Fecha:** 2026-09-19
 **Rama:** `feature/rediseno-visual`
 **Guías de origen:** `docs/rediseno/files/` (`CONTEXTO-REDISENO.md`, `rediseno-visual-recomendaciones.md`, `adenda-plan-rediseno.md`, `implementation_plan remodelación.md`). Precedencia: adenda > plan de recomendaciones > contexto.
@@ -68,9 +68,9 @@ Se aplicó la tabla de equivalencias del plan con un script de reemplazo por *to
 ### 2.3 Gráficas (`src/theme/chartColors.js`)
 Recharts pinta con atributos SVG, no con clases, así que los colores viven en un objeto `CHART` (`primary`, `secondary`, `positive`, `negative`, `soft`, `neutral`, `onDark` + colores de ejes/rejilla). Analítica, Aprendizaje y Reportes ya no llevan hex sueltos. Sobre el panel oscuro "Ritmo de caja" la serie protagonista usa `CHART.onDark` (resaltador). Todos los ejes pasaron de 8–10 px a 12 px.
 
-### 2.4 Decisión 7.1 — botón de cobro (opción A, a prueba)
-El usuario pidió probar primero la **opción A**: `Cobrar` (`CajaRapidaTab.jsx`) y `Confirmar y Facturar` (`PaymentModal.jsx`) pasan a
-`bg-resaltador text-tinta ring-1 ring-tinta/25 hover:bg-resaltador-hondo` — "la acción que mueve dinero" es el único elemento amarillo del POS. Ambos botones usan el mismo estado deshabilitado (`disabled:bg-slate-200 disabled:text-slate-500 disabled:ring-0`), en lugar de un amarillo desvaído por opacidad; el spinner de `Confirmar y Facturar` pasa a `border-tinta` para leerse sobre amarillo. Verificado con datos reales en `pos-carrito`, `pos-pago` y `pos-pago-listo`. Si tras revisarlo no gusta, la **opción B** es dejar ambos en verde `exito`: bastan estas dos líneas.
+### 2.4 Decisión 7.1 — botón de cobro (opción A, **decisión final**)
+El usuario pidió probar primero la **opción A** y tras revisarla la confirmó ("buen contraste"): `Cobrar` (`CajaRapidaTab.jsx`) y `Confirmar y Facturar` (`PaymentModal.jsx`) pasan a
+`bg-resaltador text-tinta ring-1 ring-tinta/25 hover:bg-resaltador-hondo` — "la acción que mueve dinero" es el único elemento amarillo del POS. Ambos botones usan el mismo estado deshabilitado (`disabled:bg-slate-200 disabled:text-slate-500 disabled:ring-0`), en lugar de un amarillo desvaído por opacidad; el spinner de `Confirmar y Facturar` pasa a `border-tinta` para leerse sobre amarillo. Verificado con datos reales en `pos-carrito`, `pos-pago` y `pos-pago-listo`. La opción B (verde `exito`) queda descartada.
 
 ---
 
@@ -158,15 +158,14 @@ Las pruebas con backend real **no confirman ventas, no abren ni cierran caja y n
 
 ## 5. Pendiente
 
-- **Fase 3 (PR aparte, no opcional):** Archivo cargada una sola vez en `index.html`, quitar `font-outfit` (29 usos, clase inexistente), `font-black` (614), `uppercase` (543) e `italic` (117) decorativos, tamaños < 12 px (`text-[10px]` 306, `text-[9px]` 104), radios (`rounded-[…]` 123 → `lg`/`2xl`/`full`), `backdrop-blur` (39) y el `@import` de fuentes de `LandingPage.jsx`.
+- **Fase 3 (tipografía y forma):** implementada en la rama `feature/rediseno-fase3`, ver `docs/planes/12_rediseno_fase3_tipografia_y_forma.md`.
 - **Fase 4:** matriz pantallas × estados (hover, foco con Tab, deshabilitado, error, cargando, vacío) × viewports (1440, 1024, 390) y revisión de contraste de los `text-slate-400` (251) y `text-amber-500` usados como texto (13).
-- **Sombras neutras** `shadow-2xl/xl` en tarjetas y modales → `shadow-lg`/`shadow-sm` (tabla de la Fase 2, sin aplicar todavía).
 
 ## 6. Observaciones fuera del alcance visual (reportadas, no corregidas salvo indicación)
 
 - **El sidebar (`z-[200]`) queda por encima del overlay de los modales** (`z-[100]` en `PaymentModal`): con el modal de pago abierto se puede navegar con un cobro a medias. Defecto de UX confirmado en las capturas.
 - **Auditoría:** 5 tarjetas en `lg:grid-cols-4` dejan la quinta ("Última consulta") huérfana. Confirmado en captura.
-- **Consejero IA "Sugerido: +0u"** en todas las tarjetas: apunta a un mapeo de campos backend→frontend.
+- **Consejero IA "Sugerido: +0u"** *(resuelto en la rama `fix/consejero-ia-sugerido-cero`, plan 11)*: no era un problema de mapeo; se analizaban productos con stock de sobra.
 - **Historial de ventas sin paginación:** `HistorialVentasTab.cargarMasVentas` existe pero nunca se conectó a un botón; solo se ve la primera página.
 - `react-router-dom` y `axios` están en `devDependencies` y son dependencias de ejecución.
 - Chunks > 500 kB (`index` 636 kB, `ui` 437 kB): carga diferida de `recharts` pendiente.
