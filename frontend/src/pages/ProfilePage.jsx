@@ -172,20 +172,20 @@ const ProfilePage = () => {
     <div className="animate-fade-in p-4 md:p-8 max-w-5xl mx-auto font-outfit pb-20">
       <header className="mb-10 flex justify-between items-end border-b border-slate-100 pb-6">
         <div>
-          <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Mi Perfil</h1>
+          <h1 className="text-4xl font-black text-tinta tracking-tighter italic uppercase">Mi Perfil</h1>
           <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1">Administración de Cuenta y Seguridad</p>
         </div>
         {!isEditing ? (
           <button
             onClick={() => setIsEditing(true)}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-transform"
+            className="bg-azul text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
           >
             Editar Información
           </button>
         ) : (
           <div className="flex gap-2">
             <button onClick={() => setIsEditing(false)} className="px-6 py-3 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest">Cancelar</button>
-            <button onClick={handleSaveProfile} className="px-6 py-3 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-100">Guardar Cambios</button>
+            <button onClick={handleSaveProfile} className="px-6 py-3 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Guardar Cambios</button>
           </div>
         )}
       </header>
@@ -194,7 +194,7 @@ const ProfilePage = () => {
         {/* Lado Izquierdo: Foto y Básico */}
         <div className="space-y-6">
           <div
-            className={`bg-white p-8 rounded-[2.5rem] shadow-xl border-2 text-center transition-colors transition-transform ${isDragging ? 'border-indigo-500 bg-indigo-50 border-dashed scale-105' : 'border-white'}`}
+            className={`bg-white p-8 rounded-[2.5rem] shadow-xl border-2 text-center transition-colors transition-transform ${isDragging ? 'border-azul bg-azul/10 border-dashed scale-105' : 'border-white'}`}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
@@ -208,18 +208,18 @@ const ProfilePage = () => {
                   <User size={56} className="text-slate-400" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-slate-900/40 rounded-[2rem] opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+              <div className="absolute inset-0 bg-tinta/60 rounded-[2rem] opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
                 <span className="text-[10px] font-black uppercase tracking-tighter">Cambiar</span>
               </div>
             </button>
 
-            <h2 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase">{profileData.nombres}</h2>
-            <p className="text-indigo-600 text-sm font-bold">@{profileData.usuario}</p>
+            <h2 className="text-2xl font-black text-tinta tracking-tighter italic uppercase">{profileData.nombres}</h2>
+            <p className="text-azul text-sm font-bold">@{profileData.usuario}</p>
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-4">ID de Colaborador: #{profileData.id_usuario || '...'}</p>
 
             <div className="mt-8 flex justify-center gap-2">
-              <span className="px-3 py-1 bg-slate-900 text-white text-[9px] font-black rounded-full uppercase tracking-tighter">{profileData.rol}</span>
-              <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black rounded-full uppercase tracking-tighter border border-indigo-100">Activo</span>
+              <span className="px-3 py-1 bg-tinta text-white text-[9px] font-black rounded-full uppercase tracking-tighter">{profileData.rol}</span>
+              <span className="px-3 py-1 bg-azul/10 text-azul text-[9px] font-black rounded-full uppercase tracking-tighter border border-azul/30">Activo</span>
             </div>
           </div>
 
@@ -230,7 +230,7 @@ const ProfilePage = () => {
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><Lock size={20} /></div>
               <div className="text-left">
-                <p className="text-xs font-black text-slate-800 uppercase tracking-tighter">Contraseña</p>
+                <p className="text-xs font-black text-tinta uppercase tracking-tighter">Contraseña</p>
                 <p className="text-[9px] text-slate-400 font-bold uppercase">Actualizar Clave</p>
               </div>
             </div>
@@ -261,10 +261,10 @@ const ProfilePage = () => {
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><ShieldCheck size={20} className="text-emerald-500" /></div>
                 <div className="text-left">
                   <p className="text-xs font-black text-emerald-800 uppercase tracking-tighter">Seguridad 2FA</p>
-                  <p className="text-[9px] text-emerald-600 font-bold uppercase">Protegido</p>
+                  <p className="text-[9px] text-exito font-bold uppercase">Protegido</p>
                 </div>
               </div>
-              {user?.rol !== 'Administrador' && <span className="text-emerald-300 text-[10px] uppercase font-bold hover:text-red-500">Desactivar</span>}
+              {user?.rol !== 'Administrador' && <span className="text-emerald-300 text-[10px] uppercase font-bold hover:text-rose-500">Desactivar</span>}
             </button>
           )}
         </div>
@@ -282,16 +282,16 @@ const ProfilePage = () => {
                   type="text"
                   value={editForm.nombres}
                   onChange={e => setEditForm({ ...editForm, nombres: e.target.value })}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none"
                 />
               ) : (
-                <p className="text-base font-black text-slate-700 tracking-tight">{profileData.nombres || '---'}</p>
+                <p className="text-base font-black text-tinta-2 tracking-tight">{profileData.nombres || '---'}</p>
               )}
             </div>
 
             <div className="space-y-2">
               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nombre de Usuario</span>
-              <p className="text-base font-black text-slate-700 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60">@{profileData.usuario}</p>
+              <p className="text-base font-black text-tinta-2 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60">@{profileData.usuario}</p>
             </div>
 
             <div className="space-y-2">
@@ -302,10 +302,10 @@ const ProfilePage = () => {
                   type="email"
                   value={editForm.correo}
                   onChange={e => setEditForm({ ...editForm, correo: e.target.value })}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none"
                 />
               ) : (
-                <p className="text-base font-black text-slate-700 tracking-tight">{profileData.correo || '---'}</p>
+                <p className="text-base font-black text-tinta-2 tracking-tight">{profileData.correo || '---'}</p>
               )}
             </div>
 
@@ -317,10 +317,10 @@ const ProfilePage = () => {
                   type="text"
                   value={editForm.celular}
                   onChange={e => setEditForm({ ...editForm, celular: e.target.value })}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none"
                 />
               ) : (
-                <p className="text-base font-black text-slate-700 tracking-tight">{profileData.celular || '---'}</p>
+                <p className="text-base font-black text-tinta-2 tracking-tight">{profileData.celular || '---'}</p>
               )}
             </div>
 
@@ -331,7 +331,7 @@ const ProfilePage = () => {
                   <CustomSelect
                     value={editForm.genero}
                     onChange={v => setEditForm({ ...editForm, genero: v })}
-                    className="h-full bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-700"
+                    className="h-full bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-azul text-tinta-2"
                     options={[
                       { value: 'Masculino', label: 'Masculino' },
                       { value: 'Femenino', label: 'Femenino' },
@@ -342,23 +342,23 @@ const ProfilePage = () => {
                   />
                 </div>
               ) : (
-                <p className="text-base font-black text-slate-700 tracking-tight">{profileData.genero || '---'}</p>
+                <p className="text-base font-black text-tinta-2 tracking-tight">{profileData.genero || '---'}</p>
               )}
             </div>
 
             <div className="space-y-2">
               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block ml-1">Nivel de Acceso</span>
-              <p className="text-base font-black text-slate-700 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60 italic">{profileData.rol}</p>
+              <p className="text-base font-black text-tinta-2 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60 italic">{profileData.rol}</p>
             </div>
           </div>
 
-          <div className="mt-12 p-8 bg-slate-900 rounded-[2rem] text-white flex items-center justify-between shadow-xl">
+          <div className="mt-12 p-8 bg-tinta rounded-[2rem] text-white flex items-center justify-between shadow-xl">
             <div>
               <p className="text-xs font-black uppercase tracking-widest">Estado del Sistema</p>
-              <p className="text-[10px] text-indigo-400 font-bold uppercase mt-1 flex items-center gap-1">✨ Asistente Inteligente: Conectado</p>
+              <p className="text-[10px] text-resaltador font-bold uppercase mt-1 flex items-center gap-1">✨ Asistente Inteligente: Conectado</p>
             </div>
             <div className="text-right">
-              <p className="text-xl font-black italic uppercase text-indigo-50">Acceso {profileData.rol === 'Administrador' ? 'Total' : 'Autorizado'}</p>
+              <p className="text-xl font-black italic uppercase text-white">Acceso {profileData.rol === 'Administrador' ? 'Total' : 'Autorizado'}</p>
               <p className="text-[8px] opacity-40 uppercase mt-1">Credencial Segura: {profileData.usuario?.slice(0, 4).toUpperCase()}-SP</p>
             </div>
           </div>
@@ -367,10 +367,10 @@ const ProfilePage = () => {
 
       {/* Modal Cambio de Contraseña */}
       {showPassModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <form onSubmit={handleChangePassword} className="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl animate-scale-in">
-            <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Seguridad</h2>
-            <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mb-8">Actualización de Credenciales</p>
+            <h2 className="text-2xl font-black text-tinta tracking-tighter uppercase mb-2">Seguridad</h2>
+            <p className="text-[10px] text-azul font-bold uppercase tracking-widest mb-8">Actualización de Credenciales</p>
 
             <div className="space-y-4">
               <div className="space-y-1">
@@ -381,7 +381,7 @@ const ProfilePage = () => {
                   value={passData.currentPassword}
                   required
                   onChange={e => setPassData({ ...passData, currentPassword: e.target.value })}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -392,7 +392,7 @@ const ProfilePage = () => {
                   value={passData.newPassword}
                   required
                   onChange={e => setPassData({ ...passData, newPassword: e.target.value })}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -403,7 +403,7 @@ const ProfilePage = () => {
                   value={passData.confirmPassword}
                   required
                   onChange={e => setPassData({ ...passData, confirmPassword: e.target.value })}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none"
                 />
               </div>
             </div>
@@ -416,7 +416,7 @@ const ProfilePage = () => {
               >Cerrar</button>
               <button
                 type="submit"
-                className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100"
+                className="flex-1 py-4 bg-azul text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg"
               >Actualizar</button>
             </div>
           </form>
@@ -425,12 +425,12 @@ const ProfilePage = () => {
 
       {/* Modal Configuración 2FA */}
       {show2FAModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <form onSubmit={handleVerify2FA} className="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl animate-scale-in text-center">
-            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-azul/10 text-azul rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield size={32} />
             </div>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-2">Configurar 2FA</h2>
+            <h2 className="text-2xl font-black text-tinta tracking-tighter uppercase mb-2">Configurar 2FA</h2>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-6 leading-relaxed">
               1. Descarga Google Authenticator o Authy.<br/>
               2. Escanea este código QR con la aplicación.
@@ -452,7 +452,7 @@ const ProfilePage = () => {
                 required
                 placeholder="000000"
                 onChange={e => setTotpToken(e.target.value.replace(/\D/g, ''))}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] font-black focus:border-indigo-500 outline-none"
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] font-black focus:border-azul outline-none"
               />
             </div>
 
@@ -466,7 +466,7 @@ const ProfilePage = () => {
               )}
               <button
                 type="submit"
-                className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-colors"
+                className="flex-1 py-4 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-colors"
               >Verificar y Activar</button>
             </div>
           </form>
@@ -474,12 +474,12 @@ const ProfilePage = () => {
       )}
       {/* Modal Confirmación Desactivar 2FA */}
       {showDisableConfirm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <form onSubmit={confirmDisable2FA} className="bg-white w-full max-w-sm p-8 rounded-[2.5rem] shadow-2xl animate-scale-in text-center">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <ShieldAlert size={32} />
             </div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-2">¿Desactivar Seguridad?</h2>
+            <h2 className="text-xl font-black text-tinta tracking-tighter uppercase mb-2">¿Desactivar Seguridad?</h2>
             <p className="text-xs text-slate-500 font-bold mb-6">
               Al desactivar la autenticación de dos factores, tu cuenta será más vulnerable a accesos no autorizados. ¿Estás seguro?
             </p>
@@ -491,14 +491,14 @@ const ProfilePage = () => {
                 value={disablePassword}
                 required
                 onChange={e => setDisablePassword(e.target.value)}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-red-500 outline-none"
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-rose-500 outline-none"
               />
             </div>
             <div className="flex gap-2">
               <button type="button" onClick={() => { setShowDisableConfirm(false); setDisablePassword(''); }} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest">
                 Cancelar
               </button>
-              <button type="submit" className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg shadow-red-100">
+              <button type="submit" className="flex-1 py-3 bg-rose-500 hover:bg-peligro text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg">
                 Sí, Desactivar
               </button>
             </div>

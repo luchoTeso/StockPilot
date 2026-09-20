@@ -3,6 +3,7 @@ import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useToast } from '../context/ToastContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { CHART } from '../theme/chartColors';
 import { Brain, BarChart2, Lightbulb, TrendingUp, ClipboardList, Inbox, Package, CheckCircle2, X, Flame } from 'lucide-react';
 
 const AprendizajePage = () => {
@@ -87,9 +88,9 @@ const AprendizajePage = () => {
     };
 
     const getAccuracyColor = (accuracy) => {
-        if (accuracy >= 80) return { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', bar: 'bg-emerald-500' };
-        if (accuracy >= 50) return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', bar: 'bg-amber-500' };
-        return { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-200', bar: 'bg-rose-500' };
+        if (accuracy >= 80) return { bg: 'bg-emerald-50', text: 'text-exito', border: 'border-emerald-200', bar: 'bg-emerald-500' };
+        if (accuracy >= 50) return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', bar: 'bg-ambar' };
+        return { bg: 'bg-rose-50', text: 'text-peligro', border: 'border-rose-200', bar: 'bg-rose-500' };
     };
 
     const getVerdict = (factor) => {
@@ -106,7 +107,7 @@ const AprendizajePage = () => {
         return (
             <div className="flex-1 flex items-center justify-center bg-slate-50 min-h-screen">
                 <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                    <div className="w-16 h-16 border-4 border-azul/30 border-t-azul rounded-full animate-spin mb-4"></div>
                     <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Cargando aprendizaje...</p>
                 </div>
             </div>
@@ -118,24 +119,19 @@ const AprendizajePage = () => {
             
             {/* ───── HEADER PREMIUM ───── */}
             <div className="p-4 lg:p-6">
-                <div className="relative bg-gradient-to-br from-slate-800 via-indigo-900 to-indigo-950 rounded-[2rem] shadow-xl overflow-hidden">
-                    {/* Decorative orbs */}
-                    <div className="absolute -top-20 -right-20 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl"></div>
-                    <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-cyan-500/10 rounded-full blur-3xl"></div>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-32 bg-indigo-400/5 rounded-full blur-3xl rotate-12"></div>
-                    
+                <div data-surface="dark" className="relative bg-tinta rounded-[2rem] shadow-xl overflow-hidden">
                     <div className="relative z-10 px-8 lg:px-12 py-10 lg:py-12 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                         <div className="flex-1 max-w-2xl">
                             <div className="flex items-center gap-3 mb-5">
-                                <span className="w-9 h-9 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-300 border border-indigo-400/20 shadow-lg shadow-indigo-500/10">
+                                <span className="w-9 h-9 rounded-2xl bg-white/10 flex items-center justify-center text-resaltador border border-white/20">
                                     <Brain size={18} />
                                 </span>
-                                <span className="text-[10px] font-bold text-indigo-300/90 uppercase tracking-[0.25em]">Aprendizaje Inteligente</span>
+                                <span className="text-[10px] font-bold text-white/70 uppercase tracking-[0.25em]">Aprendizaje Inteligente</span>
                             </div>
                             <h1 className="text-2xl lg:text-4xl font-extrabold text-white tracking-tight leading-snug mb-4">
-                                ¿Qué tan bien <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-sky-400 to-cyan-400">predice</span> el sistema?
+                                ¿Qué tan bien <span className="text-resaltador">predice</span> el sistema?
                             </h1>
-                            <p className="text-indigo-200/70 font-normal text-sm leading-relaxed">
+                            <p className="text-white/70 font-normal text-sm leading-relaxed">
                                 Compara lo que el sistema sugirió comprar contra lo que realmente se vendió. Con cada evaluación, las futuras recomendaciones se vuelven más precisas.
                             </p>
                         </div>
@@ -143,7 +139,6 @@ const AprendizajePage = () => {
                         <div className="flex flex-col gap-4 min-w-[260px] lg:min-w-[280px]">
                             {/* Accuracy Card with glow */}
                             <div className="relative group">
-                                <div className={`absolute -inset-0.5 rounded-[1.8rem] opacity-40 group-hover:opacity-60 blur transition-opacity ${globalAccuracy >= 80 ? 'bg-emerald-400' : globalAccuracy >= 50 ? 'bg-amber-400' : 'bg-rose-400'}`}></div>
                                 <div className="relative bg-slate-800/90 backdrop-blur-xl border border-white/10 p-6 rounded-[1.6rem] shadow-2xl text-center">
                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">Nivel de Acierto</p>
                                     <div className="flex items-baseline justify-center gap-1">
@@ -161,7 +156,7 @@ const AprendizajePage = () => {
                             </div>
                             <button 
                                 onClick={() => { setEvalResult(null); setOrderId(''); setIsDropdownOpen(false); setModalOpen(true); }}
-                                className="bg-indigo-500 hover:bg-indigo-400 text-white py-3.5 px-6 rounded-2xl font-bold text-xs tracking-wider transition-colors transition-shadow transition-transform shadow-lg shadow-indigo-500/20 active:scale-[0.97] flex items-center justify-center gap-2.5 border border-indigo-400/30"
+                                className="bg-resaltador hover:bg-resaltador-hondo text-tinta py-3.5 px-6 rounded-2xl font-bold text-xs tracking-wider transition-colors transition-shadow transition-transform shadow-lg active:scale-[0.97] flex items-center justify-center gap-2.5 border border-azul/30"
                             >
                                 <span>Evaluar una orden</span>
                                 <BarChart2 size={14} />
@@ -175,11 +170,11 @@ const AprendizajePage = () => {
             <div className="max-w-7xl mx-auto px-8 lg:px-12 py-10 space-y-8">
 
                 {/* ── Explicación rápida ── */}
-                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 flex items-start gap-4">
-                    <Lightbulb size={22} className="mt-0.5 text-indigo-500 shrink-0" />
+                <div className="bg-azul/10 border border-azul/30 rounded-2xl p-5 flex items-start gap-4">
+                    <Lightbulb size={22} className="mt-0.5 text-azul shrink-0" />
                     <div>
-                        <p className="font-bold text-indigo-800 text-sm mb-1">¿Cómo funciona?</p>
-                        <p className="text-indigo-700/80 text-xs leading-relaxed">
+                        <p className="font-bold text-azul text-sm mb-1">¿Cómo funciona?</p>
+                        <p className="text-azul/80 text-xs leading-relaxed">
                             Cada vez que evalúas una orden antigua, el sistema compara <strong>cuánto te sugirió comprar</strong> vs. <strong>cuánto realmente vendiste</strong>. 
                             Si el acierto es bajo, la próxima vez el sistema ajustará automáticamente sus sugerencias para ser más preciso. 
                             <strong> 100% = predicción perfecta</strong>.
@@ -191,11 +186,11 @@ const AprendizajePage = () => {
                 <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-3">
                         <div>
-                            <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-1 flex items-center gap-2"><TrendingUp size={18} /> Evolución del Acierto</h2>
+                            <h2 className="text-xl font-black text-tinta tracking-tighter uppercase mb-1 flex items-center gap-2"><TrendingUp size={18} /> Evolución del Acierto</h2>
                             <p className="text-xs font-medium text-slate-400">Cómo ha mejorado (o empeorado) la precisión del sistema mes a mes</p>
                         </div>
                         <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2">
-                            <div className="w-3 h-0.5 bg-indigo-500 rounded-full"></div>
+                            <div className="w-3 h-0.5 bg-azul rounded-full"></div>
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Precisión (Ideal = 100%)</span>
                         </div>
                     </div>
@@ -205,20 +200,20 @@ const AprendizajePage = () => {
                                 <AreaChart data={metrics.evolucion.map(m => ({ ...m, precision_pct: factorToAccuracy(m.factor_promedio) }))}>
                                     <defs>
                                         <linearGradient id="colorFactor" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15}/>
-                                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                            <stop offset="5%" stopColor={CHART.primary} stopOpacity={0.15}/>
+                                            <stop offset="95%" stopColor={CHART.primary} stopOpacity={0}/>
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 700}} dy={10} />
-                                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 700}} dx={-10} tickFormatter={v => `${v}%`} />
-                                    <ReferenceLine y={100} stroke="#10b981" strokeDasharray="8 4" strokeWidth={2} label={{ value: '← Ideal', position: 'right', fill: '#10b981', fontSize: 11, fontWeight: 700 }} />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={CHART.grid} />
+                                    <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{fill: CHART.axis, fontSize: 12, fontWeight: 700}} dy={10} />
+                                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{fill: CHART.axis, fontSize: 12, fontWeight: 700}} dx={-10} tickFormatter={v => `${v}%`} />
+                                    <ReferenceLine y={100} stroke={CHART.positive} strokeDasharray="8 4" strokeWidth={2} label={{ value: '← Ideal', position: 'right', fill: CHART.positive, fontSize: 12, fontWeight: 700 }} />
                                     <Tooltip 
                                         contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px 16px' }}
                                         formatter={(value) => [`${value}%`, 'Precisión']}
                                         labelFormatter={(label) => `Mes: ${label}`}
                                     />
-                                    <Area type="monotone" dataKey="precision_pct" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorFactor)" dot={{ fill: '#6366f1', r: 5 }} />
+                                    <Area type="monotone" dataKey="precision_pct" stroke={CHART.primary} strokeWidth={3} fillOpacity={1} fill="url(#colorFactor)" dot={{ fill: CHART.primary, r: 5 }} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         ) : (
@@ -233,7 +228,7 @@ const AprendizajePage = () => {
 
                 {/* ── Tabla completa de productos ── */}
                 <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
-                    <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase mb-2 flex items-center gap-2"><ClipboardList size={18} /> Rendimiento por Producto</h2>
+                    <h2 className="text-xl font-black text-tinta tracking-tighter uppercase mb-2 flex items-center gap-2"><ClipboardList size={18} /> Rendimiento por Producto</h2>
                     <p className="text-xs font-medium text-slate-400 mb-6">Qué tan bien acertó el sistema para cada producto que evaluaste</p>
                     
                     {/* Leyenda de colores */}
@@ -243,7 +238,7 @@ const AprendizajePage = () => {
                             <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">80-100% = Muy acertado</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                            <div className="w-3 h-3 rounded-full bg-ambar"></div>
                             <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">50-79% = Necesita mejorar</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -263,7 +258,7 @@ const AprendizajePage = () => {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             {(() => { const Icon = verdict.icon; return <Icon size={16} />; })()}
-                                            <p className="font-black text-slate-800 text-sm">{prod.nombre_producto}</p>
+                                            <p className="font-black text-tinta text-sm">{prod.nombre_producto}</p>
                                         </div>
                                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-7">{verdict.label} · {prod.evaluaciones} {prod.evaluaciones === 1 ? 'evaluación' : 'evaluaciones'}</p>
                                     </div>
@@ -290,9 +285,9 @@ const AprendizajePage = () => {
             {/* ───── MODAL DE EVALUACIÓN ───── */}
             {modalOpen && createPortal(
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setModalOpen(false)} role="presentation" aria-hidden="true"></div>
+                    <div className="absolute inset-0 bg-tinta/60 backdrop-blur-md" onClick={() => setModalOpen(false)} role="presentation" aria-hidden="true"></div>
                     <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl animate-scale-in relative z-10 flex flex-col overflow-hidden max-h-[90vh]">
-                        <div className="p-8 bg-indigo-600 text-white flex justify-between items-start">
+                        <div className="p-8 bg-azul text-white flex justify-between items-start">
                             <div>
                                 <h3 className="text-xl font-black tracking-tighter uppercase italic flex items-center gap-2">
                                     <BarChart2 size={20} /> Evaluar Precisión
@@ -301,7 +296,7 @@ const AprendizajePage = () => {
                                     Selecciona una orden antigua para que el sistema compare lo que sugirió comprar vs. lo que realmente se vendió desde entonces.
                                 </p>
                             </div>
-                            <button onClick={() => setModalOpen(false)} aria-label="Cerrar modal" className="w-8 h-8 flex items-center justify-center bg-indigo-500 hover:bg-white hover:text-indigo-600 rounded-xl transition-colors shrink-0 ml-4">
+                            <button onClick={() => setModalOpen(false)} aria-label="Cerrar modal" className="w-8 h-8 flex items-center justify-center bg-azul hover:bg-white hover:text-azul rounded-xl transition-colors shrink-0 ml-4">
                                 <X size={16} />
                             </button>
                         </div>
@@ -310,7 +305,7 @@ const AprendizajePage = () => {
                             {!evalResult ? (
                                 <form onSubmit={handleEvaluate} className="space-y-6">
                                     <div>
-                                        <label htmlFor="eval-order-select" className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                                        <label htmlFor="eval-order-select" className="block text-xs font-semibold text-slate-600 mb-2 ml-1">
                                             Orden de compra a evaluar
                                         </label>
                                         <div className="relative">
@@ -319,11 +314,11 @@ const AprendizajePage = () => {
                                                 type="button"
                                                 id="eval-order-select"
                                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                                className={`w-full text-left p-4 bg-slate-50 border rounded-2xl text-sm transition-colors transition-shadow focus:outline-none focus:ring-4 focus:ring-indigo-500/10 flex justify-between items-center group shadow-sm
-                                                    ${isDropdownOpen ? 'border-indigo-400 bg-white ring-4 ring-indigo-500/10' : 'border-slate-200 hover:border-indigo-300 hover:bg-white'}
+                                                className={`w-full text-left p-4 bg-slate-50 border rounded-2xl text-sm transition-colors transition-shadow focus:outline-none focus:ring-4 focus:ring-azul/10 flex justify-between items-center group shadow-sm
+                                                    ${isDropdownOpen ? 'border-azul bg-white ring-4 ring-azul/10' : 'border-slate-200 hover:border-azul/30 hover:bg-white'}
                                                 `}
                                             >
-                                                <span className={`${orderId ? 'font-black text-indigo-700' : 'font-bold text-slate-500'}`}>
+                                                <span className={`${orderId ? 'font-black text-azul' : 'font-bold text-slate-500'}`}>
                                                     {orderId 
                                                         ? evaluableOrders.find(o => o.id_orden === orderId)
                                                             ? `#${evaluableOrders.find(o => o.id_orden === orderId).id_orden} · ${evaluableOrders.find(o => o.id_orden === orderId).proveedor} · ${new Date(evaluableOrders.find(o => o.id_orden === orderId).fecha_aprobacion).toLocaleDateString()}`
@@ -331,9 +326,9 @@ const AprendizajePage = () => {
                                                         : 'Elige una orden aprobada...'
                                                     }
                                                 </span>
-                                                <div className={`p-1.5 rounded-lg transition-colors flex shrink-0 ${isDropdownOpen ? 'bg-indigo-100' : 'bg-slate-200 group-hover:bg-indigo-50'}`}>
+                                                <div className={`p-1.5 rounded-lg transition-colors flex shrink-0 ${isDropdownOpen ? 'bg-azul/10' : 'bg-slate-200 group-hover:bg-azul/10'}`}>
                                                     <svg 
-                                                        className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180 text-indigo-600' : 'text-slate-500 group-hover:text-indigo-500'}`} 
+                                                        className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180 text-azul' : 'text-slate-500 group-hover:text-azul'}`} 
                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                                     >
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path>
@@ -365,17 +360,17 @@ const AprendizajePage = () => {
                                                                         setIsDropdownOpen(false);
                                                                     }}
                                                                     className={`w-full text-left px-5 py-3.5 text-sm transition-colors border-b border-slate-50/50 last:border-0 hover:bg-slate-50 group flex items-center justify-between
-                                                                        ${orderId === ord.id_orden ? 'bg-indigo-50 hover:bg-indigo-50/80 before:absolute before:left-0 before:w-1 before:h-8 before:bg-indigo-500 before:rounded-r-full relative' : ''}
+                                                                        ${orderId === ord.id_orden ? 'bg-azul/10 hover:bg-azul/10 before:absolute before:left-0 before:w-1 before:h-8 before:bg-azul before:rounded-r-full relative' : ''}
                                                                     `}
                                                                 >
                                                                     <div className={`flex flex-col gap-1 transition-transform ${orderId === ord.id_orden ? 'pl-2' : 'group-hover:translate-x-1'}`}>
-                                                                        <span className={`font-black ${orderId === ord.id_orden ? 'text-indigo-700' : 'text-slate-700'}`}>
+                                                                        <span className={`font-black ${orderId === ord.id_orden ? 'text-azul' : 'text-tinta-2'}`}>
                                                                             #{ord.id_orden} <span className="text-slate-400 font-medium px-1">·</span> {ord.proveedor}
                                                                         </span>
                                                                         <span className="text-xs font-bold text-slate-400">Fecha: {new Date(ord.fecha_aprobacion).toLocaleDateString()}</span>
                                                                     </div>
                                                                     {orderId === ord.id_orden && (
-                                                                        <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
+                                                                        <div className="w-6 h-6 rounded-full bg-azul/10 flex items-center justify-center text-azul shadow-sm shrink-0">
                                                                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                                                                         </div>
                                                                     )}
@@ -393,14 +388,14 @@ const AprendizajePage = () => {
                                     <button 
                                         type="submit" 
                                         disabled={evalLoading || !orderId}
-                                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50"
+                                        className="w-full py-4 bg-azul text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg hover:bg-azul-hondo transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50"
                                     >
                                         {evalLoading ? 'Analizando ventas reales...' : 'Comparar sugerencia vs. realidad'}
                                     </button>
                                 </form>
                             ) : (
                                 <div className="space-y-5">
-                                    <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-5 rounded-2xl text-center">
+                                    <div className="bg-emerald-50 border border-exito-suave text-emerald-700 p-5 rounded-2xl text-center">
                                         <p className="font-black text-sm uppercase tracking-wide flex items-center justify-center gap-1"><CheckCircle2 size={14} /> Evaluación Completada</p>
                                         <p className="text-xs font-medium mt-1 opacity-80">El sistema ha registrado estos resultados para mejorar futuras sugerencias</p>
                                     </div>
@@ -408,7 +403,7 @@ const AprendizajePage = () => {
                                     {/* Resumen */}
                                     <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Orden evaluada</p>
-                                        <p className="text-sm font-bold text-slate-700">#{orderId} · Días desde la aprobación: {evalResult.diasTranscurridos}</p>
+                                        <p className="text-sm font-bold text-tinta-2">#{orderId} · Días desde la aprobación: {evalResult.diasTranscurridos}</p>
                                     </div>
                                     
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle por producto</h4>
@@ -423,7 +418,7 @@ const AprendizajePage = () => {
                                                 <div key={ev.id_producto} className={`p-4 rounded-2xl border ${color.border} ${color.bg}`}>
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div>
-                                                            <p className="font-black text-slate-800 text-sm flex items-center gap-1.5">
+                                                            <p className="font-black text-tinta text-sm flex items-center gap-1.5">
                                                                 {(() => { const Icon = verdict.icon; return <Icon size={16} />; })()} {ev.nombre_producto || `Producto #${ev.id_producto}`}
                                                             </p>
                                                             <p className="text-[10px] font-bold text-slate-500 mt-1 ml-6">{verdict.label}</p>
@@ -434,11 +429,11 @@ const AprendizajePage = () => {
                                                     <div className="grid grid-cols-2 gap-3 ml-6">
                                                         <div className="bg-white/70 rounded-xl p-3 border border-white">
                                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sugerido comprar</p>
-                                                            <p className="text-lg font-black text-slate-700">{ev.sugerido} <span className="text-xs font-bold text-slate-400">unidades</span></p>
+                                                            <p className="text-lg font-black text-tinta-2">{ev.sugerido} <span className="text-xs font-bold text-slate-400">unidades</span></p>
                                                         </div>
                                                         <div className="bg-white/70 rounded-xl p-3 border border-white">
                                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Realmente vendido</p>
-                                                            <p className="text-lg font-black text-slate-700">{ev.ventasReales} <span className="text-xs font-bold text-slate-400">unidades</span></p>
+                                                            <p className="text-lg font-black text-tinta-2">{ev.ventasReales} <span className="text-xs font-bold text-slate-400">unidades</span></p>
                                                         </div>
                                                     </div>
                                                 </div>

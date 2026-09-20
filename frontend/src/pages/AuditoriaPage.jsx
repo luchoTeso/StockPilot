@@ -72,8 +72,8 @@ const AuditoriaPage = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center shadow-inner border border-violet-100"><Search size={20} /></div>
-            <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Historial del Copiloto</h2>
+            <div className="w-10 h-10 bg-azul/10 text-azul rounded-xl flex items-center justify-center shadow-inner border border-azul/30"><Search size={20} /></div>
+            <h2 className="text-4xl font-black text-tinta tracking-tighter italic uppercase">Historial del Copiloto</h2>
           </div>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Revisa el por qué de las decisiones y sugerencias de compra</p>
         </div>
@@ -83,23 +83,23 @@ const AuditoriaPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Consultas</p>
-          <p className="text-3xl font-black text-slate-800 mt-1">{stats.total}</p>
+          <p className="text-3xl font-black text-tinta mt-1">{stats.total}</p>
         </div>
-        <div className="bg-violet-50 rounded-2xl p-5 border border-violet-100">
-          <p className="text-[9px] font-black text-violet-500 uppercase tracking-widest">Desde Dashboard</p>
-          <p className="text-3xl font-black text-violet-700 mt-1">{stats.desde_dashboard}</p>
+        <div className="bg-azul/10 rounded-2xl p-5 border border-azul/30">
+          <p className="text-[9px] font-black text-azul uppercase tracking-widest">Desde Dashboard</p>
+          <p className="text-3xl font-black text-azul mt-1">{stats.desde_dashboard}</p>
         </div>
-        <div className="bg-indigo-50 rounded-2xl p-5 border border-indigo-100">
-          <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Desde Proveedores</p>
-          <p className="text-3xl font-black text-indigo-700 mt-1">{stats.desde_proveedores}</p>
+        <div className="bg-azul/10 rounded-2xl p-5 border border-azul/30">
+          <p className="text-[9px] font-black text-azul uppercase tracking-widest">Desde Proveedores</p>
+          <p className="text-3xl font-black text-azul mt-1">{stats.desde_proveedores}</p>
         </div>
-        <div className="bg-fuchsia-50 rounded-2xl p-5 border border-fuchsia-100">
-          <p className="text-[9px] font-black text-fuchsia-500 uppercase tracking-widest">Desde Fiados</p>
-          <p className="text-3xl font-black text-fuchsia-700 mt-1">{stats.desde_fiados || 0}</p>
+        <div className="bg-azul/10 rounded-2xl p-5 border border-azul/30">
+          <p className="text-[9px] font-black text-azul uppercase tracking-widest">Desde Fiados</p>
+          <p className="text-3xl font-black text-azul mt-1">{stats.desde_fiados || 0}</p>
         </div>
         <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Última Consulta</p>
-          <p className="text-sm font-black text-slate-700 mt-2">{formatFecha(stats.ultima_consulta)}</p>
+          <p className="text-sm font-black text-tinta-2 mt-2">{formatFecha(stats.ultima_consulta)}</p>
         </div>
       </div>
 
@@ -112,8 +112,8 @@ const AuditoriaPage = () => {
             onClick={() => setFiltroFuente(f)}
             className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors border ${
               filtroFuente === f 
-                ? 'bg-violet-600 text-white border-violet-600 shadow-lg shadow-violet-200' 
-                : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'
+                ? 'bg-azul text-white border-azul shadow-lg' 
+                : 'bg-white text-slate-500 border-slate-200 hover:border-azul/30'
             }`}
           >
             {f === '' ? 'Todas' : f === 'dashboard' ? 'Dashboard' : f === 'proveedor' ? 'Proveedores' : 'Fiados'}
@@ -126,7 +126,7 @@ const AuditoriaPage = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-slate-900 text-[10px] text-white font-black uppercase tracking-widest">
+              <tr className="bg-tinta text-[10px] text-white font-black uppercase tracking-widest">
                 <th className="p-6 pl-8 rounded-tl-3xl text-left">Fecha y Hora</th>
                 <th className="p-6 text-left">Origen</th>
                 <th className="p-6 text-left">Productos</th>
@@ -153,15 +153,15 @@ const AuditoriaPage = () => {
                 return (
                   <tr key={log.id_auditoria} className="hover:bg-slate-50 transition-colors group">
                     <td className="p-6 pl-8">
-                      <p className="font-black text-slate-800 text-sm">{formatFecha(log.fecha_auditoria)}</p>
+                      <p className="font-black text-tinta text-sm">{formatFecha(log.fecha_auditoria)}</p>
                     </td>
                     <td className="p-6">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${
                         fuente === 'Dashboard' 
-                          ? 'bg-violet-50 text-violet-600 border border-violet-100' 
+                          ? 'bg-azul/10 text-azul border border-azul/30' 
                           : fuente === 'Fiados'
-                          ? 'bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-100'
-                          : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
+                          ? 'bg-azul/10 text-azul border border-azul/30'
+                          : 'bg-azul/10 text-azul border border-azul/30'
                       }`}>
                         {fuente === 'Dashboard'
                           ? <><LayoutDashboard size={10} /> Dashboard</>
@@ -172,7 +172,7 @@ const AuditoriaPage = () => {
                       </span>
                     </td>
                     <td className="p-6">
-                      <span className="bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-[10px] font-black">{productCount} ítems</span>
+                      <span className="bg-slate-100 text-tinta px-3 py-1 rounded-full text-[10px] font-black">{productCount} ítems</span>
                     </td>
                     <td className="p-6 text-slate-600 font-bold text-xs truncate max-w-[150px]" title={log.impacto_decision}>
                       {log.impacto_decision || '---'}
@@ -180,7 +180,7 @@ const AuditoriaPage = () => {
                     <td className="p-6 pr-8 text-right">
                       <button
                         onClick={() => setDetailModal(log)}
-                        className="px-4 py-2 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-violet-100 transition-colors transition-transform shadow-sm hover:scale-105"
+                        className="px-4 py-2 bg-azul/10 text-azul hover:bg-azul-hondo hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-azul/30 transition-colors transition-transform shadow-sm hover:scale-105"
                       >
                         Inspeccionar
                       </button>
@@ -209,7 +209,7 @@ const AuditoriaPage = () => {
               <button
                 disabled={pagination.page >= pagination.totalPages}
                 onClick={() => fetchData(pagination.page + 1)}
-                className="px-4 py-2 bg-violet-600 text-white rounded-xl text-[10px] font-black hover:bg-violet-700 transition-colors disabled:opacity-30 shadow-sm"
+                className="px-4 py-2 bg-azul text-white rounded-xl text-[10px] font-black hover:bg-azul-hondo transition-colors disabled:opacity-30 shadow-sm"
               >
                 Siguiente →
               </button>
@@ -223,22 +223,22 @@ const AuditoriaPage = () => {
     {/* Modal Detalle — portal directo a document.body para evitar stacking context del sidebar */}
     {detailModal && createPortal(
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setDetailModal(null)} role="presentation" aria-hidden="true"></div>
+          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-md" onClick={() => setDetailModal(null)} role="presentation" aria-hidden="true"></div>
           <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-2xl animate-scale-in relative z-10" onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-violet-50 rounded-t-[2.5rem]">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-azul/10 rounded-t-[2.5rem]">
               <div>
-                <h3 className="text-xl font-black text-violet-800 tracking-tighter uppercase italic">Detalle de la sugerencia</h3>
-                <p className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mt-1">{formatFecha(detailModal.fecha_auditoria)}</p>
+                <h3 className="text-xl font-black text-azul tracking-tighter uppercase italic">Detalle de la sugerencia</h3>
+                <p className="text-[10px] font-bold text-azul uppercase tracking-widest mt-1">{formatFecha(detailModal.fecha_auditoria)}</p>
               </div>
-              <button onClick={() => setDetailModal(null)} aria-label="Cerrar modal" className="w-10 h-10 bg-white border border-violet-200 text-violet-400 rounded-xl hover:text-rose-500 flex items-center justify-center transition-colors"><X size={16} /></button>
+              <button onClick={() => setDetailModal(null)} aria-label="Cerrar modal" className="w-10 h-10 bg-white border border-azul/30 text-azul rounded-xl hover:text-rose-500 flex items-center justify-center transition-colors"><X size={16} /></button>
             </div>
 
             {/* Metadata */}
             <div className="p-6 grid grid-cols-2 gap-3">
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fuente</p>
-                <p className="text-sm font-bold text-slate-800 mt-1 flex items-center gap-1">
+                <p className="text-sm font-bold text-tinta mt-1 flex items-center gap-1">
                   {detailModal.id_orden
                     ? <><Building2 size={14} /> Orden #{detailModal.id_orden}</>
                     : <><LayoutDashboard size={14} /> Dashboard</>
@@ -247,21 +247,21 @@ const AuditoriaPage = () => {
               </div>
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Motor</p>
-                <p className="text-sm font-bold text-slate-800 mt-1">{detailModal.motor_ia || detailModal.prompt_utilizado?.substring(0, 30) + '...' || 'N/A'}</p>
+                <p className="text-sm font-bold text-tinta mt-1">{detailModal.motor_ia || detailModal.prompt_utilizado?.substring(0, 30) + '...' || 'N/A'}</p>
               </div>
               {detailModal.proveedor_nombre && (
-                <div className="col-span-2 bg-indigo-50 rounded-xl p-3 border border-indigo-100">
-                  <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Proveedor</p>
-                  <p className="text-sm font-bold text-indigo-800 mt-1">{detailModal.proveedor_nombre}</p>
+                <div className="col-span-2 bg-azul/10 rounded-xl p-3 border border-azul/30">
+                  <p className="text-[9px] font-black text-azul uppercase tracking-widest">Proveedor</p>
+                  <p className="text-sm font-bold text-azul mt-1">{detailModal.proveedor_nombre}</p>
                 </div>
               )}
             </div>
 
             {/* Razón IA */}
             <div className="px-6 pb-4">
-              <div className="bg-violet-50 rounded-xl p-4 border border-violet-100">
-                <p className="text-[9px] font-black text-violet-500 uppercase tracking-widest mb-1">Razón / Contexto IA</p>
-                <p className="text-sm font-medium text-slate-700 leading-relaxed">{detailModal.razon_ia || 'Sin razón registrada'}</p>
+              <div className="bg-azul/10 rounded-xl p-4 border border-azul/30">
+                <p className="text-[9px] font-black text-azul uppercase tracking-widest mb-1">Razón / Contexto IA</p>
+                <p className="text-sm font-medium text-tinta-2 leading-relaxed">{detailModal.razon_ia || 'Sin razón registrada'}</p>
               </div>
             </div>
 
@@ -282,16 +282,16 @@ const AuditoriaPage = () => {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Perfil de Cliente</p>
-                        <p className={`text-lg font-black ${perfil.includes('Buen') ? 'text-emerald-600' : perfil.includes('Mal') ? 'text-rose-600' : 'text-amber-500'}`}>{perfil}</p>
+                        <p className={`text-lg font-black ${perfil.includes('Buen') ? 'text-exito' : perfil.includes('Mal') ? 'text-peligro' : 'text-amber-500'}`}>{perfil}</p>
                       </div>
                       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Nivel de Riesgo</p>
-                        <p className={`text-lg font-black ${riesgo === 'Bajo' ? 'text-emerald-600' : riesgo === 'Alto' ? 'text-rose-600' : 'text-amber-500'}`}>{riesgo}</p>
+                        <p className={`text-lg font-black ${riesgo === 'Bajo' ? 'text-exito' : riesgo === 'Alto' ? 'text-peligro' : 'text-amber-500'}`}>{riesgo}</p>
                       </div>
                     </div>
-                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
-                      <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Sugerencia IA</p>
-                      <p className="text-sm font-bold text-indigo-900 leading-snug">{sugerencia}</p>
+                    <div className="bg-azul/10 p-4 rounded-2xl border border-azul/30">
+                      <p className="text-[9px] font-black text-azul uppercase tracking-widest mb-1">Sugerencia IA</p>
+                      <p className="text-sm font-bold text-tinta leading-snug">{sugerencia}</p>
                     </div>
                   </div>
                 );
@@ -303,7 +303,7 @@ const AuditoriaPage = () => {
                   <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
                     <table className="w-full text-left text-sm">
                       <thead>
-                    <tr className="bg-slate-800 text-[9px] text-white font-black uppercase tracking-widest">
+                    <tr className="bg-tinta text-[9px] text-white font-black uppercase tracking-widest">
                       <th className="px-4 py-3">Producto</th>
                       <th className="px-4 py-3 text-center">Base</th>
                       <th className="px-4 py-3 text-center">Ajuste IA</th>
@@ -336,14 +336,14 @@ const AuditoriaPage = () => {
                           
                           return (
                             <tr key={displayName} className="hover:bg-white transition-colors">
-                              <td className="px-4 py-3 font-bold text-slate-800 uppercase italic text-[11px] tracking-tight">{displayName}</td>
+                              <td className="px-4 py-3 font-bold text-tinta uppercase italic text-[11px] tracking-tight">{displayName}</td>
                               <td className="px-4 py-3 text-center font-black text-slate-600">{baseText}</td>
                               <td className="px-4 py-3 text-center">
-                                <span className={`font-black ${(s.adjustment || s.ajuste || '').toString().includes('+') || (s.discount && s.type !== 'discount') ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                <span className={`font-black ${(s.adjustment || s.ajuste || '').toString().includes('+') || (s.discount && s.type !== 'discount') ? 'text-exito' : 'text-peligro'}`}>
                                   {s.adjustment || s.ajuste || (s.discount ? `-${s.discount}%` : '---')}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-center font-black text-indigo-600">{finalText}</td>
+                              <td className="px-4 py-3 text-center font-black text-azul">{finalText}</td>
                               <td className="px-4 py-3 text-xs text-slate-500 italic leading-snug">{s.reason || s.razon || detailModal.razon_ia}</td>
                             </tr>
                           );

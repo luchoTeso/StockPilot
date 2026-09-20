@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import CustomSelect from '../components/CustomSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
 import { Clock, Save, Plus, BarChart2, Search, Download, Pencil, Trash2, AlertTriangle, FileText, Mail } from 'lucide-react';
+import { CHART } from '../theme/chartColors';
 
 const ReportesPage = () => {
   const toast = useToast();
@@ -73,13 +74,13 @@ const ReportesPage = () => {
 
   const getColorTipo = (tipo) => {
     const colores = {
-      'Inventario': '#3498db',
-      'Ventas': '#2ecc71',
-      'Financiero': '#e74c3c',
-      'Operativo': '#f39c12',
-      'Otro': '#9b59b6'
+      'Inventario': CHART.primary,
+      'Ventas': CHART.positive,
+      'Financiero': CHART.negative,
+      'Operativo': CHART.secondary,
+      'Otro': CHART.soft
     };
-    return colores[tipo] || '#95a5a6';
+    return colores[tipo] || CHART.neutral;
   };
 
   const handleEditClick = (reporte) => {
@@ -269,11 +270,11 @@ const ReportesPage = () => {
     <div className="animate-fade-in pb-12 font-outfit">
       
       {/* Header Premium (Floating Style) */}
-      <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-xl shadow-indigo-500/5 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 mt-2 animate-fade-in">
+      <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 mt-2 animate-fade-in">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase leading-none">Centro de <span className="text-indigo-600">Reportes</span></h2>
+          <h2 className="text-4xl font-black text-tinta tracking-tighter italic uppercase leading-none">Centro de <span className="text-azul">Reportes</span></h2>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
-            <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+            <span className="w-2 h-2 bg-azul rounded-full animate-pulse"></span>
             Exportación y Análisis de Datos del Negocio
           </p>
         </div>
@@ -281,14 +282,14 @@ const ReportesPage = () => {
            {isAdmin && (
              <button
                onClick={descargarHistorialCaja}
-               className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1"
+               className="bg-emerald-500 hover:bg-exito text-white px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg transition-all hover:-translate-y-1"
              >
                <Download size={14} /> Exportar Historial Caja
              </button>
            )}
            <div className="bg-white/60 px-6 py-3 rounded-2xl border border-white/40 shadow-sm">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Archivos totales</span>
-              <span className="text-xl font-black text-slate-800">{reportes.length} <span className="text-[10px] text-indigo-500 italic">docs</span></span>
+              <span className="text-xl font-black text-tinta">{reportes.length} <span className="text-[10px] text-azul italic">docs</span></span>
            </div>
         </div>
       </div>
@@ -300,14 +301,14 @@ const ReportesPage = () => {
           <div className="lg:col-span-1">
           <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 lg:sticky lg:top-6 max-h-[85vh] flex flex-col overflow-hidden">
             <div className="p-6 lg:p-8 overflow-y-auto scrollbar-hide flex-1">
-              <h3 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100 shrink-0">
+              <h3 className="text-2xl font-black text-tinta tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100 shrink-0">
                 {editMode ? 'Editar Reporte' : 'Generar Nuevo Reporte'}
               </h3>
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="titulo" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Nombre del Reporte <span className="text-rose-500 text-sm">*</span></label>
-                  <input id="titulo" required type="text" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800" placeholder="Ej. Balance Mensual..."/>
+                  <label htmlFor="titulo" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombre del Reporte <span className="text-rose-500 text-sm">*</span></label>
+                  <input id="titulo" required type="text" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Ej. Balance Mensual..."/>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -340,11 +341,11 @@ const ReportesPage = () => {
                 </div>
 
                 {['Ventas', 'Financiero', 'Operativo', 'Inventario'].includes(formData.tipo) && (
-                  <div className="bg-indigo-50/50 p-4 border border-indigo-100 rounded-[2rem] space-y-4">
-                    <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest pl-1 mb-2 text-center flex items-center justify-center gap-1"><Clock size={12} /> Periodo Evaluado</h4>
+                  <div className="bg-azul/5 p-4 border border-azul/30 rounded-[2rem] space-y-4">
+                    <h4 className="text-[10px] font-black text-azul uppercase tracking-widest pl-1 mb-2 text-center flex items-center justify-center gap-1"><Clock size={12} /> Periodo Evaluado</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <span className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-1">Corte Inicial</span>
+                        <span className="block text-[10px] font-black text-azul uppercase tracking-widest pl-1 mb-1">Corte Inicial</span>
                         <CustomDatePicker 
                           value={formData.fecha_inicio} 
                           onChange={v => setFormData({...formData, fecha_inicio: v})} 
@@ -353,7 +354,7 @@ const ReportesPage = () => {
                         />
                       </div>
                       <div>
-                        <span className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1 mb-1">Corte Final</span>
+                        <span className="block text-[10px] font-black text-azul uppercase tracking-widest pl-1 mb-1">Corte Final</span>
                         <CustomDatePicker 
                           value={formData.fecha_fin} 
                           onChange={v => setFormData({...formData, fecha_fin: v})} 
@@ -366,17 +367,17 @@ const ReportesPage = () => {
                 )}
 
                 <div>
-                  <label htmlFor="creador" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Responsable <span className="text-rose-500 text-sm">*</span></label>
-                  <input id="creador" required type="text" value={formData.creador} onChange={e => setFormData({...formData, creador: e.target.value})} className="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-500" readOnly/>
+                  <label htmlFor="creador" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Responsable <span className="text-rose-500 text-sm">*</span></label>
+                  <input id="creador" required type="text" value={formData.creador} onChange={e => setFormData({...formData, creador: e.target.value})} className="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none text-slate-500" readOnly/>
                 </div>
 
                 <div>
-                  <label htmlFor="descripcion" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2">Conclusiones o Notas</label>
-                  <textarea id="descripcion" required rows="3" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:border-indigo-500 outline-none text-slate-800 resize-none hover:bg-white transition-colors" placeholder="Añade detalles relevantes o un resumen aquí..."></textarea>
+                  <label htmlFor="descripcion" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Conclusiones o Notas</label>
+                  <textarea id="descripcion" required rows="3" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:border-azul outline-none text-tinta resize-none hover:bg-white transition-colors" placeholder="Añade detalles relevantes o un resumen aquí..."></textarea>
                 </div>
 
                 <div className="flex flex-col gap-3 pt-4 pb-2">
-                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'}`}>
+                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-ambar hover:bg-amber-600' : 'bg-emerald-500 hover:bg-exito'}`}>
                     {editMode ? <Save size={14} /> : <Plus size={14} />} {isSubmitting ? 'GUARDANDO...' : (editMode ? 'ACTUALIZAR REPORTE' : 'CREAR REPORTE')}
                   </button>
                   {editMode && (
@@ -392,14 +393,14 @@ const ReportesPage = () => {
             {/* Nuevo: Módulo de Auditoría de Mermas (Estética Armonizada) */}
             <div className="mt-8 bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 relative overflow-hidden group">
                {/* Elemento decorativo sutil */}
-               <div className="absolute -right-4 -top-4 w-32 h-32 bg-indigo-50 rounded-full blur-3xl group-hover:bg-indigo-100 transition-colors opacity-50"></div>
+               <div className="absolute -right-4 -top-4 w-32 h-32 bg-azul/10 rounded-full blur-3xl group-hover:bg-azul/10 transition-colors opacity-50"></div>
                
                <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shadow-sm border border-indigo-100 text-indigo-600">
+                    <div className="w-10 h-10 rounded-xl bg-azul/10 flex items-center justify-center shadow-sm border border-azul/30 text-azul">
                       <FileText size={20} />
                     </div>
-                    <h4 className="text-slate-800 font-black text-lg tracking-tighter italic uppercase">Auditoría de Merma</h4>
+                    <h4 className="text-tinta font-black text-lg tracking-tighter italic uppercase">Auditoría de Merma</h4>
                   </div>
                   
                   <p className="text-slate-500 text-[11px] font-medium leading-relaxed mb-6 pl-1">
@@ -408,7 +409,7 @@ const ReportesPage = () => {
                   
                   <button 
                     onClick={descargarReporteMerma}
-                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-colors transition-shadow transition-transform shadow-lg shadow-indigo-200 active:scale-95 flex items-center justify-center gap-3"
+                    className="w-full py-4 bg-azul text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-azul-hondo transition-colors transition-shadow transition-transform shadow-lg active:scale-95 flex items-center justify-center gap-3"
                   >
                     DESCARGAR REPORTE (PDF)
                   </button>
@@ -425,7 +426,7 @@ const ReportesPage = () => {
                         toast.error(err.response?.data?.error || 'Error al enviar el resumen. Revisa la configuración SMTP.');
                       }
                     }}
-                    className="w-full py-3 mt-3 bg-white text-indigo-600 border-2 border-indigo-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 hover:border-indigo-400 transition-colors transition-transform active:scale-95 flex items-center justify-center gap-3"
+                    className="w-full py-3 mt-3 bg-white text-azul border-2 border-azul/30 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-azul/10 hover:border-azul transition-colors transition-transform active:scale-95 flex items-center justify-center gap-3"
                   >
                     <Mail size={14} /> ENVIAR RESUMEN AHORA
                   </button>
@@ -439,7 +440,7 @@ const ReportesPage = () => {
           
           {/* Cabecera y Filtros de Tabla */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm gap-4">
-             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+             <h3 className="text-xl font-bold text-tinta flex items-center gap-2">
                <BarChart2 size={18} /> Archivos Generados
              </h3>
              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
@@ -464,7 +465,7 @@ const ReportesPage = () => {
                    placeholder="Buscar reporte..." 
                    value={filtroBusqueda} 
                    onChange={e => setFiltroBusqueda(e.target.value)} 
-                   className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800 transition-colors"
+                   className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul outline-none text-tinta transition-colors"
                  />
                </div>
              </div>
@@ -474,7 +475,7 @@ const ReportesPage = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[900px]">
                 <thead>
-                  <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
+                  <tr className="bg-tinta text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
                     <th className="p-6 pl-8">Nombre y Detalles</th>
                     <th className="p-6">Categoría</th>
                     <th className="p-6">Fecha</th>
@@ -491,7 +492,7 @@ const ReportesPage = () => {
                     filteredReportes.map(r => (
                       <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
                         <td className="p-6 pl-8">
-                          <strong className="block text-lg font-black text-slate-800 tracking-tighter mb-1">{r.titulo}</strong>
+                          <strong className="block text-lg font-black text-tinta tracking-tighter mb-1">{r.titulo}</strong>
                           <span className="text-slate-500 text-xs italic truncate max-w-[250px] inline-block font-medium" title={r.descripcion}>{r.descripcion}</span>
                         </td>
                         <td className="p-6">
@@ -503,7 +504,7 @@ const ReportesPage = () => {
                           </span>
                         </td>
                         <td className="p-6 text-slate-500 font-medium whitespace-nowrap italic">{formatearFecha(r.fecha_reporte)}</td>
-                        <td className="p-6 text-slate-800 font-bold flex items-center gap-2 mt-4 lg:mt-0">
+                        <td className="p-6 text-tinta font-bold flex items-center gap-2 mt-4 lg:mt-0">
                            <div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[10px] text-slate-600 font-black shrink-0">
                               {(r.creador || '?')[0].toUpperCase()}
                            </div>
@@ -511,15 +512,15 @@ const ReportesPage = () => {
                         </td>
                         <td className="p-6 pr-8">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => descargarReporteExcel(r)} aria-label="Exportar a Excel" className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Exportar XLSX">
+                            <button onClick={() => descargarReporteExcel(r)} aria-label="Exportar a Excel" className="w-10 h-10 rounded-xl bg-emerald-50 text-exito hover:bg-exito hover:text-white border border-exito-suave flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Exportar XLSX">
                               <Download size={18} />
                             </button>
                             {isAdmin && (
                               <>
-                                <button onClick={() => handleEditClick(r)} aria-label="Editar Reporte" className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Reporte">
+                                <button onClick={() => handleEditClick(r)} aria-label="Editar Reporte" className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-ambar hover:text-white border border-aviso-suave flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Editar Reporte">
                                   <Pencil size={18} />
                                 </button>
-                                <button onClick={() => eliminarReporte(r.id)} aria-label="Eliminar Reporte" className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Reporte">
+                                <button onClick={() => eliminarReporte(r.id)} aria-label="Eliminar Reporte" className="w-10 h-10 rounded-xl bg-rose-50 text-peligro hover:bg-peligro hover:text-white border border-peligro-suave flex items-center justify-center transition-colors transition-transform hover:scale-105 hover:-translate-y-1 shadow-sm" title="Eliminar Reporte">
                                   <Trash2 size={18} />
                                 </button>
                               </>
@@ -537,13 +538,13 @@ const ReportesPage = () => {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4 font-outfit">
+        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4 font-outfit">
           <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden transform animate-scale-in border border-white">
-            <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-rose-100 bg-rose-50' : 'border-amber-100 bg-amber-50'}`}>
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-rose-100 text-rose-600 shadow-rose-200' : 'bg-amber-100 text-amber-600 shadow-amber-200'}`}>
+            <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-peligro-suave bg-rose-50' : 'border-aviso-suave bg-amber-50'}`}>
+              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-peligro-suave text-peligro' : 'bg-aviso-suave text-amber-600'}`}>
                  {modalConfig.type === 'danger' ? <Trash2 size={36} /> : <AlertTriangle size={36} />}
               </div>
-              <h3 className={`text-2xl font-black tracking-tighter italic uppercase ${modalConfig.type === 'danger' ? 'text-rose-600' : 'text-amber-600'}`}>
+              <h3 className={`text-2xl font-black tracking-tighter italic uppercase ${modalConfig.type === 'danger' ? 'text-peligro' : 'text-amber-600'}`}>
                 {modalConfig.title}
               </h3>
             </div>
@@ -564,8 +565,8 @@ const ReportesPage = () => {
                 }}
                 className={`flex-1 px-4 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-transform transition-shadow hover:-translate-y-1 active:scale-95 ${
                   modalConfig.type === 'danger' 
-                    ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-200' 
-                    : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'
+                    ? 'bg-rose-500 hover:bg-peligro' 
+                    : 'bg-ambar hover:bg-amber-600'
                 }`}
               >
                 Confirmar

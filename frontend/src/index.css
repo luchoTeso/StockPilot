@@ -16,24 +16,6 @@
   --color-aviso: #8A5300;    --color-aviso-suave: #FFF1D6;
   --color-ambar: #E08A00;    /* SOLO rellenos, barras e íconos. Nunca texto. */
 
-  /* ── Transitorio: indigo y violet pasan a ser UNA familia (matiz ~236°; 600 = azul) ── */
-  --color-indigo-50: #EFEFFB;  --color-indigo-100: #DEE0F7; --color-indigo-200: #C3C6EF;
-  --color-indigo-300: #989DE2; --color-indigo-400: #6C72D0; --color-indigo-500: #4048BF;
-  --color-indigo-600: #252C93; --color-indigo-700: #1D2272; --color-indigo-800: #151A56;
-  --color-indigo-900: #0E1139; --color-indigo-950: #090B2B;
-  --color-violet-50: #EFEFFB;  --color-violet-100: #DEE0F7; --color-violet-200: #C3C6EF;
-  --color-violet-300: #989DE2; --color-violet-400: #6C72D0; --color-violet-500: #4048BF;
-  --color-violet-600: #252C93; --color-violet-700: #1D2272; --color-violet-800: #151A56;
-  --color-violet-900: #0E1139;
-  --color-purple-50: #EFEFFB;  --color-purple-100: #DEE0F7; --color-purple-200: #C3C6EF;
-  --color-purple-300: #989DE2; --color-purple-400: #6C72D0; --color-purple-500: #4048BF;
-  --color-purple-600: #252C93; --color-purple-700: #1D2272; --color-purple-800: #151A56;
-  --color-purple-900: #0E1139;
-  --color-fuchsia-50: #EFEFFB;  --color-fuchsia-100: #DEE0F7; --color-fuchsia-200: #C3C6EF;
-  --color-fuchsia-300: #989DE2; --color-fuchsia-400: #6C72D0; --color-fuchsia-500: #4048BF;
-  --color-fuchsia-600: #252C93; --color-fuchsia-700: #1D2272; --color-fuchsia-800: #151A56;
-  --color-fuchsia-900: #0E1139;
-
   /* ── Neutros con matiz azul (permanente): coherentes con tinta y papel ── */
   --color-slate-50: #F5F6FB;  --color-slate-100: #EEF0F8; --color-slate-200: #DDE0EF;
   --color-slate-300: #C3C7DE; --color-slate-400: #8F94B8; --color-slate-500: #6A6F99;
@@ -55,28 +37,6 @@
   --color-amber-300: #FFCE6B; --color-amber-400: #F5AE23; --color-amber-500: #E08A00;
   --color-amber-600: #B86F00; --color-amber-700: #8A5300; --color-amber-800: #6B4000;
   --color-amber-900: #4F2F00;
-
-  /* ── Familias sueltas (Fase 1b): se realinean a la rampa de destino, por tono.
-     orange/yellow → amber · red → rose · blue/sky/cyan → indigo.
-     Transitorio: se retiran cuando el JSX use nombres semánticos (Fase 2). ── */
-  --color-orange-50: var(--color-amber-50); --color-orange-100: var(--color-amber-100); --color-orange-200: var(--color-amber-200); --color-orange-300: var(--color-amber-300);
-  --color-orange-400: var(--color-amber-400); --color-orange-500: var(--color-amber-500); --color-orange-600: var(--color-amber-600); --color-orange-700: var(--color-amber-700);
-  --color-orange-800: var(--color-amber-800); --color-orange-900: var(--color-amber-900);
-  --color-yellow-50: var(--color-amber-50); --color-yellow-100: var(--color-amber-100); --color-yellow-200: var(--color-amber-200); --color-yellow-300: var(--color-amber-300);
-  --color-yellow-400: var(--color-amber-400); --color-yellow-500: var(--color-amber-500); --color-yellow-600: var(--color-amber-600); --color-yellow-700: var(--color-amber-700);
-  --color-yellow-800: var(--color-amber-800); --color-yellow-900: var(--color-amber-900);
-  --color-red-50: var(--color-rose-50); --color-red-100: var(--color-rose-100); --color-red-200: var(--color-rose-200); --color-red-300: var(--color-rose-300);
-  --color-red-400: var(--color-rose-400); --color-red-500: var(--color-rose-500); --color-red-600: var(--color-rose-600); --color-red-700: var(--color-rose-700);
-  --color-red-800: var(--color-rose-800); --color-red-900: var(--color-rose-900);
-  --color-blue-50: var(--color-indigo-50); --color-blue-100: var(--color-indigo-100); --color-blue-200: var(--color-indigo-200); --color-blue-300: var(--color-indigo-300);
-  --color-blue-400: var(--color-indigo-400); --color-blue-500: var(--color-indigo-500); --color-blue-600: var(--color-indigo-600); --color-blue-700: var(--color-indigo-700);
-  --color-blue-800: var(--color-indigo-800); --color-blue-900: var(--color-indigo-900);
-  --color-sky-50: var(--color-indigo-50); --color-sky-100: var(--color-indigo-100); --color-sky-200: var(--color-indigo-200); --color-sky-300: var(--color-indigo-300);
-  --color-sky-400: var(--color-indigo-400); --color-sky-500: var(--color-indigo-500); --color-sky-600: var(--color-indigo-600); --color-sky-700: var(--color-indigo-700);
-  --color-sky-800: var(--color-indigo-800); --color-sky-900: var(--color-indigo-900);
-  --color-cyan-50: var(--color-indigo-50); --color-cyan-100: var(--color-indigo-100); --color-cyan-200: var(--color-indigo-200); --color-cyan-300: var(--color-indigo-300);
-  --color-cyan-400: var(--color-indigo-400); --color-cyan-500: var(--color-indigo-500); --color-cyan-600: var(--color-indigo-600); --color-cyan-700: var(--color-indigo-700);
-  --color-cyan-800: var(--color-indigo-800); --color-cyan-900: var(--color-indigo-900);
 
   /* ── Tipografía (ver Fase 3; declararla aquí no cambia nada hasta cargar la fuente) ── */
   --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;

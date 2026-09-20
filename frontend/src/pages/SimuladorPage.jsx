@@ -158,7 +158,7 @@ const SimuladorPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-50">
-        <div className="animate-spin w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full shadow-lg"></div>
+        <div className="animate-spin w-12 h-12 border-4 border-azul border-t-transparent rounded-full shadow-lg"></div>
       </div>
     );
   }
@@ -170,12 +170,12 @@ const SimuladorPage = () => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-200">
+            <div className="w-12 h-12 bg-azul text-white rounded-2xl flex items-center justify-center shadow-xl">
               <FlaskConical size={22} />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Simulador de Escenarios</h1>
-              <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] bg-indigo-50 px-2 py-0.5 rounded-full inline-block">Proyecta tus futuras compras</p>
+              <h1 className="text-3xl font-black text-tinta tracking-tighter uppercase italic">Simulador de Escenarios</h1>
+              <p className="text-[10px] font-black text-azul uppercase tracking-[0.2em] bg-azul/10 px-2 py-0.5 rounded-full inline-block">Proyecta tus futuras compras</p>
             </div>
           </div>
           <p className="text-sm font-bold text-slate-400 max-w-xl">
@@ -186,7 +186,7 @@ const SimuladorPage = () => {
         <button 
           onClick={() => setShowConvertModal(true)}
           disabled={simulatedData.activeCount === 0}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-emerald-200 transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-3"
+          className="bg-emerald-500 hover:bg-exito text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-3"
         >
           <Package size={16} /> Convertir en Orden Real
         </button>
@@ -201,8 +201,8 @@ const SimuladorPage = () => {
           {/* Slider Cobertura */}
           <div className="space-y-6">
             <div className="flex justify-between items-end">
-              <label htmlFor="days" className="text-xs font-black text-slate-500 uppercase tracking-widest">Días de Cobertura Deseada</label>
-              <span className="text-3xl font-black text-indigo-600">{days} <span className="text-sm text-slate-400">días</span></span>
+              <label htmlFor="days" className="text-xs font-semibold text-slate-600">Días de Cobertura Deseada</label>
+              <span className="text-3xl font-black text-azul">{days} <span className="text-sm text-slate-400">días</span></span>
             </div>
             <input 
               id="days"
@@ -212,7 +212,7 @@ const SimuladorPage = () => {
               step="1"
               value={days}
               onChange={(e) => setDays(parseInt(e.target.value))}
-              className="w-full h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              className="w-full h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-azul"
             />
             <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase italic">
               <span>7 días (Mín)</span>
@@ -224,7 +224,7 @@ const SimuladorPage = () => {
           {/* Input Presupuesto */}
           <div className="space-y-6">
             <div className="flex justify-between items-end">
-              <label htmlFor="budget" className="text-xs font-black text-slate-500 uppercase tracking-widest">Presupuesto Máximo de Compra</label>
+              <label htmlFor="budget" className="text-xs font-semibold text-slate-600">Presupuesto Máximo de Compra</label>
             </div>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
@@ -233,7 +233,7 @@ const SimuladorPage = () => {
                 type="number"
                 value={budget}
                 onChange={(e) => setBudget(parseInt(e.target.value) || 0)}
-                className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-2xl text-slate-800 focus:border-indigo-500 outline-none transition-colors transition-shadow"
+                className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-2xl text-tinta focus:border-azul outline-none transition-colors transition-shadow"
               />
             </div>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
@@ -243,7 +243,7 @@ const SimuladorPage = () => {
         </div>
 
         {/* Resumen KPIs */}
-        <div className="bg-indigo-600 p-8 rounded-[2rem] shadow-xl shadow-indigo-200 flex flex-col justify-between text-white relative overflow-hidden">
+        <div className="bg-azul p-8 rounded-[2rem] shadow-xl flex flex-col justify-between text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full"></div>
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Costo Total Simulado</p>
@@ -279,7 +279,7 @@ const SimuladorPage = () => {
       {/* TABLA DE PRODUCTOS */}
       <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-          <h3 className="text-xl font-black text-slate-800 leading-none uppercase tracking-tighter italic">¿Qué y cuánto comprar?</h3>
+          <h3 className="text-xl font-black text-tinta leading-none uppercase tracking-tighter italic">¿Qué y cuánto comprar?</h3>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Calculado a partir de tu ritmo de ventas mensual</p>
         </div>
         
@@ -293,7 +293,7 @@ const SimuladorPage = () => {
                 <th className="p-6 border-b border-slate-100 text-center">Reserva</th>
                 <th className="p-6 border-b border-slate-100 text-center">Ventas / Día</th>
                 <th className="p-6 border-b border-slate-100 text-center">Alcanza Para</th>
-                <th className="p-6 border-b border-slate-100 text-center text-emerald-600">Comprar ({days}d)</th>
+                <th className="p-6 border-b border-slate-100 text-center text-exito">Comprar ({days}d)</th>
                 <th className="p-6 border-b border-slate-100 text-right">Inversión</th>
               </tr>
             </thead>
@@ -313,18 +313,18 @@ const SimuladorPage = () => {
                       aria-label={`Incluir ${p.nombre}`}
                       checked={p.activeInSim && !p.isExcludedManual}
                       onChange={() => toggleManualExclusion(p.id_producto)}
-                      className="w-5 h-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                      className="w-5 h-5 rounded-lg border-slate-300 text-azul focus:ring-azul/30 cursor-pointer"
                     />
                   </td>
                   <td className="p-6">
                     <div className="flex flex-col">
-                      <span className="text-sm font-black text-slate-800 uppercase leading-none">{p.nombre}</span>
+                      <span className="text-sm font-black text-tinta uppercase leading-none">{p.nombre}</span>
                       <span className="text-[9px] font-bold text-slate-400 mt-1">{p.categoria}</span>
                     </div>
                   </td>
                   <td className="p-6 text-center">
                     <span className={`px-3 py-1 rounded-lg text-[10px] font-black whitespace-nowrap ${
-                      p.category === 'A' ? 'bg-indigo-100 text-indigo-700' : 
+                      p.category === 'A' ? 'bg-azul/10 text-azul' : 
                       p.category === 'B' ? 'bg-slate-100 text-slate-600' : 
                       'bg-slate-50 text-slate-400'
                     }`}>
@@ -351,7 +351,7 @@ const SimuladorPage = () => {
                   </td>
                   <td className="p-6 text-center">
                     <div className={`inline-block px-4 py-2 rounded-xl border-2 font-black text-lg transition-colors ${
-                      p.needed > 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 'border-slate-100 bg-slate-50 text-slate-300'
+                      p.needed > 0 ? 'border-exito-suave bg-emerald-50 text-exito' : 'border-slate-100 bg-slate-50 text-slate-300'
                     }`}>
                       {p.needed} <span className="text-[10px] uppercase">ud</span>
                     </div>
@@ -359,7 +359,7 @@ const SimuladorPage = () => {
                       <p className="text-[8px] font-black text-rose-500 uppercase mt-1">Fuera de Presupuesto</p>
                     )}
                   </td>
-                  <td className="p-6 text-right font-black text-slate-700">
+                  <td className="p-6 text-right font-black text-tinta-2">
                     ${p.simulatedCost.toLocaleString()}
                   </td>
                 </tr>
@@ -372,12 +372,12 @@ const SimuladorPage = () => {
       {/* MODAL: SELECCIONAR PROVEEDOR Y CONVERTIR */}
       {showConvertModal && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setShowConvertModal(false)}></div>
+          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-md" onClick={() => setShowConvertModal(false)}></div>
           
           <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl relative z-10 p-8 animate-scale-in border border-slate-100">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Confirmar Ejecución</h2>
+                <h2 className="text-2xl font-black text-tinta tracking-tighter uppercase italic">Confirmar Ejecución</h2>
                 <p className="text-xs font-bold text-slate-400">Selecciona el proveedor para procesar la orden.</p>
               </div>
               <button onClick={() => setShowConvertModal(false)} aria-label="Cerrar modal" className="text-2xl text-slate-300 hover:text-rose-500 transition-colors">×</button>
@@ -391,13 +391,13 @@ const SimuladorPage = () => {
                 </div>
                 <div className="flex justify-between items-end">
                   <span className="text-sm font-bold text-slate-600">Total a Invertir</span>
-                  <span className="text-3xl font-black text-indigo-600">${simulatedData.totalCost.toLocaleString()}</span>
+                  <span className="text-3xl font-black text-azul">${simulatedData.totalCost.toLocaleString()}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <span className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Seleccionar Proveedor</span>
-                <div className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus-within:border-indigo-500 transition-colors">
+                <div className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus-within:border-azul transition-colors">
                   <CustomSelect 
                     value={selectedSupplierId}
                     onChange={(val) => setSelectedSupplierId(val)}
@@ -417,7 +417,7 @@ const SimuladorPage = () => {
                 <button 
                   onClick={handleConvertToOrder}
                   disabled={isSubmitting || !selectedSupplierId}
-                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-indigo-200 transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                 >
                   {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : '✓'} 
                   Confirmar y Crear Orden

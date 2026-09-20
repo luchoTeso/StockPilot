@@ -196,15 +196,15 @@ const MovimientosPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div>
-          <h2 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Movimientos de Inventario</h2>
+          <h2 className="text-4xl font-black text-tinta tracking-tighter italic uppercase">Movimientos de Inventario</h2>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Registro completo de entradas, salidas y auditoría de stock (Kardex)</p>
         </div>
         <button
           type="button"
           onClick={() => setShowHelpModal(true)}
-          className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm flex items-center gap-2.5 transition-all active:scale-95"
+          className="bg-azul/10 hover:bg-azul/10 text-azul border border-azul/30 py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm flex items-center gap-2.5 transition-all active:scale-95"
         >
-          <HelpCircle size={18} className="text-indigo-600" />
+          <HelpCircle size={18} className="text-azul" />
           <span>¿Para qué sirve esta ventana?</span>
         </button>
       </div>
@@ -213,7 +213,7 @@ const MovimientosPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           { label: 'Entradas de Producto', value: resumen.entradas, icon: PackagePlus, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-          { label: 'Salidas de Producto', value: resumen.salidas, icon: PackageMinus, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+          { label: 'Salidas de Producto', value: resumen.salidas, icon: PackageMinus, color: 'text-azul', bg: 'bg-azul/10' },
           { label: 'Ajustes Manuales', value: resumen.ajustes, icon: SlidersHorizontal, color: 'text-amber-500', bg: 'bg-amber-50' }
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 flex items-center gap-4 transition-shadow transition-transform hover:-translate-y-1 hover:shadow-2xl hover:border-slate-200">
@@ -237,7 +237,7 @@ const MovimientosPage = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 lg:sticky lg:top-6 max-h-[85vh] flex flex-col overflow-hidden">
             <div className="p-6 lg:p-8 overflow-y-auto scrollbar-hide flex-1">
-              <h3 className="text-2xl font-black text-slate-800 tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100 shrink-0">Registrar Movimiento</h3>
+              <h3 className="text-2xl font-black text-tinta tracking-tighter italic uppercase mb-6 pb-4 border-b border-slate-100 shrink-0">Registrar Movimiento</h3>
               
               <form onSubmit={registrarMovimiento} className="space-y-5">
               
@@ -252,7 +252,7 @@ const MovimientosPage = () => {
                     { value: 'Salida', label: 'Salida manual' },
                     { value: 'Ajuste', label: 'Ajuste de inventario' }
                   ]}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-azul text-tinta"
                 />
               </div>
 
@@ -266,18 +266,18 @@ const MovimientosPage = () => {
                     value: String(p.id_producto),
                     label: `${p.nombre_producto} (Stock: ${p.cantidad})`
                   }))}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-azul text-tinta"
                 />
                 {productoSeleccionado && (
                   <div className="mt-2 text-xs font-bold text-slate-500 px-2 flex justify-between">
                     <span>Stock Actual:</span>
-                    <span className="text-indigo-600">{productoSeleccionado.cantidad} unidades</span>
+                    <span className="text-azul">{productoSeleccionado.cantidad} unidades</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <label htmlFor="cantidad" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                <label htmlFor="cantidad" className="block text-xs font-semibold text-slate-600 mb-2">
                   {tipo === 'Ajuste' ? 'Cantidad (+ o -)' : 'Cantidad'}
                 </label>
                 <input 
@@ -288,7 +288,7 @@ const MovimientosPage = () => {
                   value={cantidad} 
                   onChange={(e) => setCantidad(e.target.value)} 
                   placeholder={tipo === 'Ajuste' ? 'Ej: -5 o +10' : 'Ej: 20'} 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none text-slate-800 transition-colors" 
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-azul outline-none text-tinta transition-colors" 
                 />
               </div>
 
@@ -299,7 +299,7 @@ const MovimientosPage = () => {
                   onChange={(val) => setObservacion(val)}
                   placeholder={tipo ? "Seleccione el motivo..." : "Primero elija tipo de mov."}
                   options={opcionesMotivo}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-azul text-tinta"
                 />
               </div>
 
@@ -307,7 +307,7 @@ const MovimientosPage = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting || !tipo || !productoId || !cantidad || !observacion} 
-                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 transition-colors transition-shadow transition-transform flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                  className="w-full bg-emerald-500 hover:bg-exito text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                 >
                   {isSubmitting ? 'Procesando...' : 'Ejecutar Movimiento'}
                 </button>
@@ -333,7 +333,7 @@ const MovimientosPage = () => {
                 { value: 'Salida', label: 'Salidas' },
                 { value: 'Ajuste', label: 'Ajustes' }
               ]}
-              className="flex-1 min-w-[150px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-indigo-500 text-slate-800"
+              className="flex-1 min-w-[150px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus-within:border-azul text-tinta"
             />
             <div className="flex-1 min-w-[150px]">
               <CustomDatePicker 
@@ -354,7 +354,7 @@ const MovimientosPage = () => {
             <button 
               type="button" 
               onClick={limpiarFiltros} 
-              className="bg-slate-800 hover:bg-slate-900 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
+              className="bg-tinta hover:bg-tinta text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
             >
               Limpiar
             </button>
@@ -365,7 +365,7 @@ const MovimientosPage = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-slate-900 text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
+                  <tr className="bg-tinta text-[10px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">
                     <th className="p-6 pl-8">Fecha</th>
                     <th className="p-6">Tipo</th>
                     <th className="p-6">Producto</th>
@@ -386,12 +386,12 @@ const MovimientosPage = () => {
                       const isAjuste = m.tipo_movimiento === 'Ajuste';
                       const isEntrada = m.tipo_movimiento === 'Entrada';
                       
-                      let badgeClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
-                      if (isSalida) badgeClass = 'bg-indigo-50 text-indigo-600 border border-indigo-100';
-                      if (isAjuste) badgeClass = 'bg-amber-50 text-amber-600 border border-amber-100';
+                      let badgeClass = 'bg-emerald-50 text-exito border border-exito-suave';
+                      if (isSalida) badgeClass = 'bg-azul/10 text-azul border border-azul/30';
+                      if (isAjuste) badgeClass = 'bg-amber-50 text-amber-600 border border-aviso-suave';
 
                       const cantidadDisplay = isEntrada ? `+${m.cantidad}` : isSalida ? `-${m.cantidad}` : (m.cantidad >= 0 ? `+${m.cantidad}` : m.cantidad);
-                      const textColor = isSalida ? 'text-indigo-600' : isAjuste ? 'text-amber-500' : 'text-emerald-500';
+                      const textColor = isSalida ? 'text-azul' : isAjuste ? 'text-amber-500' : 'text-emerald-500';
 
                       return (
                         <tr key={m.id_movimiento || `${m.id_producto}-${m.fecha_movimiento}`} className="hover:bg-slate-50 transition-colors">
@@ -401,7 +401,7 @@ const MovimientosPage = () => {
                               {m.tipo_movimiento}
                             </span>
                           </td>
-                          <td className="p-6 font-black text-slate-800">{m.nombre_producto}</td>
+                          <td className="p-6 font-black text-tinta">{m.nombre_producto}</td>
                           <td className="p-6 text-slate-500 font-medium">{m.categoria || '-'}</td>
                           <td className={`p-6 text-center font-black text-lg tracking-tighter ${textColor}`}>{cantidadDisplay}</td>
                           <td className="p-6 text-slate-500 text-xs italic max-w-[200px] truncate" title={m.observacion}>{m.observacion || '-'}</td>
@@ -424,34 +424,34 @@ const MovimientosPage = () => {
 
       {/* Modal Educativo: ¿Cuándo y para qué usar Movimientos? */}
       {showHelpModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
           <div className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-scale-in overflow-hidden border border-slate-100">
             <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-100 bg-slate-50">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-md">
+                <div className="w-12 h-12 bg-azul text-white rounded-2xl flex items-center justify-center shadow-md">
                   <ShieldCheck size={24} />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Guía de Movimientos (Kardex)</h3>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600">La cámara de seguridad de tu inventario</p>
+                  <h3 className="text-2xl font-black text-tinta tracking-tighter uppercase italic">Guía de Movimientos (Kardex)</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-azul">La cámara de seguridad de tu inventario</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowHelpModal(false)}
-                className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-rose-100 flex items-center justify-center text-xl transition-colors shadow-sm"
+                className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm"
               >
                 &times;
               </button>
             </div>
 
             <div className="p-6 md:p-8 overflow-y-auto space-y-6 text-slate-600 font-medium text-sm">
-              <p className="text-slate-700 font-bold leading-relaxed">
-                Esta ventana registra <strong className="text-indigo-600 font-black">cada unidad física</strong> que entra o sale de tu negocio, con fecha exacta y el usuario que lo hizo. Úsala principalmente en estas 4 situaciones:
+              <p className="text-tinta-2 font-bold leading-relaxed">
+                Esta ventana registra <strong className="text-azul font-black">cada unidad física</strong> que entra o sale de tu negocio, con fecha exacta y el usuario que lo hizo. Úsala principalmente en estas 4 situaciones:
               </p>
 
               <div className="space-y-4">
-                <div className="p-5 bg-emerald-50/70 border border-emerald-100 rounded-2xl flex gap-4 items-start">
-                  <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                <div className="p-5 bg-emerald-50/70 border border-exito-suave rounded-2xl flex gap-4 items-start">
+                  <div className="w-10 h-10 bg-exito-suave text-exito rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                     <PackagePlus size={20} />
                   </div>
                   <div>
@@ -462,8 +462,8 @@ const MovimientosPage = () => {
                   </div>
                 </div>
 
-                <div className="p-5 bg-rose-50/70 border border-rose-100 rounded-2xl flex gap-4 items-start">
-                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                <div className="p-5 bg-rose-50/70 border border-peligro-suave rounded-2xl flex gap-4 items-start">
+                  <div className="w-10 h-10 bg-peligro-suave text-peligro rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                     <AlertOctagon size={20} />
                   </div>
                   <div>
@@ -474,8 +474,8 @@ const MovimientosPage = () => {
                   </div>
                 </div>
 
-                <div className="p-5 bg-amber-50/70 border border-amber-100 rounded-2xl flex gap-4 items-start">
-                  <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                <div className="p-5 bg-amber-50/70 border border-aviso-suave rounded-2xl flex gap-4 items-start">
+                  <div className="w-10 h-10 bg-aviso-suave text-aviso rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                     <RefreshCw size={20} />
                   </div>
                   <div>
@@ -487,11 +487,11 @@ const MovimientosPage = () => {
                 </div>
 
                 <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex gap-4 items-start">
-                  <div className="w-10 h-10 bg-slate-200 text-slate-700 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 bg-slate-200 text-tinta-2 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                     <ShieldCheck size={20} />
                   </div>
                   <div>
-                    <h4 className="font-black text-slate-800 text-xs uppercase tracking-widest mb-1">4. ¿Por qué también aparecen las Ventas aquí?</h4>
+                    <h4 className="font-black text-tinta text-xs uppercase tracking-widest mb-1">4. ¿Por qué también aparecen las Ventas aquí?</h4>
                     <p className="text-xs text-slate-600 leading-relaxed">
                       El <em>Historial de Ventas</em> se enfoca en el dinero que pagó el cliente. Esta tabla se enfoca en la <strong>auditoría física</strong>: muestra qué cajero despachó el producto, permitiendo rastrear robos o descuadres entre vendedores.
                     </p>
@@ -503,7 +503,7 @@ const MovimientosPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowHelpModal(false)}
-                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-100 transition-colors"
+                  className="w-full py-4 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg transition-colors"
                 >
                   Entendido, volver a Movimientos
                 </button>
