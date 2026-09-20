@@ -37,7 +37,8 @@ Reglas de contraste ya calculadas (no negociables): azul sobre tinta = **1,52:1*
 | `34b3807` | 2 · A | Estructura y acceso: Sidebar, layout, Login, Registro, Recuperación, Forzar clave, RegistroTendero, App, `ToastContext`. |
 | `1447867` | 2 · B | Uso diario: Dashboard, Productos, POS, Alertas, notificaciones y modales. |
 | `7fef9a9` | 2 · C | Resto de pantallas + `src/theme/chartColors.js` (gráficas sin hex sueltos). |
-| (este plan) | decisión 7.1 | Botones `Cobrar` y `Confirmar y Facturar` en amarillo resaltador (opción A). |
+| `8ae43d7` | lint | 79 hallazgos de ESLint corregidos en frontend y backend (ver plan 10). |
+| `06164b4` | decisión 7.1 | Botones `Cobrar` y `Confirmar y Facturar` en amarillo resaltador (opción A). |
 
 ### 2.1 Migración a tokens (Fase 2)
 Se aplicó la tabla de equivalencias del plan con un script de reemplazo por *token de clase* (no por texto), respetando variantes (`hover:`, `focus:`, `group-hover:`…) y preservando finales de línea CRLF/LF. Después se revisó cada archivo a mano.
