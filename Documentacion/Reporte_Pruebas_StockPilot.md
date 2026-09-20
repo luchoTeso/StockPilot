@@ -1,13 +1,13 @@
 ---
 title: Certificado de Pruebas Unitarias y Aseguramiento de Calidad
 author: Sistema de Gestión de Inventario Inteligente (StockPilot)
-date: 24/4/2026
+date: 20/9/2026
 ---
 
 # 📄 Certificado Oficial de Calidad de Software y Pruebas Unitarias
 
 **Proyecto:** StockPilot — Sistema de Gestión de Inventario Inteligente
-**Fecha de Certificación:** 24/4/2026
+**Fecha de Certificación:** 20/9/2026
 **Framework de Validación:** Vitest v4 (Interoperabilidad ESM/CommonJS)
 **Motor de Cobertura:** V8 Coverage (Node.js)
 **Entorno de Ejecución:** Node.js (V8 Engine)
@@ -19,9 +19,9 @@ date: 24/4/2026
 El presente documento certifica la ejecución automatizada de la suite de pruebas unitarias sobre los módulos críticos (Lógica Financiera, Inteligencia Artificial, Fábricas Polimórficas y Seguridad) del sistema **StockPilot**. Las pruebas fueron diseñadas bajo el enfoque de validación de caja blanca y pruebas de límites, aplicando el patrón de diseño *Pure Function Extraction* para aislar la lógica de negocio de la capa de persistencia de datos e infraestructura (Express).
 
 ### 1.1. Métricas de Ejecución
-- **Total de Escenarios Evaluados:** `124`
+- **Total de Escenarios Evaluados:** `132`
 - **Tasa de Éxito (Pass Rate):** `100.00%`
-- **Escenarios Exitosos:** `124`
+- **Escenarios Exitosos:** `132`
 - **Escenarios Fallidos:** `0`
 
 ### 1.2. Veredicto del Sistema
@@ -72,21 +72,21 @@ Los demás componentes del proyecto interactúan directamente con la base de dat
 Los archivos de prueba han sido renombrados y reestructurados en el directorio `tests/business_logic/` para reflejar el dominio del negocio evaluado, abandonando deliberadamente la nomenclatura técnica de frameworks (evitando carpetas redundantes como `controllers` o `models` en el testing).
 
 ### 3.1 Dominio: Matemáticas de Inventario (`inventory_math.test.js`)
-**Evaluado:** `models/Alert.js` | **Estado:** ✅ Aprobado (19 tests)
+**Evaluado:** `models/Alert.js` | **Estado:** ✅ Aprobado (20 tests)
 - ✔️ Distribución de Pareto (Clasificación A, B, C basada en ingresos y velocidades).
 - ✔️ Modelado probabilístico de agotamiento de días.
 - ✔️ Reglas de Alerta de Stock Logístico y Ventanas de Reorden.
 - ✔️ Detección matemática de Sobrestock por retención de capital.
 
 ### 3.2 Dominio: Polimorfismo de Productos (`product_polymorphism.test.js`)
-**Evaluado:** `models/products/ProductFactory.js` (y subclases) | **Estado:** ✅ Aprobado (26 tests)
+**Evaluado:** `models/products/ProductFactory.js` (y subclases) | **Estado:** ✅ Aprobado (27 tests)
 - ✔️ Enrutamiento de instanciación del Factory Method.
 - ✔️ Herencia de validaciones de `ProductBase`.
 - ✔️ Reglas específicas para `PerishableProduct` (vencimientos futuros y fallos base).
 - ✔️ Reglas de inventario infinito y entrega inmediata para `DigitalProduct`.
 
 ### 3.3 Dominio: Métricas de Feedback IA (`ai_feedback_metrics.test.js`)
-**Evaluado:** `controllers/feedbackController.js` | **Estado:** ✅ Aprobado (19 tests)
+**Evaluado:** `controllers/feedbackController.js` | **Estado:** ✅ Aprobado (23 tests)
 - ✔️ Ajuste adaptativo del periodo objetivo (max(lead_time * 2, 14)).
 - ✔️ Ecuación de proyección de ventas sobre demanda inicial.
 - ✔️ Restricción matemática de Precisión (Clamping 0.2 - 3.0).
@@ -100,7 +100,7 @@ Los archivos de prueba han sido renombrados y reestructurados en el directorio `
 - ✔️ Promedios ponderados de Margen de Ganancia.
 
 ### 3.5 Dominio: Sanitización de Entrada (`input_sanitization.test.js`)
-**Evaluado:** `middleware/validation.js` | **Estado:** ✅ Aprobado (33 tests)
+**Evaluado:** `middleware/validation.js` | **Estado:** ✅ Aprobado (35 tests)
 - ✔️ Neutralización estricta de ataques Cross-Site Scripting (XSS).
 - ✔️ Escape algorítmico de etiquetas HTML y caracteres especiales.
 - ✔️ Validación semántica de entidades (Ventas, Productos, Usuarios, Autenticación).
