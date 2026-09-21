@@ -209,7 +209,8 @@ CREATE TABLE IF NOT EXISTS Ordenes_Compra (
     estado_pago VARCHAR(50) DEFAULT 'Pendiente',
     riesgo VARCHAR(50) DEFAULT 'Bajo',
     notas TEXT,
-    observaciones TEXT
+    observaciones TEXT,
+    origen VARCHAR(30) DEFAULT 'manual' -- 'manual' | 'consejero' | 'simulador'
 );
 
 -- 9. TABLA ORDENES DETALLE
@@ -220,7 +221,9 @@ CREATE TABLE IF NOT EXISTS Ordenes_Detalle (
     cantidad_sugerida INTEGER,
     cantidad_final INTEGER,
     costo_unitario NUMERIC(15, 2),
-    sugerencia_ia INTEGER
+    sugerencia_ia INTEGER,
+    urgencia VARCHAR(20),
+    costo_estimado BOOLEAN DEFAULT FALSE
 );
 
 -- 10. TABLA ALERTAS

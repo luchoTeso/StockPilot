@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const { safeError } = require('../utils/securityUtils');
 const { seleccionarCandidatosReabastecimiento, esRecomendacionAccionable } = require('../utils/recomendacionesDashboard');
+const { calcularReposicion, costoUnitario } = require('../utils/reposicion');
 
 // Inicializar cliente OpenAI con la clave del entorno o una clave falsa para evitar crasheos al arrancar sin la variable
 const openai = new OpenAI({
@@ -123,6 +124,10 @@ const aiController = {
             p.categoria, 
             p.stock_seguridad, 
             p.lead_time,
+            p.id_proveedor,
+            p.costo_compra,
+            prov.nombre_empresa as proveedor_nombre,
+            COALESCE(vr.qty_30d, 0) as qty_30d_total,
             COALESCE(vr.qty_7d, 0) / 7.0 as velocity_7d,
             COALESCE(vr.qty_30d, 0) / 30.0 as velocity_30d,
             COALESCE(vr.qty_60d, 0) / 60.0 as velocity_60d,
@@ -132,6 +137,7 @@ const aiController = {
           FROM Productos p
           LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
           LEFT JOIN PrecisionIA pia ON p.id_producto = pia.id_producto
+          LEFT JOIN Proveedores prov ON prov.id_proveedor = p.id_proveedor
           WHERE p.id_tienda = ? AND p.estado = 'Disponible'
         ),
         AccumData AS (
@@ -167,7 +173,7 @@ const aiController = {
         return res.json({ cached: true, recommendations: tiendaCache.recommendations });
       }
       // 2. BD (sobrevive reinicios de Railway — evita llamada a OpenAI si los datos no cambiaron)
-      const dbCached = await dbCacheGet(`RECS_V2_${tiendaId}`, currentHash);
+      const dbCached = await dbCacheGet(`RECS_V3_${tiendaId}`, currentHash);
       if (dbCached) {
         aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: dbCached, timestamp: new Date() };
         return res.json({ cached: true, recommendations: dbCached });
@@ -177,36 +183,37 @@ const aiController = {
 
       // 3. Procesamiento Analítico (Tendencia y Variabilidad) mapeado directo
       const contextItemsFull = rows.map(item => {
-        // 1. ROP: Punto en el que se disparan las alarmas (¿Cuándo pedir?)
-        const rop = (item.velocity_30d * item.lead_time) + item.stock_seguridad;
-        
-        // 2. Días de Cobertura Deseada (Ciclo de resurtido). 
-        // Para una Pyme suele ser de 15 a 30 días, dependiendo si el producto es A, B o C.
-        const dias_cobertura = item.category === 'A' ? 15 : (item.category === 'B' ? 30 : 45);
-
-        // 3. Stock Objetivo: Lo que necesito para sobrevivir esos días + mi stock de seguridad
-        // Se le puede aplicar la tendencia para predecir si venderemos más o menos
-        const tendencia_multiplicador = item.trend > 0 ? item.trend : 1; 
-        const stock_objetivo = (item.velocity_30d * tendencia_multiplicador * dias_cobertura) + item.stock_seguridad;
-
-        // 4. Cantidad base a pedir (EOQ simplificado / Min-Max):
-        // ¿Cuánto me falta para llegar a mi stock objetivo?
-        let cantidad_a_pedir = stock_objetivo - item.stock_actual;
-        if (cantidad_a_pedir < 0) cantidad_a_pedir = 0;
+        // Motor único de reposición (utils/reposicion.js): misma fórmula que Proveedores.
+        const rep = calcularReposicion({
+          ventasDia7: item.velocity_7d,
+          ventasDia30: item.velocity_30d,
+          ventas30Total: item.qty_30d_total,
+          claseABC: item.category,
+          stock: item.stock_actual,
+          stockSeguridad: item.stock_seguridad,
+          leadTime: item.lead_time,
+        });
+        const costo = costoUnitario({ costoCompra: item.costo_compra, precio: item.precio });
 
         return {
           id: item.id,
           nombre: item.nombre,
           stock: item.stock_actual,
-          base_load: Math.ceil(cantidad_a_pedir),
+          base_load: rep.cantidadBase,
           abc: item.category,
-          trend_val: item.trend,
-          trend_label: item.trend > 1.2 ? 'alcista' : (item.trend < 0.8 ? 'bajista' : 'estable'),
+          trend_val: rep.tendencia,
+          trend_label: rep.tendencia > 1.2 ? 'alcista' : (rep.tendencia < 0.8 ? 'bajista' : 'estable'),
+          urgencia: rep.urgencia,
+          dias_para_agotar: rep.diasParaAgotar,
+          id_proveedor: item.id_proveedor,
+          proveedor: item.proveedor_nombre,
+          costo_unitario: costo.costo,
+          costo_estimado: costo.estimado,
           velocity_long: { 
               d60: parseFloat(Number(item.velocity_60d || 0).toFixed(2)), 
               d90: parseFloat(Number(item.velocity_90d || 0).toFixed(2)) 
           },
-          risk: item.stock_actual <= item.stock_seguridad ? 'CRÍTICO' : (item.stock_actual <= rop ? 'MEDIO' : 'BAJO'),
+          risk: rep.riesgo,
           avg_precision: item.avg_precision // Pasamos la precisión promedio para usarla luego
         };
       });
@@ -218,7 +225,7 @@ const aiController = {
       // Sin productos por reponer no hay nada que sugerir: se responde vacío y se evita una llamada a OpenAI.
       if (contextItemsForAI.length === 0) {
         aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: [], timestamp: new Date() };
-        dbCacheSet(`RECS_V2_${tiendaId}`, currentHash, []);
+        dbCacheSet(`RECS_V3_${tiendaId}`, currentHash, []);
         return res.json({ cached: false, recommendations: [] });
       }
 
@@ -266,6 +273,13 @@ const aiController = {
         const finalTotal = Math.ceil(original.base_load * (1 + clampedAdj/100));
         
         const result = {
+          id_producto: original.id,
+          id_proveedor: original.id_proveedor ?? null,
+          proveedor: original.proveedor ?? null,
+          costo_unitario: original.costo_unitario,
+          costo_estimado: original.costo_estimado,
+          urgencia: original.urgencia,
+          dias_para_agotar: original.dias_para_agotar,
           product: original.nombre,
           base: original.base_load,
           adjustment: clampedAdj > 0 ? `+${clampedAdj}%` : `${clampedAdj}%`,
@@ -301,7 +315,7 @@ const aiController = {
 
       // 6. Guardar en memoria y en BD (persiste entre reinicios)
       aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: finalRecommendations, timestamp: new Date() };
-      dbCacheSet(`RECS_V2_${tiendaId}`, currentHash, finalRecommendations);
+      dbCacheSet(`RECS_V3_${tiendaId}`, currentHash, finalRecommendations);
 
       res.json({ cached: false, recommendations: finalRecommendations });
 

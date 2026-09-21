@@ -25,6 +25,14 @@ const ConfirmDialog = ({
   };
 
   const colors = {
+    azul: {
+      bg: 'bg-azul/10',
+      text: 'text-azul',
+      shadow: '',
+      border: 'border-azul/20',
+      btn: 'bg-azul hover:bg-azul-hondo',
+      highlightBg: 'bg-azul/10 text-azul border-azul/20'
+    },
     rose: {
       bg: 'bg-peligro-suave',
       text: 'text-peligro',

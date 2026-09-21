@@ -1,3 +1,4 @@
+const { calcularReposicion, costoUnitario } = require('../utils/reposicion');
 const db = require('../config/database');
 const { OpenAI } = require('openai');
 const transporter = require('../config/mailer');
@@ -89,7 +90,11 @@ const suppliersController = {
       const query = `
         WITH BaseData AS (
           SELECT 
-            p.id_producto, p.nombre_producto, p.cantidad as stock_actual, p.precio, p.stock_seguridad, p.lead_time,
+            p.id_producto, p.nombre_producto, p.cantidad as stock_actual, p.precio, p.costo_compra, p.stock_seguridad, p.lead_time,
+            COALESCE(
+              (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
+               WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days'
+              ), 0) / 7.0 as velocity_7d,
             COALESCE(
               (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
                WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
@@ -129,13 +134,16 @@ const suppliersController = {
       const rows = await db.allAsync(query, [tiendaId, proveedorId]);
       
       const smartList = rows.map(item => {
-        let risk = 'low';
-        if (item.stock_actual <= item.stock_seguridad) risk = 'critical';
-        else if (item.stock_actual <= item.rop) risk = 'medium';
-        // Crítico/medio: cubrir hasta ROP. Stock suficiente: sugerir 1 semana de ventas (mínimo 1).
-        const qtyCritica = risk !== 'low' ? Math.max(0, item.rop - item.stock_actual) : 0;
-        // Fase 5: Aplicar factor_ia también a sugerencias preventivas (productos saludables)
-        const qtySugerida = qtyCritica > 0 ? qtyCritica : Math.max(1, Math.ceil(item.velocity_30d * 7 * item.factor_ia));
+        // Motor único de reposición (utils/reposicion.js): misma cantidad que el Consejero del Dashboard.
+        const rep = calcularReposicion({
+          ventasDia7: item.velocity_7d, ventasDia30: item.velocity_30d,
+          claseABC: item.clasificacion_abc, stock: item.stock_actual, stockSeguridad: item.stock_seguridad,
+          leadTime: item.lead_time, factorIA: item.factor_ia,
+        });
+        const risk = rep.riesgo === 'CRÍTICO' ? 'critical' : (rep.riesgo === 'MEDIO' ? 'medium' : 'low');
+        // Producto sano: se sugiere una semana de ventas (mínimo 1), como antes.
+        const qtySugerida = rep.cantidadBase > 0 ? rep.cantidadBase : Math.max(1, Math.ceil(item.velocity_30d * 7 * item.factor_ia));
+        const costo = costoUnitario({ costoCompra: item.costo_compra, precio: item.precio });
         return {
           id_producto: item.id_producto,
           nombre: item.nombre_producto,
@@ -145,7 +153,11 @@ const suppliersController = {
           dias_inventario: item.days_to_exhaust === 999999 ? Infinity : item.days_to_exhaust,
           factor_aprendizaje_ia: Number(item.factor_ia).toFixed(2),
           cantidad_sugerida: qtySugerida,
-          presupuesto_estimado: qtySugerida * item.precio
+          urgencia: rep.urgencia,
+          costo_unitario: costo.costo,
+          costo_estimado: costo.estimado,
+          // Se valora con el costo de compra (antes: precio de venta, que inflaba el total con el margen)
+          presupuesto_estimado: qtySugerida * costo.costo
         };
       });
       res.json({ success: true, proveedor_id: proveedorId, recomendaciones_matematicas: smartList, total_presupuesto_base: smartList.reduce((acc, curr) => acc + curr.presupuesto_estimado, 0) });
@@ -280,7 +292,7 @@ const suppliersController = {
   getOrderDetail: async (req, res) => {
     try {
       const { ordenId } = req.params;
-      const rows = await db.allAsync("SELECT d.*, p.nombre_producto FROM Ordenes_Detalle d JOIN Productos p ON d.id_producto = p.id_producto WHERE d.id_orden = ?", [ordenId]);
+      const rows = await db.allAsync("SELECT d.*, p.nombre_producto FROM Ordenes_Detalle d JOIN Productos p ON d.id_producto = p.id_producto JOIN Ordenes_Compra o ON o.id_orden = d.id_orden WHERE d.id_orden = ? AND o.id_tienda = ?", [ordenId, req.session.tiendaId]);
       res.json({ success: true, data: rows.map(r => ({ ...r, cantidad_final: Number(r.cantidad_final), costo_unitario: Number(r.costo_unitario) })) });
     } catch (e) {
       res.status(500).json({ success: false, error: e.message });

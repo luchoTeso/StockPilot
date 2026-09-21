@@ -268,6 +268,42 @@ const db = {
                 CREATE INDEX IF NOT EXISTS idx_abonos_sesion ON Abonos(id_sesion_caja);
             `);
 
+            // 5.2 Órdenes de compra desde el Consejero IA (plan 13): origen de la orden y datos de cada línea.
+            // Se crean las tablas por si faltan (mismo motivo que Clientes/Abonos) y se agregan las columnas nuevas.
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS Ordenes_Compra (
+                    id_orden SERIAL PRIMARY KEY,
+                    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+                    id_proveedor INTEGER NOT NULL REFERENCES Proveedores(id_proveedor) ON DELETE CASCADE,
+                    id_usuario INTEGER NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+                    fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    fecha_aprobacion TIMESTAMP WITH TIME ZONE,
+                    estado VARCHAR(50) DEFAULT 'Borrador',
+                    total_estimado NUMERIC(15, 2) DEFAULT 0,
+                    presupuesto_total NUMERIC(15, 2) DEFAULT 0,
+                    monto_pagado NUMERIC(15, 2) DEFAULT 0,
+                    estado_pago VARCHAR(50) DEFAULT 'Pendiente',
+                    riesgo VARCHAR(50) DEFAULT 'Bajo',
+                    notas TEXT,
+                    observaciones TEXT
+                );
+                CREATE TABLE IF NOT EXISTS Ordenes_Detalle (
+                    id_detalle SERIAL PRIMARY KEY,
+                    id_orden INTEGER NOT NULL REFERENCES Ordenes_Compra(id_orden) ON DELETE CASCADE,
+                    id_producto INTEGER NOT NULL REFERENCES Productos(id_producto) ON DELETE CASCADE,
+                    cantidad_sugerida INTEGER,
+                    cantidad_final INTEGER,
+                    costo_unitario NUMERIC(15, 2),
+                    sugerencia_ia INTEGER
+                );
+                ALTER TABLE Ordenes_Compra ADD COLUMN IF NOT EXISTS origen VARCHAR(30) DEFAULT 'manual';
+                ALTER TABLE Ordenes_Detalle ADD COLUMN IF NOT EXISTS urgencia VARCHAR(20);
+                ALTER TABLE Ordenes_Detalle ADD COLUMN IF NOT EXISTS costo_estimado BOOLEAN DEFAULT FALSE;
+                CREATE INDEX IF NOT EXISTS idx_ordenes_tienda ON Ordenes_Compra(id_tienda);
+                CREATE INDEX IF NOT EXISTS idx_ordenes_detalle_orden ON Ordenes_Detalle(id_orden);
+                CREATE INDEX IF NOT EXISTS idx_ordenes_borrador ON Ordenes_Compra(id_tienda, id_proveedor) WHERE estado = 'Borrador';
+            `);
+
             // 6. Asegurar tabla EgresosCaja (Fase 3 - Flujo de Caja Menor)
             await pool.query(`
                 CREATE TABLE IF NOT EXISTS EgresosCaja (
