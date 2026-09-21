@@ -30,7 +30,7 @@ const ScrollToTopButton = () => {
       title="Volver al inicio"
       type="button"
       className={`
-        fixed bottom-8 right-8 z-[200]
+        fixed bottom-8 right-8 z-30
         w-14 h-14 aspect-square
         flex items-center justify-center
         bg-azul hover:bg-azul-hondo text-white 

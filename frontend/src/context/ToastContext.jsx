@@ -45,7 +45,7 @@ export const ToastProvider = ({ children }) => {
     }, 300);
   }, []);
 
-  const addToast = useCallback((message, type = 'success', duration = 4000) => {
+  const addToast = useCallback((message, type = 'success', duration = 3000) => {
     const id = ++toastId;
     setToasts(prev => [...prev, { id, message, type, exiting: false }]);
     timersRef.current[id] = setTimeout(() => removeToast(id), duration);
@@ -54,8 +54,8 @@ export const ToastProvider = ({ children }) => {
 
   const toast = useMemo(() => ({
     success: (msg) => addToast(msg, 'success'),
-    error: (msg) => addToast(msg, 'error', 6000),
-    warning: (msg) => addToast(msg, 'warning', 5000),
+    error: (msg) => addToast(msg, 'error'),
+    warning: (msg) => addToast(msg, 'warning'),
     info: (msg) => addToast(msg, 'info'),
   }), [addToast]);
 

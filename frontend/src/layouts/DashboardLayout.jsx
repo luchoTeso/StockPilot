@@ -96,7 +96,7 @@ const DashboardLayout = () => {
     <div className="flex w-full min-h-screen bg-papel overflow-x-hidden relative">
       
       {/* 📱 Mobile Top Bar (Only < 768px) */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-[150] flex items-center justify-between px-6 shadow-sm">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-40 flex items-center justify-between px-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-azul text-white rounded-lg flex items-center justify-center shadow-md">
             <Store size={16} />

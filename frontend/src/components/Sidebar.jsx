@@ -85,7 +85,7 @@ const Sidebar = () => {
 
       {/* Sidebar Principal */}
       <div data-surface="dark" className={`
-        fixed left-0 top-0 h-screen z-[200]
+        fixed left-0 top-0 h-screen z-40 max-md:z-[200]
         bg-tinta text-white py-6 flex flex-col justify-between
         shadow-lg transition-[width,transform] duration-300 ease-in-out
         ${sidebarWidth}
