@@ -236,7 +236,7 @@ const Sidebar = () => {
 
         {/* Footer */}
         <div className="p-4 shrink-0 mt-2 border-t border-white/10">
-          <p className="text-xs text-slate-300/60 text-center font-bold">
+          <p className="text-xs text-slate-400 text-center font-bold">
             {isCollapsed ? 'v3.0' : 'StockPilot Project v3.0'}
           </p>
         </div>

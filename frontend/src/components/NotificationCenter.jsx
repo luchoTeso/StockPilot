@@ -7,14 +7,14 @@ import { Bell, Package, Calendar, ShieldCheck, Zap, DollarSign, CheckCircle, XCi
 const getSeverityStyles = (severity) => {
     switch (severity) {
         case 'critico': return 'bg-peligro-suave text-peligro border-rose-200';
-        case 'advertencia': return 'bg-aviso-suave text-amber-600 border-amber-200';
+        case 'advertencia': return 'bg-aviso-suave text-aviso border-amber-200';
         default: return 'bg-azul/10 text-azul border-azul/30';
     }
 };
 
 const getNotifStyles = (tipo, datos_json = {}) => {
     if (datos_json?.prioridad === 'urgente') {
-        return 'bg-aviso-suave text-amber-600 border-ambar animate-pulse';
+        return 'bg-aviso-suave text-aviso border-ambar animate-pulse';
     }
     switch (tipo) {
         case 'egreso_aprobado': return 'bg-exito-suave text-exito border-emerald-200';
@@ -22,7 +22,7 @@ const getNotifStyles = (tipo, datos_json = {}) => {
         case 'anuncio_admin': return 'bg-azul/10 text-azul border-azul/30';
         case 'orden_enviada': return 'bg-azul/10 text-azul border-azul/30';
         case 'cambio_precio': return 'bg-azul/10 text-azul border-azul/30';
-        case 'meta_ventas': return 'bg-aviso-suave text-amber-600 border-amber-200';
+        case 'meta_ventas': return 'bg-aviso-suave text-aviso border-amber-200';
         case 'discrepancia_caja': return 'bg-peligro-suave text-peligro border-rose-200';
         default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
@@ -252,7 +252,7 @@ const NotificationCenter = () => {
                         {loading && alerts.length === 0 && userNotifs.length === 0 ? (
                             <div className="p-12 text-center">
                                 <div className="w-10 h-10 border-4 border-azul border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                                <p className="text-xs font-bold text-slate-400">Sincronizando IA...</p>
+                                <p className="text-xs font-bold text-slate-500">Sincronizando IA...</p>
                             </div>
                         ) : (alerts.length > 0 || userNotifs.length > 0) ? (
                             <div className="divide-y divide-slate-50">
@@ -260,7 +260,7 @@ const NotificationCenter = () => {
                                 {userNotifs.length > 0 && (
                                     <>
                                         <div className="px-5 pt-3 pb-1 flex items-center justify-between">
-                                            <span className="text-xs font-bold text-slate-400">🔔 Mensajes para ti</span>
+                                            <span className="text-xs font-bold text-slate-500">🔔 Mensajes para ti</span>
                                             {userNotifCount > 1 && (
                                                 <button
                                                     onClick={handleMarkAllRead}
@@ -286,7 +286,7 @@ const NotificationCenter = () => {
                                                             <p className="text-[12px] font-bold text-tinta leading-tight group-hover:text-azul transition-colors">
                                                                 {notif.titulo}
                                                             </p>
-                                                            <span className="text-xs font-bold text-slate-300 whitespace-nowrap ml-2">
+                                                            <span className="text-xs font-bold text-slate-500 whitespace-nowrap ml-2">
                                                                 {new Date(notif.fecha_creacion).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
                                                         </div>
@@ -311,7 +311,7 @@ const NotificationCenter = () => {
                                     <>
                                         {userNotifs.length > 0 && (
                                             <div className="px-5 pt-3 pb-1">
-                                                <span className="text-xs font-bold text-slate-400">📦 Alertas de Inventario</span>
+                                                <span className="text-xs font-bold text-slate-500">📦 Alertas de Inventario</span>
                                             </div>
                                         )}
                                         {alerts.map((alert) => {
@@ -346,7 +346,7 @@ const NotificationCenter = () => {
                                                             </p>
                                                             <div className="flex items-center gap-1.5 mt-2">
                                                                 <span className="w-1 h-1 rounded-full bg-azul"></span>
-                                                                <p className="text-xs font-bold text-slate-400">
+                                                                <p className="text-xs font-bold text-slate-500">
                                                                     Resolución Sugerida: <span className="text-azul">{isStockAlert ? 'Reabastecer' : 'Promocionar'}</span>
                                                                 </p>
                                                             </div>
@@ -362,7 +362,7 @@ const NotificationCenter = () => {
                             <div className="p-16 text-center">
                                 <div className="text-5xl mb-4 grayscale opacity-50">🛡️</div>
                                 <p className="text-xs font-bold text-tinta">Stock Blindado</p>
-                                <p className="text-xs font-bold text-slate-400 mt-2">IA en vigilancia constante</p>
+                                <p className="text-xs font-bold text-slate-500 mt-2">IA en vigilancia constante</p>
                             </div>
                         )}
                     </div>

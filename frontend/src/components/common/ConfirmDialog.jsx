@@ -35,7 +35,7 @@ const ConfirmDialog = ({
     },
     amber: {
       bg: 'bg-aviso-suave',
-      text: 'text-amber-500',
+      text: 'text-aviso',
       shadow: '',
       border: 'border-aviso-suave',
       btn: 'bg-ambar hover:bg-amber-600',
@@ -43,7 +43,7 @@ const ConfirmDialog = ({
     },
     emerald: {
       bg: 'bg-exito-suave',
-      text: 'text-emerald-500',
+      text: 'text-exito',
       shadow: '',
       border: 'border-exito-suave',
       btn: 'bg-emerald-500 hover:bg-exito',

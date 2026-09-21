@@ -166,14 +166,14 @@ const ProfilePage = () => {
     if (file) handleFile(file);
   };
 
-  if (loading) return <div className="p-20 text-center font-bold animate-pulse text-slate-300">CARGANDO PERFIL...</div>;
+  if (loading) return <div className="p-20 text-center font-bold animate-pulse text-slate-500">CARGANDO PERFIL...</div>;
 
   return (
     <div className="animate-fade-in p-4 md:p-8 max-w-5xl mx-auto pb-20">
       <header className="mb-10 flex justify-between items-end border-b border-slate-100 pb-6">
         <div>
           <h1 className="titular text-4xl text-tinta">Mi Perfil</h1>
-          <p className="text-slate-400 font-bold text-xs mt-1">Administración de Cuenta y Seguridad</p>
+          <p className="text-slate-500 font-bold text-xs mt-1">Administración de Cuenta y Seguridad</p>
         </div>
         {!isEditing ? (
           <button
@@ -185,7 +185,7 @@ const ProfilePage = () => {
         ) : (
           <div className="flex gap-2">
             <button onClick={() => setIsEditing(false)} className="px-6 py-3 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold">Cancelar</button>
-            <button onClick={handleSaveProfile} className="px-6 py-3 bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-lg">Guardar Cambios</button>
+            <button onClick={handleSaveProfile} className="px-6 py-3 bg-exito text-white rounded-lg text-xs font-bold shadow-lg">Guardar Cambios</button>
           </div>
         )}
       </header>
@@ -215,9 +215,9 @@ const ProfilePage = () => {
 
             <h2 className="titular text-2xl text-tinta">{profileData.nombres}</h2>
             <p className="text-azul text-sm font-bold">@{profileData.usuario}</p>
-            <p className="text-xs font-bold text-slate-400 mt-4">ID de Colaborador: #{profileData.id_usuario || '...'}</p>
+            <p className="text-xs font-bold text-slate-500 mt-4">ID de Colaborador: #{profileData.id_usuario || '...'}</p>
 
-            <div className="mt-8 flex justify-center gap-2">
+            <div className="mt-8 flex flex-wrap justify-center gap-2">
               <span className="px-3 py-1 bg-tinta text-white text-xs font-bold rounded-full">{profileData.rol}</span>
               <span className="px-3 py-1 bg-azul/10 text-azul text-xs font-bold rounded-full uppercase tracking-wide border border-azul/30">Activo</span>
             </div>
@@ -231,10 +231,10 @@ const ProfilePage = () => {
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm transition-transform"><Lock size={20} /></div>
               <div className="text-left">
                 <p className="text-xs font-bold text-tinta">Contraseña</p>
-                <p className="text-xs text-slate-400 font-bold">Actualizar Clave</p>
+                <p className="text-xs text-slate-500 font-bold">Actualizar Clave</p>
               </div>
             </div>
-            <span className="text-slate-300">→</span>
+            <span className="text-slate-500">→</span>
           </button>
 
           {/* Botón 2FA */}
@@ -247,7 +247,7 @@ const ProfilePage = () => {
                 <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm transition-transform"><ShieldAlert size={20} className="text-rose-500" /></div>
                 <div className="text-left">
                   <p className="text-xs font-bold text-rose-800">Seguridad 2FA</p>
-                  <p className="text-xs text-rose-500 font-bold">No configurado - ¡Habilitar!</p>
+                  <p className="text-xs text-peligro font-bold">No configurado - ¡Habilitar!</p>
                 </div>
               </div>
               <span className="text-rose-300">→</span>
@@ -271,11 +271,11 @@ const ProfilePage = () => {
 
         {/* Lado Derecho: Formulario Detallado */}
         <div className="lg:col-span-2 bg-white p-10 rounded-2xl shadow-lg border border-slate-50">
-          <h3 className="font-bold text-xs text-slate-400 mb-10 border-b border-slate-50 pb-5">Datos Personales y de Contacto</h3>
+          <h3 className="font-bold text-xs text-slate-500 mb-10 border-b border-slate-50 pb-5">Datos Personales y de Contacto</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label htmlFor="edit-nombres" className="text-xs font-bold text-slate-300 block ml-1">Nombres Completos</label>
+              <label htmlFor="edit-nombres" className="text-xs font-bold text-slate-500 block ml-1">Nombres Completos</label>
               {isEditing ? (
                 <input
                   id="edit-nombres"
@@ -290,12 +290,12 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-300 block ml-1">Nombre de Usuario</span>
-              <p className="text-base font-bold text-tinta-2 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60">@{profileData.usuario}</p>
+              <span className="text-xs font-bold text-slate-500 block ml-1">Nombre de Usuario</span>
+              <p className="text-base font-bold text-slate-600 tracking-tight bg-slate-50 p-4 rounded-2xl">@{profileData.usuario}</p>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="edit-correo" className="text-xs font-bold text-slate-300 block ml-1">Correo Corporativo</label>
+              <label htmlFor="edit-correo" className="text-xs font-bold text-slate-500 block ml-1">Correo Corporativo</label>
               {isEditing ? (
                 <input
                   id="edit-correo"
@@ -310,7 +310,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="edit-celular" className="text-xs font-bold text-slate-300 block ml-1">Número Celular</label>
+              <label htmlFor="edit-celular" className="text-xs font-bold text-slate-500 block ml-1">Número Celular</label>
               {isEditing ? (
                 <input
                   id="edit-celular"
@@ -325,7 +325,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2 relative z-10">
-              <span className="text-xs font-bold text-slate-300 block ml-1">Género</span>
+              <span className="text-xs font-bold text-slate-500 block ml-1">Género</span>
               {isEditing ? (
                 <div className="h-14">
                   <CustomSelect
@@ -347,19 +347,19 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-300 block ml-1">Nivel de Acceso</span>
-              <p className="text-base font-bold text-tinta-2 tracking-tight bg-slate-50 p-4 rounded-2xl opacity-60">{profileData.rol}</p>
+              <span className="text-xs font-bold text-slate-500 block ml-1">Nivel de Acceso</span>
+              <p className="text-base font-bold text-slate-600 tracking-tight bg-slate-50 p-4 rounded-2xl">{profileData.rol}</p>
             </div>
           </div>
 
-          <div className="mt-12 p-8 bg-tinta rounded-2xl text-white flex items-center justify-between shadow-lg">
+          <div className="mt-12 p-8 bg-tinta rounded-2xl text-white flex flex-wrap items-center justify-between gap-4 shadow-lg">
             <div>
               <p className="text-xs font-bold">Estado del Sistema</p>
               <p className="text-xs text-resaltador font-bold mt-1 flex items-center gap-1">✨ Asistente Inteligente: Conectado</p>
             </div>
             <div className="text-right">
               <p className="text-xl font-bold text-white">Acceso {profileData.rol === 'Administrador' ? 'Total' : 'Autorizado'}</p>
-              <p className="text-xs opacity-40 mt-1">Credencial Segura: {profileData.usuario?.slice(0, 4).toUpperCase()}-SP</p>
+              <p className="text-xs text-white/70 mt-1">Credencial Segura: {profileData.usuario?.slice(0, 4).toUpperCase()}-SP</p>
             </div>
           </div>
         </div>
@@ -476,7 +476,7 @@ const ProfilePage = () => {
       {showDisableConfirm && (
         <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <form onSubmit={confirmDisable2FA} className="bg-white w-full max-w-sm p-8 rounded-2xl shadow-lg animate-scale-in text-center">
-            <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-rose-50 text-peligro rounded-full flex items-center justify-center mx-auto mb-4">
               <ShieldAlert size={32} />
             </div>
             <h2 className="titular text-xl text-tinta mb-2">¿Desactivar Seguridad?</h2>

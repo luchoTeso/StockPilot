@@ -148,46 +148,46 @@ const DashboardPage = () => {
   };
 
   const getConfidenceColor = (score) => {
-    if (score >= 90) return 'text-emerald-500';
-    if (score >= 70) return 'text-amber-500';
-    return 'text-rose-500';
+    if (score >= 90) return 'text-exito';
+    if (score >= 70) return 'text-aviso';
+    return 'text-peligro';
   };
 
   return (
     <div className="animate-fade-in space-y-6 pb-20">
       <header className="mb-10">
         <h1 className="titular text-2xl sm:text-3xl md:text-4xl text-tinta">Vista General</h1>
-        <p className="text-slate-400 font-bold text-xs mt-1 decoration-azul underline underline-offset-8">Resumen Actual de tu Negocio</p>
+        <p className="text-slate-500 font-bold text-xs mt-1 decoration-azul underline underline-offset-8">Resumen Actual de tu Negocio</p>
       </header>
 
       {/* Métricas Principales */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Productos */}
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
-          <p className="text-xs font-bold text-slate-400 truncate" title="Productos">Productos</p>
+          <p className="text-xs font-bold text-slate-500 truncate" title="Productos">Productos</p>
           <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
-            <p className="text-2xl lg:text-xl xl:text-3xl font-bold text-tinta break-all">{stats.totalArticulos || 0}</p>
-            <span className="text-xs text-emerald-500 font-bold shrink-0">Catálogo</span>
+            <p className="text-2xl lg:text-xl xl:text-3xl font-bold text-tinta whitespace-nowrap">{stats.totalArticulos || 0}</p>
+            <span className="text-xs text-exito font-bold shrink-0">Catálogo</span>
           </div>
         </div>
 
         {/* Inversión */}
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
-          <p className="text-xs font-bold text-slate-400 truncate" title="Valor Inventario">Valor Inventario</p>
+          <p className="text-xs font-bold text-slate-500 truncate" title="Valor Inventario">Valor Inventario</p>
           <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
-            <p className="text-2xl lg:text-xl xl:text-2xl font-bold text-azul break-all" title={`$${Number(stats.valorInventario || 0).toLocaleString('es-CO')}`}>
+            <p className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-azul whitespace-nowrap" title={`$${Number(stats.valorInventario || 0).toLocaleString('es-CO')}`}>
               ${Number(stats.valorInventario || 0).toLocaleString('es-CO')}
             </p>
-            <span className="text-xs text-slate-400 font-bold shrink-0">Valor Total</span>
+            <span className="text-xs text-slate-500 font-bold shrink-0">Valor Total</span>
           </div>
         </div>
 
         {/* Alertas */}
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 flex flex-col justify-between min-w-0 overflow-hidden">
-          <p className="text-xs font-bold text-slate-400 truncate" title="Alertas">Alertas</p>
+          <p className="text-xs font-bold text-slate-500 truncate" title="Alertas">Alertas</p>
           <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
-            <p className={`text-2xl lg:text-xl xl:text-3xl font-bold break-all ${stats.alertasCriticas > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{stats.alertasCriticas || stats.alertasStock || 0}</p>
-            <span className={`text-xs font-bold shrink-0 ${stats.alertasCriticas > 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-500'}`}>
+            <p className={`text-2xl lg:text-xl xl:text-3xl font-bold whitespace-nowrap ${stats.alertasCriticas > 0 ? 'text-peligro' : 'text-exito'}`}>{stats.alertasCriticas || stats.alertasStock || 0}</p>
+            <span className={`text-xs font-bold shrink-0 ${stats.alertasCriticas > 0 ? 'text-peligro animate-pulse' : 'text-exito'}`}>
               {stats.alertasCriticas > 0 ? 'URGENTE' : 'OK'}
             </span>
           </div>
@@ -195,22 +195,22 @@ const DashboardPage = () => {
 
         {/* Ventas Hoy */}
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 flex flex-col justify-between min-w-0">
-          <p className="text-xs font-bold text-slate-400 truncate">Ventas de Hoy</p>
+          <p className="text-xs font-bold text-slate-500 truncate">Ventas de Hoy</p>
           <div className="flex flex-wrap items-baseline justify-between mt-2 gap-x-2 gap-y-1">
-            <p className="text-2xl lg:text-xl xl:text-2xl font-bold text-exito break-all" title={`$${Number(stats.ventasHoy || 0).toLocaleString('es-CO')}`}>
+            <p className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-exito whitespace-nowrap" title={`$${Number(stats.ventasHoy || 0).toLocaleString('es-CO')}`}>
               ${Number(stats.ventasHoy || 0).toLocaleString('es-CO')}
             </p>
             <div className="text-right shrink-0">
-              <span className="block text-xs text-slate-400 font-bold">Total Mes</span>
+              <span className="block text-xs text-slate-500 font-bold">Total Mes</span>
               <span className="text-xs text-slate-500 font-bold">${Number(stats.ventasMes || 0).toLocaleString('es-CO')}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
         {/* Asistente Estratégico IA */}
-        <section className="lg:col-span-2 bg-white rounded-2xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-tinta shadow-lg relative overflow-hidden border border-slate-100">
+        <section className="xl:col-span-2 bg-white rounded-2xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-tinta shadow-lg relative overflow-hidden border border-slate-100">
           <div className="absolute top-0 right-0 p-6 opacity-5 text-azul"><Bot size={96} /></div>
           <div className="relative z-10 h-full flex flex-col">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6 md:mb-8">
@@ -230,12 +230,12 @@ const DashboardPage = () => {
 
             <div className="flex-grow max-h-[340px] overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div className="h-24 bg-slate-100 rounded-2xl animate-pulse"></div>
                   <div className="h-24 bg-slate-100 rounded-2xl animate-pulse"></div>
                 </div>
               ) : recommendations.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {recommendations.slice(0, 10).map((rec) => (
                     <div key={rec.id || rec.product} className="bg-slate-50/70 border-4 border-azul p-5 rounded-2xl hover:border-azul-hondo hover:bg-azul/10 hover:shadow-md transition-all duration-200 group flex flex-col">
                       <div className="flex justify-between items-start mb-3 gap-2">
@@ -262,7 +262,7 @@ const DashboardPage = () => {
                 </div>
               ) : (
                 <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                  <p className="text-slate-400 text-sm font-bold">Sistemas Estables</p>
+                  <p className="text-slate-500 text-sm font-bold">Sistemas Estables</p>
                 </div>
               )}
             </div>
@@ -286,7 +286,7 @@ const DashboardPage = () => {
                   <h3 className="font-bold text-base text-tinta">
                     {stats.alertasCriticas > 0 ? `${stats.alertasCriticas} Productos Agotados` : (stats.alertasAdvertencia > 0 ? `${stats.alertasAdvertencia} Próximos a Agotarse` : 'Inventario Óptimo')}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">
+                  <p className="text-xs text-slate-500 mt-1 font-medium">
                     {stats.alertasCriticas > 0 ? 'Requieren reabastecimiento urgente' : (stats.alertasAdvertencia > 0 ? 'Cerca del stock mínimo' : 'Niveles de stock saludables')}
                   </p>
                 </div>
@@ -301,20 +301,20 @@ const DashboardPage = () => {
               >
                 <div className="absolute -top-1 -right-1 p-4 opacity-5 transition-transform text-azul"><BarChart2 size={40} /></div>
                 <h4 className="titular text-xl mb-4 text-tinta">Centro<br /><span className="text-azul">Analítico</span></h4>
-                <span className="text-xs font-bold uppercase tracking-wide bg-azul/10 text-azul px-3 py-1 rounded-full border border-azul/30">Ver Detalles →</span>
+                <span className="text-xs font-bold uppercase tracking-wide bg-azul/10 text-azul px-3 py-1 rounded-full border border-azul/30 whitespace-nowrap">Ver Detalles →</span>
               </button>
             )}
 
             {/* Margen Promedio (Movido a Sidebar & Convertido a Blanco) */}
             <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 flex flex-col justify-between min-w-0 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-5 transition-transform text-tinta"><DollarSign size={40} /></div>
-              <p className="text-xs font-bold text-slate-400 truncate relative z-10">Margen de Ganancia</p>
-              <div className="flex items-end justify-between mt-2 gap-2 relative z-10">
+              <p className="text-xs font-bold text-slate-500 truncate relative z-10">Margen de Ganancia</p>
+              <div className="flex flex-wrap items-end justify-between mt-2 gap-2 relative z-10">
                 <p className="text-3xl font-bold text-tinta">
                   {stats.margenPromedio ? Number(stats.margenPromedio).toFixed(1) : 0}%
                 </p>
                 <div className="flex flex-col items-end mb-1">
-                  <span className="text-xs text-slate-400 font-bold">Promedio General</span>
+                  <span className="text-xs text-slate-500 font-bold">Promedio General</span>
                   <div className="w-16 h-1 bg-slate-200 rounded-full mt-1 overflow-hidden">
                     <div className="h-full bg-ambar" style={{ width: `${stats.margenPromedio || 0}%` }}></div>
                   </div>
@@ -338,14 +338,14 @@ const DashboardPage = () => {
           </div>
 
           {loadingPromos ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
               {[1, 2, 3].map(i => <div key={i} className="h-56 bg-slate-100 rounded-2xl animate-pulse"></div>)}
             </div>
           ) : promotions.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-fr">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 auto-rows-fr">
               {promotions.map((promo) => (
                 <div key={promo.id || promo.productName} className="bg-slate-50 border border-slate-200/80 p-6 rounded-2xl hover:bg-slate-100/80 transition-colors flex flex-col group h-full shadow-sm">
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex flex-wrap justify-between items-start gap-2 mb-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-xs font-bold text-azul">PROPUESTA IA</span>
                       <span className="text-xs font-bold bg-azul/10 text-azul px-2 py-0.5 rounded border border-azul/30 inline-flex items-center gap-1 w-fit uppercase tabular-nums">
@@ -364,7 +364,7 @@ const DashboardPage = () => {
                   <div className="mt-auto space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-bold text-slate-400">Dinero a Recuperar</p>
+                        <p className="text-xs font-bold text-slate-500">Dinero a Recuperar</p>
                         <p className="text-xl font-bold text-tinta">${promo.impact.toLocaleString()}</p>
                       </div>
                       <div className="w-12 h-12 bg-azul text-white rounded-2xl flex items-center justify-center font-bold text-xs shadow-md">-{promo.discount}%</div>
@@ -385,7 +385,7 @@ const DashboardPage = () => {
             </div>
           ) : (
             <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-              <p className="text-slate-400 text-sm font-bold">Mercado Estable • Sin sugerencias de descuento</p>
+              <p className="text-slate-500 text-sm font-bold">Mercado Estable • Sin sugerencias de descuento</p>
             </div>
           )}
         </div>
@@ -404,14 +404,14 @@ const DashboardPage = () => {
 
             <div className="p-8 space-y-8">
               <div className="space-y-2 text-center sm:text-left">
-                <p className="text-xs font-bold text-slate-400">Intervenir Producto</p>
+                <p className="text-xs font-bold text-slate-500">Intervenir Producto</p>
                 <p className="text-2xl font-bold text-tinta">{selectedPromo.productName}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-8 py-6 border-y border-slate-100">
                 <div className="space-y-1">
-                  <p className="text-xs font-bold text-slate-400">Precio Hoy</p>
-                  <p className="text-2xl font-bold text-slate-400 line-through opacity-60">${selectedPromo.originalPrice?.toLocaleString()}</p>
+                  <p className="text-xs font-bold text-slate-500">Precio Hoy</p>
+                  <p className="text-2xl font-bold text-slate-500 line-through opacity-60">${selectedPromo.originalPrice?.toLocaleString()}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-exito">Nuevo Precio</p>
@@ -435,7 +435,7 @@ const DashboardPage = () => {
                   onChange={(e) => setCustomDiscount(Number(e.target.value))}
                   className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-azul focus:outline-none focus:ring-2 focus:ring-azul/50"
                 />
-                <div className="flex justify-between text-xs font-bold text-slate-400">
+                <div className="flex justify-between text-xs font-bold text-slate-500">
                   <span>0%</span>
                   <span className={customDiscount === selectedPromo.discount ? 'text-azul font-bold' : ''}>Sugerido IA: {selectedPromo.discount}%</span>
                   <span>90%</span>

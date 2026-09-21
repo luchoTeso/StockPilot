@@ -180,7 +180,7 @@ const TiendasPage = () => {
 
         {tiendas.length === 0 ? (
            <div className="bg-white p-12 rounded-2xl text-center shadow-lg border border-slate-100 flex flex-col items-center justify-center gap-4">
-            <div className="mb-2 text-slate-400"><Store size={56} /></div>
+            <div className="mb-2 text-slate-500"><Store size={56} /></div>
             <h3 className="titular text-2xl text-tinta">Sin Sucursales</h3>
             <p className="text-slate-500 font-medium max-w-md mx-auto">No tienes sucursales registradas actualmente.</p>
             <button
@@ -208,23 +208,23 @@ const TiendasPage = () => {
 
                     <div>
                       <div className="flex items-start gap-4 mb-6 relative z-10">
-                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner shrink-0 transition-colors ${isStatusActive ? (isActiveSession ? 'bg-azul text-white' : 'bg-azul/10 text-azul') : 'bg-slate-100 text-slate-400'}`}>
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner shrink-0 transition-colors ${isStatusActive ? (isActiveSession ? 'bg-azul text-white' : 'bg-azul/10 text-azul') : 'bg-slate-100 text-slate-500'}`}>
                           <Store size={28} />
                         </div>
                         <div className="flex-1 min-w-0 pr-10">
                           <h3 className="titular text-xl text-tinta truncate" title={t.nombre_establecimiento}>{t.nombre_establecimiento}</h3>
-                          <p className="text-xs font-bold text-slate-400 truncate flex items-center gap-1 mt-1"><MapPin size={12}/> {t.direccion || 'Sin dirección registrada'}</p>
+                          <p className="text-xs font-bold text-slate-500 truncate flex items-center gap-1 mt-1"><MapPin size={12}/> {t.direccion || 'Sin dirección registrada'}</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
                          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center">
-                            <p className="text-xs font-bold text-slate-400 mb-1">ID Sucursal</p>
+                            <p className="text-xs font-bold text-slate-500 mb-1">ID Sucursal</p>
                             <p className="text-sm font-bold text-tinta">#{t.id_tienda}</p>
                          </div>
                          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center">
-                            <p className="text-xs font-bold text-slate-400 mb-1">Estado</p>
-                            <p className={`text-sm font-bold ${isStatusActive ? 'text-emerald-500' : 'text-rose-500'}`}>{t.estado}</p>
+                            <p className="text-xs font-bold text-slate-500 mb-1">Estado</p>
+                            <p className={`text-sm font-bold ${isStatusActive ? 'text-exito' : 'text-peligro'}`}>{t.estado}</p>
                          </div>
                       </div>
                     </div>
@@ -238,7 +238,7 @@ const TiendasPage = () => {
                           Gestionar aquí <ArrowRight size={14} />
                         </button>
                       ) : (
-                         <div className={`w-full sm:flex-1 py-3 rounded-2xl text-xs font-bold text-center cursor-default ${isActiveSession ? 'bg-azul/10 text-azul font-bold' : 'bg-slate-100 text-slate-400'}`}>
+                         <div className={`w-full sm:flex-1 py-3 rounded-2xl text-xs font-bold text-center cursor-default ${isActiveSession ? 'bg-azul/10 text-azul font-bold' : 'bg-slate-100 text-slate-500'}`}>
                            {isActiveSession ? '✦ En Gestión Activa' : 'Sucursal Inactiva'}
                          </div>
                       )}
@@ -253,7 +253,7 @@ const TiendasPage = () => {
                         </button>
                         <button 
                           onClick={() => toggleStatus(t.id_tienda)}
-                          className={`flex-1 sm:flex-none p-3 rounded-lg transition-colors flex items-center justify-center ${isStatusActive ? 'bg-rose-50 text-rose-500 hover:bg-peligro-suave' : 'bg-emerald-50 text-emerald-500 hover:bg-exito-suave'}`}
+                          className={`flex-1 sm:flex-none p-3 rounded-lg transition-colors flex items-center justify-center ${isStatusActive ? 'bg-rose-50 text-peligro hover:bg-peligro-suave' : 'bg-emerald-50 text-exito hover:bg-exito-suave'}`}
                           title={isStatusActive ? "Desactivar Tienda" : "Activar Tienda"}
                         >
                           <Power size={16} />
@@ -275,7 +275,7 @@ const TiendasPage = () => {
                       Cupo 2 de 2 Disponible
                     </span>
                     <h4 className="titular text-xl text-tinta">Habilita una Segunda Sucursal</h4>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed">
                       Tu plan de microempresa incluye hasta 2 sucursales simultáneas. Expande tu alcance abriendo una nueva sede con inventario aislado.
                     </p>
                   </div>
@@ -299,7 +299,7 @@ const TiendasPage = () => {
                       Expediente de la Sucursal Activa
                     </h3>
                   </div>
-                  <p className="text-slate-400 font-bold text-xs mt-1 pl-7">
+                  <p className="text-slate-500 font-bold text-xs mt-1 pl-7">
                     {tienda?.nombre_establecimiento || 'Sucursal Seleccionada'} &bull; Sede #{user?.tiendaId}
                   </p>
                 </div>
@@ -323,15 +323,15 @@ const TiendasPage = () => {
                   </h4>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs font-bold text-slate-400">NIT / Documento</p>
+                      <p className="text-xs font-bold text-slate-500">NIT / Documento</p>
                       <p className="text-sm font-bold text-tinta">{tienda?.documento || 'No especificado'}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400">Razón Social</p>
+                      <p className="text-xs font-bold text-slate-500">Razón Social</p>
                       <p className="text-sm font-bold text-tinta truncate" title={tienda?.razon_social}>{tienda?.razon_social || 'No especificada'}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400">Identificador Interno</p>
+                      <p className="text-xs font-bold text-slate-500">Identificador Interno</p>
                       <p className="text-sm font-bold text-azul">ID #{tienda?.id_tienda || user?.tiendaId}</p>
                     </div>
                   </div>
@@ -345,15 +345,15 @@ const TiendasPage = () => {
                   </h4>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs font-bold text-slate-400">Dirección Física</p>
+                      <p className="text-xs font-bold text-slate-500">Dirección Física</p>
                       <p className="text-sm font-bold text-tinta truncate" title={tienda?.direccion}>{tienda?.direccion || 'No especificada'}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400">Ciudad Sede</p>
+                      <p className="text-xs font-bold text-slate-500">Ciudad Sede</p>
                       <p className="text-sm font-bold text-tinta">{tienda?.ciudad || 'No especificada'}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400">Teléfono / Móvil</p>
+                      <p className="text-xs font-bold text-slate-500">Teléfono / Móvil</p>
                       <p className="text-sm font-bold text-tinta">{tienda?.celular || 'No especificado'}</p>
                     </div>
                   </div>
@@ -368,18 +368,18 @@ const TiendasPage = () => {
                     </h4>
                     <div className="space-y-3">
                       <div>
-                        <p className="text-xs font-bold text-slate-400">Fecha de Apertura</p>
+                        <p className="text-xs font-bold text-slate-500">Fecha de Apertura</p>
                         <p className="text-base font-bold text-tinta tracking-tight">{formatearFecha(tienda?.fecha_creacion || tienda?.anio_creacion)}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-400">Estado Operativo</p>
+                        <p className="text-xs font-bold text-slate-500">Estado Operativo</p>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${tienda?.estado === 'Activo' ? 'bg-emerald-50 text-exito' : 'bg-rose-50 text-peligro'}`}>
                           {tienda?.estado || 'Activo'}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <div className="pt-3 border-t border-slate-100 text-xs font-bold text-slate-400">
+                  <div className="pt-3 border-t border-slate-100 text-xs font-bold text-slate-500">
                     Aislamiento de Sesión Activa OK
                   </div>
                 </div>
@@ -396,7 +396,7 @@ const TiendasPage = () => {
                       <h4 className="titular text-lg text-tinta">
                         Equipo Asignado a esta Sucursal
                       </h4>
-                      <p className="text-xs font-bold text-slate-400">
+                      <p className="text-xs font-bold text-slate-500">
                         {usuarios.length} {usuarios.length === 1 ? 'colaborador activo' : 'colaboradores activos'} en {tienda?.nombre_establecimiento || 'esta sede'}
                       </p>
                     </div>
@@ -413,7 +413,7 @@ const TiendasPage = () => {
                   <div className="text-center py-8 px-4 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
                     <Users size={32} className="mx-auto text-slate-300 mb-2" />
                     <p className="text-slate-600 font-bold text-sm">No hay colaboradores vinculados directamente a esta sucursal</p>
-                    <p className="text-slate-400 text-xs mt-1">Puedes registrar cajeros y tenderos para esta sede desde el módulo de Colaboradores.</p>
+                    <p className="text-slate-500 text-xs mt-1">Puedes registrar cajeros y tenderos para esta sede desde el módulo de Colaboradores.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -450,7 +450,7 @@ const TiendasPage = () => {
     if (!tienda) {
       return (
         <div className="bg-white p-12 rounded-2xl text-center shadow-lg border border-slate-100 flex flex-col items-center justify-center gap-4 animate-fade-in">
-          <div className="mb-2 text-slate-400"><Store size={56} /></div>
+          <div className="mb-2 text-slate-500"><Store size={56} /></div>
           <h3 className="titular text-2xl text-tinta">Perfil Inexistente</h3>
           <p className="text-slate-500 font-medium max-w-md mx-auto">No se encontró información de la sucursal vinculada a esta sesión corporativa de StockPilot.</p>
         </div>
@@ -498,15 +498,15 @@ const TiendasPage = () => {
                 </h4>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-xs font-bold text-slate-400">ID Sistema</p>
+                    <p className="text-xs font-bold text-slate-500">ID Sistema</p>
                     <p className="text-sm font-bold text-tinta">{tienda.id_tienda}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-400">NIT / Documento</p>
+                    <p className="text-xs font-bold text-slate-500">NIT / Documento</p>
                     <p className="text-sm font-bold text-tinta">{tienda.documento || 'No especificado'}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-400">Razón Social</p>
+                    <p className="text-xs font-bold text-slate-500">Razón Social</p>
                     <p className="text-sm font-bold text-tinta">{tienda.razon_social || 'No especificada'}</p>
                   </div>
                 </div>
@@ -518,15 +518,15 @@ const TiendasPage = () => {
                 </h4>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-xs font-bold text-slate-400">Móvil Principal</p>
+                    <p className="text-xs font-bold text-slate-500">Móvil Principal</p>
                     <p className="text-sm font-bold text-tinta">{tienda.celular || 'No especificado'}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-400">Dirección Física</p>
+                    <p className="text-xs font-bold text-slate-500">Dirección Física</p>
                     <p className="text-sm font-bold text-tinta">{tienda.direccion}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-400">Ciudad Sede</p>
+                    <p className="text-xs font-bold text-slate-500">Ciudad Sede</p>
                     <p className="text-sm font-bold text-tinta">{tienda.ciudad || 'No especificada'}</p>
                   </div>
                 </div>
@@ -537,7 +537,7 @@ const TiendasPage = () => {
                   <Calendar size={28} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-400 mb-1 text-center">Fecha de Apertura</p>
+                  <p className="text-xs font-bold text-slate-500 mb-1 text-center">Fecha de Apertura</p>
                   <p className="text-xl font-bold text-azul">{formatearFecha(tienda.fecha_creacion || tienda.anio_creacion)}</p>
                 </div>
               </div>
@@ -551,7 +551,7 @@ const TiendasPage = () => {
           </h3>
           {usuarios.length === 0 ? (
             <div className="bg-white p-10 rounded-2xl border border-slate-100 text-center shadow-sm">
-               <p className="text-slate-400 font-bold">Aún no hay usuarios o colaboradores vinculados a esta sucursal.</p>
+               <p className="text-slate-500 font-bold">Aún no hay usuarios o colaboradores vinculados a esta sucursal.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -593,7 +593,7 @@ const TiendasPage = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center p-20 animate-pulse">
           <div className="w-16 h-16 border-4 border-azul/30 border-t-azul rounded-full animate-spin mb-4"></div>
-          <p className="text-xs font-bold text-slate-400">Sincronizando con matriz corporativa...</p>
+          <p className="text-xs font-bold text-slate-500">Sincronizando con matriz corporativa...</p>
         </div>
       ) : user?.rol === 'Administrador' ? renderAdminView() : renderTenderoView()}
 
@@ -612,12 +612,12 @@ const TiendasPage = () => {
                    <h3 className="titular text-2xl text-tinta">
                      {createModalOpen ? 'Nueva Sucursal' : 'Modificar Perfil'}
                    </h3>
-                   <p className="text-xs font-bold text-slate-400">
+                   <p className="text-xs font-bold text-slate-500">
                      {createModalOpen ? 'Expansión de negocio' : 'Actualización de datos maestros'}
                    </p>
                  </div>
               </div>
-              <button onClick={() => { setEditModalOpen(false); setCreateModalOpen(false); }} className="w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-colors shadow-sm text-xl font-bold">&times;</button>
+              <button onClick={() => { setEditModalOpen(false); setCreateModalOpen(false); }} className="w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-colors shadow-sm text-xl font-bold">&times;</button>
             </div>
 
             {/* Cuerpo Scroll Modal */}
@@ -625,7 +625,7 @@ const TiendasPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 <div className="md:col-span-2 space-y-2">
-                  <label htmlFor="nombre_establecimiento" className="block text-xs font-semibold text-slate-600 pl-1">Nombre Comercial <span className="text-rose-500 text-sm">*</span></label>
+                  <label htmlFor="nombre_establecimiento" className="block text-xs font-semibold text-slate-600 pl-1">Nombre Comercial <span className="text-peligro text-sm">*</span></label>
                   <input id="nombre_establecimiento" required name="nombre_establecimiento" value={formData.nombre_establecimiento} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Ej. Tienda Central..." />
                 </div>
                 
@@ -644,7 +644,7 @@ const TiendasPage = () => {
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                  <label htmlFor="direccion" className="block text-xs font-semibold text-slate-600 pl-1">Dirección Física <span className="text-rose-500 text-sm">*</span></label>
+                  <label htmlFor="direccion" className="block text-xs font-semibold text-slate-600 pl-1">Dirección Física <span className="text-peligro text-sm">*</span></label>
                   <input id="direccion" required name="direccion" value={formData.direccion} onChange={handleInputChange} type="text" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Avenida Siempre Viva 123..." />
                 </div>
 

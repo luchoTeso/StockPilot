@@ -1,5 +1,6 @@
 import { DollarSign, Package, Barcode, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ErrorState from '../common/ErrorState';
 
 const formatearFecha = (fechaString) => {
   if (!fechaString) return '---';
@@ -12,6 +13,8 @@ const formatearFecha = (fechaString) => {
 const ProductTable = ({
   productos,
   loading,
+  loadError,
+  onRetry,
   isAdmin,
   onEdit,
   onToggleStatus,
@@ -31,7 +34,7 @@ const ProductTable = ({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 bg-slate-50/50">
+            <tr className="border-b border-slate-100 text-xs font-bold text-slate-500 bg-slate-50/50">
               <th className="p-6">Producto / Identificación</th>
               <th className="hidden lg:table-cell p-6">Categoría</th>
               <th className="p-6 text-center">Disponibilidad</th>
@@ -49,9 +52,13 @@ const ProductTable = ({
                   </td>
                 </tr>
               ))
+            ) : loadError ? (
+              <tr>
+                <td colSpan="6"><ErrorState title="No pudimos cargar los productos" onRetry={onRetry} /></td>
+              </tr>
             ) : productos.length === 0 ? (
               <tr>
-                <td colSpan="6" className="p-12 text-center text-slate-400 font-bold text-sm">
+                <td colSpan="6" className="p-12 text-center text-slate-500 font-bold text-sm">
                   No se encontraron productos registrados
                 </td>
               </tr>
@@ -73,7 +80,7 @@ const ProductTable = ({
                            </span>
                          )}
                          {p.codigo && p.codigo_barras && p.codigo !== p.codigo_barras && (
-                           <span className="text-xs font-bold text-slate-400">
+                           <span className="text-xs font-bold text-slate-500">
                              SKU: {p.codigo}
                            </span>
                          )}
@@ -84,7 +91,7 @@ const ProductTable = ({
                     </td>
                     <td className="p-6 text-center">
                       <div className="flex items-center justify-center gap-2">
-                         <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-amber-500' : 'text-tinta'}`}>{p.cantidad}</span>
+                         <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
                          {isCritico && <button onClick={() => navigate('/analisis-detallado')} title="Riesgo de agotamiento inminente" className="bg-peligro-suave text-peligro text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 transition-colors transition-transform cursor-pointer">Agotado</button>}
                          {isBajo && <button onClick={() => navigate('/analisis-detallado')} title="El stock ha bajado del nivel seguro para operar" className="bg-aviso-suave text-aviso text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-amber-200 hover:bg-amber-200 transition-colors transition-transform cursor-pointer">Pedir Más</button>}
                          {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-exito text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-exito-suave">Suficiente</span>}
@@ -106,14 +113,14 @@ const ProductTable = ({
                             <>
                                <div className="w-px h-8 bg-slate-200 mx-1"></div>
                                <button onClick={() => onEdit(p)} className="text-xs px-3 py-2 font-bold text-slate-600 hover:text-azul hover:bg-azul/10 rounded-lg transition-colors">Editar</button>
-                               <button onClick={() => onPromote(p)} className="text-xs px-3 py-2 font-bold text-amber-600 hover:bg-amber-50 rounded-lg transition-colors flex items-center gap-1"><Zap size={12}/> Promo</button>
+                               <button onClick={() => onPromote(p)} className="text-xs px-3 py-2 font-bold text-aviso hover:bg-amber-50 rounded-lg transition-colors flex items-center gap-1"><Zap size={12}/> Promo</button>
                                <button onClick={() => onToggleStatus(p)} className="text-xs px-3 py-2 font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">Pausar</button>
                                <button onClick={() => onDelete(p)} className="text-xs px-3 py-2 font-bold text-peligro hover:bg-rose-50 rounded-lg transition-colors">Borrar</button>
                             </>
                           ) : (
                             <>
                               <button onClick={() => onToggleStatus(p)} className="text-xs px-4 py-2 font-bold bg-emerald-50 text-exito hover:bg-exito hover:text-white rounded-lg transition-colors shadow-sm">Reactivar</button>
-                              <button onClick={() => onDelete(p)} className="text-xs px-4 py-2 font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition-colors ml-2">Eliminar</button>
+                              <button onClick={() => onDelete(p)} className="text-xs px-4 py-2 font-bold text-peligro hover:bg-rose-50 rounded-lg transition-colors ml-2">Eliminar</button>
                             </>
                           )}
                         </div>

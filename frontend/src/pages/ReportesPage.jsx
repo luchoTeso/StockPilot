@@ -282,24 +282,24 @@ const ReportesPage = () => {
            {isAdmin && (
              <button
                onClick={descargarHistorialCaja}
-               className="bg-emerald-500 hover:bg-exito text-white px-5 py-3 rounded-lg text-xs font-bold flex items-center gap-2 shadow-lg transition-all"
+               className="bg-exito hover:bg-emerald-700 text-white px-5 py-3 rounded-lg text-xs font-bold flex items-center gap-2 shadow-lg transition-all"
              >
                <Download size={14} /> Exportar Historial Caja
              </button>
            )}
            <div className="bg-white/60 px-6 py-3 rounded-2xl border border-white/40 shadow-sm">
-              <span className="text-xs font-bold text-slate-400 block mb-1">Archivos totales</span>
+              <span className="text-xs font-bold text-slate-500 block mb-1">Archivos totales</span>
               <span className="text-xl font-bold text-tinta">{reportes.length} <span className="text-xs text-azul">docs</span></span>
            </div>
         </div>
       </div>
 
-      <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-8`}>
+      <div className={`grid grid-cols-1 ${isAdmin ? 'xl:grid-cols-3' : 'xl:grid-cols-1'} gap-8`}>
         
         {/* Formulario */}
         {isAdmin && (
-          <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 lg:sticky lg:top-6 max-h-[85vh] flex flex-col overflow-hidden">
+          <div className="xl:col-span-1">
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 xl:sticky xl:top-6 max-h-[85vh] flex flex-col overflow-hidden">
             <div className="p-6 lg:p-8 overflow-y-auto scrollbar-hide flex-1">
               <h3 className="titular text-2xl text-tinta mb-6 pb-4 border-b border-slate-100 shrink-0">
                 {editMode ? 'Editar Reporte' : 'Generar Nuevo Reporte'}
@@ -307,13 +307,13 @@ const ReportesPage = () => {
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="titulo" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombre del Reporte <span className="text-rose-500 text-sm">*</span></label>
+                  <label htmlFor="titulo" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombre del Reporte <span className="text-peligro text-sm">*</span></label>
                   <input id="titulo" required type="text" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Ej. Balance Mensual..."/>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <span className="block text-xs font-bold text-slate-400 pl-1 mb-2">Categoría <span className="text-rose-500 text-sm">*</span></span>
+                    <span className="block text-xs font-bold text-slate-500 pl-1 mb-2">Categoría <span className="text-peligro text-sm">*</span></span>
                     <div className="form-control-premium">
                       <CustomSelect 
                         value={formData.tipo} 
@@ -330,7 +330,7 @@ const ReportesPage = () => {
                     </div>
                   </div>
                   <div>
-                    <span className="block text-xs font-bold text-slate-400 pl-1 mb-2">Fecha del Reporte <span className="text-rose-500 text-sm">*</span></span>
+                    <span className="block text-xs font-bold text-slate-500 pl-1 mb-2">Fecha del Reporte <span className="text-peligro text-sm">*</span></span>
                     <CustomDatePicker 
                       value={formData.fecha_reporte} 
                       onChange={v => setFormData({...formData, fecha_reporte: v})} 
@@ -367,7 +367,7 @@ const ReportesPage = () => {
                 )}
 
                 <div>
-                  <label htmlFor="creador" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Responsable <span className="text-rose-500 text-sm">*</span></label>
+                  <label htmlFor="creador" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Responsable <span className="text-peligro text-sm">*</span></label>
                   <input id="creador" required type="text" value={formData.creador} onChange={e => setFormData({...formData, creador: e.target.value})} className="w-full p-4 bg-slate-100 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none text-slate-500" readOnly/>
                 </div>
 
@@ -377,7 +377,7 @@ const ReportesPage = () => {
                 </div>
 
                 <div className="flex flex-col gap-3 pt-4 pb-2">
-                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-lg text-white text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-ambar hover:bg-amber-600' : 'bg-emerald-500 hover:bg-exito'}`}>
+                  <button type="submit" disabled={isSubmitting} className={`w-full p-4 rounded-lg text-white text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${editMode ? 'bg-ambar hover:bg-amber-600' : 'bg-exito hover:bg-emerald-700'}`}>
                     {editMode ? <Save size={14} /> : <Plus size={14} />} {isSubmitting ? 'GUARDANDO...' : (editMode ? 'ACTUALIZAR REPORTE' : 'CREAR REPORTE')}
                   </button>
                   {editMode && (
@@ -436,7 +436,7 @@ const ReportesPage = () => {
         )}
 
         {/* Tabla Analítica */}
-        <div className={isAdmin ? "lg:col-span-2 space-y-6" : "lg:col-span-1 space-y-6"}>
+        <div className={isAdmin ? "xl:col-span-2 space-y-6" : "xl:col-span-1 space-y-6"}>
           
           {/* Cabecera y Filtros de Tabla */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-2xl border border-slate-100 shadow-sm gap-4">
@@ -459,7 +459,7 @@ const ReportesPage = () => {
                  />
                </div>
                <div className="relative w-full sm:w-64">
-                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><Search size={16} /></div>
+                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500"><Search size={16} /></div>
                  <input 
                    type="text" 
                    placeholder="Buscar reporte..." 
@@ -485,9 +485,9 @@ const ReportesPage = () => {
                 </thead>
                 <tbody className="text-sm divide-y divide-slate-50">
                   {loading ? (
-                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold text-xs animate-pulse">Cargando reportes guardados...</td></tr>
+                    <tr><td colSpan="5" className="text-center py-12 text-slate-500 font-bold text-xs animate-pulse">Cargando reportes guardados...</td></tr>
                   ) : filteredReportes.length === 0 ? (
-                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold text-xs">No Existen Registros para Este Filtro</td></tr>
+                    <tr><td colSpan="5" className="text-center py-12 text-slate-500 font-bold text-xs">No Existen Registros para Este Filtro</td></tr>
                   ) : (
                     filteredReportes.map(r => (
                       <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
@@ -517,7 +517,7 @@ const ReportesPage = () => {
                             </button>
                             {isAdmin && (
                               <>
-                                <button onClick={() => handleEditClick(r)} aria-label="Editar Reporte" className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 hover:bg-ambar hover:text-white border border-aviso-suave flex items-center justify-center transition-colors transition-transform shadow-sm" title="Editar Reporte">
+                                <button onClick={() => handleEditClick(r)} aria-label="Editar Reporte" className="w-10 h-10 rounded-lg bg-amber-50 text-aviso hover:bg-ambar hover:text-white border border-aviso-suave flex items-center justify-center transition-colors transition-transform shadow-sm" title="Editar Reporte">
                                   <Pencil size={18} />
                                 </button>
                                 <button onClick={() => eliminarReporte(r.id)} aria-label="Eliminar Reporte" className="w-10 h-10 rounded-lg bg-rose-50 text-peligro hover:bg-peligro hover:text-white border border-peligro-suave flex items-center justify-center transition-colors transition-transform shadow-sm" title="Eliminar Reporte">
@@ -541,10 +541,10 @@ const ReportesPage = () => {
         <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4">
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden transform animate-scale-in border border-white">
             <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-peligro-suave bg-rose-50' : 'border-aviso-suave bg-amber-50'}`}>
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-peligro-suave text-peligro' : 'bg-aviso-suave text-amber-600'}`}>
+              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-peligro-suave text-peligro' : 'bg-aviso-suave text-aviso'}`}>
                  {modalConfig.type === 'danger' ? <Trash2 size={36} /> : <AlertTriangle size={36} />}
               </div>
-              <h3 className={`titular text-2xl ${modalConfig.type === 'danger' ? 'text-peligro' : 'text-amber-600'}`}>
+              <h3 className={`titular text-2xl ${modalConfig.type === 'danger' ? 'text-peligro' : 'text-aviso'}`}>
                 {modalConfig.title}
               </h3>
             </div>

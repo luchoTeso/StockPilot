@@ -18,7 +18,7 @@ const ProductosPage = () => {
   const toast = useToast();
   
   const {
-    isAdmin, loading, productos, categorias, alert, setAlert,
+    isAdmin, loading, loadError, recargarProductos, productos, categorias, alert, setAlert,
     filtroTexto, setFiltroTexto, filtroCategoria, setFiltroCategoria, filtroEstado, setFiltroEstado,
     uploadLoading, handleFileUpload,
     modalOpen, editMode, formLoading, formData, proveedores, handleOpenModal, handleCloseModal, handleSubmitProducto,
@@ -54,7 +54,7 @@ const ProductosPage = () => {
           onClick={() => navigate('/alertas')}
           className={`w-full text-left group relative flex flex-col md:flex-row items-center gap-6 p-8 rounded-lg mb-10 shadow-lg border animate-fade-in cursor-pointer transition-colors transition-transform transition-shadow transform outline-none focus:ring-4 focus:ring-azul/50 ${alert.isCritical ? 'bg-rose-50/80 border-peligro-suave text-rose-800' : 'bg-amber-50/80 border-aviso-suave text-amber-800'}`}
         >
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-peligro-suave border-white text-peligro animate-bounce' : 'bg-aviso-suave border-white text-amber-600 rotate-12'}`}>
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-peligro-suave border-white text-peligro animate-bounce' : 'bg-aviso-suave border-white text-aviso rotate-12'}`}>
             {alert.isCritical ? <AlertCircle size={32} /> : <AlertTriangle size={32} />}
           </div>
           <div className="flex-1 text-center md:text-left">
@@ -136,6 +136,8 @@ const ProductosPage = () => {
       <ProductTable
         productos={productos}
         loading={loading}
+        loadError={loadError}
+        onRetry={recargarProductos}
         isAdmin={isAdmin}
         onEdit={(p) => handleOpenModal(p)}
         onToggleStatus={(p) => { setToggleProducto(p); setToggleModalOpen(true); }}
@@ -172,7 +174,7 @@ const ProductosPage = () => {
                 
                 <div className="relative flex items-center py-2">
                    <div className="flex-grow border-t border-slate-200"></div>
-                   <span className="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold">O Vincular</span>
+                   <span className="flex-shrink-0 mx-4 text-slate-500 text-xs font-bold">O Vincular</span>
                    <div className="flex-grow border-t border-slate-200"></div>
                 </div>
 
@@ -202,7 +204,7 @@ const ProductosPage = () => {
       <ConfirmDialog
         isOpen={toggleModalOpen}
         title="Estado del Producto"
-        message={<>Vas a cambiar a estado <strong className={`${toggleProducto?.estado === 'Disponible' ? 'text-amber-500' : 'text-emerald-500'}`}>{toggleProducto?.estado === 'Disponible' ? 'Pausado' : 'Activo'}</strong> el siguiente producto:</>}
+        message={<>Vas a cambiar a estado <strong className={`${toggleProducto?.estado === 'Disponible' ? 'text-aviso' : 'text-exito'}`}>{toggleProducto?.estado === 'Disponible' ? 'Pausado' : 'Activo'}</strong> el siguiente producto:</>}
         highlightText={toggleProducto?.nombre_producto}
         highlightColor={toggleProducto?.estado === 'Disponible' ? 'amber' : 'emerald'}
         confirmText={toggleProducto?.estado === 'Disponible' ? 'Confirmar Pausa' : 'Confirmar Reactivación'}

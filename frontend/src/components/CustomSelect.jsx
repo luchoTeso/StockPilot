@@ -93,7 +93,7 @@ const CustomSelect = ({ value, onChange, options, placeholder, className }) => {
         className="w-full h-full flex items-center justify-between cursor-pointer outline-none select-none text-left bg-transparent border-none p-0 m-0"
       >
         <span className="truncate pr-4 font-semibold text-tinta-2">{selectedLabel}</span>
-        <span className={`transition-transform duration-300 text-xs opacity-50 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+        <span className={`transition-transform duration-300 text-xs opacity-50 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true">▼</span>
       </button>
       
       {dropdownPortal}

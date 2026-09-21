@@ -27,14 +27,14 @@ const PaymentModal = ({
         {/* Scrollable Content Area */}
         <div className="p-8 space-y-6 overflow-y-auto scrollbar-premium">
           <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 flex justify-between items-center shadow-inner">
-            <p className="text-xs font-bold text-slate-400">Saldo Pendiente</p>
+            <p className="text-xs font-bold text-slate-500">Saldo Pendiente</p>
             <p className="text-2xl font-bold text-peligro">${(paymentData.total - paymentData.currentPaid).toLocaleString()}</p>
           </div>
 
           <div className="space-y-3 px-2">
             <label htmlFor="input_abono" className="text-xs font-semibold text-slate-600 ml-1">Monto a Abonar</label>
             <div className="relative group">
-              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg transition-colors group-focus-within:text-emerald-500">$</span>
+              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-lg transition-colors group-focus-within:text-emerald-500">$</span>
               <input 
                 id="input_abono"
                 type="number" 
@@ -65,7 +65,7 @@ const PaymentModal = ({
             <button 
               onClick={onClose}
               disabled={isPaying}
-              className="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors mt-2"
+              className="w-full py-2 text-xs font-bold text-slate-500 hover:text-slate-600 transition-colors mt-2"
             >
               Regresar al historial
             </button>

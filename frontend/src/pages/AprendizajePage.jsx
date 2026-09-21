@@ -89,7 +89,7 @@ const AprendizajePage = () => {
 
     const getAccuracyColor = (accuracy) => {
         if (accuracy >= 80) return { bg: 'bg-emerald-50', text: 'text-exito', border: 'border-emerald-200', bar: 'bg-emerald-500' };
-        if (accuracy >= 50) return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', bar: 'bg-ambar' };
+        if (accuracy >= 50) return { bg: 'bg-amber-50', text: 'text-aviso', border: 'border-amber-200', bar: 'bg-ambar' };
         return { bg: 'bg-rose-50', text: 'text-peligro', border: 'border-rose-200', bar: 'bg-rose-500' };
     };
 
@@ -107,7 +107,7 @@ const AprendizajePage = () => {
             <div className="flex-1 flex items-center justify-center bg-slate-50 min-h-screen">
                 <div className="flex flex-col items-center">
                     <div className="w-16 h-16 border-4 border-azul/30 border-t-azul rounded-full animate-spin mb-4"></div>
-                    <p className="text-slate-400 font-bold text-xs">Cargando aprendizaje...</p>
+                    <p className="text-slate-500 font-bold text-xs">Cargando aprendizaje...</p>
                 </div>
             </div>
         );
@@ -186,7 +186,7 @@ const AprendizajePage = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-3">
                         <div>
                             <h2 className="titular text-xl text-tinta mb-1 flex items-center gap-2"><TrendingUp size={18} /> Evolución del Acierto</h2>
-                            <p className="text-xs font-medium text-slate-400">Cómo ha mejorado (o empeorado) la precisión del sistema mes a mes</p>
+                            <p className="text-xs font-medium text-slate-500">Cómo ha mejorado (o empeorado) la precisión del sistema mes a mes</p>
                         </div>
                         <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2">
                             <div className="w-3 h-0.5 bg-azul rounded-full"></div>
@@ -216,7 +216,7 @@ const AprendizajePage = () => {
                                 </AreaChart>
                             </ResponsiveContainer>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-300">
+                            <div className="h-full flex flex-col items-center justify-center text-slate-500">
                                 <BarChart2 size={40} className="mb-3" />
                                 <p className="font-bold text-sm">Aún no hay datos suficientes</p>
                                 <p className="text-xs mt-1">Evalúa al menos 2 órdenes en meses diferentes para ver la gráfica</p>
@@ -228,7 +228,7 @@ const AprendizajePage = () => {
                 {/* ── Tabla completa de productos ── */}
                 <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
                     <h2 className="titular text-xl text-tinta mb-2 flex items-center gap-2"><ClipboardList size={18} /> Rendimiento por Producto</h2>
-                    <p className="text-xs font-medium text-slate-400 mb-6">Qué tan bien acertó el sistema para cada producto que evaluaste</p>
+                    <p className="text-xs font-medium text-slate-500 mb-6">Qué tan bien acertó el sistema para cada producto que evaluaste</p>
                     
                     {/* Leyenda de colores */}
                     <div className="flex flex-wrap gap-4 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -271,7 +271,7 @@ const AprendizajePage = () => {
                                 </div>
                             );
                         }) : (
-                            <div className="p-10 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
+                            <div className="p-10 text-center text-slate-500 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
                                 <Inbox size={36} className="block mb-3 mx-auto" />
                                 <p className="font-bold text-sm">No hay productos evaluados todavía</p>
                                 <p className="text-xs mt-1">Usa el botón "Evaluar una orden" para comenzar a medir la precisión</p>
@@ -343,10 +343,10 @@ const AprendizajePage = () => {
                                                     
                                                     <div className="absolute z-[120] w-full mt-2 bg-white/95 border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-56 overflow-y-auto scrollbar-premium py-2 animate-scale-in origin-top">
                                                         <div className="px-3 pb-2 pt-1 border-b border-slate-50">
-                                                            <p className="text-xs font-bold text-slate-400 pl-2">Órdenes disponibles ({evaluableOrders.length})</p>
+                                                            <p className="text-xs font-bold text-slate-500 pl-2">Órdenes disponibles ({evaluableOrders.length})</p>
                                                         </div>
                                                         {evaluableOrders.length === 0 ? (
-                                                            <div className="p-4 text-center text-xs font-bold text-slate-400">
+                                                            <div className="p-4 text-center text-xs font-bold text-slate-500">
                                                                 No hay órdenes evaluables
                                                             </div>
                                                         ) : (
@@ -364,9 +364,9 @@ const AprendizajePage = () => {
                                                                 >
                                                                     <div className={`flex flex-col gap-1 transition-transform ${orderId === ord.id_orden ? 'pl-2' : 'group-hover:translate-x-1'}`}>
                                                                         <span className={`font-bold ${orderId === ord.id_orden ? 'text-azul' : 'text-tinta-2'}`}>
-                                                                            #{ord.id_orden} <span className="text-slate-400 font-medium px-1">·</span> {ord.proveedor}
+                                                                            #{ord.id_orden} <span className="text-slate-500 font-medium px-1">·</span> {ord.proveedor}
                                                                         </span>
-                                                                        <span className="text-xs font-bold text-slate-400">Fecha: {new Date(ord.fecha_aprobacion).toLocaleDateString()}</span>
+                                                                        <span className="text-xs font-bold text-slate-500">Fecha: {new Date(ord.fecha_aprobacion).toLocaleDateString()}</span>
                                                                     </div>
                                                                     {orderId === ord.id_orden && (
                                                                         <div className="w-6 h-6 rounded-full bg-azul/10 flex items-center justify-center text-azul shadow-sm shrink-0">
@@ -380,7 +380,7 @@ const AprendizajePage = () => {
                                                 </>
                                             )}
                                         </div>
-                                        <p className="text-xs text-slate-400 mt-2 ml-1 font-medium">
+                                        <p className="text-xs text-slate-500 mt-2 ml-1 font-medium">
                                             Solo aparecen órdenes ya aprobadas. Cuanto más tiempo haya pasado, más preciso será el análisis.
                                         </p>
                                     </div>
@@ -401,11 +401,11 @@ const AprendizajePage = () => {
 
                                     {/* Resumen */}
                                     <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
-                                        <p className="text-xs font-bold text-slate-400 mb-1">Orden evaluada</p>
+                                        <p className="text-xs font-bold text-slate-500 mb-1">Orden evaluada</p>
                                         <p className="text-sm font-bold text-tinta-2">#{orderId} · Días desde la aprobación: {evalResult.diasTranscurridos}</p>
                                     </div>
                                     
-                                    <h4 className="font-bold text-xs text-slate-400">Detalle por producto</h4>
+                                    <h4 className="font-bold text-xs text-slate-500">Detalle por producto</h4>
                                     
                                     <div className="space-y-3">
                                         {evalResult.evaluaciones?.map(ev => {
@@ -427,12 +427,12 @@ const AprendizajePage = () => {
                                                     {/* Detalle numérico claro */}
                                                     <div className="grid grid-cols-2 gap-3 ml-6">
                                                         <div className="bg-white/70 rounded-2xl p-3 border border-white">
-                                                            <p className="text-xs font-bold text-slate-400">Sugerido comprar</p>
-                                                            <p className="text-lg font-bold text-tinta-2">{ev.sugerido} <span className="text-xs font-bold text-slate-400">unidades</span></p>
+                                                            <p className="text-xs font-bold text-slate-500">Sugerido comprar</p>
+                                                            <p className="text-lg font-bold text-tinta-2">{ev.sugerido} <span className="text-xs font-bold text-slate-500">unidades</span></p>
                                                         </div>
                                                         <div className="bg-white/70 rounded-2xl p-3 border border-white">
-                                                            <p className="text-xs font-bold text-slate-400">Realmente vendido</p>
-                                                            <p className="text-lg font-bold text-tinta-2">{ev.ventasReales} <span className="text-xs font-bold text-slate-400">unidades</span></p>
+                                                            <p className="text-xs font-bold text-slate-500">Realmente vendido</p>
+                                                            <p className="text-lg font-bold text-tinta-2">{ev.ventasReales} <span className="text-xs font-bold text-slate-500">unidades</span></p>
                                                         </div>
                                                     </div>
                                                 </div>

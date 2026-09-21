@@ -107,9 +107,9 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
 
              <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
                <div className="flex flex-col">
-                 <label className="text-xs font-bold text-slate-400">Límite para Tenderos</label>
+                 <label className="text-xs font-bold text-slate-500">Límite para Tenderos</label>
                  <div className="relative mt-1">
-                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
                    <input 
                      type="number" 
                      value={limiteEgreso}
@@ -137,12 +137,12 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
           <div className="h-12 bg-slate-100 rounded-lg"></div>
         </div>
       ) : expenses.length === 0 ? (
-        <p className="text-center text-slate-400 font-bold py-8 text-sm">No hay egresos registrados.</p>
+        <p className="text-center text-slate-500 font-bold py-8 text-sm">No hay egresos registrados.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 bg-slate-50/50">
+              <tr className="border-b border-slate-100 text-xs font-bold text-slate-500 bg-slate-50/50">
                 <th className="p-4">Fecha</th>
                 <th className="p-4">Estado</th>
                 <th className="p-4">Usuario</th>
@@ -170,14 +170,14 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
                   <td className="p-4 text-tinta-2">{e.usuario_nombre}</td>
                   <td className="p-4 text-slate-600 font-bold">{e.categoria}</td>
                   <td className="p-4 text-slate-500 max-w-[200px] truncate" title={e.motivo}>{e.motivo}</td>
-                  <td className="p-4 text-right font-bold text-rose-500">${Number(e.monto).toLocaleString('es-CO')}</td>
+                  <td className="p-4 text-right font-bold text-peligro">${Number(e.monto).toLocaleString('es-CO')}</td>
                   <td className="p-4 text-center">
                     {e.foto_soporte ? (
                       <button onClick={() => setPreviewImage(e.foto_soporte)} className="text-azul hover:text-azul underline text-xs font-bold">
                         Ver Foto
                       </button>
                     ) : (
-                      <span className="text-slate-300 text-xs">Sin Foto</span>
+                      <span className="text-slate-500 text-xs">Sin Foto</span>
                     )}
                   </td>
                   <td className="p-4 text-center flex justify-center items-center gap-2">
@@ -188,11 +188,11 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
                       </>
                     ) : (
                       <div className="flex flex-col items-center gap-1">
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-slate-500">
                           Por: {e.admin_nombre || 'Desconocido'}
                         </span>
                         {e.notas_admin && (
-                          <span className="text-xs text-rose-500 truncate max-w-[100px]" title={e.notas_admin}>
+                          <span className="text-xs text-peligro truncate max-w-[100px]" title={e.notas_admin}>
                             Nota: {e.notas_admin}
                           </span>
                         )}

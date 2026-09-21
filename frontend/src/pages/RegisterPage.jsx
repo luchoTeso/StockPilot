@@ -85,7 +85,7 @@ const RegisterPage = () => {
           {/* Botón volver */}
           <button
             onClick={() => navigate('/')}
-            className="absolute top-8 left-8 text-slate-400 hover:text-azul transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
+            className="absolute top-8 left-8 text-slate-500 hover:text-azul transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
             title="Volver al Inicio"
           >
             <ArrowLeft size={18} />
@@ -99,7 +99,7 @@ const RegisterPage = () => {
             <h1 className="titular text-3xl text-tinta">
               Crear Cuenta
             </h1>
-            <p className="text-slate-400 font-bold text-xs mt-2">
+            <p className="text-slate-500 font-bold text-xs mt-2">
               Configura la cuenta de tu Negocio
             </p>
           </div>
@@ -211,7 +211,7 @@ const RegisterPage = () => {
                   type="button"
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-azul transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-azul transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -242,7 +242,7 @@ const RegisterPage = () => {
           </form>
 
           <div className="mt-8 text-center border-t border-slate-100 pt-8">
-            <p className="text-xs font-bold text-slate-400">
+            <p className="text-xs font-bold text-slate-500">
               ¿Ya abriste tu negocio?{' '}
               <button
                 onClick={() => navigate('/login')}

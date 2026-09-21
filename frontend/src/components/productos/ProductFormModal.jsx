@@ -223,13 +223,13 @@ const ProductFormModal = ({
                   ? 'Recepción de Mercancía (+Stock)'
                   : 'Registrar o Ingresar Producto'}
             </h3>
-            <p className="text-xs font-bold text-slate-400 mt-0.5">
+            <p className="text-xs font-bold text-slate-500 mt-0.5">
               {selectedProduct
                 ? 'Sumar existencias a un artículo ya registrado'
                 : 'Escanea, busca o crea un artículo nuevo'}
             </p>
           </div>
-          <button onClick={onClose} type="button" className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm">&times;</button>
+          <button onClick={onClose} type="button" className="w-10 h-10 bg-white border border-slate-200 text-slate-500 rounded-lg hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8">
@@ -264,7 +264,7 @@ const ProductFormModal = ({
                     setShowDropdown(true);
                   }}
                   onFocus={() => setShowDropdown(true)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-white border border-azul/30 rounded-lg text-xs font-bold text-tinta placeholder:text-slate-400 focus:outline-none focus:border-azul focus:ring-2 focus:ring-azul/30 shadow-sm transition-all"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white border border-azul/30 rounded-lg text-xs font-bold text-tinta placeholder:text-slate-500 focus:outline-none focus:border-azul focus:ring-2 focus:ring-azul/30 shadow-sm transition-all"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-azul">
                   <Search size={16} />
@@ -283,7 +283,7 @@ const ProductFormModal = ({
                         >
                           <div>
                             <p className="font-bold text-tinta text-xs group-hover:text-azul transition-colors">{p.nombre_producto}</p>
-                            <p className="text-xs text-slate-400 font-mono mt-0.5">
+                            <p className="text-xs text-slate-500 font-mono mt-0.5">
                               {p.codigo_barras || p.codigo || 'SIN CÓDIGO'} • Stock actual: <strong className="text-exito font-sans">{p.cantidad} ud</strong>
                             </p>
                           </div>
@@ -306,7 +306,7 @@ const ProductFormModal = ({
               {selectedProduct ? (
                 <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm animate-fade-in">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-500 text-white rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+                    <div className="w-10 h-10 bg-exito text-white rounded-lg flex items-center justify-center shrink-0 shadow-sm">
                       <CheckCircle2 size={22} />
                     </div>
                     <div>
@@ -367,7 +367,7 @@ const ProductFormModal = ({
             <div className="space-y-2">
               <label htmlFor="input_codigo" className="text-xs font-semibold text-slate-600 ml-1 flex justify-between items-center">
                 <span>SKU / Referencia Interna</span>
-                <span className="text-slate-400 font-bold lowercase tracking-normal text-xs">(opcional)</span>
+                <span className="text-slate-500 font-bold lowercase tracking-normal text-xs">(opcional)</span>
               </label>
               <input
                 id="input_codigo"
@@ -409,7 +409,7 @@ const ProductFormModal = ({
               </datalist>
             </div>
             <div className="space-y-2">
-              <label htmlFor="input_subcategoria" className="text-xs font-semibold text-slate-600 ml-1">Subcategoría <span className="text-slate-400">(Opcional)</span></label>
+              <label htmlFor="input_subcategoria" className="text-xs font-semibold text-slate-600 ml-1">Subcategoría <span className="text-slate-500">(Opcional)</span></label>
               <input id="input_subcategoria" type="text" value={formData.subcategoria} onChange={e => setFormData({ ...formData, subcategoria: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-tinta focus:border-azul outline-none transition-colors" />
             </div>
           </div>
@@ -433,7 +433,7 @@ const ProductFormModal = ({
             </div>
             {formData.tipo_producto === 'Perecedero' && (
               <div className="space-y-2 animate-bounce-in relative">
-                <label htmlFor="input_fecha_vencimiento" className="text-xs font-bold text-rose-500 ml-1">Fecha de Vencimiento 📅</label>
+                <label htmlFor="input_fecha_vencimiento" className="text-xs font-bold text-peligro ml-1">Fecha de Vencimiento 📅</label>
                 <CustomDatePicker
                   id="input_fecha_vencimiento"
                   value={formData.fecha_vencimiento}
@@ -453,7 +453,7 @@ const ProductFormModal = ({
             <div className="mt-8 sm:mt-10 mb-8 p-7 sm:p-8 bg-emerald-50/40 border-2 border-emerald-300 rounded-2xl shadow-sm animate-scale-in space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-emerald-200/70">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-exito text-white flex items-center justify-center shadow-sm shrink-0">
                     <PackagePlus size={18} />
                   </div>
                   <div>
@@ -474,7 +474,7 @@ const ProductFormModal = ({
                 <div className="space-y-3">
                   <label htmlFor="input_precio" className="text-xs font-semibold text-slate-600 ml-1 flex justify-between items-center">
                     <span>Precio de Venta</span>
-                    <span className="text-slate-400 font-bold lowercase tracking-normal text-xs bg-white px-2 py-0.5 rounded border border-slate-200">(editable si cambió)</span>
+                    <span className="text-slate-500 font-bold lowercase tracking-normal text-xs bg-white px-2 py-0.5 rounded border border-slate-200">(editable si cambió)</span>
                   </label>
                   <input
                     id="input_precio"
@@ -558,7 +558,7 @@ const ProductFormModal = ({
               <details className="group">
                 <summary className="flex items-center gap-2 cursor-pointer select-none py-3 px-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-azul/30 transition-colors">
                   <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><Settings size={12} /> Configuración de Alertas y Stock Mínimo</span>
-                  <span className="ml-auto text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                  <span className="ml-auto text-xs text-slate-500 group-open:rotate-180 transition-transform" aria-hidden="true">▼</span>
                 </summary>
                 <div className="mt-4 p-5 bg-azul/10 border border-azul/30 rounded-2xl space-y-5">
                   <p className="text-xs font-bold text-slate-500 leading-relaxed flex items-center justify-between">
@@ -575,13 +575,13 @@ const ProductFormModal = ({
 
                   {aiError && (
                     <div className="p-3 bg-rose-50/50 border border-peligro-suave rounded-2xl flex items-start gap-2">
-                      <span className="text-rose-500 mt-0.5 text-xs">⚠️</span>
+                      <span className="text-peligro mt-0.5 text-xs">⚠️</span>
                       <p className="text-xs text-peligro font-bold">{aiError}</p>
                     </div>
                   )}
                   {aiSuccess && (
                     <div className="p-3 bg-emerald-50/50 border border-exito-suave rounded-2xl flex items-start gap-2">
-                      <span className="text-emerald-500 mt-0.5 text-xs">✨</span>
+                      <span className="text-exito mt-0.5 text-xs">✨</span>
                       <p className="text-xs text-exito font-bold">{aiSuccess}</p>
                     </div>
                   )}
@@ -623,7 +623,7 @@ const ProductFormModal = ({
                         }}
                         className={`w-full p-3 border rounded-lg text-sm font-bold outline-none text-center transition-all duration-500 ${updatedFields.includes('stock_minimo') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-amber-200 text-aviso focus:border-ambar'}`}
                       />
-                      <p className="text-xs text-slate-400 font-bold text-center">Avisa cuándo comprar</p>
+                      <p className="text-xs text-slate-500 font-bold text-center">Avisa cuándo comprar</p>
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="input_stock_seguridad" className="text-xs font-semibold text-slate-600 ml-1 flex items-center gap-1">
@@ -643,7 +643,7 @@ const ProductFormModal = ({
                         }}
                         className={`w-full p-3 border rounded-lg text-sm font-bold outline-none text-center transition-all duration-500 ${updatedFields.includes('stock_seguridad') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-rose-200 text-peligro focus:border-rose-500'}`}
                       />
-                      <p className="text-xs text-slate-400 font-bold text-center">Avisa riesgo de quiebre</p>
+                      <p className="text-xs text-slate-500 font-bold text-center">Avisa riesgo de quiebre</p>
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="input_lead_time" className="text-xs font-semibold text-slate-600 ml-1 flex items-center gap-1">
@@ -663,7 +663,7 @@ const ProductFormModal = ({
                         }}
                         className={`w-full p-3 border rounded-lg text-sm font-bold outline-none text-center transition-all duration-500 ${updatedFields.includes('lead_time') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-azul/30 text-azul focus:border-azul'}`}
                       />
-                      <p className="text-xs text-slate-400 font-bold text-center">Días de entrega</p>
+                      <p className="text-xs text-slate-500 font-bold text-center">Días de entrega</p>
                     </div>
                   </div>
                 </div>

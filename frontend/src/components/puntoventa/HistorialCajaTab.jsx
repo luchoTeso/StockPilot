@@ -44,12 +44,12 @@ const HistorialCajaTab = () => {
           <div className="h-12 bg-slate-100 rounded-lg"></div>
         </div>
       ) : history.length === 0 ? (
-        <p className="text-center text-slate-400 font-bold py-8 text-sm">No hay registros de sesiones de caja.</p>
+        <p className="text-center text-slate-500 font-bold py-8 text-sm">No hay registros de sesiones de caja.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 bg-slate-50/50">
+              <tr className="border-b border-slate-100 text-xs font-bold text-slate-500 bg-slate-50/50">
                 <th className="p-4">Estado</th>
                 <th className="p-4">Apertura</th>
                 <th className="p-4">Cierre</th>
@@ -79,7 +79,7 @@ const HistorialCajaTab = () => {
                     <td className="p-4 text-right text-azul font-bold">{formatCurrency(s.monto_apertura)}</td>
                     <td className="p-4 text-right text-slate-600">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_calculado) : '---'}</td>
                     <td className="p-4 text-right text-tinta font-bold">{s.estado === 'Cerrada' ? formatCurrency(s.monto_cierre_declarado) : '---'}</td>
-                    <td className={`p-4 text-right font-bold ${isDescuadre ? (diff < 0 ? 'text-peligro' : 'text-amber-500') : 'text-emerald-500'}`}>
+                    <td className={`p-4 text-right font-bold ${isDescuadre ? (diff < 0 ? 'text-peligro' : 'text-aviso') : 'text-exito'}`}>
                       {s.estado === 'Cerrada' ? formatCurrency(diff) : '---'}
                     </td>
                   </tr>

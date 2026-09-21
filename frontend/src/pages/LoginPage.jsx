@@ -64,7 +64,7 @@ const LoginPage = () => {
           <div className="text-center mb-10">
             <div className="w-20 h-20 bg-azul text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg transition-transform cursor-default"><Store size={36} /></div>
             <h1 className="titular text-4xl text-tinta">StockPilot</h1>
-            <p className="text-slate-400 font-bold text-xs mt-2">Gestión Inteligente de Inventario</p>
+            <p className="text-slate-500 font-bold text-xs mt-2">Gestión Inteligente de Inventario</p>
           </div>
 
           {isConcurrent && !error && !sessionConflict && (
@@ -96,7 +96,7 @@ const LoginPage = () => {
             <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
               <div className="text-center mb-6">
                 <p className="text-sm font-bold text-slate-600 mb-2">Autenticación de Dos Factores requerida</p>
-                <p className="text-xs text-slate-400">Abre tu aplicación de autenticación (Google Authenticator, Authy) e ingresa el código de 6 dígitos.</p>
+                <p className="text-xs text-slate-500">Abre tu aplicación de autenticación (Google Authenticator, Authy) e ingresa el código de 6 dígitos.</p>
               </div>
               <div className="space-y-1">
                 <label htmlFor="token2FA" className="text-xs font-semibold text-slate-600 ml-1">Código de 6 Dígitos</label>
@@ -105,7 +105,7 @@ const LoginPage = () => {
               <button type="submit" className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold mt-4 active:scale-95 transition-transform transition-colors">
                 Verificar Código
               </button>
-              <button type="button" onClick={() => {setIs2FA(false); setToken2FA(''); setError('');}} className="w-full mt-2 py-3 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors">
+              <button type="button" onClick={() => {setIs2FA(false); setToken2FA(''); setError('');}} className="w-full mt-2 py-3 text-slate-500 hover:text-slate-600 text-xs font-bold transition-colors">
                 Volver
               </button>
             </form>
@@ -130,7 +130,7 @@ const LoginPage = () => {
           <div className="mt-8 text-center border-t border-slate-100 pt-8 space-y-3">
              <button onClick={() => navigate('/forgot-password')} className="text-xs font-bold text-azul hover:underline decoration-2 underline-offset-4">¿Olvidó su clave?</button>
              <br />
-             <button onClick={() => navigate('/')} className="text-xs font-bold text-slate-400 hover:text-azul transition-colors">← Volver al Inicio</button>
+             <button onClick={() => navigate('/')} className="text-xs font-bold text-slate-500 hover:text-azul transition-colors">← Volver al Inicio</button>
           </div>
         </div>
       </div>

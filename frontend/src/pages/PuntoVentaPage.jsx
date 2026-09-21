@@ -36,16 +36,16 @@ const PuntoVentaPage = () => {
     <div className="animate-fade-in pb-12 space-y-8">
       {/* Pestañas / Header */}
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
-        <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 shadow-inner">
+        <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 shadow-inner max-w-full overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveTab('caja')}
-            className={`px-8 py-3 rounded-lg font-bold text-xs flex items-center gap-2 transition-all ${activeTab === 'caja' ? 'bg-white text-azul shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
+            className={`px-4 sm:px-8 py-3 rounded-lg font-bold text-xs flex items-center gap-2 whitespace-nowrap shrink-0 transition-all ${activeTab === 'caja' ? 'bg-white text-azul shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
           >
             <ShoppingCart size={16} /> Caja Rápida (POS)
           </button>
           <button
             onClick={() => setActiveTab('historial')}
-            className={`px-8 py-3 rounded-lg font-bold text-xs flex items-center gap-2 transition-all ${activeTab === 'historial' ? 'bg-white text-exito shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
+            className={`px-4 sm:px-8 py-3 rounded-lg font-bold text-xs flex items-center gap-2 whitespace-nowrap shrink-0 transition-all ${activeTab === 'historial' ? 'bg-white text-exito shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
           >
             <History size={16} /> Historial
           </button>
@@ -53,13 +53,13 @@ const PuntoVentaPage = () => {
             <>
             <button
               onClick={() => setActiveTab('historial_caja')}
-              className={`px-8 py-3 rounded-lg font-bold text-xs flex items-center gap-2 transition-all ${activeTab === 'historial_caja' ? 'bg-white text-peligro shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
+              className={`px-4 sm:px-8 py-3 rounded-lg font-bold text-xs flex items-center gap-2 whitespace-nowrap shrink-0 transition-all ${activeTab === 'historial_caja' ? 'bg-white text-peligro shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
             >
               <DollarSign size={16} /> Historial Caja
             </button>
             <button
               onClick={() => setActiveTab('egresos')}
-              className={`px-8 py-3 rounded-lg font-bold text-xs flex items-center gap-2 transition-all ${activeTab === 'egresos' ? 'bg-white text-amber-600 shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
+              className={`px-4 sm:px-8 py-3 rounded-lg font-bold text-xs flex items-center gap-2 whitespace-nowrap shrink-0 transition-all ${activeTab === 'egresos' ? 'bg-white text-aviso shadow-md scale-100' : 'text-slate-500 hover:text-tinta scale-95'}`}
             >
               <History size={16} /> Egresos
             </button>
@@ -73,7 +73,7 @@ const PuntoVentaPage = () => {
           className={`px-5 py-3.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
             isSessionActive 
               ? 'bg-rose-50 text-peligro border border-rose-200 hover:bg-peligro-suave shadow-sm' 
-              : 'bg-emerald-500 text-white hover:bg-exito shadow-md'
+              : 'bg-exito text-white hover:bg-emerald-700 shadow-md'
           }`}
         >
           {isSessionActive ? (

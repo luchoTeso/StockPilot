@@ -72,7 +72,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
   ];
 
   if (user?.rol === 'Administrador') {
-    metodos.push({ id: 'Fiado', icon: <Banknote size={24} />, color: 'text-amber-600', bg: 'bg-aviso-suave', border: 'border-amber-200' });
+    metodos.push({ id: 'Fiado', icon: <Banknote size={24} />, color: 'text-aviso', bg: 'bg-aviso-suave', border: 'border-amber-200' });
   }
 
   return (
@@ -80,7 +80,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg overflow-hidden border border-slate-100">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
           <h3 className="titular text-2xl text-tinta">Completar Pago</h3>
-          <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors shadow-sm">
+          <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-500 hover:text-rose-500 transition-colors shadow-sm">
             <X size={20} />
           </button>
         </div>
@@ -165,7 +165,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                     </div>
                   )}
                   {clientes.length === 0 && !loadingClientes && (
-                    <p className="mt-2 text-xs font-bold text-rose-500">No hay clientes registrados en cartera.</p>
+                    <p className="mt-2 text-xs font-bold text-peligro">No hay clientes registrados en cartera.</p>
                   )}
                 </div>
               </div>

@@ -54,9 +54,9 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
                         <h3 className="titular text-lg text-tinta flex items-center gap-2">
                             <Tag className="text-amber-500 w-5 h-5" /> Promoción Manual
                         </h3>
-                        <p className="text-xs font-bold text-slate-400 mt-1">Enseñando a la IA</p>
+                        <p className="text-xs font-bold text-slate-500 mt-1">Enseñando a la IA</p>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                    <button onClick={onClose} className="p-2 text-slate-500 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -74,11 +74,11 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
                         
                         <div className="flex items-center gap-4 mt-3">
                             <div>
-                                <p className="text-xs font-bold text-slate-400">Precio Actual</p>
+                                <p className="text-xs font-bold text-slate-500">Precio Actual</p>
                                 <p className="font-bold text-slate-600 line-through">${precioActual.toLocaleString('es-CO')}</p>
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-emerald-500">Nuevo Precio</p>
+                                <p className="text-xs font-bold text-exito">Nuevo Precio</p>
                                 <p className="font-bold text-exito text-lg">${precioNuevo.toLocaleString('es-CO')}</p>
                             </div>
                         </div>
@@ -114,7 +114,7 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
 
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 mb-2">Motivo de la promoción</label>
-                        <p className="text-xs text-slate-400 mb-2 font-medium">Esta justificación alimentará a la IA para aprender de tus decisiones.</p>
+                        <p className="text-xs text-slate-500 mb-2 font-medium">Esta justificación alimentará a la IA para aprender de tus decisiones.</p>
                         <textarea
                             value={motivo}
                             onChange={(e) => setMotivo(e.target.value)}

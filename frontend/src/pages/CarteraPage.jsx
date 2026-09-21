@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { Users, DollarSign, Brain, Plus, Search, CheckCircle2, History } from 'lucide-react';
+import ErrorState from '../components/common/ErrorState';
 
 const CarteraPage = () => {
   const toast = useToast();
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
   // Modals
@@ -27,9 +29,11 @@ const CarteraPage = () => {
   const fetchClientes = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(false);
       const { data } = await axios.get('/api/clientes');
       setClientes(data.clientes || []);
     } catch {
+      setLoadError(true);
       toast.error('Error al cargar la cartera de clientes.');
     } finally {
       setLoading(false);
@@ -114,13 +118,13 @@ const CarteraPage = () => {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-          <div className="p-4 bg-aviso-suave text-amber-600 rounded-2xl">
+          <div className="p-4 bg-aviso-suave text-aviso rounded-2xl">
             <DollarSign size={24} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-400">Total en la Calle</p>
+            <p className="text-sm font-bold text-slate-500">Total en la Calle</p>
             <p className="text-2xl font-bold text-tinta">
-              ${clientes.reduce((acc, c) => acc + (c.saldo_pendiente > 0 ? c.saldo_pendiente : 0), 0).toLocaleString('es-CO')}
+              {loadError ? '—' : `$${clientes.reduce((acc, c) => acc + (c.saldo_pendiente > 0 ? c.saldo_pendiente : 0), 0).toLocaleString('es-CO')}`}
             </p>
           </div>
         </div>
@@ -154,6 +158,8 @@ const CarteraPage = () => {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr><td colSpan="4" className="p-8 text-center text-slate-500 font-bold">Cargando...</td></tr>
+              ) : loadError ? (
+                <tr><td colSpan="4"><ErrorState title="No pudimos cargar la cartera" onRetry={fetchClientes} /></td></tr>
               ) : filteredClientes.length === 0 ? (
                 <tr><td colSpan="4" className="p-8 text-center text-slate-500 font-bold">No hay clientes registrados.</td></tr>
               ) : (
@@ -161,7 +167,7 @@ const CarteraPage = () => {
                   <tr key={cliente.id_cliente} className="hover:bg-slate-50 transition-colors">
                     <td className="p-4 font-bold text-tinta">{cliente.nombre}</td>
                     <td className="p-4 font-bold text-slate-600">${Number(cliente.limite_credito).toLocaleString('es-CO')}</td>
-                    <td className="p-4 font-bold text-amber-600">${Number(cliente.saldo_pendiente).toLocaleString('es-CO')}</td>
+                    <td className="p-4 font-bold text-aviso">${Number(cliente.saldo_pendiente).toLocaleString('es-CO')}</td>
                     <td className="p-4 flex justify-center gap-2">
                       <button 
                         onClick={() => { setSelectedClient(cliente); setIsAbonoModalOpen(true); }}
@@ -219,13 +225,13 @@ const CarteraPage = () => {
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg">
             <h3 className="titular text-xl mb-2">Registrar Abono</h3>
             <p className="text-slate-500 font-bold mb-4">Cliente: <span className="text-tinta">{selectedClient.nombre}</span></p>
-            <p className="text-sm font-bold text-slate-500 mb-6">Saldo Actual: <span className="text-amber-600">${Number(selectedClient.saldo_pendiente).toLocaleString('es-CO')}</span></p>
+            <p className="text-sm font-bold text-slate-500 mb-6">Saldo Actual: <span className="text-aviso">${Number(selectedClient.saldo_pendiente).toLocaleString('es-CO')}</span></p>
             
             <form onSubmit={handleRegistrarAbono} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">Monto en Efectivo</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
                   <input required type="number" min="1" max={selectedClient.saldo_pendiente > 0 ? selectedClient.saldo_pendiente : undefined} className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 text-xl font-bold" value={abonoMonto} onChange={e => setAbonoMonto(e.target.value)} autoFocus />
                 </div>
               </div>
@@ -249,7 +255,7 @@ const CarteraPage = () => {
                   <Brain className="text-azul" />
                   Perfil IA
                 </h3>
-                <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-tinta"><CheckCircle2 /></button>
+                <button onClick={() => setIsAiModalOpen(false)} className="text-slate-500 hover:text-tinta"><CheckCircle2 /></button>
              </div>
              
              {loadingAi ? (
@@ -266,7 +272,7 @@ const CarteraPage = () => {
                    <p className="text-xs font-bold text-slate-500 mb-1">Riesgo Calculado</p>
                    <p className={`text-4xl font-bold ${
                      aiAnalysis.riesgo === 'Alto' ? 'text-peligro' :
-                     aiAnalysis.riesgo === 'Medio' ? 'text-amber-600' : 'text-exito'
+                     aiAnalysis.riesgo === 'Medio' ? 'text-aviso' : 'text-exito'
                    }`}>{aiAnalysis.riesgo}</p>
                  </div>
                  
@@ -286,7 +292,7 @@ const CarteraPage = () => {
                  </div>
                </div>
              ) : (
-               <div className="text-center py-8 text-rose-500 font-bold">
+               <div className="text-center py-8 text-peligro font-bold">
                  Hubo un error al generar el perfil.
                </div>
              )}

@@ -21,14 +21,14 @@ const ProveedorGrid = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onEdit(p)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-azul hover:bg-azul/10 hover:shadow-sm transition-colors transition-shadow transition-transform active:scale-90"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-azul hover:bg-azul/10 hover:shadow-sm transition-colors transition-shadow transition-transform active:scale-90"
                   title="Editar Proveedor"
                 >
                     <Pencil size={14} />
                 </button>
                 <button
                   onClick={() => onDelete(p)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-peligro hover:bg-rose-50 hover:shadow-sm transition-colors transition-shadow transition-transform active:scale-90"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-peligro hover:bg-rose-50 hover:shadow-sm transition-colors transition-shadow transition-transform active:scale-90"
                   title="Eliminar Proveedor"
                 >
                     <Trash2 size={14} />
@@ -39,7 +39,7 @@ const ProveedorGrid = ({
               <Package size={14} /> {p.productos_vinculados} Productos Vinculados
             </p>
             <div className="mt-3 p-3 bg-rose-50 border border-peligro-suave rounded-2xl">
-              <p className="text-xs font-bold text-rose-400">Deuda Pendiente</p>
+              <p className="text-xs font-bold text-peligro">Deuda Pendiente</p>
               <p className="text-sm font-bold text-peligro">${(p.total_deuda || 0).toLocaleString()}</p>
             </div>
           </div>
@@ -53,7 +53,7 @@ const ProveedorGrid = ({
         </div>
       ))}
       {proveedores.length === 0 && (
-        <div className="col-span-full py-10 text-center text-slate-400 font-bold bg-white rounded-2xl border border-dashed border-slate-300">
+        <div className="col-span-full py-10 text-center text-slate-500 font-bold bg-white rounded-2xl border border-dashed border-slate-300">
           No hay proveedores registrados.
         </div>
       )}

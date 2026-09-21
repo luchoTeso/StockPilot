@@ -24,7 +24,7 @@ const CustomTooltipPareto = ({ active, payload }) => {
       <p className="text-xs font-bold text-resaltador mb-2">{fullName}</p>
       {payload.map((entry) => (
         <div key={entry.name} className="flex justify-between items-center gap-6 py-1">
-          <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full ring-1 ring-white/70" style={{ backgroundColor: entry.color }}></span>
             {entry.name}
           </span>
@@ -42,7 +42,7 @@ const CustomTooltipGeneric = ({ active, payload, label }) => {
   const fullName = payload[0]?.payload?.fullName || label;
   return (
     <div className="bg-tinta text-white px-4 py-3 rounded-2xl shadow-lg border border-tinta-2">
-      <p className="text-xs font-bold text-slate-300 mb-1">{fullName}</p>
+      <p className="text-xs font-bold text-slate-500 mb-1">{fullName}</p>
       {payload.map((entry) => (
         <p key={entry.name} className="text-sm font-bold text-white flex items-center gap-2">
           <span className="w-2 h-2 rounded-full ring-1 ring-white/70" style={{ backgroundColor: entry.color || '#fff' }}></span>
@@ -161,7 +161,7 @@ const AnalyticsDashboardPage = () => {
       <div className="flex items-center justify-center h-[80vh]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-azul border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <p className="text-slate-400 font-bold text-xs">Sincronizando Motores Analíticos</p>
+          <p className="text-slate-500 font-bold text-xs">Sincronizando Motores Analíticos</p>
         </div>
       </div>
     );
@@ -213,14 +213,14 @@ const AnalyticsDashboardPage = () => {
           <p className="text-xs text-azul font-bold mt-1">Del ingreso total (Alta Rotación)</p>
         </div>
         <div className="bg-amber-50 p-5 rounded-2xl border border-aviso-suave shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-xs font-bold text-amber-600">Stock Promedio</p>
+          <p className="text-xs font-bold text-aviso">Stock Promedio</p>
           <p className="text-3xl font-bold text-aviso mt-2">{kpis.avgDays}d</p>
-          <p className="text-xs text-amber-600 font-bold mt-1">Para agotarse la mercancía</p>
+          <p className="text-xs text-aviso font-bold mt-1">Para agotarse la mercancía</p>
         </div>
         <div className={`p-5 rounded-2xl border shadow-sm hover:shadow-md transition-shadow ${kpis.criticalCount > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-exito-suave'}`}>
           <p className={`text-xs font-bold ${kpis.criticalCount > 0 ? 'text-peligro' : 'text-exito'}`}>Productos en Riesgo</p>
           <p className={`text-3xl font-bold mt-2 ${kpis.criticalCount > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{kpis.criticalCount}</p>
-          <p className={`text-xs font-bold mt-1 ${kpis.criticalCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{kpis.criticalCount > 0 ? '¡Requieren tu acción ya!' : 'Todo en orden'}</p>
+          <p className={`text-xs font-bold mt-1 ${kpis.criticalCount > 0 ? 'text-peligro' : 'text-exito'}`}>{kpis.criticalCount > 0 ? '¡Requieren tu acción ya!' : 'Todo en orden'}</p>
         </div>
       </div>
 
@@ -262,7 +262,7 @@ const AnalyticsDashboardPage = () => {
               </ComposedChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 flex items-center gap-3 px-2">
+          <div className="mt-4 flex flex-wrap items-center gap-3 px-2">
             <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden flex">
               <div className="bg-azul h-full" style={{ width: `${kpis.concentrationA}%` }}></div>
               <div className="bg-ambar h-full" style={{ width: `${Math.min(100 - kpis.concentrationA, 25)}%` }}></div>
@@ -284,7 +284,7 @@ const AnalyticsDashboardPage = () => {
             <p className="text-xs text-slate-500 font-bold mt-1">¿Cuáles te dejan más dinero? (Clase A = Más rentables)</p>
           </div>
           <div className="px-8 py-6">
-            <div className="flex items-center gap-8">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
               <div className="w-[200px] h-[200px] shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -316,7 +316,7 @@ const AnalyticsDashboardPage = () => {
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-xs font-bold text-tinta-2">{item.name}</span>
-                          <span className="text-xs font-bold" style={{ color: item.fill }}>{item.value} Productos ({pct}%)</span>
+                          <span className="text-xs font-bold text-tinta">{item.value} Productos ({pct}%)</span>
                         </div>
                         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                           <div className="h-full rounded-full transition-colors duration-1000" style={{ width: `${pct}%`, backgroundColor: item.fill }}></div>
@@ -347,7 +347,7 @@ const AnalyticsDashboardPage = () => {
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.fill }}></div>
                       <span className="text-xs font-bold text-tinta-2">{item.name}</span>
                     </div>
-                    <span className="text-xl font-bold" style={{ color: item.fill }}>{item.value}</span>
+                    <span className="text-xl font-bold text-tinta">{item.value}</span>
                   </div>
                   <div className="h-4 bg-slate-50 rounded-lg overflow-hidden border border-slate-100">
                     <div 
@@ -404,7 +404,7 @@ const AnalyticsDashboardPage = () => {
                 <div className="grayscale opacity-50 flex justify-center"><Microscope size={36} /></div>
                 <div>
                   <p className="text-xs font-bold text-slate-500 px-2">Esperando Datos Estratégicos</p>
-                  <p className="text-xs text-slate-400 font-medium mt-1 leading-tight">
+                  <p className="text-xs text-slate-500 font-medium mt-1 leading-tight">
                     "Las variaciones de precio aplicadas por la IA aparecerán aquí una vez <br className="hidden sm:block" /> que empieces a activar ofertas comerciales."
                   </p>
                 </div>
@@ -412,7 +412,7 @@ const AnalyticsDashboardPage = () => {
             )}
           </div>
           <div className="mt-4 text-center">
-            <p className="text-xs font-bold text-slate-400">
+            <p className="text-xs font-bold text-slate-500">
               Mostrando los últimos 100 movimientos en el historial de precios aplicados
             </p>
           </div>

@@ -176,7 +176,7 @@ const SimuladorPage = () => {
               <p className="text-xs font-bold text-azul bg-azul/10 px-2 py-0.5 rounded-full inline-block">Proyecta tus futuras compras</p>
             </div>
           </div>
-          <p className="text-sm font-bold text-slate-400 max-w-xl">
+          <p className="text-sm font-bold text-slate-500 max-w-xl">
             Ajusta cuántos días quieres cubrir y tu presupuesto para ver exactamente qué deberías comprar antes de gastar dinero en la vida real.
           </p>
         </div>
@@ -184,7 +184,7 @@ const SimuladorPage = () => {
         <button 
           onClick={() => setShowConvertModal(true)}
           disabled={simulatedData.activeCount === 0}
-          className="bg-emerald-500 hover:bg-exito text-white px-8 py-4 rounded-lg font-bold text-xs shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-3"
+          className="bg-exito hover:bg-emerald-700 text-white px-8 py-4 rounded-lg font-bold text-xs shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-3"
         >
           <Package size={16} /> Convertir en Orden Real
         </button>
@@ -200,7 +200,7 @@ const SimuladorPage = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-end">
               <label htmlFor="days" className="text-xs font-semibold text-slate-600">Días de Cobertura Deseada</label>
-              <span className="text-3xl font-bold text-azul">{days} <span className="text-sm text-slate-400">días</span></span>
+              <span className="text-3xl font-bold text-azul">{days} <span className="text-sm text-slate-500">días</span></span>
             </div>
             <input 
               id="days"
@@ -212,7 +212,7 @@ const SimuladorPage = () => {
               onChange={(e) => setDays(parseInt(e.target.value))}
               className="w-full h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-azul"
             />
-            <div className="flex justify-between text-xs font-bold text-slate-400">
+            <div className="flex justify-between text-xs font-bold text-slate-500">
               <span>7 días (Mín)</span>
               <span>45 días (Med)</span>
               <span>90 días (Máx)</span>
@@ -225,7 +225,7 @@ const SimuladorPage = () => {
               <label htmlFor="budget" className="text-xs font-semibold text-slate-600">Presupuesto Máximo de Compra</label>
             </div>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
               <input 
                 id="budget"
                 type="number"
@@ -234,7 +234,7 @@ const SimuladorPage = () => {
                 className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-lg font-bold text-2xl text-tinta focus:border-azul outline-none transition-colors transition-shadow"
               />
             </div>
-            <p className="text-xs text-slate-400 font-bold">
+            <p className="text-xs text-slate-500 font-bold">
               ⚠️ Si el presupuesto no te alcanza, el sistema priorizará la compra de los productos que te dejan más ganancia (Tipo A).
             </p>
           </div>
@@ -244,16 +244,16 @@ const SimuladorPage = () => {
         <div className="bg-azul p-8 rounded-2xl shadow-lg flex flex-col justify-between text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full"></div>
           <div>
-            <p className="text-xs font-bold opacity-60 mb-1">Costo Total Simulado</p>
+            <p className="text-xs font-bold opacity-80 mb-1">Costo Total Simulado</p>
             <h2 className="titular text-4xl">${simulatedData.totalCost.toLocaleString()}</h2>
             
             <div className="mt-6 flex gap-4">
               <div className="bg-white/10 rounded-2xl p-3 flex-grow border border-white/5">
-                <p className="text-xs font-bold opacity-60">Items Incluidos</p>
+                <p className="text-xs font-bold opacity-80">Items Incluidos</p>
                 <p className="text-xl font-bold">{simulatedData.activeCount}</p>
               </div>
               <div className="bg-white/10 rounded-2xl p-3 flex-grow border border-white/5">
-                <p className="text-xs font-bold opacity-60">Excluidos</p>
+                <p className="text-xs font-bold opacity-80">Excluidos</p>
                 <p className="text-xl font-bold text-rose-300">{simulatedData.excludedCount}</p>
               </div>
             </div>
@@ -278,13 +278,13 @@ const SimuladorPage = () => {
       <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
           <h3 className="titular text-xl text-tinta">¿Qué y cuánto comprar?</h3>
-          <p className="text-xs font-bold text-slate-400">Calculado a partir de tu ritmo de ventas mensual</p>
+          <p className="text-xs font-bold text-slate-500">Calculado a partir de tu ritmo de ventas mensual</p>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 text-xs font-bold text-slate-400">
+              <tr className="bg-slate-50/50 text-xs font-bold text-slate-500">
                 <th className="p-6 border-b border-slate-100 w-16">Inc.</th>
                 <th className="p-6 border-b border-slate-100">Producto</th>
                 <th className="p-6 border-b border-slate-100 text-center">Tipo</th>
@@ -301,7 +301,7 @@ const SimuladorPage = () => {
                   key={p.id_producto} 
                   className={`group transition-colors duration-300 ${
                     !p.activeInSim 
-                      ? 'opacity-75 bg-slate-50/40 grayscale-[0.5]' 
+                      ? 'opacity-90 bg-slate-50/40 grayscale-[0.5]' 
                       : 'bg-white border-l-4 border-l-emerald-500 shadow-[2px_0_15px_rgba(0,0,0,0.05)] relative z-10 scale-[1.01]'
                   } hover:bg-slate-50/80`}
                 >
@@ -317,25 +317,25 @@ const SimuladorPage = () => {
                   <td className="p-6">
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-tinta leading-none">{p.nombre}</span>
-                      <span className="text-xs font-bold text-slate-400 mt-1">{p.categoria}</span>
+                      <span className="text-xs font-bold text-slate-500 mt-1">{p.categoria}</span>
                     </div>
                   </td>
                   <td className="p-6 text-center">
                     <span className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap ${
                       p.category === 'A' ? 'bg-azul/10 text-azul' : 
                       p.category === 'B' ? 'bg-slate-100 text-slate-600' : 
-                      'bg-slate-50 text-slate-400'
+                      'bg-slate-50 text-slate-500'
                     }`}>
                       {p.category === 'A' ? 'A (Alta)' : p.category === 'B' ? 'B (Media)' : 'C (Baja)'}
                     </span>
                   </td>
                   <td className="p-6 text-center text-sm font-bold text-slate-600">{(Number(p.stock_actual) || 0)} ud</td>
-                  <td className="p-6 text-center text-sm font-bold text-slate-400">{(Number(p.velocity) || 0).toFixed(1)} /día</td>
+                  <td className="p-6 text-center text-sm font-bold text-slate-600">{(Number(p.velocity) || 0).toFixed(1)} /día</td>
                   <td className="p-6 text-center">
                     <div className="flex flex-col items-center">
                       <span className={`text-sm font-bold ${
-                        p.days_to_exhaust < 7 ? 'text-rose-500' : 
-                        p.days_to_exhaust < 15 ? 'text-amber-500' : 'text-emerald-500'
+                        p.days_to_exhaust < 7 ? 'text-peligro' : 
+                        p.days_to_exhaust < 15 ? 'text-aviso' : 'text-exito'
                       }`}>
                         {p.days_to_exhaust === Infinity ? '∞' : p.days_to_exhaust} días
                       </span>
@@ -349,12 +349,12 @@ const SimuladorPage = () => {
                   </td>
                   <td className="p-6 text-center">
                     <div className={`inline-block px-4 py-2 rounded-2xl border-2 font-bold text-lg transition-colors ${
-                      p.needed > 0 ? 'border-exito-suave bg-emerald-50 text-exito' : 'border-slate-100 bg-slate-50 text-slate-300'
+                      p.needed > 0 ? 'border-exito-suave bg-emerald-50 text-exito' : 'border-slate-100 bg-slate-50 text-slate-500'
                     }`}>
                       {p.needed} <span className="text-xs">ud</span>
                     </div>
                     {p.isExcludedBudget && (
-                      <p className="text-xs font-bold text-rose-500 mt-1">Fuera de Presupuesto</p>
+                      <p className="text-xs font-bold text-peligro mt-1">Fuera de Presupuesto</p>
                     )}
                   </td>
                   <td className="p-6 text-right font-bold text-tinta-2">
@@ -376,9 +376,9 @@ const SimuladorPage = () => {
             <div className="flex justify-between items-center mb-8">
               <div>
                 <h2 className="titular text-2xl text-tinta">Confirmar Ejecución</h2>
-                <p className="text-xs font-bold text-slate-400">Selecciona el proveedor para procesar la orden.</p>
+                <p className="text-xs font-bold text-slate-500">Selecciona el proveedor para procesar la orden.</p>
               </div>
-              <button onClick={() => setShowConvertModal(false)} aria-label="Cerrar modal" className="text-2xl text-slate-300 hover:text-rose-500 transition-colors">×</button>
+              <button onClick={() => setShowConvertModal(false)} aria-label="Cerrar modal" className="text-2xl text-slate-500 hover:text-rose-500 transition-colors">×</button>
             </div>
 
             <div className="space-y-6">
@@ -394,7 +394,7 @@ const SimuladorPage = () => {
               </div>
 
               <div className="space-y-2">
-                <span className="block text-xs font-bold text-slate-400 ml-1">Seleccionar Proveedor</span>
+                <span className="block text-xs font-bold text-slate-500 ml-1">Seleccionar Proveedor</span>
                 <div className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus-within:border-azul transition-colors">
                   <CustomSelect 
                     value={selectedSupplierId}
@@ -406,7 +406,7 @@ const SimuladorPage = () => {
                     placeholder="-- Elige un proveedor --"
                   />
                 </div>
-                <p className="text-xs text-slate-400 font-bold ml-1">
+                <p className="text-xs text-slate-500 font-bold ml-1">
                   * Solo se incluirán los productos de la simulación vinculados al proveedor elegido.
                 </p>
               </div>

@@ -29,7 +29,7 @@ const OrdenesHistory = ({
           <div className="overflow-x-auto">
           <table className="w-full text-left min-w-[860px]">
             <thead>
-              <tr className="bg-slate-50 text-xs font-bold text-slate-400">
+              <tr className="bg-slate-50 text-xs font-bold text-slate-500">
                 <th className="p-5">Fecha</th>
                 <th className="p-5">Proveedor</th>
                 <th className="p-5">Alerta</th>
@@ -46,7 +46,7 @@ const OrdenesHistory = ({
                   <td className="p-5 text-xs font-bold text-slate-500">{new Date(o.fecha_creacion).toLocaleDateString()}</td>
                   <td className="p-5 text-sm font-bold text-tinta">{o.proveedor_nombre}</td>
                   <td className="p-5">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${o.riesgo === 'Alto' ? 'bg-peligro-suave text-peligro' : (o.riesgo === 'Medio' ? 'bg-aviso-suave text-amber-600' : 'bg-exito-suave text-exito')}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${o.riesgo === 'Alto' ? 'bg-peligro-suave text-peligro' : (o.riesgo === 'Medio' ? 'bg-aviso-suave text-aviso' : 'bg-exito-suave text-exito')}`}>
                       {o.riesgo}
                     </span>
                   </td>
@@ -61,7 +61,7 @@ const OrdenesHistory = ({
                       o.estado === 'Aprobada' ? 'bg-emerald-50 text-exito' : 
                       o.estado === 'Rechazada' ? 'bg-rose-50 text-peligro' : 
                       o.estado === 'Enviada' ? 'bg-azul/10 text-azul' : 
-                      'bg-amber-50 text-amber-600'
+                      'bg-amber-50 text-aviso'
                     }`}>
                       {o.estado === 'Enviada' ? <span className="flex items-center gap-1"><Mail size={12} /> Enviada</span> : o.estado}
                     </span>
@@ -69,7 +69,7 @@ const OrdenesHistory = ({
                   <td className="p-5">
                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                       o.estado_pago === 'Pagado' ? 'bg-exito-suave text-exito' : 
-                      o.estado_pago === 'Abonado' ? 'bg-aviso-suave text-amber-600' : 
+                      o.estado_pago === 'Abonado' ? 'bg-aviso-suave text-aviso' : 
                       'bg-slate-100 text-slate-500'
                     }`}>
                       {o.estado_pago || 'Pendiente Pago'}
@@ -94,7 +94,7 @@ const OrdenesHistory = ({
                 </tr>
               ))}
               {ordenesHistory.length === 0 && (
-                <tr><td colSpan="6" className="p-10 text-center text-sm font-bold text-slate-400">No hay órdenes registradas aún.</td></tr>
+                <tr><td colSpan="6" className="p-10 text-center text-sm font-bold text-slate-500">No hay órdenes registradas aún.</td></tr>
               )}
             </tbody>
           </table>
@@ -109,26 +109,26 @@ const OrdenesHistory = ({
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-lg relative z-10 overflow-y-auto animate-scale-in">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="titular text-xl text-tinta">Detalle de Orden #{showHistoryDetail.id_orden}</h2>
-              <button onClick={() => setShowHistoryDetail(null)} aria-label="Cerrar detalle" className="text-2xl text-slate-400 hover:text-rose-500 transition-colors">×</button>
+              <button onClick={() => setShowHistoryDetail(null)} aria-label="Cerrar detalle" className="text-2xl text-slate-500 hover:text-rose-500 transition-colors">×</button>
             </div>
 
             {/* Metadata de la orden */}
             <div className="px-6 pt-5 pb-3 grid grid-cols-3 gap-3">
               <div className="col-span-3 bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                <p className="text-xs font-bold text-slate-400">Proveedor</p>
+                <p className="text-xs font-bold text-slate-500">Proveedor</p>
                 <p className="text-sm font-bold text-tinta mt-1">{showHistoryDetail.proveedor_nombre}</p>
               </div>
               <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                <p className="text-xs font-bold text-slate-400">Fecha</p>
+                <p className="text-xs font-bold text-slate-500">Fecha</p>
                 <p className="text-sm font-bold text-tinta mt-1">{(() => { const r = (showHistoryDetail.fecha_creacion || '').split('T')[0]; const [y,m,d] = r.split('-'); return (y && m && d) ? `${d}/${m}/${y}` : r; })()}</p>
               </div>
               <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                <p className="text-xs font-bold text-slate-400">Presupuesto</p>
+                <p className="text-xs font-bold text-slate-500">Presupuesto</p>
                 <p className="text-sm font-bold text-tinta mt-1">${showHistoryDetail.presupuesto_total?.toLocaleString()}</p>
               </div>
               <div className={`rounded-2xl p-3 border ${showHistoryDetail.estado === 'Aprobada' ? 'bg-emerald-50 border-emerald-200' : showHistoryDetail.estado === 'Rechazada' ? 'bg-rose-50 border-rose-200' : showHistoryDetail.estado === 'Enviada' ? 'bg-azul/10 border-azul/30' : 'bg-amber-50 border-amber-200'}`}>
-                <p className="text-xs font-bold text-slate-400">Estado</p>
-                <p className={`text-sm font-bold mt-1 flex items-center gap-1 ${showHistoryDetail.estado === 'Aprobada' ? 'text-exito' : showHistoryDetail.estado === 'Rechazada' ? 'text-peligro' : showHistoryDetail.estado === 'Enviada' ? 'text-azul' : 'text-amber-600'}`}>{showHistoryDetail.estado === 'Enviada' ? <><Mail size={14} /> Enviada</> : showHistoryDetail.estado}</p>
+                <p className="text-xs font-bold text-slate-500">Estado</p>
+                <p className={`text-sm font-bold mt-1 flex items-center gap-1 ${showHistoryDetail.estado === 'Aprobada' ? 'text-exito' : showHistoryDetail.estado === 'Rechazada' ? 'text-peligro' : showHistoryDetail.estado === 'Enviada' ? 'text-azul' : 'text-aviso'}`}>{showHistoryDetail.estado === 'Enviada' ? <><Mail size={14} /> Enviada</> : showHistoryDetail.estado}</p>
               </div>
             </div>
 
@@ -138,10 +138,10 @@ const OrdenesHistory = ({
                   <div key={det.id_detalle} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
                       <p className="text-sm font-bold text-tinta">{det.nombre_producto}</p>
-                      <p className="text-xs font-bold text-slate-400">Base: {det.cantidad_base} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>
+                      <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_base} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-bold text-slate-400">Ajuste IA</p>
+                      <p className="text-xs font-bold text-slate-500">Ajuste IA</p>
                       <p className="text-sm font-bold text-azul">{det.sugerencia_ia > 0 ? '+' : ''}{det.sugerencia_ia}%</p>
                     </div>
                   </div>
@@ -152,7 +152,7 @@ const OrdenesHistory = ({
             {/* Acciones de Revisión (solo para Pendiente/Borrador) */}
             {(showHistoryDetail.estado === 'Pendiente' || showHistoryDetail.estado === 'Borrador') && (
               <div className="p-5 border-t border-slate-100 bg-amber-50/50 flex gap-3 justify-end items-center">
-                <span className="text-xs font-bold text-amber-600 mr-auto flex items-center gap-2">
+                <span className="text-xs font-bold text-aviso mr-auto flex items-center gap-2">
                   <AlertTriangle size={14} /> Esta orden requiere su aprobación
                 </span>
                 <button
@@ -163,7 +163,7 @@ const OrdenesHistory = ({
                 </button>
                 <button
                   onClick={() => onUpdateEstado(showHistoryDetail.id_orden, 'Aprobada')}
-                  className="px-6 py-3 rounded-lg text-xs font-bold bg-emerald-500 text-white hover:bg-exito shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
+                  className="px-6 py-3 rounded-lg text-xs font-bold bg-exito text-white hover:bg-emerald-700 shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
                 >
                   ✓ Autorizar Pedido
                 </button>
@@ -182,7 +182,7 @@ const OrdenesHistory = ({
                     onChange={e => setEmailMessage(e.target.value)}
                     placeholder="Mensaje para el proveedor (opcional). Ej: Por favor confirmar disponibilidad y tiempo de entrega."
                     aria-label="Mensaje para el proveedor"
-                    className="w-full p-4 bg-white border border-emerald-200 rounded-lg text-sm text-tinta-2 outline-none focus:border-emerald-500 resize-none placeholder:text-slate-400"
+                    className="w-full p-4 bg-white border border-emerald-200 rounded-lg text-sm text-tinta-2 outline-none focus:border-emerald-500 resize-none placeholder:text-slate-500"
                     rows={2}
                   />
                   <button

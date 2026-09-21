@@ -158,9 +158,9 @@ const AlertasPage = () => {
           <div className="flex items-center justify-center h-40"><div className="animate-spin w-8 h-8 border-4 border-azul border-t-transparent rounded-full"></div></div>
         ) : filteredAlertas.length === 0 ? (
           <div className="p-12 text-center bg-white border border-dashed border-slate-300 rounded-2xl">
-            <div className="mb-4 flex justify-center text-slate-300"><ShieldCheck size={48} /></div>
+            <div className="mb-4 flex justify-center text-slate-500"><ShieldCheck size={48} /></div>
             <p className="text-lg font-bold text-tinta tracking-tight">No tienes ninguna alerta activa aquí.</p>
-            <p className="text-sm font-bold text-slate-400 mt-1">El inventario está en perfecto estado y cubierto.</p>
+            <p className="text-sm font-bold text-slate-500 mt-1">El inventario está en perfecto estado y cubierto.</p>
           </div>
         ) : (
           filteredAlertas.map(alerta => (
@@ -173,7 +173,7 @@ const AlertasPage = () => {
                 <p className="text-sm font-bold opacity-100 text-tinta leading-relaxed max-w-3xl">
                   {alerta.mensaje}
                 </p>
-                <p className="text-xs font-bold mt-4 opacity-80 text-slate-600">
+                <p className="text-xs font-bold mt-4 text-slate-600">
                   Detectada: {new Date(alerta.fecha_creacion).toLocaleString()} • Tipo: {alerta.tipo.replace('_', ' ')}
                 </p>
               </div>

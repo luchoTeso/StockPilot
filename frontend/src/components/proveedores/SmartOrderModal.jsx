@@ -28,7 +28,7 @@ const SmartOrderModal = ({
         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>
             <h2 className="titular text-2xl text-tinta">Orden a: {supplier.nombre_empresa}</h2>
-            <p className="text-xs font-bold text-slate-400 mt-1">Sugerencia del Asistente de Compras</p>
+            <p className="text-xs font-bold text-slate-500 mt-1">Sugerencia del Asistente de Compras</p>
           </div>
           <button onClick={onClose} aria-label="Cerrar modal" className="w-8 h-8 bg-slate-200 hover:bg-rose-500 hover:text-white rounded-full flex items-center justify-center transition-colors">
             ×
@@ -48,7 +48,7 @@ const SmartOrderModal = ({
                 <p className="text-sm font-bold text-slate-600 mt-1">{riskEval.justificacion}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs font-bold text-slate-400">Presupuesto Estimado</p>
+                <p className="text-xs font-bold text-slate-500">Presupuesto Estimado</p>
                 <p className="text-xl font-bold text-tinta">${riskEval.costo_total_estimado.toLocaleString()}</p>
               </div>
             </div>
@@ -58,7 +58,7 @@ const SmartOrderModal = ({
           <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 text-xs font-bold text-slate-400 mb-4">
+                <tr className="bg-slate-50 text-xs font-bold text-slate-500 mb-4">
                   {smartCart && <th className="p-4 border-b border-slate-100 w-10">INC.</th>}
                   <th className="p-4 border-b border-slate-100">Producto</th>
                   <th className="p-4 border-b border-slate-100">Prioridad</th>
@@ -90,7 +90,7 @@ const SmartOrderModal = ({
                         TIPO {item.clasificacion_abc}
                       </span>
                     </td>
-                    <td className="p-4 text-center text-sm font-bold text-slate-400">
+                    <td className="p-4 text-center text-sm font-bold text-slate-500">
                       {item.cantidad_sugerida !== undefined ? item.cantidad_sugerida : item.calculo_base} ud
                     </td>
                     {smartCart && (
@@ -116,7 +116,7 @@ const SmartOrderModal = ({
                 ))}
                 {(smartCart || forecastData).length === 0 && (
                   <tr>
-                    <td colSpan="6" className="p-8 text-center text-sm font-bold text-slate-400">
+                    <td colSpan="6" className="p-8 text-center text-sm font-bold text-slate-500">
                       {isForecastLoading
                         ? <span className="flex items-center justify-center gap-2"><Loader2 size={14} className="animate-spin" /> Calculando recomendaciones...</span>
                         : <span className="flex items-center justify-center gap-2"><CheckCircle2 size={14} /> Todos los productos tienen stock suficiente o no hay productos vinculados a este proveedor.</span>}
@@ -151,7 +151,7 @@ const SmartOrderModal = ({
             </div>
           ) : (
             <>
-              <button onClick={() => setSmartCart(null)} className="text-xs font-bold text-slate-400 hover:text-slate-600 px-4">
+              <button onClick={() => setSmartCart(null)} className="text-xs font-bold text-slate-500 hover:text-slate-600 px-4">
                 Volver al original
               </button>
               <button 
@@ -159,7 +159,7 @@ const SmartOrderModal = ({
                 disabled={isSubmitting}
                 className={`text-white px-8 py-3 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50 ${
                   riskEval?.nivel === 'Bajo' 
-                    ? 'bg-emerald-500 hover:bg-exito' 
+                    ? 'bg-exito hover:bg-emerald-700' 
                     : 'bg-ambar hover:bg-amber-600'
                 }`}
               >

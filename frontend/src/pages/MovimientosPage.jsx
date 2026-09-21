@@ -212,9 +212,9 @@ const MovimientosPage = () => {
       {/* Tarjetas de Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Entradas de Producto', value: resumen.entradas, icon: PackagePlus, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: 'Entradas de Producto', value: resumen.entradas, icon: PackagePlus, color: 'text-exito', bg: 'bg-emerald-50' },
           { label: 'Salidas de Producto', value: resumen.salidas, icon: PackageMinus, color: 'text-azul', bg: 'bg-azul/10' },
-          { label: 'Ajustes Manuales', value: resumen.ajustes, icon: SlidersHorizontal, color: 'text-amber-500', bg: 'bg-amber-50' }
+          { label: 'Ajustes Manuales', value: resumen.ajustes, icon: SlidersHorizontal, color: 'text-aviso', bg: 'bg-amber-50' }
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 flex items-center gap-4 transition-shadow transition-transform hover:shadow-lg hover:border-slate-200">
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${stat.bg} ${stat.color}`}>
@@ -222,7 +222,7 @@ const MovimientosPage = () => {
             </div>
             <div className="min-w-0 flex-1 flex flex-col justify-center">
               <Tooltip text={stat.label} className="w-full min-w-0">
-                 <p className="text-xs font-bold text-slate-400 mb-1 truncate w-full">{stat.label}</p>
+                 <p className="text-xs font-bold text-slate-500 mb-1 truncate w-full">{stat.label}</p>
               </Tooltip>
               <Tooltip text={String(stat.value)} className="w-full min-w-0 flex-1">
                  <h3 className={`titular text-3xl ${stat.color} truncate w-full`}>{stat.value}</h3>
@@ -242,7 +242,7 @@ const MovimientosPage = () => {
               <form onSubmit={registrarMovimiento} className="space-y-5">
               
               <div>
-                <span className="block text-xs font-bold text-slate-400 mb-2">Tipo de Movimiento</span>
+                <span className="block text-xs font-bold text-slate-500 mb-2">Tipo de Movimiento</span>
                 <CustomSelect 
                   value={tipo} 
                   onChange={(val) => setTipo(val)}
@@ -257,7 +257,7 @@ const MovimientosPage = () => {
               </div>
 
               <div>
-                <span className="block text-xs font-bold text-slate-400 mb-2">Producto</span>
+                <span className="block text-xs font-bold text-slate-500 mb-2">Producto</span>
                 <CustomSelect 
                   value={productoId} 
                   onChange={(val) => setProductoId(val)}
@@ -293,7 +293,7 @@ const MovimientosPage = () => {
               </div>
 
               <div>
-                <span className="block text-xs font-bold text-slate-400 mb-2">Motivo o Justificación</span>
+                <span className="block text-xs font-bold text-slate-500 mb-2">Motivo o Justificación</span>
                 <CustomSelect 
                   value={observacion} 
                   onChange={(val) => setObservacion(val)}
@@ -307,7 +307,7 @@ const MovimientosPage = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting || !tipo || !productoId || !cantidad || !observacion} 
-                  className="w-full bg-emerald-500 hover:bg-exito text-white p-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                  className="w-full bg-exito hover:bg-emerald-700 text-white p-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                 >
                   {isSubmitting ? 'Procesando...' : 'Ejecutar Movimiento'}
                 </button>
@@ -377,9 +377,9 @@ const MovimientosPage = () => {
                 </thead>
                 <tbody className="text-sm divide-y divide-slate-50">
                   {loadingMovimientos ? (
-                    <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold animate-pulse text-xs">Consultando registros...</td></tr>
+                    <tr><td colSpan="7" className="text-center p-12 text-slate-500 font-bold animate-pulse text-xs">Consultando registros...</td></tr>
                   ) : movimientos.length === 0 ? (
-                    <tr><td colSpan="7" className="text-center p-12 text-slate-400 font-bold">No se encontraron movimientos registrados en este período.</td></tr>
+                    <tr><td colSpan="7" className="text-center p-12 text-slate-500 font-bold">No se encontraron movimientos registrados en este período.</td></tr>
                   ) : (
                     movimientos.map((m) => {
                       const isSalida = m.tipo_movimiento === 'Salida';
@@ -388,10 +388,10 @@ const MovimientosPage = () => {
                       
                       let badgeClass = 'bg-emerald-50 text-exito border border-exito-suave';
                       if (isSalida) badgeClass = 'bg-azul/10 text-azul border border-azul/30';
-                      if (isAjuste) badgeClass = 'bg-amber-50 text-amber-600 border border-aviso-suave';
+                      if (isAjuste) badgeClass = 'bg-amber-50 text-aviso border border-aviso-suave';
 
                       const cantidadDisplay = isEntrada ? `+${m.cantidad}` : isSalida ? `-${m.cantidad}` : (m.cantidad >= 0 ? `+${m.cantidad}` : m.cantidad);
-                      const textColor = isSalida ? 'text-azul' : isAjuste ? 'text-amber-500' : 'text-emerald-500';
+                      const textColor = isSalida ? 'text-azul' : isAjuste ? 'text-aviso' : 'text-exito';
 
                       return (
                         <tr key={m.id_movimiento || `${m.id_producto}-${m.fecha_movimiento}`} className="hover:bg-slate-50 transition-colors">
@@ -438,7 +438,7 @@ const MovimientosPage = () => {
               </div>
               <button 
                 onClick={() => setShowHelpModal(false)}
-                className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm"
+                className="w-10 h-10 bg-white border border-slate-200 text-slate-500 rounded-lg hover:text-rose-500 hover:border-peligro-suave flex items-center justify-center text-xl transition-colors shadow-sm"
               >
                 &times;
               </button>

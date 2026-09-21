@@ -36,7 +36,7 @@ const ProveedoresPage = () => {
             </div>
             <h1 className="titular text-4xl text-tinta">Red de Proveedores</h1>
           </div>
-          <p className="text-sm font-bold text-slate-400 max-w-xl">
+          <p className="text-sm font-bold text-slate-500 max-w-xl">
             Gestiona tus compras apoyado en el Copiloto IA. Revisa qué productos necesitas pedir y genera tus órdenes de abastecimiento al instante.
           </p>
         </div>

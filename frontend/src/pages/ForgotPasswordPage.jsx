@@ -105,7 +105,7 @@ const ForgotPasswordPage = () => {
           
           <button 
             onClick={() => navigate('/login')}
-            className="absolute top-8 left-8 text-slate-400 hover:text-azul transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
+            className="absolute top-8 left-8 text-slate-500 hover:text-azul transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
           >
             &larr;
           </button>
@@ -117,7 +117,7 @@ const ForgotPasswordPage = () => {
             <h1 className="titular text-3xl text-tinta">
               {step === 1 ? 'Recuperación' : step === 2 ? 'Verificación' : 'Nueva Clave'}
             </h1>
-            <p className="text-slate-400 font-bold text-xs mt-2">
+            <p className="text-slate-500 font-bold text-xs mt-2">
               {step === 1 ? 'Envío de código de seguridad' : step === 2 ? 'Ingrese el código recibido' : 'Establezca sus credenciales'}
             </p>
           </div>

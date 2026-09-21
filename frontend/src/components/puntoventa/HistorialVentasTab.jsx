@@ -167,16 +167,16 @@ const HistorialVentasTab = () => {
       {/* Tarjetas de Estadísticas */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {[
-          { label: 'Ingresos Totales', value: `$${statsRender.totalVentas.toLocaleString('es-CO')}`, icon: <DollarSign size={28} />, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: 'Ingresos Totales', value: `$${statsRender.totalVentas.toLocaleString('es-CO')}`, icon: <DollarSign size={28} />, color: 'text-exito', bg: 'bg-emerald-50' },
           { label: 'Productos Vendidos', value: statsRender.totalProductos.toLocaleString('es-CO'), icon: <Package size={28} />, color: 'text-azul', bg: 'bg-azul/10' },
-          { label: 'Venta Promedio', value: `$${statsRender.ventaPromedio.toLocaleString('es-CO', {maximumFractionDigits:0})}`, icon: <Receipt size={28} />, color: 'text-amber-500', bg: 'bg-amber-50' },
+          { label: 'Venta Promedio', value: `$${statsRender.ventaPromedio.toLocaleString('es-CO', {maximumFractionDigits:0})}`, icon: <Receipt size={28} />, color: 'text-aviso', bg: 'bg-amber-50' },
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 flex items-center gap-6">
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${stat.bg} ${stat.color}`}>
               {stat.icon}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-400 mb-1">{stat.label}</p>
+              <p className="text-xs font-bold text-slate-500 mb-1">{stat.label}</p>
               <h3 className={`titular text-2xl ${stat.color}`}>{stat.value}</h3>
             </div>
           </div>
@@ -216,7 +216,7 @@ const HistorialVentasTab = () => {
           <button onClick={abrirTopVendidos} className="flex-1 sm:flex-none bg-azul/10 hover:bg-azul-hondo text-azul hover:text-white py-4 px-6 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2">
             <Trophy size={16} /> Top
           </button>
-          <button onClick={exportarCSV} className="flex-1 sm:flex-none bg-emerald-500 hover:bg-exito text-white py-4 px-6 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2">
+          <button onClick={exportarCSV} className="flex-1 sm:flex-none bg-exito hover:bg-emerald-700 text-white py-4 px-6 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2">
              <Download size={16} /> Reporte
           </button>
         </div>
@@ -239,9 +239,9 @@ const HistorialVentasTab = () => {
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
               {isLoading && ventasFiltradas.length === 0 ? (
-                <tr><td colSpan="7" className="p-32 text-center text-slate-300 font-bold animate-pulse">Consultando Registros...</td></tr>
+                <tr><td colSpan="7" className="p-32 text-center text-slate-500 font-bold animate-pulse">Consultando Registros...</td></tr>
               ) : ventasFiltradas.length === 0 ? (
-                <tr><td colSpan="7" className="p-32 text-center text-slate-400 font-bold">No hay transacciones.</td></tr>
+                <tr><td colSpan="7" className="p-32 text-center text-slate-500 font-bold">No hay transacciones.</td></tr>
               ) : (
                 ventasFiltradas.map((v, idx) => {
                   const precioUnitario = v.precio_unitario || (v.precio_total / v.cantidad);
@@ -249,7 +249,7 @@ const HistorialVentasTab = () => {
                     <tr key={v.id_venta ? `${v.id_venta}-${idx}` : idx} className="hover:bg-azul/10">
                        <td className="p-8">
                          <p className="font-bold text-tinta text-sm">{v.nombre_producto}</p>
-                         <p className="text-xs font-bold text-slate-400 mt-1 flex items-center gap-1.5 flex-wrap">
+                         <p className="text-xs font-bold text-slate-500 mt-1 flex items-center gap-1.5 flex-wrap">
                            <span>{v.id_venta ? `VENTA #${String(v.id_venta).padStart(6, '0')}` : '---'}</span>
                            <span className="text-azul font-bold sm:hidden">• {v.nombre_vendedor || 'Admin'}</span>
                          </p>
@@ -258,7 +258,7 @@ const HistorialVentasTab = () => {
                          <span className="inline-block px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">{v.categoria || 'S/N'}</span>
                       </td>
                       <td className="p-8 text-center font-bold text-tinta text-xl">{v.cantidad}</td>
-                      <td className="hidden sm:table-cell p-8 text-right font-bold text-slate-400">${Number(precioUnitario).toLocaleString('es-CO')}</td>
+                      <td className="hidden sm:table-cell p-8 text-right font-bold text-slate-500">${Number(precioUnitario).toLocaleString('es-CO')}</td>
                       <td className="p-8 text-right text-exito font-bold text-xl">${Number(v.precio_total).toLocaleString('es-CO')}</td>
                       <td className="p-8 text-center font-bold text-tinta-2 text-xs">
                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 text-tinta-2 rounded-2xl text-xs font-bold">
@@ -289,12 +289,12 @@ const HistorialVentasTab = () => {
               {topProductos.map((item, idx) => (
                   <div key={item.nombre} className="flex flex-col sm:flex-row justify-between items-center p-6 bg-slate-50 rounded-2xl border border-slate-100 gap-4">
                     <div className="flex items-center gap-6 w-full sm:w-auto">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl ${idx === 0 ? 'bg-aviso-suave text-amber-500 scale-110' : 'bg-slate-200 text-slate-600'}`}>
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl ${idx === 0 ? 'bg-aviso-suave text-aviso scale-110' : 'bg-slate-200 text-slate-600'}`}>
                         #{idx + 1}
                       </div>
                       <div className="flex-1 min-w-0">
                          <p className="font-bold text-tinta text-lg truncate">{item.nombre}</p>
-                         <p className="text-xs font-bold text-slate-400">{item.categoria}</p>
+                         <p className="text-xs font-bold text-slate-500">{item.categoria}</p>
                       </div>
                     </div>
                     <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t border-slate-200 sm:border-0 pt-4 sm:pt-0">

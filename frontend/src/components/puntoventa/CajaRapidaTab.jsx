@@ -218,13 +218,13 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
                        >
                          <div>
                            <p className="font-bold text-tinta-2 text-sm">{p.nombre_producto}</p>
-                           <p className="text-xs text-slate-400">{p.codigo || 'SIN CÓDIGO'} • Stock: {p.cantidad}</p>
+                           <p className="text-xs text-slate-500">{p.codigo || 'SIN CÓDIGO'} • Stock: {p.cantidad}</p>
                          </div>
                          <span className="font-bold text-azul">${Number(p.precio_venta || p.precio_unitario || p.precio || 0).toLocaleString('es-CO')}</span>
                        </button>
                      ))
                    ) : (
-                     <div className="px-4 py-6 text-center text-slate-400 text-sm font-bold">
+                     <div className="px-4 py-6 text-center text-slate-500 text-sm font-bold">
                        No se encontraron productos
                      </div>
                    )}
@@ -259,7 +259,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
            
            <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-4 mt-20">
+                <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-4 mt-20">
                   <ShoppingCart size={48} className="opacity-20" />
                   <p className="font-bold text-xs">El carrito está vacío</p>
                 </div>
@@ -268,7 +268,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
                   <div key={item.id_producto} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow gap-4">
                      <div className="flex-1 w-full">
                        <p className="font-bold text-tinta text-sm">{item.nombre_producto}</p>
-                       <p className="text-xs font-bold text-slate-400">Stock disponible: {item.cantidad}</p>
+                       <p className="text-xs font-bold text-slate-500">Stock disponible: {item.cantidad}</p>
                      </div>
                      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                        <p className="font-bold text-azul text-lg">${Number(item.precio || item.precio_unitario || 0).toLocaleString('es-CO')}</p>
@@ -307,7 +307,7 @@ const CajaRapidaTab = ({ isSessionActive, setIsCashRegisterOpen, user }) => {
            </div>
            <div className="flex justify-between items-center pt-4">
              <span className="text-slate-600 font-bold text-sm">Total a Pagar</span>
-             <span className="font-bold text-4xl text-emerald-500">${cartTotal.toLocaleString('es-CO')}</span>
+             <span className="font-bold text-4xl text-exito">${cartTotal.toLocaleString('es-CO')}</span>
            </div>
          </div>
 

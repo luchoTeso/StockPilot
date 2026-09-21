@@ -60,7 +60,7 @@ const ForcePasswordPage = () => {
           </div>
 
           <h1 className="titular text-4xl text-tinta mb-2">¡Bienvenido!</h1>
-          <p className="text-slate-400 text-xs font-bold mb-8">Por seguridad, ingresa una nueva contraseña secreta para acceder.</p>
+          <p className="text-slate-500 text-xs font-bold mb-8">Por seguridad, ingresa una nueva contraseña secreta para acceder.</p>
           
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             
@@ -81,7 +81,7 @@ const ForcePasswordPage = () => {
                   type="button" 
                   onClick={() => setShowPassword(!showPassword)} 
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -113,7 +113,7 @@ const ForcePasswordPage = () => {
           </form>
 
           <div className="mt-8 text-center border-t border-slate-100 pt-8">
-            <button onClick={logout} className="text-xs font-bold text-slate-400 hover:text-azul transition-colors">
+            <button onClick={logout} className="text-xs font-bold text-slate-500 hover:text-azul transition-colors">
               Cerrar Sesión por ahora
             </button>
           </div>

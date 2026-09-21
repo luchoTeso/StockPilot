@@ -118,7 +118,7 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
                         <DollarSign className="w-6 h-6 text-rose-500" />
                         Registrar Egreso
                     </h2>
-                    <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors shadow-sm">
+                    <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-rose-50 text-slate-500 hover:text-rose-500 transition-colors shadow-sm">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -129,10 +129,10 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
                         {/* Monto */}
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-2">
-                                Monto del Egreso <span className="text-rose-500">*</span>
+                                Monto del Egreso <span className="text-peligro">*</span>
                             </label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">$</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-500">$</span>
                                 <input 
                                     type="number" 
                                     min="1"
@@ -145,14 +145,14 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
                                 />
                             </div>
                             {isTendero && (
-                                <p className="text-xs font-bold text-slate-400 mt-2">Límite permitido: ${TOP_TENDERO.toLocaleString('es-CO')}</p>
+                                <p className="text-xs font-bold text-slate-500 mt-2">Límite permitido: ${TOP_TENDERO.toLocaleString('es-CO')}</p>
                             )}
                         </div>
 
                         {/* Categoría */}
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-2">
-                                Categoría <span className="text-rose-500">*</span>
+                                Categoría <span className="text-peligro">*</span>
                             </label>
                             <CustomSelect 
                                 value={categoria}
@@ -166,7 +166,7 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
                         {/* Motivo */}
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-2">
-                                Motivo / Justificación <span className="text-rose-500">*</span>
+                                Motivo / Justificación <span className="text-peligro">*</span>
                             </label>
                             <textarea 
                                 required
@@ -181,7 +181,7 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
                         {/* Foto de evidencia */}
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-2">
-                                Foto de Evidencia <span className="text-slate-400 normal-case tracking-normal">- Opcional (Max 2MB)</span>
+                                Foto de Evidencia <span className="text-slate-500 normal-case tracking-normal">- Opcional (Max 2MB)</span>
                             </label>
 
                             {!fotoBase64 ? (
@@ -192,7 +192,7 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
                                     <div className="w-12 h-12 rounded-full bg-azul/10 group-hover:bg-azul/10 flex items-center justify-center mb-3 transition-colors">
                                         <ImageIcon className="w-6 h-6 text-azul group-hover:text-azul" />
                                     </div>
-                                    <span className="text-xs font-bold text-slate-400 group-hover:text-azul">Haz clic para adjuntar foto</span>
+                                    <span className="text-xs font-bold text-slate-500 group-hover:text-azul">Haz clic para adjuntar foto</span>
                                 </div>
                             ) : (
                                 <div className="relative rounded-2xl overflow-hidden border border-slate-200 aspect-video bg-slate-100 flex items-center justify-center group shadow-inner">
@@ -201,7 +201,7 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
                                         <button 
                                             type="button"
                                             onClick={removePhoto}
-                                            className="bg-white text-rose-500 hover:bg-rose-500 hover:text-white p-3 rounded-full shadow-lg transition-all"
+                                            className="bg-white text-peligro hover:bg-rose-500 hover:text-white p-3 rounded-full shadow-lg transition-all"
                                         >
                                             <X className="w-6 h-6" />
                                         </button>

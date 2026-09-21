@@ -64,31 +64,31 @@ const AnalisisDetalladoPage = () => {
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
               {loading ? (
-                <tr><td colSpan="7" className="p-24 text-center text-slate-300 font-bold animate-pulse">Analizando trazas de inventario...</td></tr>
+                <tr><td colSpan="7" className="p-24 text-center text-slate-500 font-bold animate-pulse">Analizando trazas de inventario...</td></tr>
               ) : data.length === 0 ? (
-                <tr><td colSpan="7" className="p-24 text-center text-slate-400 font-bold">No hay datos de rotación disponibles</td></tr>
+                <tr><td colSpan="7" className="p-24 text-center text-slate-500 font-bold">No hay datos de rotación disponibles</td></tr>
               ) : (
                 data.map((item, idx) => (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors group">
                     <td className="p-6 font-bold text-tinta">
                        <p className="text-sm">{item.nombre}</p>
-                       <p className="text-xs text-slate-400 font-medium">#{item.id_producto}</p>
+                       <p className="text-xs text-slate-500 font-medium">#{item.id_producto}</p>
                     </td>
                     <td className="p-6">
                        <span className={`px-2 py-0.5 rounded text-xs font-bold border ${item.category === 'A' ? 'bg-azul/10 text-azul border-azul/30' : item.category === 'B' ? 'bg-aviso-suave text-aviso border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{item.category === 'A' ? 'A (Alta)' : item.category === 'B' ? 'B (Media)' : 'C (Baja)'}</span>
                     </td>
                     <td className="p-6 text-center">
-                       <span className={`px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm ${item.risk === 'high' ? 'bg-rose-500 animate-pulse' : item.risk === 'medium' ? 'bg-ambar' : 'bg-emerald-500'}`}>
+                       <span className={`px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm ${item.risk === 'high' ? 'bg-rose-500 animate-pulse' : item.risk === 'medium' ? 'bg-ambar' : 'bg-exito'}`}>
                           {item.risk === 'high' ? 'ALTO' : item.risk === 'medium' ? 'MEDIO' : 'BAJO'}
                        </span>
                     </td>
                     <td className="p-6 text-center font-bold text-azul">{(Number(item.velocity) || 0).toFixed(2)} <span className="text-xs opacity-50 not-italic">u/d</span></td>
                     <td className="p-6 text-center">
                        <p className="font-bold text-tinta text-base">{item.stock_actual}</p>
-                       <p className="text-xs text-slate-400 font-bold mt-1">Sugerido: {item.stock_seguridad}u</p>
+                       <p className="text-xs text-slate-500 font-bold mt-1">Sugerido: {item.stock_seguridad}u</p>
                     </td>
                     <td className="p-6 text-center">
-                       <span className={`text-base font-bold ${item.days_to_exhaust === null || item.days_to_exhaust === Infinity || item.days_to_exhaust > 90 ? 'text-exito' : (item.days_to_exhaust < 5 ? 'text-peligro' : 'text-amber-600')}`}>
+                       <span className={`text-base font-bold ${item.days_to_exhaust === null || item.days_to_exhaust === Infinity || item.days_to_exhaust > 90 ? 'text-exito' : (item.days_to_exhaust < 5 ? 'text-peligro' : 'text-aviso')}`}>
                           {item.days_to_exhaust === null || item.days_to_exhaust === Infinity ? 'Estable' : `${item.days_to_exhaust} días`}
                        </span>
                     </td>
@@ -108,8 +108,8 @@ const AnalisisDetalladoPage = () => {
             <p className="text-xs text-slate-500 font-bold leading-relaxed">Cuánto se está vendiendo al día (en promedio), adaptándose automáticamente a cambios rápidos para que nunca quedes sin producto.</p>
          </div>
          <div className="p-8 bg-white border border-slate-100 rounded-2xl shadow-lg group transition-transform transition-shadow">
-            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-ambar group-hover:text-white transition-colors"><BarChart2 size={20} /></div>
-            <h4 className="font-bold text-xs text-amber-600 mb-3">Ganancia Principal</h4>
+            <div className="w-12 h-12 bg-amber-50 text-aviso rounded-2xl flex items-center justify-center mb-4 group-hover:bg-ambar group-hover:text-white transition-colors"><BarChart2 size={20} /></div>
+            <h4 className="font-bold text-xs text-aviso mb-3">Ganancia Principal</h4>
             <p className="text-xs text-slate-500 font-bold leading-relaxed">Clasificamos tus productos para mostrarte cuáles te dejan la mayor rentabilidad (Tus estrellas Tipo A).</p>
          </div>
          <div className="p-8 bg-white border border-slate-100 rounded-2xl shadow-lg group transition-transform transition-shadow">

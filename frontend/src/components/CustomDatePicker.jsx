@@ -190,7 +190,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
           {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {diasSemana.map((d) => (
-              <div key={d} className="text-center text-xs font-bold text-slate-400">{d}</div>
+              <div key={d} className="text-center text-xs font-bold text-slate-500">{d}</div>
             ))}
           </div>
 
@@ -223,7 +223,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
       <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between">
         <button
           onClick={(e) => { e.preventDefault(); onChange(''); setIsOpen(false); }}
-          className="text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors"
+          className="text-xs font-bold text-slate-500 hover:text-rose-500 transition-colors"
         >
           Borrar
         </button>
@@ -248,11 +248,11 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
       <button
         ref={buttonRef}
         type="button"
-        className={`w-full flex items-center justify-between p-4 bg-slate-50 border rounded-lg text-sm font-bold outline-none transition-colors transition-shadow ${isOpen ? 'border-azul shadow-lg' : 'border-slate-200'} ${value ? 'text-tinta' : 'text-slate-400'}`}
+        className={`w-full flex items-center justify-between p-4 bg-slate-50 border rounded-lg text-sm font-bold outline-none transition-colors transition-shadow ${isOpen ? 'border-azul shadow-lg' : 'border-slate-200'} ${value ? 'text-tinta' : 'text-slate-500'}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{displayValue}</span>
-        <span className="text-xl block opacity-80" style={{ transform: isOpen ? 'translateY(1px)' : 'none' }}>📅</span>
+        <span className="text-xl block opacity-80" style={{ transform: isOpen ? 'translateY(1px)' : 'none' }} aria-hidden="true">📅</span>
       </button>
 
       {dropdownPortal}

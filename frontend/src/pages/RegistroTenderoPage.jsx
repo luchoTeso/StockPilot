@@ -64,7 +64,7 @@ const RegistroTenderoPage = () => {
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] animate-fade-in text-center">
-        <div className="mb-6 flex justify-center text-rose-400"><ShieldOff size={80} /></div>
+        <div className="mb-6 flex justify-center text-peligro"><ShieldOff size={80} /></div>
         <h2 className="titular text-4xl text-peligro mb-4">Acceso Denegado</h2>
         <div className="bg-white p-8 rounded-2xl shadow-lg border border-peligro-suave max-w-md">
           <p className="text-slate-500 font-medium mb-2">Sección Restringida</p>
@@ -162,17 +162,17 @@ const RegistroTenderoPage = () => {
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="nombres" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombres Completos <span className="text-rose-500">*</span></label>
+                  <label htmlFor="nombres" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombres Completos <span className="text-peligro">*</span></label>
                   <input id="nombres" required type="text" value={formData.nombres} onChange={e => setFormData({...formData, nombres: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Ej. Carlos Mendoza..." />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="celular" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Celular <span className="text-rose-500">*</span></label>
+                    <label htmlFor="celular" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Celular <span className="text-peligro">*</span></label>
                     <input id="celular" required type="tel" value={formData.celular} onChange={e => setFormData({...formData, celular: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="+57 320..." />
                   </div>
                   <div className="z-10 relative">
-                    <span className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Género <span className="text-rose-500">*</span></span>
+                    <span className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Género <span className="text-peligro">*</span></span>
                     <div className="h-14">
                        <CustomSelect 
                          value={formData.genero} 
@@ -191,7 +191,7 @@ const RegistroTenderoPage = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="correo" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Correo Corporativo <span className="text-rose-500">*</span></label>
+                  <label htmlFor="correo" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Correo Corporativo <span className="text-peligro">*</span></label>
                   <input id="correo" required type="email" value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="colaborador@stockpilot.com" />
                 </div>
 
@@ -199,16 +199,16 @@ const RegistroTenderoPage = () => {
                   <h4 className="font-bold text-xs text-azul pl-1 mb-2 text-center flex items-center justify-center gap-1"><Lock size={10} /> Datos para Ingresar al Sistema</h4>
                   
                   <div>
-                    <label htmlFor="usuario" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombre de Usuario <span className="text-rose-500">*</span></label>
+                    <label htmlFor="usuario" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Nombre de Usuario <span className="text-peligro">*</span></label>
                     <input id="usuario" required type="text" value={formData.usuario} onChange={e => setFormData({...formData, usuario: e.target.value})} className="w-full p-4 bg-white border border-azul/30 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Ej. cx.mendoza" />
                   </div>
 
                   {!editMode && (
                     <div>
-                      <label htmlFor="contrasena" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Contraseña de Acceso <span className="text-rose-500">*</span></label>
+                      <label htmlFor="contrasena" className="block text-xs font-semibold text-slate-600 pl-1 mb-2">Contraseña de Acceso <span className="text-peligro">*</span></label>
                       <div className="relative">
                         <input id="contrasena" required minLength="8" type={showPassword ? 'text' : 'password'} value={formData.contrasena} onChange={e => setFormData({...formData, contrasena: e.target.value})} className="w-full p-4 pr-12 bg-white border border-azul/30 rounded-lg text-sm font-bold focus:border-azul outline-none text-tinta" placeholder="Mínimo 8 dígitos" />
-                        <button type="button" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-azul transition-colors">
+                        <button type="button" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-azul transition-colors">
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
@@ -258,9 +258,9 @@ const RegistroTenderoPage = () => {
                 </thead>
                 <tbody className="text-sm divide-y divide-slate-50">
                   {loading ? (
-                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold text-xs animate-pulse">Cargando perfiles del equipo...</td></tr>
+                    <tr><td colSpan="5" className="text-center py-12 text-slate-500 font-bold text-xs animate-pulse">Cargando perfiles del equipo...</td></tr>
                   ) : tenderos.length === 0 ? (
-                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold text-xs">Aún no has registrado a nadie en tu equipo</td></tr>
+                    <tr><td colSpan="5" className="text-center py-12 text-slate-500 font-bold text-xs">Aún no has registrado a nadie en tu equipo</td></tr>
                   ) : (
                     tenderos.map(t => (
                       <tr key={t.id_usuario} className="hover:bg-slate-50 transition-colors group">
@@ -287,7 +287,7 @@ const RegistroTenderoPage = () => {
                         </td>
                         <td className="p-6 pr-8">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-aviso-suave flex items-center justify-center transition-colors transition-transform shadow-sm" title="Editar Información">
+                            <button onClick={() => handleEditClick(t)} className="w-10 h-10 rounded-lg bg-amber-50 text-aviso hover:bg-amber-500 hover:text-white border border-aviso-suave flex items-center justify-center transition-colors transition-transform shadow-sm" title="Editar Información">
                               <Pencil size={16} />
                             </button>
                             <button onClick={() => eliminarTendero(t.id_usuario)} className="w-10 h-10 rounded-lg bg-rose-50 text-peligro hover:bg-peligro hover:text-white border border-peligro-suave flex items-center justify-center transition-colors transition-transform shadow-sm" title="Eliminar Acceso">
@@ -309,10 +309,10 @@ const RegistroTenderoPage = () => {
         <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4">
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden transform animate-scale-in border border-white">
             <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-peligro-suave bg-rose-50' : 'border-aviso-suave bg-amber-50'}`}>
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-peligro-suave text-peligro' : 'bg-aviso-suave text-amber-600'}`}>
+              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-peligro-suave text-peligro' : 'bg-aviso-suave text-aviso'}`}>
                  {modalConfig.type === 'danger' ? <Trash2 size={32} /> : <AlertTriangle size={32} />}
               </div>
-              <h3 className={`titular text-2xl ${modalConfig.type === 'danger' ? 'text-peligro' : 'text-amber-600'}`}>
+              <h3 className={`titular text-2xl ${modalConfig.type === 'danger' ? 'text-peligro' : 'text-aviso'}`}>
                 {modalConfig.title}
               </h3>
             </div>

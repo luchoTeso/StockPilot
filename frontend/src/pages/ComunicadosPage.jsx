@@ -44,7 +44,7 @@ const ComunicadosPage = () => {
   };
 
   if (user?.rol !== 'Administrador') {
-    return <div className="p-6 text-center text-rose-500">Acceso denegado. Solo administradores.</div>;
+    return <div className="p-6 text-center text-peligro">Acceso denegado. Solo administradores.</div>;
   }
 
   return (
@@ -143,7 +143,7 @@ const ComunicadosPage = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-bold">Urgente</span>
-                  <span className="text-xs font-medium opacity-80">Animación y alerta sonora</span>
+                  <span className="text-xs font-medium">Animación y alerta sonora</span>
                 </div>
               </label>
             </div>

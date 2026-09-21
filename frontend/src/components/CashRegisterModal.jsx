@@ -94,7 +94,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
           <h3 className="titular text-2xl text-tinta">
             {session ? 'Cerrar Caja (Arqueo)' : 'Abrir Caja'}
           </h3>
-          <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors shadow-sm">
+          <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-500 hover:text-rose-500 transition-colors shadow-sm">
             <X size={20} />
           </button>
         </div>
@@ -119,7 +119,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-2">Efectivo Total en Cajón</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-500">$</span>
                   <input
                     type="number"
                     value={montoCierre}
@@ -129,7 +129,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
                     autoFocus
                   />
                 </div>
-                <p className="text-xs text-slate-400 mt-2 font-bold">Cuenta el dinero y escribe el total real.</p>
+                <p className="text-xs text-slate-500 mt-2 font-bold">Cuenta el dinero y escribe el total real.</p>
               </div>
 
               <button
@@ -145,13 +145,13 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               <div className="text-center mb-6">
                 <Unlock size={48} className="mx-auto text-emerald-500 mb-4" />
                 <p className="text-slate-500 font-bold">No tienes ninguna caja abierta.</p>
-                <p className="text-sm text-slate-400">Debes indicar con cuánto dinero base (sencillo/cambio) inicias tu turno.</p>
+                <p className="text-sm text-slate-500">Debes indicar con cuánto dinero base (sencillo/cambio) inicias tu turno.</p>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-2">Base de Caja Inicial</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-500">$</span>
                   <input
                     type="number"
                     value={montoApertura}

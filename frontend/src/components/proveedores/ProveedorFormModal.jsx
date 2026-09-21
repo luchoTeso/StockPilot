@@ -19,7 +19,7 @@ const ProveedorFormModal = ({
             <h3 className="titular text-2xl text-tinta">
               {isEditing ? 'Editar Proveedor' : 'Nuevo Proveedor'}
             </h3>
-            <button onClick={onClose} className="text-2xl text-slate-400 hover:text-rose-500 transition-colors">&times;</button>
+            <button onClick={onClose} className="text-2xl text-slate-500 hover:text-rose-500 transition-colors">&times;</button>
          </div>
          
          <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="p-8 space-y-5">

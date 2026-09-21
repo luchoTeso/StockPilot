@@ -236,14 +236,14 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
             <h3 className="titular text-lg text-tinta flex items-center gap-2">
               📷 Escanear Código
             </h3>
-            <p className="text-xs font-bold text-slate-400 mt-1">Apunte la cámara al producto</p>
+            <p className="text-xs font-bold text-slate-500 mt-1">Apunte la cámara al producto</p>
           </div>
           <div className="flex items-center gap-2">
             {torchAvailable && (
               <button 
                 onClick={toggleTorch}
                 className={`p-3 rounded-lg transition-all ${torchOn 
-                  ? 'bg-aviso-suave text-amber-600 shadow-inner' 
+                  ? 'bg-aviso-suave text-aviso shadow-inner' 
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                 title={torchOn ? 'Apagar linterna' : 'Encender linterna'}
               >
@@ -264,7 +264,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
         <div className="px-6 py-4 relative">
           {error && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 rounded-2xl mx-6">
-              <div className="text-rose-500 text-center font-bold p-4 text-sm bg-rose-50 border border-peligro-suave rounded-2xl shadow-lg">{error}</div>
+              <div className="text-peligro text-center font-bold p-4 text-sm bg-rose-50 border border-peligro-suave rounded-2xl shadow-lg">{error}</div>
             </div>
           )}
           <div className="w-full min-h-[300px] rounded-2xl overflow-hidden border-2 border-dashed border-azul/30 bg-tinta relative">
@@ -284,7 +284,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl">
-          <span className="text-xs text-slate-400 font-bold flex items-center gap-1.5">
+          <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
             {engineName === 'Inicializando...' && (
               <span className="w-2 h-2 border-2 border-slate-300 border-t-azul rounded-full animate-spin"></span>
             )}

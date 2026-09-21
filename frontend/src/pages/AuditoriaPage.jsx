@@ -82,7 +82,7 @@ const AuditoriaPage = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-          <p className="text-xs font-bold text-slate-400">Total Consultas</p>
+          <p className="text-xs font-bold text-slate-500">Total Consultas</p>
           <p className="text-3xl font-bold text-tinta mt-1">{stats.total}</p>
         </div>
         <div className="bg-azul/10 rounded-2xl p-5 border border-azul/30">
@@ -98,14 +98,14 @@ const AuditoriaPage = () => {
           <p className="text-3xl font-bold text-azul mt-1">{stats.desde_fiados || 0}</p>
         </div>
         <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-          <p className="text-xs font-bold text-slate-400">Última Consulta</p>
+          <p className="text-xs font-bold text-slate-500">Última Consulta</p>
           <p className="text-sm font-bold text-tinta-2 mt-2">{formatFecha(stats.ultima_consulta)}</p>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-3 mb-6">
-        <p className="text-xs font-bold text-slate-400">Filtrar:</p>
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <p className="text-xs font-bold text-slate-500">Filtrar:</p>
         {['', 'dashboard', 'proveedor', 'fiados'].map(f => (
           <button
             key={f}
@@ -136,9 +136,9 @@ const AuditoriaPage = () => {
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
               {loading ? (
-                <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold text-xs animate-pulse">Consultando Registros de Auditoría...</td></tr>
+                <tr><td colSpan="5" className="text-center py-12 text-slate-500 font-bold text-xs animate-pulse">Consultando Registros de Auditoría...</td></tr>
               ) : logs.length === 0 ? (
-                <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold text-xs">No hay registros de auditoría</td></tr>
+                <tr><td colSpan="5" className="text-center py-12 text-slate-500 font-bold text-xs">No hay registros de auditoría</td></tr>
               ) : logs.map(log => {
                 const datosBase = parseSafe(log.datos_base_json);
                 let productCount = Array.isArray(datosBase) ? datosBase.length : (datosBase && datosBase.items ? datosBase.items.length : 0);
@@ -195,7 +195,7 @@ const AuditoriaPage = () => {
         {/* Paginación */}
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-8 py-5 bg-slate-50 border-t border-slate-100">
-            <p className="text-xs font-bold text-slate-400">
+            <p className="text-xs font-bold text-slate-500">
               Página {pagination.page} de {pagination.totalPages} • {pagination.total} registros
             </p>
             <div className="flex gap-2">
@@ -237,7 +237,7 @@ const AuditoriaPage = () => {
             {/* Metadata */}
             <div className="p-6 grid grid-cols-2 gap-3">
               <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                <p className="text-xs font-bold text-slate-400">Fuente</p>
+                <p className="text-xs font-bold text-slate-500">Fuente</p>
                 <p className="text-sm font-bold text-tinta mt-1 flex items-center gap-1">
                   {detailModal.id_orden
                     ? <><Building2 size={14} /> Orden #{detailModal.id_orden}</>
@@ -246,7 +246,7 @@ const AuditoriaPage = () => {
                 </p>
               </div>
               <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                <p className="text-xs font-bold text-slate-400">Motor</p>
+                <p className="text-xs font-bold text-slate-500">Motor</p>
                 <p className="text-sm font-bold text-tinta mt-1">{detailModal.motor_ia || detailModal.prompt_utilizado?.substring(0, 30) + '...' || 'N/A'}</p>
               </div>
               {detailModal.proveedor_nombre && (
@@ -278,15 +278,15 @@ const AuditoriaPage = () => {
                 
                 return (
                   <div className="px-6 pb-6">
-                    <p className="text-xs font-bold text-slate-400 mb-3">Evaluación Crediticia</p>
+                    <p className="text-xs font-bold text-slate-500 mb-3">Evaluación Crediticia</p>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <p className="text-xs font-bold text-slate-400 mb-1">Perfil de Cliente</p>
-                        <p className={`text-lg font-bold ${perfil.includes('Buen') ? 'text-exito' : perfil.includes('Mal') ? 'text-peligro' : 'text-amber-500'}`}>{perfil}</p>
+                        <p className="text-xs font-bold text-slate-500 mb-1">Perfil de Cliente</p>
+                        <p className={`text-lg font-bold ${perfil.includes('Buen') ? 'text-exito' : perfil.includes('Mal') ? 'text-peligro' : 'text-aviso'}`}>{perfil}</p>
                       </div>
                       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <p className="text-xs font-bold text-slate-400 mb-1">Nivel de Riesgo</p>
-                        <p className={`text-lg font-bold ${riesgo === 'Bajo' ? 'text-exito' : riesgo === 'Alto' ? 'text-peligro' : 'text-amber-500'}`}>{riesgo}</p>
+                        <p className="text-xs font-bold text-slate-500 mb-1">Nivel de Riesgo</p>
+                        <p className={`text-lg font-bold ${riesgo === 'Bajo' ? 'text-exito' : riesgo === 'Alto' ? 'text-peligro' : 'text-aviso'}`}>{riesgo}</p>
                       </div>
                     </div>
                     <div className="bg-azul/10 p-4 rounded-2xl border border-azul/30">
@@ -299,7 +299,7 @@ const AuditoriaPage = () => {
 
               return (
                 <div className="px-6 pb-6">
-                  <p className="text-xs font-bold text-slate-400 mb-3">Productos Evaluados</p>
+                  <p className="text-xs font-bold text-slate-500 mb-3">Productos Evaluados</p>
                   <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
                     <table className="w-full text-left text-sm">
                       <thead>
@@ -351,7 +351,7 @@ const AuditoriaPage = () => {
                       }
 
                       return (
-                        <tr><td colSpan="5" className="px-4 py-6 text-center text-slate-400 text-xs font-bold">No pudimos cargar el detalle para esta acción</td></tr>
+                        <tr><td colSpan="5" className="px-4 py-6 text-center text-slate-500 text-xs font-bold">No pudimos cargar el detalle para esta acción</td></tr>
                       );
                     })()}
                   </tbody>
