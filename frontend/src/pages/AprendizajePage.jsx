@@ -89,7 +89,7 @@ const AprendizajePage = () => {
 
     const getAccuracyColor = (accuracy) => {
         if (accuracy >= 80) return { bg: 'bg-emerald-50', text: 'text-exito', border: 'border-emerald-200', bar: 'bg-emerald-500' };
-        if (accuracy >= 50) return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', bar: 'bg-ambar' };
+        if (accuracy >= 50) return { bg: 'bg-amber-50', text: 'text-aviso', border: 'border-amber-200', bar: 'bg-ambar' };
         return { bg: 'bg-rose-50', text: 'text-peligro', border: 'border-rose-200', bar: 'bg-rose-500' };
     };
 
@@ -107,7 +107,7 @@ const AprendizajePage = () => {
             <div className="flex-1 flex items-center justify-center bg-slate-50 min-h-screen">
                 <div className="flex flex-col items-center">
                     <div className="w-16 h-16 border-4 border-azul/30 border-t-azul rounded-full animate-spin mb-4"></div>
-                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Cargando aprendizaje...</p>
+                    <p className="text-slate-500 font-bold text-xs">Cargando aprendizaje...</p>
                 </div>
             </div>
         );
@@ -118,16 +118,16 @@ const AprendizajePage = () => {
             
             {/* ───── HEADER PREMIUM ───── */}
             <div className="p-4 lg:p-6">
-                <div data-surface="dark" className="relative bg-tinta rounded-[2rem] shadow-xl overflow-hidden">
+                <div data-surface="dark" className="relative bg-tinta rounded-2xl shadow-lg overflow-hidden">
                     <div className="relative z-10 px-8 lg:px-12 py-10 lg:py-12 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                         <div className="flex-1 max-w-2xl">
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="w-9 h-9 rounded-2xl bg-white/10 flex items-center justify-center text-resaltador border border-white/20">
                                     <Brain size={18} />
                                 </span>
-                                <span className="text-[10px] font-bold text-white/70 uppercase tracking-[0.25em]">Aprendizaje Inteligente</span>
+                                <span className="text-xs font-bold text-white/70">Aprendizaje Inteligente</span>
                             </div>
-                            <h1 className="text-2xl lg:text-4xl font-extrabold text-white tracking-tight leading-snug mb-4">
+                            <h1 className="titular text-2xl lg:text-4xl text-white mb-4">
                                 ¿Qué tan bien <span className="text-resaltador">predice</span> el sistema?
                             </h1>
                             <p className="text-white/70 font-normal text-sm leading-relaxed">
@@ -138,15 +138,15 @@ const AprendizajePage = () => {
                         <div className="flex flex-col gap-4 min-w-[260px] lg:min-w-[280px]">
                             {/* Accuracy Card with glow */}
                             <div className="relative group">
-                                <div className="relative bg-slate-800/90 backdrop-blur-xl border border-white/10 p-6 rounded-[1.6rem] shadow-2xl text-center">
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">Nivel de Acierto</p>
+                                <div className="relative bg-slate-800/90 border border-white/10 p-6 rounded-2xl shadow-lg text-center">
+                                    <p className="text-xs font-bold text-slate-400 mb-3">Nivel de Acierto</p>
                                     <div className="flex items-baseline justify-center gap-1">
-                                        <span className="text-5xl font-extrabold text-white tracking-tighter">
+                                        <span className="text-5xl font-bold text-white">
                                             {globalAccuracy}
                                         </span>
                                         <span className="text-2xl font-bold text-slate-400">%</span>
                                     </div>
-                                    <p className="text-[11px] text-slate-400 mt-3 font-medium">
+                                    <p className="text-xs text-slate-400 mt-3 font-medium">
                                         {metrics.global.totalEval === 0 
                                             ? 'Sin evaluaciones aún' 
                                             : `${metrics.global.totalEval} productos evaluados`}
@@ -155,7 +155,7 @@ const AprendizajePage = () => {
                             </div>
                             <button 
                                 onClick={() => { setEvalResult(null); setOrderId(''); setIsDropdownOpen(false); setModalOpen(true); }}
-                                className="bg-resaltador hover:bg-resaltador-hondo text-tinta py-3.5 px-6 rounded-2xl font-bold text-xs tracking-wider transition-colors transition-shadow transition-transform shadow-lg active:scale-[0.97] flex items-center justify-center gap-2.5 border border-azul/30"
+                                className="bg-resaltador hover:bg-resaltador-hondo text-tinta py-3.5 px-6 rounded-lg font-bold text-xs transition-colors transition-shadow transition-transform shadow-lg active:scale-[0.97] flex items-center justify-center gap-2.5 border border-azul/30"
                             >
                                 <span>Evaluar una orden</span>
                                 <BarChart2 size={14} />
@@ -182,15 +182,15 @@ const AprendizajePage = () => {
                 </div>
 
                 {/* ── Gráfica de Evolución ── */}
-                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+                <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-3">
                         <div>
-                            <h2 className="text-xl font-black text-tinta tracking-tighter uppercase mb-1 flex items-center gap-2"><TrendingUp size={18} /> Evolución del Acierto</h2>
-                            <p className="text-xs font-medium text-slate-400">Cómo ha mejorado (o empeorado) la precisión del sistema mes a mes</p>
+                            <h2 className="titular text-xl text-tinta mb-1 flex items-center gap-2"><TrendingUp size={18} /> Evolución del Acierto</h2>
+                            <p className="text-xs font-medium text-slate-500">Cómo ha mejorado (o empeorado) la precisión del sistema mes a mes</p>
                         </div>
-                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2">
+                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2">
                             <div className="w-3 h-0.5 bg-azul rounded-full"></div>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Precisión (Ideal = 100%)</span>
+                            <span className="text-xs font-bold text-slate-500">Precisión (Ideal = 100%)</span>
                         </div>
                     </div>
                     <div className="h-72 w-full">
@@ -216,7 +216,7 @@ const AprendizajePage = () => {
                                 </AreaChart>
                             </ResponsiveContainer>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-300">
+                            <div className="h-full flex flex-col items-center justify-center text-slate-500">
                                 <BarChart2 size={40} className="mb-3" />
                                 <p className="font-bold text-sm">Aún no hay datos suficientes</p>
                                 <p className="text-xs mt-1">Evalúa al menos 2 órdenes en meses diferentes para ver la gráfica</p>
@@ -226,23 +226,23 @@ const AprendizajePage = () => {
                 </div>
 
                 {/* ── Tabla completa de productos ── */}
-                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
-                    <h2 className="text-xl font-black text-tinta tracking-tighter uppercase mb-2 flex items-center gap-2"><ClipboardList size={18} /> Rendimiento por Producto</h2>
-                    <p className="text-xs font-medium text-slate-400 mb-6">Qué tan bien acertó el sistema para cada producto que evaluaste</p>
+                <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                    <h2 className="titular text-xl text-tinta mb-2 flex items-center gap-2"><ClipboardList size={18} /> Rendimiento por Producto</h2>
+                    <p className="text-xs font-medium text-slate-500 mb-6">Qué tan bien acertó el sistema para cada producto que evaluaste</p>
                     
                     {/* Leyenda de colores */}
                     <div className="flex flex-wrap gap-4 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">80-100% = Muy acertado</span>
+                            <span className="text-xs font-bold text-slate-600">80-100% = Muy acertado</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-ambar"></div>
-                            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">50-79% = Necesita mejorar</span>
+                            <span className="text-xs font-bold text-slate-600">50-79% = Necesita mejorar</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-rose-500"></div>
-                            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">0-49% = Muy desviado</span>
+                            <span className="text-xs font-bold text-slate-600">0-49% = Muy desviado</span>
                         </div>
                     </div>
 
@@ -257,21 +257,21 @@ const AprendizajePage = () => {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             {(() => { const Icon = verdict.icon; return <Icon size={16} />; })()}
-                                            <p className="font-black text-tinta text-sm">{prod.nombre_producto}</p>
+                                            <p className="font-bold text-tinta text-sm">{prod.nombre_producto}</p>
                                         </div>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-7">{verdict.label} · {prod.evaluaciones} {prod.evaluaciones === 1 ? 'evaluación' : 'evaluaciones'}</p>
+                                        <p className="text-xs font-bold text-slate-500 ml-7">{verdict.label} · {prod.evaluaciones} {prod.evaluaciones === 1 ? 'evaluación' : 'evaluaciones'}</p>
                                     </div>
                                     <div className="flex items-center gap-4 ml-7 sm:ml-0">
                                         {/* Barra de progreso visual */}
                                         <div className="w-32 h-2.5 bg-white/80 rounded-full overflow-hidden border border-slate-200/50">
                                             <div className={`h-full rounded-full ${color.bar} transition-colors`} style={{ width: `${accuracy}%` }}></div>
                                         </div>
-                                        <span className={`text-lg font-black ${color.text} min-w-[50px] text-right`}>{accuracy}%</span>
+                                        <span className={`text-lg font-bold ${color.text} min-w-[50px] text-right`}>{accuracy}%</span>
                                     </div>
                                 </div>
                             );
                         }) : (
-                            <div className="p-10 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
+                            <div className="p-10 text-center text-slate-500 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
                                 <Inbox size={36} className="block mb-3 mx-auto" />
                                 <p className="font-bold text-sm">No hay productos evaluados todavía</p>
                                 <p className="text-xs mt-1">Usa el botón "Evaluar una orden" para comenzar a medir la precisión</p>
@@ -284,18 +284,18 @@ const AprendizajePage = () => {
             {/* ───── MODAL DE EVALUACIÓN ───── */}
             {modalOpen && createPortal(
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-tinta/60 backdrop-blur-md" onClick={() => setModalOpen(false)} role="presentation" aria-hidden="true"></div>
-                    <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl animate-scale-in relative z-10 flex flex-col overflow-hidden max-h-[90vh]">
+                    <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setModalOpen(false)} role="presentation" aria-hidden="true"></div>
+                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-lg animate-scale-in relative z-10 flex flex-col overflow-hidden max-h-[90vh]">
                         <div className="p-8 bg-azul text-white flex justify-between items-start">
                             <div>
-                                <h3 className="text-xl font-black tracking-tighter uppercase italic flex items-center gap-2">
+                                <h3 className="titular text-xl flex items-center gap-2">
                                     <BarChart2 size={20} /> Evaluar Precisión
                                 </h3>
-                                <p className="text-[11px] font-medium opacity-90 mt-2 leading-relaxed">
+                                <p className="text-xs font-medium opacity-90 mt-2 leading-relaxed">
                                     Selecciona una orden antigua para que el sistema compare lo que sugirió comprar vs. lo que realmente se vendió desde entonces.
                                 </p>
                             </div>
-                            <button onClick={() => setModalOpen(false)} aria-label="Cerrar modal" className="w-8 h-8 flex items-center justify-center bg-azul hover:bg-white hover:text-azul rounded-xl transition-colors shrink-0 ml-4">
+                            <button onClick={() => setModalOpen(false)} aria-label="Cerrar modal" className="w-8 h-8 flex items-center justify-center bg-azul hover:bg-white hover:text-azul rounded-lg transition-colors shrink-0 ml-4">
                                 <X size={16} />
                             </button>
                         </div>
@@ -313,11 +313,11 @@ const AprendizajePage = () => {
                                                 type="button"
                                                 id="eval-order-select"
                                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                                className={`w-full text-left p-4 bg-slate-50 border rounded-2xl text-sm transition-colors transition-shadow focus:outline-none focus:ring-4 focus:ring-azul/10 flex justify-between items-center group shadow-sm
+                                                className={`w-full text-left p-4 bg-slate-50 border rounded-lg text-sm transition-colors transition-shadow focus:outline-none focus:ring-4 focus:ring-azul/10 flex justify-between items-center group shadow-sm
                                                     ${isDropdownOpen ? 'border-azul bg-white ring-4 ring-azul/10' : 'border-slate-200 hover:border-azul/30 hover:bg-white'}
                                                 `}
                                             >
-                                                <span className={`${orderId ? 'font-black text-azul' : 'font-bold text-slate-500'}`}>
+                                                <span className={`${orderId ? 'font-bold text-azul' : 'font-bold text-slate-500'}`}>
                                                     {orderId 
                                                         ? evaluableOrders.find(o => o.id_orden === orderId)
                                                             ? `#${evaluableOrders.find(o => o.id_orden === orderId).id_orden} · ${evaluableOrders.find(o => o.id_orden === orderId).proveedor} · ${new Date(evaluableOrders.find(o => o.id_orden === orderId).fecha_aprobacion).toLocaleDateString()}`
@@ -341,12 +341,12 @@ const AprendizajePage = () => {
                                                     {/* Overlay invisible para cerrar al hacer clic afuera */}
                                                     <div className="fixed inset-0 z-[115]" onClick={() => setIsDropdownOpen(false)} role="presentation" aria-hidden="true"></div>
                                                     
-                                                    <div className="absolute z-[120] w-full mt-2 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-[1.25rem] shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-56 overflow-y-auto scrollbar-premium py-2 animate-scale-in origin-top">
+                                                    <div className="absolute z-[120] w-full mt-2 bg-white/95 border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-56 overflow-y-auto scrollbar-premium py-2 animate-scale-in origin-top">
                                                         <div className="px-3 pb-2 pt-1 border-b border-slate-50">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Órdenes disponibles ({evaluableOrders.length})</p>
+                                                            <p className="text-xs font-bold text-slate-500 pl-2">Órdenes disponibles ({evaluableOrders.length})</p>
                                                         </div>
                                                         {evaluableOrders.length === 0 ? (
-                                                            <div className="p-4 text-center text-xs font-bold text-slate-400">
+                                                            <div className="p-4 text-center text-xs font-bold text-slate-500">
                                                                 No hay órdenes evaluables
                                                             </div>
                                                         ) : (
@@ -363,10 +363,10 @@ const AprendizajePage = () => {
                                                                     `}
                                                                 >
                                                                     <div className={`flex flex-col gap-1 transition-transform ${orderId === ord.id_orden ? 'pl-2' : 'group-hover:translate-x-1'}`}>
-                                                                        <span className={`font-black ${orderId === ord.id_orden ? 'text-azul' : 'text-tinta-2'}`}>
-                                                                            #{ord.id_orden} <span className="text-slate-400 font-medium px-1">·</span> {ord.proveedor}
+                                                                        <span className={`font-bold ${orderId === ord.id_orden ? 'text-azul' : 'text-tinta-2'}`}>
+                                                                            #{ord.id_orden} <span className="text-slate-500 font-medium px-1">·</span> {ord.proveedor}
                                                                         </span>
-                                                                        <span className="text-xs font-bold text-slate-400">Fecha: {new Date(ord.fecha_aprobacion).toLocaleDateString()}</span>
+                                                                        <span className="text-xs font-bold text-slate-500">Fecha: {new Date(ord.fecha_aprobacion).toLocaleDateString()}</span>
                                                                     </div>
                                                                     {orderId === ord.id_orden && (
                                                                         <div className="w-6 h-6 rounded-full bg-azul/10 flex items-center justify-center text-azul shadow-sm shrink-0">
@@ -380,14 +380,14 @@ const AprendizajePage = () => {
                                                 </>
                                             )}
                                         </div>
-                                        <p className="text-[10px] text-slate-400 mt-2 ml-1 font-medium">
+                                        <p className="text-xs text-slate-500 mt-2 ml-1 font-medium">
                                             Solo aparecen órdenes ya aprobadas. Cuanto más tiempo haya pasado, más preciso será el análisis.
                                         </p>
                                     </div>
                                     <button 
                                         type="submit" 
                                         disabled={evalLoading || !orderId}
-                                        className="w-full py-4 bg-azul text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg hover:bg-azul-hondo transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50"
+                                        className="w-full py-4 bg-azul text-white rounded-lg text-xs font-bold shadow-lg hover:bg-azul-hondo transition-colors transition-shadow transition-transform active:scale-95 disabled:opacity-50"
                                     >
                                         {evalLoading ? 'Analizando ventas reales...' : 'Comparar sugerencia vs. realidad'}
                                     </button>
@@ -395,17 +395,17 @@ const AprendizajePage = () => {
                             ) : (
                                 <div className="space-y-5">
                                     <div className="bg-emerald-50 border border-exito-suave text-emerald-700 p-5 rounded-2xl text-center">
-                                        <p className="font-black text-sm uppercase tracking-wide flex items-center justify-center gap-1"><CheckCircle2 size={14} /> Evaluación Completada</p>
+                                        <p className="font-bold text-sm flex items-center justify-center gap-1"><CheckCircle2 size={14} /> Evaluación Completada</p>
                                         <p className="text-xs font-medium mt-1 opacity-80">El sistema ha registrado estos resultados para mejorar futuras sugerencias</p>
                                     </div>
 
                                     {/* Resumen */}
                                     <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Orden evaluada</p>
+                                        <p className="text-xs font-bold text-slate-500 mb-1">Orden evaluada</p>
                                         <p className="text-sm font-bold text-tinta-2">#{orderId} · Días desde la aprobación: {evalResult.diasTranscurridos}</p>
                                     </div>
                                     
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle por producto</h4>
+                                    <h4 className="font-bold text-xs text-slate-500">Detalle por producto</h4>
                                     
                                     <div className="space-y-3">
                                         {evalResult.evaluaciones?.map(ev => {
@@ -417,22 +417,22 @@ const AprendizajePage = () => {
                                                 <div key={ev.id_producto} className={`p-4 rounded-2xl border ${color.border} ${color.bg}`}>
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div>
-                                                            <p className="font-black text-tinta text-sm flex items-center gap-1.5">
+                                                            <p className="font-bold text-tinta text-sm flex items-center gap-1.5">
                                                                 {(() => { const Icon = verdict.icon; return <Icon size={16} />; })()} {ev.nombre_producto || `Producto #${ev.id_producto}`}
                                                             </p>
-                                                            <p className="text-[10px] font-bold text-slate-500 mt-1 ml-6">{verdict.label}</p>
+                                                            <p className="text-xs font-bold text-slate-500 mt-1 ml-6">{verdict.label}</p>
                                                         </div>
-                                                        <span className={`text-xl font-black ${color.text}`}>{accuracy}%</span>
+                                                        <span className={`text-xl font-bold ${color.text}`}>{accuracy}%</span>
                                                     </div>
                                                     {/* Detalle numérico claro */}
                                                     <div className="grid grid-cols-2 gap-3 ml-6">
-                                                        <div className="bg-white/70 rounded-xl p-3 border border-white">
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sugerido comprar</p>
-                                                            <p className="text-lg font-black text-tinta-2">{ev.sugerido} <span className="text-xs font-bold text-slate-400">unidades</span></p>
+                                                        <div className="bg-white/70 rounded-2xl p-3 border border-white">
+                                                            <p className="text-xs font-bold text-slate-500">Sugerido comprar</p>
+                                                            <p className="text-lg font-bold text-tinta-2">{ev.sugerido} <span className="text-xs font-bold text-slate-500">unidades</span></p>
                                                         </div>
-                                                        <div className="bg-white/70 rounded-xl p-3 border border-white">
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Realmente vendido</p>
-                                                            <p className="text-lg font-black text-tinta-2">{ev.ventasReales} <span className="text-xs font-bold text-slate-400">unidades</span></p>
+                                                        <div className="bg-white/70 rounded-2xl p-3 border border-white">
+                                                            <p className="text-xs font-bold text-slate-500">Realmente vendido</p>
+                                                            <p className="text-lg font-bold text-tinta-2">{ev.ventasReales} <span className="text-xs font-bold text-slate-500">unidades</span></p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -446,7 +446,7 @@ const AprendizajePage = () => {
                                             setOrderId('');
                                             setModalOpen(false);
                                         }}
-                                        className="w-full mt-2 py-4 bg-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-colors transition-transform active:scale-95"
+                                        className="w-full mt-2 py-4 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors transition-transform active:scale-95"
                                     >
                                         Cerrar
                                     </button>

@@ -89,12 +89,12 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 relative">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden border border-slate-100 relative">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-black text-2xl text-tinta italic uppercase tracking-tighter">
+          <h3 className="titular text-2xl text-tinta">
             {session ? 'Cerrar Caja (Arqueo)' : 'Abrir Caja'}
           </h3>
-          <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors shadow-sm">
+          <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-500 hover:text-rose-500 transition-colors shadow-sm">
             <X size={20} />
           </button>
         </div>
@@ -109,9 +109,9 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               <div className="text-center mb-6">
                 <Lock size={48} className="mx-auto text-rose-500 mb-4" />
                 <p className="text-slate-500 font-bold">Sesión Abierta desde:</p>
-                <p className="font-black text-tinta">{new Date(session.fecha_apertura).toLocaleString('es-CO')}</p>
+                <p className="font-bold text-tinta">{new Date(session.fecha_apertura).toLocaleString('es-CO')}</p>
                 <p className="text-slate-500 text-sm mt-2">Fondo inicial: <span className="font-bold text-tinta-2">${Number(session.monto_apertura).toLocaleString('es-CO')}</span></p>
-                <div className="bg-rose-50 border border-peligro-suave p-3 rounded-xl mt-3 text-[11px] text-peligro font-bold">
+                <div className="bg-rose-50 border border-peligro-suave p-3 rounded-2xl mt-3 text-xs text-peligro font-bold">
                    <p>💡 Nota: Los egresos registrados durante el turno se restarán automáticamente del monto esperado.</p>
                 </div>
               </div>
@@ -119,23 +119,23 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-2">Efectivo Total en Cajón</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-400">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-500">$</span>
                   <input
                     type="number"
                     value={montoCierre}
                     onChange={(e) => setMontoCierre(e.target.value)}
-                    className="w-full pl-10 pr-4 py-4 text-3xl font-black text-tinta bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
+                    className="w-full pl-10 pr-4 py-4 text-3xl font-bold text-tinta bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
                     placeholder="0"
                     autoFocus
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Cuenta el dinero y escribe el total real.</p>
+                <p className="text-xs text-slate-500 mt-2 font-bold">Cuenta el dinero y escribe el total real.</p>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 flex items-center justify-center gap-3 bg-peligro hover:bg-rose-500 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all shadow-lg"
+                className="w-full h-14 flex items-center justify-center gap-3 bg-peligro hover:bg-rose-500 text-white rounded-lg font-bold text-lg transition-all shadow-lg"
               >
                 <Calculator size={20} /> Realizar Arqueo
               </button>
@@ -145,18 +145,18 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               <div className="text-center mb-6">
                 <Unlock size={48} className="mx-auto text-emerald-500 mb-4" />
                 <p className="text-slate-500 font-bold">No tienes ninguna caja abierta.</p>
-                <p className="text-sm text-slate-400">Debes indicar con cuánto dinero base (sencillo/cambio) inicias tu turno.</p>
+                <p className="text-sm text-slate-500">Debes indicar con cuánto dinero base (sencillo/cambio) inicias tu turno.</p>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-2">Base de Caja Inicial</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-400">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-500">$</span>
                   <input
                     type="number"
                     value={montoApertura}
                     onChange={(e) => setMontoApertura(e.target.value)}
-                    className="w-full pl-10 pr-4 py-4 text-3xl font-black text-tinta bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    className="w-full pl-10 pr-4 py-4 text-3xl font-bold text-tinta bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                     placeholder="0"
                     autoFocus
                   />
@@ -166,7 +166,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 flex items-center justify-center gap-3 bg-exito hover:bg-emerald-500 text-white rounded-2xl font-black text-lg tracking-wider uppercase transition-all shadow-lg"
+                className="w-full h-14 flex items-center justify-center gap-3 bg-exito hover:bg-emerald-500 text-white rounded-lg font-bold text-lg transition-all shadow-lg"
               >
                 <Landmark size={20} /> Abrir Turno
               </button>

@@ -44,33 +44,33 @@ const ComunicadosPage = () => {
   };
 
   if (user?.rol !== 'Administrador') {
-    return <div className="p-6 text-center text-rose-500">Acceso denegado. Solo administradores.</div>;
+    return <div className="p-6 text-center text-peligro">Acceso denegado. Solo administradores.</div>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 animate-fade-in font-outfit">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 animate-fade-in">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-3 bg-azul/10 rounded-2xl text-azul shadow-inner">
           <Megaphone size={28} />
         </div>
         <div>
-          <h1 className="text-3xl font-black text-tinta tracking-tight">Comunicados Globales</h1>
+          <h1 className="titular text-3xl text-tinta">Comunicados Globales</h1>
           <p className="text-slate-500 font-medium">Envía notificaciones a todos los tenderos de tu tienda.</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-200 shadow-xl shadow-slate-200/50">
+      <div className="bg-white rounded-2xl p-6 md:p-8 border border-slate-200 shadow-lg shadow-slate-200/50">
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {errorMsg && (
-            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-peligro flex items-center gap-2 font-semibold">
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-peligro flex items-center gap-2 font-semibold">
               <AlertTriangle size={18} />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 flex items-center gap-2 font-semibold">
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 flex items-center gap-2 font-semibold">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{successMsg}</span>
             </div>
@@ -83,7 +83,7 @@ const ComunicadosPage = () => {
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Ej: Horario de mañana modificado"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-tinta font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-azul/50 focus:border-azul transition-all shadow-inner"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-tinta font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-azul/50 focus:border-azul transition-all shadow-inner"
               maxLength={100}
             />
           </div>
@@ -94,7 +94,7 @@ const ComunicadosPage = () => {
               value={mensaje}
               onChange={(e) => setMensaje(e.target.value)}
               placeholder="Escribe el mensaje detallado aquí..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-tinta font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-azul/50 focus:border-azul transition-all min-h-[150px] resize-y shadow-inner"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-tinta font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-azul/50 focus:border-azul transition-all min-h-[150px] resize-y shadow-inner"
             />
           </div>
 
@@ -102,7 +102,7 @@ const ComunicadosPage = () => {
             <label className="block text-sm font-bold text-tinta-2 mb-3">Prioridad</label>
             <div className="grid grid-cols-2 gap-4">
               <label className={`
-                flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all
+                flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all
                 ${prioridad === 'normal' 
                   ? 'bg-azul/10 border-azul text-azul shadow-md' 
                   : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300'}
@@ -125,7 +125,7 @@ const ComunicadosPage = () => {
               </label>
 
               <label className={`
-                flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all
+                flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all
                 ${prioridad === 'urgente' 
                   ? 'bg-amber-50 border-ambar text-aviso shadow-md' 
                   : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300'}
@@ -143,7 +143,7 @@ const ComunicadosPage = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-bold">Urgente</span>
-                  <span className="text-xs font-medium opacity-80">Animación y alerta sonora</span>
+                  <span className="text-xs font-medium">Animación y alerta sonora</span>
                 </div>
               </label>
             </div>
@@ -153,7 +153,7 @@ const ComunicadosPage = () => {
             <button
               type="submit"
               disabled={loading || !titulo || !mensaje}
-              className="flex items-center gap-2 px-8 py-3 bg-azul hover:bg-azul-hondo disabled:bg-slate-300 disabled:text-slate-500 text-white rounded-xl font-bold transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-8 py-3 bg-azul hover:bg-azul-hondo disabled:bg-slate-300 disabled:text-slate-500 text-white rounded-lg font-bold transition-all shadow-lg active:scale-95"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

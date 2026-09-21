@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import AppLoader from '../components/common/AppLoader';
 
 // Ensure all requests send the session cookie through the Vite proxy
 axios.defaults.withCredentials = true;
@@ -144,7 +145,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? <AppLoader /> : children}
     </AuthContext.Provider>
   );
 };

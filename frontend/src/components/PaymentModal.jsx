@@ -72,23 +72,23 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
   ];
 
   if (user?.rol === 'Administrador') {
-    metodos.push({ id: 'Fiado', icon: <Banknote size={24} />, color: 'text-amber-600', bg: 'bg-aviso-suave', border: 'border-amber-200' });
+    metodos.push({ id: 'Fiado', icon: <Banknote size={24} />, color: 'text-aviso', bg: 'bg-aviso-suave', border: 'border-amber-200' });
   }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg overflow-hidden border border-slate-100">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-black text-2xl text-tinta italic uppercase tracking-tighter">Completar Pago</h3>
-          <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors shadow-sm">
+          <h3 className="titular text-2xl text-tinta">Completar Pago</h3>
+          <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-500 hover:text-rose-500 transition-colors shadow-sm">
             <X size={20} />
           </button>
         </div>
 
         <div className="p-8">
           <div className="text-center mb-8">
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mb-2">Total a Cobrar</p>
-            <p className="text-5xl font-black text-azul tracking-tighter">
+            <p className="text-slate-500 font-bold text-xs mb-2">Total a Cobrar</p>
+            <p className="text-5xl font-bold text-azul">
               ${Number(total).toLocaleString('es-CO')}
             </p>
           </div>
@@ -100,14 +100,14 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                   key={m.id}
                   type="button"
                   onClick={() => setMetodoPago(m.id)}
-                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all ${
                     metodoPago === m.id
                       ? `${m.border} ${m.bg} shadow-md scale-105`
                       : 'border-slate-100 bg-white hover:bg-slate-50 opacity-60 hover:opacity-100'
                   }`}
                 >
                   <div className={`${m.color} mb-2`}>{m.icon}</div>
-                  <span className="font-black text-xs uppercase tracking-wider text-tinta-2">{m.id}</span>
+                  <span className="font-bold text-xs text-tinta-2">{m.id}</span>
                 </button>
               ))}
             </div>
@@ -117,12 +117,12 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-2">Efectivo Recibido</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-exito">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-exito">$</span>
                     <input
                       type="number"
                       value={efectivoRecibido}
                       onChange={(e) => setEfectivoRecibido(e.target.value)}
-                      className="w-full pl-10 pr-4 py-4 text-3xl font-black text-tinta bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                      className="w-full pl-10 pr-4 py-4 text-3xl font-bold text-tinta bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                       placeholder="0"
                       autoFocus
                     />
@@ -132,10 +132,10 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                 {parseFloat(efectivoRecibido) > 0 && (
                   <div className={`p-4 rounded-2xl border ${parseFloat(efectivoRecibido) >= total ? 'bg-emerald-50 border-exito-suave' : 'bg-rose-50 border-peligro-suave'}`}>
                     <div className="flex justify-between items-center">
-                      <span className={`font-black text-xs uppercase tracking-widest ${parseFloat(efectivoRecibido) >= total ? 'text-exito' : 'text-peligro'}`}>
+                      <span className={`font-bold text-xs ${parseFloat(efectivoRecibido) >= total ? 'text-exito' : 'text-peligro'}`}>
                         {parseFloat(efectivoRecibido) >= total ? 'Cambio a devolver' : 'Falta dinero'}
                       </span>
-                      <span className={`text-2xl font-black ${parseFloat(efectivoRecibido) >= total ? 'text-emerald-700' : 'text-rose-700'}`}>
+                      <span className={`text-2xl font-bold ${parseFloat(efectivoRecibido) >= total ? 'text-emerald-700' : 'text-rose-700'}`}>
                         ${Math.abs(parseFloat(efectivoRecibido) - total).toLocaleString('es-CO')}
                       </span>
                     </div>
@@ -151,7 +151,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                   {loadingClientes ? (
                     <div className="text-sm text-slate-500 font-medium animate-pulse">Cargando clientes...</div>
                   ) : (
-                    <div className="h-12 border-2 border-slate-200 rounded-xl bg-slate-50 focus-within:border-azul focus-within:bg-white transition-all shadow-sm">
+                    <div className="h-12 border-2 border-slate-200 rounded-lg bg-slate-50 focus-within:border-azul focus-within:bg-white transition-all shadow-sm">
                       <CustomSelect
                         value={selectedClient}
                         onChange={(val) => setSelectedClient(val)}
@@ -165,7 +165,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
                     </div>
                   )}
                   {clientes.length === 0 && !loadingClientes && (
-                    <p className="mt-2 text-xs font-bold text-rose-500">No hay clientes registrados en cartera.</p>
+                    <p className="mt-2 text-xs font-bold text-peligro">No hay clientes registrados en cartera.</p>
                   )}
                 </div>
               </div>
@@ -174,7 +174,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
             <button
               type="submit"
               disabled={!isFormValid() || loading}
-              className="w-full h-16 flex items-center justify-center gap-3 bg-resaltador hover:bg-resaltador-hondo text-tinta ring-1 ring-tinta/25 rounded-2xl font-black text-lg tracking-wider uppercase transition-all disabled:bg-slate-200 disabled:text-slate-500 disabled:ring-0 disabled:cursor-not-allowed mt-8"
+              className="w-full h-16 flex items-center justify-center gap-3 bg-resaltador hover:bg-resaltador-hondo text-tinta ring-1 ring-tinta/25 rounded-lg font-bold text-lg transition-all disabled:bg-slate-200 disabled:text-slate-500 disabled:ring-0 disabled:cursor-not-allowed mt-8"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-tinta"></div>

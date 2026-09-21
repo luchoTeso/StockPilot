@@ -13,6 +13,7 @@ export const useProductosPage = () => {
 
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   // Filtros
   const [filtroTexto, setFiltroTexto] = useState('');
@@ -104,6 +105,7 @@ export const useProductosPage = () => {
 
   const cargarProductos = useCallback(async (signal = null) => {
     setLoading(true);
+    setLoadError(false);
     try {
       const { data } = await axios.get('/api/productos', { ...(signal && { signal }) });
       if (signal && signal.aborted) return;
@@ -114,6 +116,7 @@ export const useProductosPage = () => {
       verificarStock(data);
     } catch (error) {
       if (axios.isCancel(error) || (signal && signal.aborted)) return;
+      setLoadError(true);
       toast.error('No se pudieron cargar los productos');
     } finally {
       if (!signal || !signal.aborted) {
@@ -368,6 +371,8 @@ export const useProductosPage = () => {
   return {
     isAdmin,
     loading,
+    loadError,
+    recargarProductos: () => cargarProductos(),
     productos: listRender,
     categorias,
     alert,

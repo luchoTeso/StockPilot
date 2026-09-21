@@ -363,9 +363,8 @@ const LandingPage = () => (
   </div>
 );
 
-/* Nota: si prefieres, mueve este @import a index.html con <link rel="preconnect"> + <link rel="stylesheet">. */
+/* Las fuentes (Archivo e IBM Plex Mono) se cargan una sola vez en index.html. */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* Los resets usan :where() para tener especificidad 0 y no pisar las clases de abajo */
 :where(.sp) :where(h1, h2, h3, p, ul, dl, dd, hr, figure) { margin: 0; padding: 0; }

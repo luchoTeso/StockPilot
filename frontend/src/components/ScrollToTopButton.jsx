@@ -30,19 +30,19 @@ const ScrollToTopButton = () => {
       title="Volver al inicio"
       type="button"
       className={`
-        fixed bottom-8 right-8 z-[200]
+        fixed bottom-8 right-8 z-30
         w-14 h-14 aspect-square
         flex items-center justify-center
         bg-azul hover:bg-azul-hondo text-white 
         rounded-full shadow-lg
-        hover:shadow-xl
+        hover:shadow-lg
         transition-transform transition-opacity transition-shadow transition-colors duration-500 ease-out transform
-        hover:-translate-y-2 active:scale-90 group
+        active:scale-90 group
         ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0 pointer-events-none'}
       `}
     >
       <svg 
-        className="w-6 h-6 transform group-hover:-translate-y-1 transition-transform" 
+        className="w-6 h-6 transform transition-transform" 
         fill="none" 
         stroke="currentColor" 
         viewBox="0 0 24 24" 

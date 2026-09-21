@@ -69,15 +69,15 @@ const RegisterPage = () => {
 
   // InputField moved to top level
 
-  const inputClass = "w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-azul focus:ring-2 focus:ring-azul/30 outline-none transition-colors transition-shadow text-tinta placeholder:text-slate-500 placeholder:font-normal";
+  const inputClass = "w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-azul focus:ring-2 focus:ring-azul/30 outline-none transition-colors transition-shadow text-tinta placeholder:text-slate-500 placeholder:font-normal";
 
   return (
     <div
       data-surface="dark"
-      className="min-h-screen flex items-center justify-center font-outfit p-6 relative overflow-hidden bg-tinta"
+      className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-tinta"
     >
       <div className="w-full max-w-[500px] animate-fade-in relative z-10 my-10">
-        <div className="bg-white p-10 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-200 relative overflow-hidden">
+        <div className="bg-white p-10 md:p-12 rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden">
 
           {/* Barra de acento superior */}
           <div className="absolute top-0 left-0 w-full h-2 bg-azul"></div>
@@ -85,7 +85,7 @@ const RegisterPage = () => {
           {/* Botón volver */}
           <button
             onClick={() => navigate('/')}
-            className="absolute top-8 left-8 text-slate-400 hover:text-azul transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
+            className="absolute top-8 left-8 text-slate-500 hover:text-azul transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-50"
             title="Volver al Inicio"
           >
             <ArrowLeft size={18} />
@@ -93,13 +93,13 @@ const RegisterPage = () => {
 
           {/* Header */}
           <div className="text-center mb-10 mt-6">
-            <div className="w-16 h-16 bg-azul text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl hover:scale-105 transition-transform cursor-default">
+            <div className="w-16 h-16 bg-azul text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg transition-transform cursor-default">
               <Store size={28} />
             </div>
-            <h1 className="text-3xl font-black text-tinta tracking-tighter italic uppercase">
+            <h1 className="titular text-3xl text-tinta">
               Crear Cuenta
             </h1>
-            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">
+            <p className="text-slate-500 font-bold text-xs mt-2">
               Configura la cuenta de tu Negocio
             </p>
           </div>
@@ -161,7 +161,7 @@ const RegisterPage = () => {
 
             {/* Sección negocio */}
             <div className="border-t border-slate-100 pt-5">
-              <p className="text-[10px] font-black text-azul uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+              <p className="text-xs font-bold text-azul mb-4 flex items-center gap-2">
                 <Building2 size={11} />
                 Datos del Negocio
               </p>
@@ -211,7 +211,7 @@ const RegisterPage = () => {
                   type="button"
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-azul transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-azul transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -235,18 +235,18 @@ const RegisterPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg mt-6 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50"
+              className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold shadow-lg mt-6 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50"
             >
               {isLoading ? 'Registrando y encriptando...' : 'Crear mi Negocio'}
             </button>
           </form>
 
           <div className="mt-8 text-center border-t border-slate-100 pt-8">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <p className="text-xs font-bold text-slate-500">
               ¿Ya abriste tu negocio?{' '}
               <button
                 onClick={() => navigate('/login')}
-                className="text-azul font-black hover:underline decoration-2 underline-offset-4 ml-1"
+                className="text-azul font-bold hover:underline decoration-2 underline-offset-4 ml-1"
               >
                 Inicia Sesión
               </button>

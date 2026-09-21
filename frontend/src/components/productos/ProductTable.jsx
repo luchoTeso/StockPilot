@@ -1,5 +1,6 @@
 import { DollarSign, Package, Barcode, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ErrorState from '../common/ErrorState';
 
 const formatearFecha = (fechaString) => {
   if (!fechaString) return '---';
@@ -12,6 +13,8 @@ const formatearFecha = (fechaString) => {
 const ProductTable = ({
   productos,
   loading,
+  loadError,
+  onRetry,
   isAdmin,
   onEdit,
   onToggleStatus,
@@ -27,11 +30,11 @@ const ProductTable = ({
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-100 text-[10px] font-black tracking-widest text-slate-400 uppercase bg-slate-50/50">
+            <tr className="border-b border-slate-100 text-xs font-bold text-slate-500 bg-slate-50/50">
               <th className="p-6">Producto / Identificación</th>
               <th className="hidden lg:table-cell p-6">Categoría</th>
               <th className="p-6 text-center">Disponibilidad</th>
@@ -45,13 +48,17 @@ const ProductTable = ({
               [1, 2, 3, 4, 5].map((i) => (
                 <tr key={i} className="animate-pulse">
                   <td colSpan="6" className="p-6">
-                    <div className="h-8 bg-slate-100 rounded-xl w-full"></div>
+                    <div className="h-8 bg-slate-100 rounded-lg w-full"></div>
                   </td>
                 </tr>
               ))
+            ) : loadError ? (
+              <tr>
+                <td colSpan="6"><ErrorState title="No pudimos cargar los productos" onRetry={onRetry} /></td>
+              </tr>
             ) : productos.length === 0 ? (
               <tr>
-                <td colSpan="6" className="p-12 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">
+                <td colSpan="6" className="p-12 text-center text-slate-500 font-bold text-sm">
                   No se encontraron productos registrados
                 </td>
               </tr>
@@ -65,34 +72,34 @@ const ProductTable = ({
                 return (
                   <tr key={p.id_producto} className={`group transition-colors hover:bg-slate-50 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
                     <td className="p-6">
-                       <p className="font-black text-tinta text-sm">{p.nombre_producto}</p>
+                       <p className="font-bold text-tinta text-sm">{p.nombre_producto}</p>
                        <div className="flex flex-wrap items-center gap-2 mt-1">
                          {(p.codigo_barras || p.codigo) && (
-                           <span className="text-[10px] font-bold text-azul font-mono bg-azul/10 px-2 py-0.5 rounded border border-azul/30 flex items-center gap-1">
+                           <span className="text-xs font-bold text-azul font-mono bg-azul/10 px-2 py-0.5 rounded border border-azul/30 flex items-center gap-1">
                              <Barcode size={12} className="text-azul" /> {p.codigo_barras || p.codigo}
                            </span>
                          )}
                          {p.codigo && p.codigo_barras && p.codigo !== p.codigo_barras && (
-                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                           <span className="text-xs font-bold text-slate-500">
                              SKU: {p.codigo}
                            </span>
                          )}
                        </div>
                     </td>
                     <td className="hidden lg:table-cell p-6">
-                      <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-tinta-2 rounded-full text-[9px] font-black uppercase tracking-widest">{p.categoria || 'Sin Info'}</span>
+                      <span className="inline-block whitespace-nowrap px-3 py-1 bg-slate-100 text-tinta-2 rounded-full text-xs font-bold">{p.categoria || 'Sin Info'}</span>
                     </td>
                     <td className="p-6 text-center">
                       <div className="flex items-center justify-center gap-2">
-                         <span className={`text-xl font-black tracking-tighter ${isCritico ? 'text-peligro' : isBajo ? 'text-amber-500' : 'text-tinta'}`}>{p.cantidad}</span>
-                         {isCritico && <button onClick={() => navigate('/analisis-detallado')} title="Riesgo de agotamiento inminente" className="bg-peligro-suave text-peligro text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 hover:scale-105 transition-colors transition-transform cursor-pointer">Agotado</button>}
-                         {isBajo && <button onClick={() => navigate('/analisis-detallado')} title="El stock ha bajado del nivel seguro para operar" className="bg-aviso-suave text-aviso text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-amber-200 hover:bg-amber-200 hover:scale-105 transition-colors transition-transform cursor-pointer">Pedir Más</button>}
-                         {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-exito text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-exito-suave">Suficiente</span>}
+                         <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
+                         {isCritico && <button onClick={() => navigate('/analisis-detallado')} title="Riesgo de agotamiento inminente" className="bg-peligro-suave text-peligro text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 transition-colors transition-transform cursor-pointer">Agotado</button>}
+                         {isBajo && <button onClick={() => navigate('/analisis-detallado')} title="El stock ha bajado del nivel seguro para operar" className="bg-aviso-suave text-aviso text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-amber-200 hover:bg-amber-200 transition-colors transition-transform cursor-pointer">Pedir Más</button>}
+                         {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-exito text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-exito-suave">Suficiente</span>}
                       </div>
-                      <p className="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-widest">ud</p>
+                      <p className="text-xs text-slate-500 font-bold mt-1">ud</p>
                     </td>
                     <td className="hidden sm:table-cell p-6 text-center">
-                      <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${isActive ? 'bg-emerald-50 text-exito border border-exito-suave' : 'bg-rose-50 text-peligro border border-peligro-suave'}`}>
+                      <span className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm ${isActive ? 'bg-emerald-50 text-exito border border-exito-suave' : 'bg-rose-50 text-peligro border border-peligro-suave'}`}>
                         {isActive ? 'Activo' : 'Pausado'}
                       </span>
                     </td>
@@ -105,15 +112,15 @@ const ProductTable = ({
                           {isActive ? (
                             <>
                                <div className="w-px h-8 bg-slate-200 mx-1"></div>
-                               <button onClick={() => onEdit(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-slate-600 hover:text-azul hover:bg-azul/10 rounded-xl transition-colors">Editar</button>
-                               <button onClick={() => onPromote(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 rounded-xl transition-colors flex items-center gap-1"><Zap size={12}/> Promo</button>
-                               <button onClick={() => onToggleStatus(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">Pausar</button>
-                               <button onClick={() => onDelete(p)} className="text-[10px] px-3 py-2 font-black uppercase tracking-widest text-peligro hover:bg-rose-50 rounded-xl transition-colors">Borrar</button>
+                               <button onClick={() => onEdit(p)} className="text-xs px-3 py-2 font-bold text-slate-600 hover:text-azul hover:bg-azul/10 rounded-lg transition-colors">Editar</button>
+                               <button onClick={() => onPromote(p)} className="text-xs px-3 py-2 font-bold text-aviso hover:bg-amber-50 rounded-lg transition-colors flex items-center gap-1"><Zap size={12}/> Promo</button>
+                               <button onClick={() => onToggleStatus(p)} className="text-xs px-3 py-2 font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">Pausar</button>
+                               <button onClick={() => onDelete(p)} className="text-xs px-3 py-2 font-bold text-peligro hover:bg-rose-50 rounded-lg transition-colors">Borrar</button>
                             </>
                           ) : (
                             <>
-                              <button onClick={() => onToggleStatus(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest bg-emerald-50 text-exito hover:bg-exito hover:text-white rounded-xl transition-colors shadow-sm">Reactivar</button>
-                              <button onClick={() => onDelete(p)} className="text-[10px] px-4 py-2 font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-colors ml-2">Eliminar</button>
+                              <button onClick={() => onToggleStatus(p)} className="text-xs px-4 py-2 font-bold bg-emerald-50 text-exito hover:bg-exito hover:text-white rounded-lg transition-colors shadow-sm">Reactivar</button>
+                              <button onClick={() => onDelete(p)} className="text-xs px-4 py-2 font-bold text-peligro hover:bg-rose-50 rounded-lg transition-colors ml-2">Eliminar</button>
                             </>
                           )}
                         </div>

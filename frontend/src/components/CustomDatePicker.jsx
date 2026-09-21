@@ -137,19 +137,19 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
         ...(coords.right !== 'auto' ? { right: `${coords.right}px` } : { left: `${coords.left}px` }),
         transformOrigin: coords.origin
       }}
-      className={`fixed z-[9999] p-5 sm:p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] w-full min-w-[300px] max-w-[320px] animate-scale-in font-outfit`}
+      className={`fixed z-[9999] p-5 sm:p-6 bg-white border border-slate-100 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] w-full min-w-[300px] max-w-[320px] animate-scale-in`}
     >
 
       {/* Header Calendario (Mes y Año) */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-black text-tinta italic uppercase tracking-tighter">
+          <span className="text-lg font-bold text-tinta">
             {meses[currentMonth.getMonth()]}
           </span>
           <button
             type="button"
             onClick={(e) => { e.preventDefault(); setMode(mode === 'years' ? 'days' : 'years'); }}
-            className="text-lg font-black text-azul hover:text-azul hover:bg-azul/10 px-2 py-0.5 rounded-lg transition-colors italic tracking-tighter flex items-center gap-1"
+            className="text-lg font-bold text-azul hover:text-azul hover:bg-azul/10 px-2 py-0.5 rounded-lg transition-colors flex items-center gap-1"
           >
             {currentMonth.getFullYear()}
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${mode === 'years' ? 'rotate-180' : ''}`}><path d="m6 9 6 6 6-6"/></svg>
@@ -175,7 +175,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
                 setCurrentMonth(new Date(y, currentMonth.getMonth(), 1));
                 setMode('days');
               }}
-              className={`py-2 rounded-xl text-sm font-bold transition-colors ${
+              className={`py-2 rounded-lg text-sm font-bold transition-colors ${
                 y === currentMonth.getFullYear() 
                   ? 'bg-azul text-white shadow-md hover:bg-azul-hondo' 
                   : 'text-tinta-2 bg-slate-50 hover:bg-azul/10 hover:text-azul'
@@ -190,7 +190,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
           {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {diasSemana.map((d) => (
-              <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
+              <div key={d} className="text-center text-xs font-bold text-slate-500">{d}</div>
             ))}
           </div>
 
@@ -207,9 +207,9 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
                 <button
                   key={dayId}
                   onClick={(e) => { e.preventDefault(); selectDate(currentMonth.getFullYear(), currentMonth.getMonth(), day); }}
-                  className={`relative flex items-center justify-center w-full aspect-square text-sm font-bold rounded-xl transition-all ${isSelected
-                      ? 'bg-azul text-white shadow-lg hover:bg-azul-hondo hover:scale-105'
-                      : (isToday ? 'bg-emerald-50 text-exito border border-emerald-200 hover:bg-exito-suave' : 'text-tinta-2 hover:bg-slate-100 hover:-translate-y-0.5')
+                  className={`relative flex items-center justify-center w-full aspect-square text-sm font-bold rounded-lg transition-all ${isSelected
+                      ? 'bg-azul text-white shadow-lg hover:bg-azul-hondo'
+                      : (isToday ? 'bg-emerald-50 text-exito border border-emerald-200 hover:bg-exito-suave' : 'text-tinta-2 hover:bg-slate-100')
                     }`}
                 >
                   {day}
@@ -223,7 +223,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
       <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between">
         <button
           onClick={(e) => { e.preventDefault(); onChange(''); setIsOpen(false); }}
-          className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors"
+          className="text-xs font-bold text-slate-500 hover:text-rose-500 transition-colors"
         >
           Borrar
         </button>
@@ -233,7 +233,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
             const today = new Date();
             selectDate(today.getFullYear(), today.getMonth(), today.getDate());
           }}
-          className="text-[10px] font-black uppercase tracking-widest text-azul hover:text-azul transition-colors"
+          className="text-xs font-bold text-azul hover:text-azul transition-colors"
         >
           Hoy
         </button>
@@ -243,16 +243,16 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Seleccionar fecha...
   ) : null;
 
   return (
-    <div className="relative font-outfit w-full">
+    <div className="relative w-full">
       {/* Botón Input (Fake) */}
       <button
         ref={buttonRef}
         type="button"
-        className={`w-full flex items-center justify-between p-4 bg-slate-50 border rounded-2xl text-sm font-bold outline-none transition-colors transition-shadow ${isOpen ? 'border-azul shadow-lg' : 'border-slate-200'} ${value ? 'text-tinta' : 'text-slate-400'}`}
+        className={`w-full flex items-center justify-between p-4 bg-slate-50 border rounded-lg text-sm font-bold outline-none transition-colors transition-shadow ${isOpen ? 'border-azul shadow-lg' : 'border-slate-200'} ${value ? 'text-tinta' : 'text-slate-500'}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{displayValue}</span>
-        <span className="text-xl block opacity-80" style={{ transform: isOpen ? 'translateY(1px)' : 'none' }}>📅</span>
+        <span className="text-xl block opacity-80" style={{ transform: isOpen ? 'translateY(1px)' : 'none' }} aria-hidden="true">📅</span>
       </button>
 
       {dropdownPortal}

@@ -20,15 +20,15 @@ const CustomTooltipPareto = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const fullName = payload[0]?.payload?.fullName || payload[0]?.payload?.name;
   return (
-    <div className="bg-tinta text-white px-5 py-4 rounded-2xl shadow-2xl border border-tinta-2 min-w-[180px]">
-      <p className="text-[10px] font-black uppercase tracking-widest text-resaltador mb-2">{fullName}</p>
+    <div className="bg-tinta text-white px-5 py-4 rounded-2xl shadow-lg border border-tinta-2 min-w-[180px]">
+      <p className="text-xs font-bold text-resaltador mb-2">{fullName}</p>
       {payload.map((entry) => (
         <div key={entry.name} className="flex justify-between items-center gap-6 py-1">
-          <span className="text-[10px] font-bold text-slate-300 flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full ring-1 ring-white/70" style={{ backgroundColor: entry.color }}></span>
             {entry.name}
           </span>
-          <span className="text-sm font-black text-white">
+          <span className="text-sm font-bold text-white">
             {entry.name.includes('%') ? `${entry.value}%` : `$${entry.value?.toLocaleString()}`}
           </span>
         </div>
@@ -41,10 +41,10 @@ const CustomTooltipGeneric = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   const fullName = payload[0]?.payload?.fullName || label;
   return (
-    <div className="bg-tinta text-white px-4 py-3 rounded-xl shadow-2xl border border-tinta-2">
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-300 mb-1">{fullName}</p>
+    <div className="bg-tinta text-white px-4 py-3 rounded-2xl shadow-lg border border-tinta-2">
+      <p className="text-xs font-bold text-slate-500 mb-1">{fullName}</p>
       {payload.map((entry) => (
-        <p key={entry.name} className="text-sm font-black text-white flex items-center gap-2">
+        <p key={entry.name} className="text-sm font-bold text-white flex items-center gap-2">
           <span className="w-2 h-2 rounded-full ring-1 ring-white/70" style={{ backgroundColor: entry.color || '#fff' }}></span>
           {entry.value?.toLocaleString()} {entry.name}
         </p>
@@ -161,7 +161,7 @@ const AnalyticsDashboardPage = () => {
       <div className="flex items-center justify-center h-[80vh]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-azul border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px]">Sincronizando Motores Analíticos</p>
+          <p className="text-slate-500 font-bold text-xs">Sincronizando Motores Analíticos</p>
         </div>
       </div>
     );
@@ -173,29 +173,29 @@ const AnalyticsDashboardPage = () => {
       {/* ═══════════ HEADER ═══════════ */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
         <div className="flex items-center gap-5">
-          <button onClick={() => navigate('/dashboard')} aria-label="Volver al dashboard" className="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-azul/10 hover:border-azul/30 rounded-2xl transition-colors shadow-sm active:scale-95">
+          <button onClick={() => navigate('/dashboard')} aria-label="Volver al dashboard" className="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-azul/10 hover:border-azul/30 rounded-lg transition-colors shadow-sm active:scale-95">
              <ArrowLeft size={18} className="text-tinta-2" />
           </button>
           <div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-azul/10 text-azul rounded-xl flex items-center justify-center shadow-inner border border-azul/30"><BarChart2 size={20} /></div>
-              <h2 className="text-3xl font-black text-tinta tracking-tighter italic uppercase">Centro Analítico</h2>
+              <div className="w-10 h-10 bg-azul/10 text-azul rounded-lg flex items-center justify-center shadow-inner border border-azul/30"><BarChart2 size={20} /></div>
+              <h2 className="titular text-3xl text-tinta">Centro Analítico</h2>
             </div>
-            <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1 ml-[52px]">Inteligencia de Datos y Patrones Estratégicos</p>
+            <p className="text-slate-500 font-bold text-xs mt-1 ml-[52px]">Inteligencia de Datos y Patrones Estratégicos</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/aprendizaje')}
-            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-azul/10 border border-azul/30 text-azul rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-azul/10 transition-colors shadow-sm"
+            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-azul/10 border border-azul/30 text-azul rounded-lg font-bold text-xs hover:bg-azul/10 transition-colors shadow-sm"
           >
             <Brain size={14} />
             <span>Ver Aprendizaje IA</span>
           </button>
           
-          <div className="bg-tinta px-5 py-2.5 rounded-xl flex items-center gap-3 shadow-lg">
+          <div className="bg-tinta px-5 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-             <span className="font-black text-[9px] uppercase tracking-widest text-slate-100">Motor Proactivo v3.0</span>
+             <span className="font-bold text-xs text-slate-100">Motor Proactivo v3.0</span>
           </div>
         </div>
       </div>
@@ -203,43 +203,43 @@ const AnalyticsDashboardPage = () => {
       {/* ═══════════ KPI CARDS ═══════════ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Productos Activos</p>
-          <p className="text-3xl font-black text-tinta tracking-tighter mt-2">{kpis.totalProducts}</p>
-          <p className="text-[9px] text-slate-500 font-bold mt-1">Catálogo actual</p>
+          <p className="text-xs font-bold text-slate-500">Productos Activos</p>
+          <p className="text-3xl font-bold text-tinta mt-2">{kpis.totalProducts}</p>
+          <p className="text-xs text-slate-500 font-bold mt-1">Catálogo actual</p>
         </div>
         <div className="bg-azul/10 p-5 rounded-2xl border border-azul/30 shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-[9px] font-black text-azul uppercase tracking-widest">Dependencia de Estrellas</p>
-          <p className="text-3xl font-black text-azul tracking-tighter mt-2">{kpis.concentrationA}%</p>
-          <p className="text-[9px] text-azul font-bold mt-1">Del ingreso total (Alta Rotación)</p>
+          <p className="text-xs font-bold text-azul">Dependencia de Estrellas</p>
+          <p className="text-3xl font-bold text-azul mt-2">{kpis.concentrationA}%</p>
+          <p className="text-xs text-azul font-bold mt-1">Del ingreso total (Alta Rotación)</p>
         </div>
         <div className="bg-amber-50 p-5 rounded-2xl border border-aviso-suave shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Stock Promedio</p>
-          <p className="text-3xl font-black text-aviso tracking-tighter mt-2">{kpis.avgDays}d</p>
-          <p className="text-[9px] text-amber-600 font-bold mt-1">Para agotarse la mercancía</p>
+          <p className="text-xs font-bold text-aviso">Stock Promedio</p>
+          <p className="text-3xl font-bold text-aviso mt-2">{kpis.avgDays}d</p>
+          <p className="text-xs text-aviso font-bold mt-1">Para agotarse la mercancía</p>
         </div>
         <div className={`p-5 rounded-2xl border shadow-sm hover:shadow-md transition-shadow ${kpis.criticalCount > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-exito-suave'}`}>
-          <p className={`text-[9px] font-black uppercase tracking-widest ${kpis.criticalCount > 0 ? 'text-peligro' : 'text-exito'}`}>Productos en Riesgo</p>
-          <p className={`text-3xl font-black tracking-tighter mt-2 ${kpis.criticalCount > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{kpis.criticalCount}</p>
-          <p className={`text-[9px] font-bold mt-1 ${kpis.criticalCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{kpis.criticalCount > 0 ? '¡Requieren tu acción ya!' : 'Todo en orden'}</p>
+          <p className={`text-xs font-bold ${kpis.criticalCount > 0 ? 'text-peligro' : 'text-exito'}`}>Productos en Riesgo</p>
+          <p className={`text-3xl font-bold mt-2 ${kpis.criticalCount > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{kpis.criticalCount}</p>
+          <p className={`text-xs font-bold mt-1 ${kpis.criticalCount > 0 ? 'text-peligro' : 'text-exito'}`}>{kpis.criticalCount > 0 ? '¡Requieren tu acción ya!' : 'Todo en orden'}</p>
         </div>
       </div>
 
       {/* ═══════════ PARETO ABC ═══════════ */}
-      <section className="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
+      <section className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
         <div className="bg-tinta px-8 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Tus Productos Estrella (Pareto 80/20)</h3>
-              <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest mt-1">Tus 5 productos principales generan la mayoría de tus ingresos</p>
+              <h3 className="titular text-lg text-white">Tus Productos Estrella (Pareto 80/20)</h3>
+              <p className="text-xs text-white/70 font-bold mt-1">Tus 5 productos principales generan la mayoría de tus ingresos</p>
             </div>
             <div className="flex items-center gap-4 overflow-x-auto pb-1 sm:pb-0">
               <div className="flex items-center gap-2 shrink-0">
                 <div className="w-3 h-3 rounded-sm bg-azul ring-2 ring-white/70"></div>
-                <span className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">Ingresos</span>
+                <span className="text-xs text-slate-300 font-bold">Ingresos</span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <div className="w-3 h-3 rounded-full bg-exito ring-2 ring-white/70"></div>
-                <span className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">% Acumulado</span>
+                <span className="text-xs text-slate-300 font-bold">% Acumulado</span>
               </div>
             </div>
           </div>
@@ -262,12 +262,12 @@ const AnalyticsDashboardPage = () => {
               </ComposedChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 flex items-center gap-3 px-2">
+          <div className="mt-4 flex flex-wrap items-center gap-3 px-2">
             <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden flex">
               <div className="bg-azul h-full" style={{ width: `${kpis.concentrationA}%` }}></div>
               <div className="bg-ambar h-full" style={{ width: `${Math.min(100 - kpis.concentrationA, 25)}%` }}></div>
             </div>
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest shrink-0">
+            <span className="text-xs font-bold text-slate-500 shrink-0">
               {kpis.concentrationA}% de ingresos provienen de productos muy rentables (Clase A)
             </span>
           </div>
@@ -278,13 +278,13 @@ const AnalyticsDashboardPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Donut ABC */}
-        <section className="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
           <div className="px-8 pt-7 pb-4 border-b border-slate-50">
-            <h3 className="text-base font-black text-tinta uppercase tracking-tight italic">Tu Portafolio de Productos</h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">¿Cuáles te dejan más dinero? (Clase A = Más rentables)</p>
+            <h3 className="font-bold text-base text-tinta">Tu Portafolio de Productos</h3>
+            <p className="text-xs text-slate-500 font-bold mt-1">¿Cuáles te dejan más dinero? (Clase A = Más rentables)</p>
           </div>
           <div className="px-8 py-6">
-            <div className="flex items-center gap-8">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
               <div className="w-[200px] h-[200px] shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -315,8 +315,8 @@ const AnalyticsDashboardPage = () => {
                       <div className="w-4 h-4 rounded-md shrink-0" style={{ backgroundColor: item.fill }}></div>
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-black text-tinta-2 uppercase">{item.name}</span>
-                          <span className="text-xs font-black" style={{ color: item.fill }}>{item.value} Productos ({pct}%)</span>
+                          <span className="text-xs font-bold text-tinta-2">{item.name}</span>
+                          <span className="text-xs font-bold text-tinta">{item.value} Productos ({pct}%)</span>
                         </div>
                         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                           <div className="h-full rounded-full transition-colors duration-1000" style={{ width: `${pct}%`, backgroundColor: item.fill }}></div>
@@ -331,10 +331,10 @@ const AnalyticsDashboardPage = () => {
         </section>
 
         {/* Riesgo Logístico */}
-        <section className="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
           <div className="px-8 pt-7 pb-4 border-b border-slate-50">
-            <h3 className="text-base font-black text-tinta uppercase tracking-tight italic">Mapa de Riesgo Logístico</h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Distribución por Nivel de Alerta</p>
+            <h3 className="font-bold text-base text-tinta">Mapa de Riesgo Logístico</h3>
+            <p className="text-xs text-slate-500 font-bold mt-1">Distribución por Nivel de Alerta</p>
           </div>
           <div className="px-8 py-6 space-y-5">
             {riskData.map((item) => {
@@ -345,9 +345,9 @@ const AnalyticsDashboardPage = () => {
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.fill }}></div>
-                      <span className="text-xs font-black text-tinta-2 uppercase tracking-wide">{item.name}</span>
+                      <span className="text-xs font-bold text-tinta-2">{item.name}</span>
                     </div>
-                    <span className="text-xl font-black tracking-tighter" style={{ color: item.fill }}>{item.value}</span>
+                    <span className="text-xl font-bold text-tinta">{item.value}</span>
                   </div>
                   <div className="h-4 bg-slate-50 rounded-lg overflow-hidden border border-slate-100">
                     <div 
@@ -359,7 +359,7 @@ const AnalyticsDashboardPage = () => {
               );
             })}
             <div className="pt-4 border-t border-slate-100">
-              <p className="text-[9px] text-slate-500 font-bold text-center uppercase tracking-widest">
+              <p className="text-xs text-slate-500 font-bold text-center">
                 {riskData[0].value === 0
                   ? <span className="flex items-center justify-center gap-1"><CheckCircle2 size={10} /> Sin productos en riesgo crítico</span>
                   : <span className="flex items-center justify-center gap-1"><AlertTriangle size={10} /> {riskData[0].value} producto(s) requieren intervención inmediata</span>
@@ -371,13 +371,13 @@ const AnalyticsDashboardPage = () => {
       </div>
 
       {/* ═══════════ PRICE HISTORY (IA STRATEGY) ═══════════ */}
-      <section className="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
+      <section className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
         <div className="px-8 pt-7 pb-4 border-b border-slate-50 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-black text-tinta uppercase tracking-tight italic">Evolución de Estrategia de Precios (IA)</h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Historial de variaciones aplicadas por el motor de decisión</p>
+            <h3 className="font-bold text-base text-tinta">Evolución de Estrategia de Precios (IA)</h3>
+            <p className="text-xs text-slate-500 font-bold mt-1">Historial de variaciones aplicadas por el motor de decisión</p>
           </div>
-          <div className="bg-azul/10 border border-azul/30 px-3 py-1 rounded-full text-[9px] font-black text-azul uppercase tracking-widest">
+          <div className="bg-azul/10 border border-azul/30 px-3 py-1 rounded-full text-xs font-bold text-azul uppercase tracking-wide">
             Auditoría Activa
           </div>
         </div>
@@ -400,11 +400,11 @@ const AnalyticsDashboardPage = () => {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100 flex flex-col items-center gap-3 w-full px-4">
+              <div className="text-center py-12 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center gap-3 w-full px-4">
                 <div className="grayscale opacity-50 flex justify-center"><Microscope size={36} /></div>
                 <div>
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest px-2">Esperando Datos Estratégicos</p>
-                  <p className="text-[10px] text-slate-400 font-medium italic mt-1 leading-tight">
+                  <p className="text-xs font-bold text-slate-500 px-2">Esperando Datos Estratégicos</p>
+                  <p className="text-xs text-slate-500 font-medium mt-1 leading-tight">
                     "Las variaciones de precio aplicadas por la IA aparecerán aquí una vez <br className="hidden sm:block" /> que empieces a activar ofertas comerciales."
                   </p>
                 </div>
@@ -412,7 +412,7 @@ const AnalyticsDashboardPage = () => {
             )}
           </div>
           <div className="mt-4 text-center">
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+            <p className="text-xs font-bold text-slate-500">
               Mostrando los últimos 100 movimientos en el historial de precios aplicados
             </p>
           </div>
@@ -421,14 +421,14 @@ const AnalyticsDashboardPage = () => {
 
       {/* ═══════════ PROYECCIÓN DE AGOTAMIENTO ═══════════ */}
       {exhaustData.length > 0 && (
-        <section className="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
           <div className="px-8 pt-7 pb-4 border-b border-slate-50">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-black text-tinta uppercase tracking-tight italic">¿Cuándo se te acaba el stock?</h3>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Días que le quedan a tus 10 productos más críticos antes de agotarse</p>
+                <h3 className="font-bold text-base text-tinta">¿Cuándo se te acaba el stock?</h3>
+                <p className="text-xs text-slate-500 font-bold mt-1">Días que le quedan a tus 10 productos más críticos antes de agotarse</p>
               </div>
-              <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest overflow-x-auto pb-2 sm:pb-0">
+              <div className="flex items-center gap-4 text-xs font-bold overflow-x-auto pb-2 sm:pb-0">
                 <span className="flex items-center gap-1.5 shrink-0"><span className="w-3 h-3 rounded bg-peligro"></span><span className="text-slate-600">&lt; 5d</span></span>
                 <span className="flex items-center gap-1.5 shrink-0"><span className="w-3 h-3 rounded bg-ambar"></span><span className="text-slate-600">&lt; 15d</span></span>
                 <span className="flex items-center gap-1.5 shrink-0"><span className="w-3 h-3 rounded bg-exito"></span><span className="text-slate-600">&gt; 15d</span></span>
@@ -456,23 +456,23 @@ const AnalyticsDashboardPage = () => {
       )}
 
       {/* ═══════════ RITMO DE CAJA ═══════════ */}
-      <section data-surface="dark" className="bg-tinta rounded-[2rem] shadow-2xl overflow-hidden relative">
+      <section data-surface="dark" className="bg-tinta rounded-2xl shadow-lg overflow-hidden relative">
         <div className="relative z-10">
           <div className="px-8 pt-8 pb-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Ritmo de Caja Semanal</h3>
-                <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest mt-1">Ventas Consolidadas — Últimos 7 Días</p>
+                <h3 className="titular text-lg text-white">Ritmo de Caja Semanal</h3>
+                <p className="text-xs text-white/70 font-bold mt-1">Ventas Consolidadas — Últimos 7 Días</p>
               </div>
               <div className="text-left sm:text-right flex flex-col items-end gap-2">
-                <p className="text-2xl font-black text-white tracking-tighter italic">
+                <p className="text-2xl font-bold text-white">
                   ${(stats?.ventasSemanales?.reduce((s, d) => s + d.total, 0) || 0).toLocaleString()}
                 </p>
-                <p className="text-[9px] text-white/70 font-bold uppercase tracking-widest">total semanal</p>
+                <p className="text-xs text-white/70 font-bold">total semanal</p>
                 <button
                   onClick={() => setRefreshKey(k => k + 1)}
                   disabled={loading}
-                  className="text-[9px] font-bold uppercase tracking-widest text-resaltador hover:bg-resaltador hover:text-tinta border border-resaltador px-3 py-1 rounded-full transition-colors disabled:opacity-40"
+                  className="text-xs font-bold text-resaltador hover:bg-resaltador hover:text-tinta border border-resaltador px-3 py-1 rounded-full transition-colors disabled:opacity-40"
                 >
                   {loading ? 'Actualizando…' : '↻ Actualizar'}
                 </button>
