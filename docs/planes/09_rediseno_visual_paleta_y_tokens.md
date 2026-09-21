@@ -1,6 +1,6 @@
 # Plan 09: Rediseño Visual — Paleta "cuaderno del tendero" y Sistema de Tokens
 
-**Estado:** Fases 0, 1, 1b y 2 implementadas y verificadas. **Fase 3 (tipografía y forma): ver plan 12.** Fase 4 (matriz de verificación completa) pendiente.
+**Estado:** Fases 0, 1, 1b y 2 implementadas y verificadas. **Fase 3 (tipografía y forma): ver plan 12. Fase 4 (verificación): ver plan 14.**
 **Fecha:** 2026-09-19
 **Rama:** `feature/rediseno-visual`
 **Guías de origen:** `docs/rediseno/files/` (`CONTEXTO-REDISENO.md`, `rediseno-visual-recomendaciones.md`, `adenda-plan-rediseno.md`, `implementation_plan remodelación.md`). Precedencia: adenda > plan de recomendaciones > contexto.
@@ -159,7 +159,7 @@ Las pruebas con backend real **no confirman ventas, no abren ni cierran caja y n
 ## 5. Pendiente
 
 - **Fase 3 (tipografía y forma):** implementada en la rama `feature/rediseno-fase3`, ver `docs/planes/12_rediseno_fase3_tipografia_y_forma.md`.
-- **Fase 4:** matriz pantallas × estados (hover, foco con Tab, deshabilitado, error, cargando, vacío) × viewports (1440, 1024, 390) y revisión de contraste de los `text-slate-400` (251) y `text-amber-500` usados como texto (13).
+- **Fase 4 (verificación):** implementada en la rama local `feature/rediseno-fase4`, ver `docs/planes/14_rediseno_fase4_verificacion.md`.
 
 ## 6. Observaciones fuera del alcance visual (reportadas, no corregidas salvo indicación)
 
