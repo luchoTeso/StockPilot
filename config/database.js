@@ -229,6 +229,19 @@ const db = {
 
                 CREATE INDEX IF NOT EXISTS idx_sesioncaja_tienda_vendedor ON SesionCaja(id_tienda, id_vendedor, estado);
 
+                -- Clientes (Fiados): la tabla debe existir antes de que Ventas.id_cliente la referencie.
+                -- Antes solo la creaba database/init_pg.sql (migración manual), por eso en producción faltaba
+                -- y este bloque fallaba con "no existe la relación clientes".
+                CREATE TABLE IF NOT EXISTS Clientes (
+                    id_cliente SERIAL PRIMARY KEY,
+                    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+                    nombre VARCHAR(255) NOT NULL,
+                    celular VARCHAR(20),
+                    limite_credito NUMERIC(15, 2) DEFAULT 0,
+                    fecha_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_clientes_tienda ON Clientes(id_tienda);
+
                 ALTER TABLE Ventas 
                 ADD COLUMN IF NOT EXISTS id_sesion_caja INTEGER REFERENCES SesionCaja(id_sesion) ON DELETE SET NULL,
                 ADD COLUMN IF NOT EXISTS metodo_pago VARCHAR(50) DEFAULT 'Efectivo',
@@ -239,6 +252,22 @@ const db = {
 
                 CREATE INDEX IF NOT EXISTS idx_ventas_sesion_caja ON Ventas(id_sesion_caja);
             `);
+            // 5.1 Asegurar tabla Abonos (pagos de fiados). Requiere Clientes y SesionCaja, creadas arriba.
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS Abonos (
+                    id_abono SERIAL PRIMARY KEY,
+                    id_cliente INTEGER NOT NULL REFERENCES Clientes(id_cliente) ON DELETE CASCADE,
+                    id_tienda INTEGER NOT NULL REFERENCES Tienda(id_tienda) ON DELETE CASCADE,
+                    id_sesion_caja INTEGER REFERENCES SesionCaja(id_sesion) ON DELETE SET NULL,
+                    monto NUMERIC(15, 2) NOT NULL,
+                    metodo_pago VARCHAR(50) DEFAULT 'Efectivo',
+                    fecha_abono TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    id_usuario_recibe INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_abonos_cliente ON Abonos(id_cliente);
+                CREATE INDEX IF NOT EXISTS idx_abonos_sesion ON Abonos(id_sesion_caja);
+            `);
+
             // 6. Asegurar tabla EgresosCaja (Fase 3 - Flujo de Caja Menor)
             await pool.query(`
                 CREATE TABLE IF NOT EXISTS EgresosCaja (
@@ -296,7 +325,7 @@ const db = {
                 );
             `);
             
-            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA), Índices, SesionCaja POS, EgresosCaja, NotificacionesUsuario y Promociones_Manuales actualizados exitosamente.');
+            console.log('✅ Auto-migration: Esquema de Tienda, Usuarios (2FA), Índices, SesionCaja POS, Clientes y Abonos (Fiados), EgresosCaja, NotificacionesUsuario y Promociones_Manuales actualizados exitosamente.');
             return; // Éxito, salir de la función
         } catch (err) {
             console.warn(`⚠️ Auto-migration intento ${attempt}/${maxRetries} falló:`, err.message);
