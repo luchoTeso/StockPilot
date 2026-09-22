@@ -4,7 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { SYNC_EVENTS, subscribeToSync } from '../utils/stockSync';
-import { Bot, Rocket, AlertCircle, TrendingUp, DollarSign, Target, Clock, Zap, BarChart2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import { ShoppingCart, Check, Bot, Rocket, AlertCircle, TrendingUp, DollarSign, Target, Clock, Zap, BarChart2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -23,6 +24,11 @@ const DashboardPage = () => {
     margenPromedio: 0
   });
   const [recommendations, setRecommendations] = useState([]);
+  // Borradores de orden de compra armados desde el Consejero (solo administrador)
+  const [borradores, setBorradores] = useState({});
+  const [pedidoEnCurso, setPedidoEnCurso] = useState(null); // id_producto | 'todo'
+  const [confirmarTodo, setConfirmarTodo] = useState(false);
+  const [ultimosPedidos, setUltimosPedidos] = useState([]);
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingPromos, setLoadingPromos] = useState(true);
@@ -78,6 +84,11 @@ const DashboardPage = () => {
       if (signal && signal.aborted) return;
 
       setRecommendations(aiRes.data.recommendations || []);
+      if (isAdmin) {
+        axios.get('/api/ordenes/borradores/resumen', { ...(signal && { signal }) })
+          .then((r) => { if (!(signal && signal.aborted)) setBorradores(r.data.data || {}); })
+          .catch(() => {});
+      }
       localStorage.setItem(`stockpilot_recs_${storeKey}`, JSON.stringify(aiRes.data.recommendations || []));
 
       setPromotions(promoRes.data.promotions || []);
@@ -90,7 +101,7 @@ const DashboardPage = () => {
         setLoadingPromos(false);
       }
     }
-  }, [storeKey]);
+  }, [storeKey, isAdmin]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -146,6 +157,38 @@ const DashboardPage = () => {
       setApplyingStrategy(false);
     }
   };
+
+  // Recomendaciones que se pueden llevar a un pedido: traen producto y proveedor y aún no están en un borrador
+  const esPedible = (rec) => rec.id_producto && rec.id_proveedor && Number.isFinite(Number(rec.final)) && Number(rec.final) > 0;
+  const pendientesDePedido = recommendations.filter((rec) => esPedible(rec) && !borradores[rec.id_producto]);
+  const resumenPedido = {
+    proveedores: new Set(pendientesDePedido.map((r) => r.id_proveedor)).size,
+    total: pendientesDePedido.reduce((acc, r) => acc + Number(r.final) * Number(r.costo_unitario || 0), 0),
+  };
+
+  const agregarAlPedido = async (lista, marca) => {
+    setPedidoEnCurso(marca);
+    try {
+      const { data } = await axios.post('/api/ordenes/borrador/desde-consejero', {
+        items: lista.map((r) => ({ id_producto: r.id_producto, cantidad: Number(r.final), urgencia: r.urgencia })),
+      });
+      const nuevos = {};
+      for (const b of data.borradores) {
+        for (const r of lista.filter((x) => x.id_proveedor === b.id_proveedor)) nuevos[r.id_producto] = { id_orden: b.id_orden, cantidad: Number(r.final), proveedor: b.proveedor };
+      }
+      setBorradores((prev) => ({ ...prev, ...nuevos }));
+      setUltimosPedidos(data.borradores);
+      if (data.sin_proveedor.length) toast.warning(`${data.sin_proveedor.length} producto(s) sin proveedor: asígnalo en Productos para poder pedirlo.`);
+      if (data.borradores.length) toast.success(data.borradores.length === 1 ? `Agregado al pedido #${data.borradores[0].id_orden} (borrador).` : `Se armaron ${data.borradores.length} pedidos en borrador.`);
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'No se pudo armar el pedido.');
+    } finally {
+      setPedidoEnCurso(null);
+      setConfirmarTodo(false);
+    }
+  };
+
+  const chipUrgencia = (u) => (u === 'Pide hoy' ? 'bg-peligro-suave text-peligro border-peligro/30' : u === 'Esta semana' ? 'bg-aviso-suave text-aviso border-aviso/30' : 'bg-slate-100 text-slate-600 border-slate-200');
 
   const getConfidenceColor = (score) => {
     if (score >= 90) return 'text-exito';
@@ -228,6 +271,32 @@ const DashboardPage = () => {
               )}
             </div>
 
+            {isAdmin && pendientesDePedido.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-azul/5 border border-azul/20 rounded-2xl px-4 py-3">
+                <p className="text-xs font-bold text-tinta">
+                  {pendientesDePedido.length} sugerencia(s) listas para pedir · {resumenPedido.proveedores} proveedor(es) · <span className="text-azul">${Math.round(resumenPedido.total).toLocaleString('es-CO')}</span>
+                </p>
+                <button
+                  type="button"
+                  disabled={pedidoEnCurso !== null}
+                  onClick={() => setConfirmarTodo(true)}
+                  className="flex items-center gap-2 text-xs font-bold text-white bg-azul hover:bg-azul-hondo disabled:opacity-50 px-4 py-2 rounded-lg transition-colors"
+                >
+                  <ShoppingCart size={14} /> Armar pedido con todo lo sugerido
+                </button>
+              </div>
+            )}
+            {ultimosPedidos.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 bg-exito-suave border border-exito/20 rounded-2xl px-4 py-3 text-xs font-bold text-exito" role="status">
+                <span>Borrador listo para revisar y enviar (no se envió nada al proveedor):</span>
+                {ultimosPedidos.map((b) => (
+                  <Link key={b.id_orden} to={`/proveedores?orden=${b.id_orden}`} className="underline underline-offset-2 hover:text-tinta">
+                    Ver pedido #{b.id_orden} · {b.proveedor} →
+                  </Link>
+                ))}
+              </div>
+            )}
+
             <div className="flex-grow max-h-[340px] overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {loading ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -244,6 +313,14 @@ const DashboardPage = () => {
                           {rec.trend === 'alcista' ? 'ALTA DEMANDA' : rec.trend === 'bajista' ? 'BAJA ROTACIÓN' : 'DEMANDA ESTABLE'}
                         </span>
                       </div>
+                      {rec.urgencia && (
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${chipUrgencia(rec.urgencia)}`}>{rec.urgencia}</span>
+                          {rec.dias_para_agotar !== null && rec.dias_para_agotar !== undefined && (
+                            <span className="text-xs font-bold text-slate-500">{rec.dias_para_agotar <= 0 ? 'Sin stock para hoy' : `Stock para ~${rec.dias_para_agotar} día(s)`}</span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-xs text-slate-600 mt-2 font-medium leading-relaxed">"{rec.reason}"</p>
                       <div className="mt-auto pt-4 border-t border-azul/30">
                         <div className="flex justify-between text-xs mb-2 font-bold">
@@ -256,6 +333,24 @@ const DashboardPage = () => {
                             style={{ width: `${rec.confidence}%` }}
                           ></div>
                         </div>
+                        {isAdmin && rec.id_producto && (
+                          borradores[rec.id_producto] ? (
+                            <Link to={`/proveedores?orden=${borradores[rec.id_producto].id_orden}`} className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-exito bg-exito-suave border border-exito/20 rounded-lg px-3 py-2 hover:bg-exito hover:text-white transition-colors">
+                              <Check size={14} /> En borrador · Pedido #{borradores[rec.id_producto].id_orden}
+                            </Link>
+                          ) : rec.id_proveedor ? (
+                            <button
+                              type="button"
+                              disabled={pedidoEnCurso !== null || !esPedible(rec)}
+                              onClick={() => agregarAlPedido([rec], rec.id_producto)}
+                              className="mt-3 w-full flex items-center justify-center gap-2 text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-50 rounded-lg px-3 py-2 transition-colors"
+                            >
+                              <ShoppingCart size={14} /> Agregar al pedido de {rec.proveedor}
+                            </button>
+                          ) : (
+                            <p className="mt-3 text-xs font-bold text-aviso">Sin proveedor asignado: asígnalo en Productos para poder pedirlo.</p>
+                          )
+                        )}
                       </div>
                     </div>
                   ))}
@@ -268,6 +363,19 @@ const DashboardPage = () => {
             </div>
           </div>
         </section>
+
+        <ConfirmDialog
+          isOpen={confirmarTodo}
+          title="Armar pedido con todo lo sugerido"
+          message={<>Se creará un borrador por proveedor ({resumenPedido.proveedores}) con {pendientesDePedido.length} producto(s), por un total estimado de <b>${Math.round(resumenPedido.total).toLocaleString('es-CO')}</b>. No se envía nada al proveedor: lo revisas y apruebas en Proveedores.</>}
+          highlightColor="azul"
+          confirmText="Sí, armar borrador"
+          cancelText="Cancelar"
+          onConfirm={() => agregarAlPedido(pendientesDePedido, 'todo')}
+          onCancel={() => setConfirmarTodo(false)}
+          loading={pedidoEnCurso === 'todo'}
+          icon="check"
+        />
 
         {/* Estado del Inventario */}
         <section className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 self-start">

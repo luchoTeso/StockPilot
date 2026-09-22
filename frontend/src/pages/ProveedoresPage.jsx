@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Building2, Plus } from 'lucide-react';
 import { useProveedoresPage } from '../hooks/useProveedoresPage';
 
@@ -23,6 +25,19 @@ const ProveedoresPage = () => {
     handleRegisterPayment, confirmPayment, handleOpenSupplierModal, handleSaveSupplier,
     handleDeleteSupplier, handleOpenForecast, requestCopilot, handleToggleItem, handleEditQty, handleUpdateEstado
   } = useProveedoresPage();
+
+  // Desde el Consejero IA: /proveedores?orden=ID abre el detalle de ese borrador (una sola vez)
+  const [searchParams] = useSearchParams();
+  const ordenPedida = Number(searchParams.get('orden'));
+  const yaAbierta = useRef(false);
+  useEffect(() => {
+    if (!ordenPedida || yaAbierta.current || loadingHistory) return;
+    const orden = ordenesHistory.find((o) => o.id_orden === ordenPedida);
+    if (orden) {
+      yaAbierta.current = true;
+      fetchOrderDetail(orden);
+    }
+  }, [ordenPedida, ordenesHistory, loadingHistory, fetchOrderDetail]);
 
   return (
     <div className="pb-32 space-y-8 animate-fade-in">
