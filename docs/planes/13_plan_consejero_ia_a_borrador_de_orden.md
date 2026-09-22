@@ -207,3 +207,8 @@ Al contrastar el plan con el código actual se ajustó lo siguiente. Las decisio
 **Observaciones (sin cambiar).**
 - Con los datos actuales las 4 sugerencias salen "Puede esperar": el stock alcanza para muchos días y el Consejero las sugiere porque el stock queda por debajo del **stock de seguridad**. Conviene decidir si una sugerencia "puede esperar" debe mostrarse igual o ir en una sección aparte.
 - Faltan la Fase D (editar cantidades desde el detalle, proveedor sin correo, plantilla de correo) y la E (recepción de mercancía).
+
+## 12. Ajustes tras la primera revisión (2026-09-22)
+
+- **Ajuste IA en 0 % y "Base: ud" vacío en el detalle.** Dos causas. (1) El borrador guardaba la cantidad ya ajustada como base y "0" como ajuste; ahora el Consejero envía su base y su ajuste real y se guardan en cantidad_sugerida y sugerencia_ia (ejemplo verificado: base 11, ajuste +20 %, final 14). (2) El detalle leía det.cantidad_base, una columna que no existe (la real es cantidad_sugerida), por lo que "Base" salía vacío también en las órdenes antiguas; corregido. Sin ajuste se muestra "Sin ajuste" en lugar de 0 %. Los borradores creados antes de este cambio conservan el 0 % guardado.
+- **Sugerencias "Puede esperar" aparte.** La lista principal muestra solo "Pide hoy" y "Esta semana" (y "Armar pedido con todo lo sugerido" las usa solo a ellas). Las demás van en la sección plegada "Para reponer con calma", con su propio botón. Si no hay nada urgente se lee "Nada urgente por pedir hoy". Capturas: docs/planes/img/dashboard-calma-*.jpg y proveedores-detalle-ajuste.jpg.

@@ -43,7 +43,10 @@ const ordenBorradorController = {
       if (!it || !esEntero(it.id_producto) || !esEntero(it.cantidad) || Number(it.cantidad) > MAX_CANTIDAD) {
         return res.status(400).json({ success: false, error: 'Cada producto necesita id_producto y cantidad enteros mayores a 0.' });
       }
-      limpios.push({ id_producto: Number(it.id_producto), cantidad: Number(it.cantidad), urgencia: typeof it.urgencia === 'string' ? it.urgencia.slice(0, 20) : null });
+      // base = cantidad calculada antes del ajuste de la IA; ajuste_ia = porcentaje que la IA aplicó (puede ser negativo)
+      const base = esEntero(it.base) && Number(it.base) <= MAX_CANTIDAD ? Number(it.base) : Number(it.cantidad);
+      const ajuste = Number.isInteger(Number(it.ajuste_ia)) && Math.abs(Number(it.ajuste_ia)) <= 1000 ? Number(it.ajuste_ia) : 0;
+      limpios.push({ id_producto: Number(it.id_producto), cantidad: Number(it.cantidad), base, ajuste_ia: ajuste, urgencia: typeof it.urgencia === 'string' ? it.urgencia.slice(0, 20) : null });
     }
 
     const client = await db.getClient();
@@ -95,8 +98,8 @@ const ordenBorradorController = {
           if (linea.length) { yaEstaban.push(it.id_producto); continue; } // se conserva la cantidad ya editada
           const costo = costoUnitario({ costoCompra: p.costo_compra, precio: p.precio });
           await client.query(
-            'INSERT INTO Ordenes_Detalle (id_orden, id_producto, cantidad_sugerida, sugerencia_ia, cantidad_final, costo_unitario, urgencia, costo_estimado) VALUES ($1, $2, $3, 0, $3, $4, $5, $6)',
-            [idOrden, it.id_producto, it.cantidad, costo.costo, it.urgencia, costo.estimado]
+            'INSERT INTO Ordenes_Detalle (id_orden, id_producto, cantidad_sugerida, sugerencia_ia, cantidad_final, costo_unitario, urgencia, costo_estimado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+            [idOrden, it.id_producto, it.base, it.ajuste_ia, it.cantidad, costo.costo, it.urgencia, costo.estimado]
           );
           agregados++;
         }

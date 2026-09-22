@@ -160,7 +160,11 @@ const DashboardPage = () => {
 
   // Recomendaciones que se pueden llevar a un pedido: traen producto y proveedor y aún no están en un borrador
   const esPedible = (rec) => rec.id_producto && rec.id_proveedor && Number.isFinite(Number(rec.final)) && Number(rec.final) > 0;
-  const pendientesDePedido = recommendations.filter((rec) => esPedible(rec) && !borradores[rec.id_producto]);
+  // "Puede esperar": el stock alcanza para varios días aunque esté bajo el mínimo; van aparte y no entran al pedido general
+  const urgentes = recommendations.filter((rec) => rec.urgencia !== 'Puede esperar').slice(0, 10);
+  const calmas = recommendations.filter((rec) => rec.urgencia === 'Puede esperar').slice(0, 10);
+  const calmasPedibles = calmas.filter((rec) => esPedible(rec) && !borradores[rec.id_producto]);
+  const pendientesDePedido = urgentes.filter((rec) => esPedible(rec) && !borradores[rec.id_producto]);
   const resumenPedido = {
     proveedores: new Set(pendientesDePedido.map((r) => r.id_proveedor)).size,
     total: pendientesDePedido.reduce((acc, r) => acc + Number(r.final) * Number(r.costo_unitario || 0), 0),
@@ -170,7 +174,7 @@ const DashboardPage = () => {
     setPedidoEnCurso(marca);
     try {
       const { data } = await axios.post('/api/ordenes/borrador/desde-consejero', {
-        items: lista.map((r) => ({ id_producto: r.id_producto, cantidad: Number(r.final), urgencia: r.urgencia })),
+        items: lista.map((r) => ({ id_producto: r.id_producto, cantidad: Number(r.final), base: Number(r.base), ajuste_ia: parseInt(String(r.adjustment ?? '0').replace(/[^0-9-]/g, ''), 10) || 0, urgencia: r.urgencia })),
       });
       const nuevos = {};
       for (const b of data.borradores) {
@@ -189,6 +193,56 @@ const DashboardPage = () => {
   };
 
   const chipUrgencia = (u) => (u === 'Pide hoy' ? 'bg-peligro-suave text-peligro border-peligro/30' : u === 'Esta semana' ? 'bg-aviso-suave text-aviso border-aviso/30' : 'bg-slate-100 text-slate-600 border-slate-200');
+
+  const renderTarjeta = (rec) => (
+                    <div key={rec.id || rec.product} className="bg-slate-50/70 border-4 border-azul p-5 rounded-2xl hover:border-azul-hondo hover:bg-azul/10 hover:shadow-md transition-all duration-200 group flex flex-col">
+                      <div className="flex justify-between items-start mb-3 gap-2">
+                        <span className="text-tinta font-bold text-sm leading-tight flex-1">{rec.product}</span>
+                        <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : rec.trend === 'bajista' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                          {rec.trend === 'alcista' ? 'ALTA DEMANDA' : rec.trend === 'bajista' ? 'BAJA ROTACIÓN' : 'DEMANDA ESTABLE'}
+                        </span>
+                      </div>
+                      {rec.urgencia && (
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${chipUrgencia(rec.urgencia)}`}>{rec.urgencia}</span>
+                          {rec.dias_para_agotar !== null && rec.dias_para_agotar !== undefined && (
+                            <span className="text-xs font-bold text-slate-500">{rec.dias_para_agotar <= 0 ? 'Sin stock para hoy' : `Stock para ~${rec.dias_para_agotar} día(s)`}</span>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-600 mt-2 font-medium leading-relaxed">"{rec.reason}"</p>
+                      <div className="mt-auto pt-4 border-t border-azul/30">
+                        <div className="flex justify-between text-xs mb-2 font-bold">
+                          <span className="text-slate-500">Sugerido: <b className="text-tinta text-base font-bold">+{rec.final}u</b></span>
+                          <span className={getConfidenceColor(rec.confidence)}>Confianza: {rec.confidence}%</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full opacity-90 transition-colors duration-1000 ${rec.confidence >= 90 ? 'bg-exito' : 'bg-ambar'}`}
+                            style={{ width: `${rec.confidence}%` }}
+                          ></div>
+                        </div>
+                        {isAdmin && rec.id_producto && (
+                          borradores[rec.id_producto] ? (
+                            <Link to={`/proveedores?orden=${borradores[rec.id_producto].id_orden}`} className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-exito bg-exito-suave border border-exito/20 rounded-lg px-3 py-2 hover:bg-exito hover:text-white transition-colors">
+                              <Check size={14} /> En borrador · Pedido #{borradores[rec.id_producto].id_orden}
+                            </Link>
+                          ) : rec.id_proveedor ? (
+                            <button
+                              type="button"
+                              disabled={pedidoEnCurso !== null || !esPedible(rec)}
+                              onClick={() => agregarAlPedido([rec], rec.id_producto)}
+                              className="mt-3 w-full flex items-center justify-center gap-2 text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-50 rounded-lg px-3 py-2 transition-colors"
+                            >
+                              <ShoppingCart size={14} /> Agregar al pedido de {rec.proveedor}
+                            </button>
+                          ) : (
+                            <p className="mt-3 text-xs font-bold text-aviso">Sin proveedor asignado: asígnalo en Productos para poder pedirlo.</p>
+                          )
+                        )}
+                      </div>
+                    </div>
+  );
 
   const getConfidenceColor = (score) => {
     if (score >= 90) return 'text-exito';
@@ -304,57 +358,39 @@ const DashboardPage = () => {
                   <div className="h-24 bg-slate-100 rounded-2xl animate-pulse"></div>
                 </div>
               ) : recommendations.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {recommendations.slice(0, 10).map((rec) => (
-                    <div key={rec.id || rec.product} className="bg-slate-50/70 border-4 border-azul p-5 rounded-2xl hover:border-azul-hondo hover:bg-azul/10 hover:shadow-md transition-all duration-200 group flex flex-col">
-                      <div className="flex justify-between items-start mb-3 gap-2">
-                        <span className="text-tinta font-bold text-sm leading-tight flex-1">{rec.product}</span>
-                        <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : rec.trend === 'bajista' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
-                          {rec.trend === 'alcista' ? 'ALTA DEMANDA' : rec.trend === 'bajista' ? 'BAJA ROTACIÓN' : 'DEMANDA ESTABLE'}
-                        </span>
-                      </div>
-                      {rec.urgencia && (
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${chipUrgencia(rec.urgencia)}`}>{rec.urgencia}</span>
-                          {rec.dias_para_agotar !== null && rec.dias_para_agotar !== undefined && (
-                            <span className="text-xs font-bold text-slate-500">{rec.dias_para_agotar <= 0 ? 'Sin stock para hoy' : `Stock para ~${rec.dias_para_agotar} día(s)`}</span>
-                          )}
+                <>
+                  {urgentes.length > 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {urgentes.map(renderTarjeta)}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 bg-exito-suave rounded-2xl border border-exito/20">
+                      <p className="text-exito text-sm font-bold">Nada urgente por pedir hoy</p>
+                    </div>
+                  )}
+                  {calmas.length > 0 && (
+                    <details className="mt-4 group/calmas">
+                      <summary className="cursor-pointer select-none text-xs font-bold text-tinta bg-slate-100 hover:bg-slate-200 rounded-2xl px-4 py-3 transition-colors">
+                        Para reponer con calma ({calmas.length}) <span className="text-slate-500 font-medium">· están bajo tu stock de seguridad pero te alcanzan para varios días</span>
+                      </summary>
+                      {isAdmin && calmasPedibles.length > 0 && (
+                        <div className="mt-3 flex justify-end">
+                          <button
+                            type="button"
+                            disabled={pedidoEnCurso !== null}
+                            onClick={() => agregarAlPedido(calmasPedibles, 'calmas')}
+                            className="flex items-center gap-2 text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-50 px-4 py-2 rounded-lg transition-colors"
+                          >
+                            <ShoppingCart size={14} /> Agregar estas {calmasPedibles.length} a un pedido
+                          </button>
                         </div>
                       )}
-                      <p className="text-xs text-slate-600 mt-2 font-medium leading-relaxed">"{rec.reason}"</p>
-                      <div className="mt-auto pt-4 border-t border-azul/30">
-                        <div className="flex justify-between text-xs mb-2 font-bold">
-                          <span className="text-slate-500">Sugerido: <b className="text-tinta text-base font-bold">+{rec.final}u</b></span>
-                          <span className={getConfidenceColor(rec.confidence)}>Confianza: {rec.confidence}%</span>
-                        </div>
-                        <div className="h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full opacity-90 transition-colors duration-1000 ${rec.confidence >= 90 ? 'bg-exito' : 'bg-ambar'}`}
-                            style={{ width: `${rec.confidence}%` }}
-                          ></div>
-                        </div>
-                        {isAdmin && rec.id_producto && (
-                          borradores[rec.id_producto] ? (
-                            <Link to={`/proveedores?orden=${borradores[rec.id_producto].id_orden}`} className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-exito bg-exito-suave border border-exito/20 rounded-lg px-3 py-2 hover:bg-exito hover:text-white transition-colors">
-                              <Check size={14} /> En borrador · Pedido #{borradores[rec.id_producto].id_orden}
-                            </Link>
-                          ) : rec.id_proveedor ? (
-                            <button
-                              type="button"
-                              disabled={pedidoEnCurso !== null || !esPedible(rec)}
-                              onClick={() => agregarAlPedido([rec], rec.id_producto)}
-                              className="mt-3 w-full flex items-center justify-center gap-2 text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-50 rounded-lg px-3 py-2 transition-colors"
-                            >
-                              <ShoppingCart size={14} /> Agregar al pedido de {rec.proveedor}
-                            </button>
-                          ) : (
-                            <p className="mt-3 text-xs font-bold text-aviso">Sin proveedor asignado: asígnalo en Productos para poder pedirlo.</p>
-                          )
-                        )}
+                      <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {calmas.map(renderTarjeta)}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    </details>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                   <p className="text-slate-500 text-sm font-bold">Sistemas Estables</p>

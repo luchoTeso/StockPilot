@@ -138,11 +138,11 @@ const OrdenesHistory = ({
                   <div key={det.id_detalle} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
                       <p className="text-sm font-bold text-tinta">{det.nombre_producto}</p>
-                      <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_base} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>
+                      <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_sugerida ?? det.cantidad_final} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-bold text-slate-500">Ajuste IA</p>
-                      <p className="text-sm font-bold text-azul">{det.sugerencia_ia > 0 ? '+' : ''}{det.sugerencia_ia}%</p>
+                      <p className="text-sm font-bold text-azul">{Number(det.sugerencia_ia) ? `${det.sugerencia_ia > 0 ? '+' : ''}${det.sugerencia_ia}%` : 'Sin ajuste'}</p>
                     </div>
                   </div>
                 ))}
