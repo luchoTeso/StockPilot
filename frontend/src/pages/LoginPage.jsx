@@ -56,7 +56,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div data-surface="dark" className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-tinta">
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-papel">
       <div className="w-full max-w-[440px] animate-fade-in relative z-10">
         <div className="bg-white p-10 md:p-12 rounded-2xl shadow-lg border border-slate-200 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-azul"></div>

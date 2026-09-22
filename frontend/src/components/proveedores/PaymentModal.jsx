@@ -14,7 +14,7 @@ const PaymentModal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={onClose}></div>
       <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] relative z-[160] animate-in zoom-in-95 duration-200 border border-white overflow-hidden flex flex-col">
         
         {/* Header Fijo */}

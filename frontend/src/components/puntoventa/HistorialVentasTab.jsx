@@ -227,7 +227,7 @@ const HistorialVentasTab = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-tinta text-xs font-bold text-white whitespace-nowrap">
+              <tr className="bg-menu text-xs font-bold text-white whitespace-nowrap">
                 <th className="p-4 md:p-8">Producto</th>
                 <th className="hidden lg:table-cell p-4 md:p-8">Categoría</th>
                 <th className="p-4 md:p-8 text-center">Unidades</th>
@@ -277,7 +277,7 @@ const HistorialVentasTab = () => {
 
       {/* Modal Top Vendidos */}
       {modalMasVendidos && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-[80] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-lg overflow-hidden animate-scale-in">
             <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-white">
               <div>

@@ -111,7 +111,7 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
             <div className="bg-white border border-slate-100 rounded-2xl w-full max-w-md shadow-lg overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
                     <h2 className="titular text-2xl text-tinta flex items-center gap-2">
@@ -197,7 +197,7 @@ const ExpenseModal = ({ isOpen, onClose, onExpenseRegistered, user }) => {
                             ) : (
                                 <div className="relative rounded-2xl overflow-hidden border border-slate-200 aspect-video bg-slate-100 flex items-center justify-center group shadow-inner">
                                     <img src={fotoBase64} alt="Evidencia" className="max-h-full object-contain" />
-                                    <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button 
                                             type="button"
                                             onClick={removePhoto}

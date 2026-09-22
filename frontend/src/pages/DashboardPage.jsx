@@ -394,7 +394,7 @@ const DashboardPage = () => {
       {/* STRATEGY MODAL */}
       {showModal && selectedPromo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setShowModal(false)} role="presentation" aria-hidden="true"></div>
+          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" onClick={() => setShowModal(false)} role="presentation" aria-hidden="true"></div>
           <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-lg relative z-10 overflow-hidden animate-in zoom-in-95 duration-200 text-tinta">
             <div className="bg-azul p-8 text-white relative">
               <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={64} /></div>
@@ -477,7 +477,7 @@ const DashboardPage = () => {
             <p className="text-lg md:text-xl font-medium text-white/90 leading-relaxed mb-10">{welcomeAlert.message}</p>
             <button
               onClick={() => setWelcomeAlert(null)}
-              className="w-full py-5 bg-tinta hover:bg-slate-800 active:scale-95 text-white rounded-lg font-bold transition-all shadow-lg text-sm"
+              className="w-full py-5 bg-menu hover:bg-slate-800 active:scale-95 text-white rounded-lg font-bold transition-all shadow-lg text-sm"
             >
               Entendido
             </button>

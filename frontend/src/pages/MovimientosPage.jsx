@@ -354,7 +354,7 @@ const MovimientosPage = () => {
             <button 
               type="button" 
               onClick={limpiarFiltros} 
-              className="bg-tinta hover:bg-tinta text-white p-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
+              className="bg-menu hover:bg-menu text-white p-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
             >
               Limpiar
             </button>
@@ -365,7 +365,7 @@ const MovimientosPage = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-tinta text-xs font-bold text-white whitespace-nowrap">
+                  <tr className="bg-menu text-xs font-bold text-white whitespace-nowrap">
                     <th className="p-6 pl-8">Fecha</th>
                     <th className="p-6">Tipo</th>
                     <th className="p-6">Producto</th>
@@ -424,7 +424,7 @@ const MovimientosPage = () => {
 
       {/* Modal Educativo: ¿Cuándo y para qué usar Movimientos? */}
       {showHelpModal && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-lg animate-scale-in overflow-hidden border border-slate-100">
             <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-100 bg-slate-50">
               <div className="flex items-center gap-3">

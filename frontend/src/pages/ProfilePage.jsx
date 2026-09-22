@@ -208,7 +208,7 @@ const ProfilePage = () => {
                   <User size={56} className="text-slate-400" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+              <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
                 <span className="text-xs font-bold">Cambiar</span>
               </div>
             </button>
@@ -218,7 +218,7 @@ const ProfilePage = () => {
             <p className="text-xs font-bold text-slate-500 mt-4">ID de Colaborador: #{profileData.id_usuario || '...'}</p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 bg-tinta text-white text-xs font-bold rounded-full">{profileData.rol}</span>
+              <span className="px-3 py-1 bg-menu text-white text-xs font-bold rounded-full">{profileData.rol}</span>
               <span className="px-3 py-1 bg-azul/10 text-azul text-xs font-bold rounded-full uppercase tracking-wide border border-azul/30">Activo</span>
             </div>
           </div>
@@ -352,7 +352,7 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          <div className="mt-12 p-8 bg-tinta rounded-2xl text-white flex flex-wrap items-center justify-between gap-4 shadow-lg">
+          <div className="mt-12 p-8 bg-menu rounded-2xl text-white flex flex-wrap items-center justify-between gap-4 shadow-lg">
             <div>
               <p className="text-xs font-bold">Estado del Sistema</p>
               <p className="text-xs text-resaltador font-bold mt-1 flex items-center gap-1">✨ Asistente Inteligente: Conectado</p>
@@ -367,7 +367,7 @@ const ProfilePage = () => {
 
       {/* Modal Cambio de Contraseña */}
       {showPassModal && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <form onSubmit={handleChangePassword} className="bg-white w-full max-w-md p-10 rounded-2xl shadow-lg animate-scale-in">
             <h2 className="titular text-2xl text-tinta mb-2">Seguridad</h2>
             <p className="text-xs text-azul font-bold mb-8">Actualización de Credenciales</p>
@@ -425,7 +425,7 @@ const ProfilePage = () => {
 
       {/* Modal Configuración 2FA */}
       {show2FAModal && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <form onSubmit={handleVerify2FA} className="bg-white w-full max-w-md p-10 rounded-2xl shadow-lg animate-scale-in text-center">
             <div className="w-16 h-16 bg-azul/10 text-azul rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield size={32} />
@@ -474,7 +474,7 @@ const ProfilePage = () => {
       )}
       {/* Modal Confirmación Desactivar 2FA */}
       {showDisableConfirm && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <form onSubmit={confirmDisable2FA} className="bg-white w-full max-w-sm p-8 rounded-2xl shadow-lg animate-scale-in text-center">
             <div className="w-16 h-16 bg-rose-50 text-peligro rounded-full flex items-center justify-center mx-auto mb-4">
               <ShieldAlert size={32} />

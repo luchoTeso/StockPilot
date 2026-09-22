@@ -20,11 +20,11 @@ const CustomTooltipPareto = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const fullName = payload[0]?.payload?.fullName || payload[0]?.payload?.name;
   return (
-    <div className="bg-tinta text-white px-5 py-4 rounded-2xl shadow-lg border border-tinta-2 min-w-[180px]">
+    <div className="bg-menu text-white px-5 py-4 rounded-2xl shadow-lg border border-white/20 min-w-[180px]">
       <p className="text-xs font-bold text-resaltador mb-2">{fullName}</p>
       {payload.map((entry) => (
         <div key={entry.name} className="flex justify-between items-center gap-6 py-1">
-          <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-200 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full ring-1 ring-white/70" style={{ backgroundColor: entry.color }}></span>
             {entry.name}
           </span>
@@ -41,8 +41,8 @@ const CustomTooltipGeneric = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   const fullName = payload[0]?.payload?.fullName || label;
   return (
-    <div className="bg-tinta text-white px-4 py-3 rounded-2xl shadow-lg border border-tinta-2">
-      <p className="text-xs font-bold text-slate-500 mb-1">{fullName}</p>
+    <div className="bg-menu text-white px-4 py-3 rounded-2xl shadow-lg border border-white/20">
+      <p className="text-xs font-bold text-slate-200 mb-1">{fullName}</p>
       {payload.map((entry) => (
         <p key={entry.name} className="text-sm font-bold text-white flex items-center gap-2">
           <span className="w-2 h-2 rounded-full ring-1 ring-white/70" style={{ backgroundColor: entry.color || '#fff' }}></span>
@@ -193,7 +193,7 @@ const AnalyticsDashboardPage = () => {
             <span>Ver Aprendizaje IA</span>
           </button>
           
-          <div className="bg-tinta px-5 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
+          <div className="bg-menu px-5 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
              <span className="font-bold text-xs text-slate-100">Motor Proactivo v3.0</span>
           </div>
@@ -226,20 +226,20 @@ const AnalyticsDashboardPage = () => {
 
       {/* ═══════════ PARETO ABC ═══════════ */}
       <section className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
-        <div className="bg-tinta px-8 py-6">
+        <div className="bg-menu px-8 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="titular text-lg text-white">Tus Productos Estrella (Pareto 80/20)</h3>
-              <p className="text-xs text-white/70 font-bold mt-1">Tus 5 productos principales generan la mayoría de tus ingresos</p>
+              <p className="text-xs text-white/90 font-bold mt-1">Tus 5 productos principales generan la mayoría de tus ingresos</p>
             </div>
-            <div className="flex items-center gap-4 overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               <div className="flex items-center gap-2 shrink-0">
-                <div className="w-3 h-3 rounded-sm bg-azul ring-2 ring-white/70"></div>
-                <span className="text-xs text-slate-300 font-bold">Ingresos</span>
+                <div className="w-3.5 h-3.5 rounded-sm bg-azul ring-2 ring-white"></div>
+                <span className="text-xs text-white font-bold">Ingresos</span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <div className="w-3 h-3 rounded-full bg-exito ring-2 ring-white/70"></div>
-                <span className="text-xs text-slate-300 font-bold">% Acumulado</span>
+                <div className="w-3.5 h-3.5 rounded-full ring-2 ring-white" style={{ backgroundColor: CHART.line }}></div>
+                <span className="text-xs text-white font-bold">% Acumulado</span>
               </div>
             </div>
           </div>
@@ -258,7 +258,8 @@ const AnalyticsDashboardPage = () => {
                     <Cell key={entry.name} fill={entry.category === 'A' ? CHART.primary : entry.category === 'B' ? CHART.secondary : CHART.neutral} fillOpacity={0.85} />
                   ))}
                 </Bar>
-                <Line yAxisId="right" type="monotone" dataKey="cumulativePercent" name="% Acumulado" stroke={CHART.positive} strokeWidth={3} dot={{ r: 5, fill: CHART.positive, strokeWidth: 2, stroke: '#fff' }} />
+                <Line yAxisId="right" type="monotone" dataKey="cumulativePercent" stroke="#fff" strokeWidth={7} dot={false} activeDot={false} legendType="none" tooltipType="none" isAnimationActive={false} />
+                <Line yAxisId="right" type="monotone" dataKey="cumulativePercent" name="% Acumulado" stroke={CHART.line} strokeWidth={3.5} dot={{ r: 5, fill: CHART.line, strokeWidth: 2, stroke: '#fff' }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -456,7 +457,7 @@ const AnalyticsDashboardPage = () => {
       )}
 
       {/* ═══════════ RITMO DE CAJA ═══════════ */}
-      <section data-surface="dark" className="bg-tinta rounded-2xl shadow-lg overflow-hidden relative">
+      <section data-surface="dark" className="bg-menu rounded-2xl shadow-lg overflow-hidden relative">
         <div className="relative z-10">
           <div className="px-8 pt-8 pb-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

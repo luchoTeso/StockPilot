@@ -212,7 +212,7 @@ const ProductFormModal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={onClose} role="presentation" aria-hidden="true"></div>
+      <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" onClick={onClose} role="presentation" aria-hidden="true"></div>
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-lg animate-scale-in relative z-10 transition-transform transition-opacity">
         <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-slate-50">
           <div>

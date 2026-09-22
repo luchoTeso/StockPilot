@@ -47,7 +47,7 @@ const PromoManualModal = ({ isOpen, onClose, product, onPromoSuccess }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200 border border-slate-100">
                 <div className="px-6 py-5 flex justify-between items-center border-b border-slate-50">
                     <div>

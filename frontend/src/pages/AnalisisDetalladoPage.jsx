@@ -52,7 +52,7 @@ const AnalisisDetalladoPage = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-tinta text-xs font-bold text-white">
+              <tr className="bg-menu text-xs font-bold text-white">
                 <th className="p-6">Producto</th>
                 <th className="p-6">Tipo</th>
                 <th className="p-6 text-center">Estado</th>

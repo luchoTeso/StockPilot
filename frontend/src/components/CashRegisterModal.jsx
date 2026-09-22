@@ -88,7 +88,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-tinta/45 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden border border-slate-100 relative">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
           <h3 className="titular text-2xl text-tinta">

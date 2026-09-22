@@ -105,7 +105,7 @@ const OrdenesHistory = ({
       {/* DETAIL MODAL */}
       {showHistoryDetail && createPortal(
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={() => setShowHistoryDetail(null)}></div>
+          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={() => setShowHistoryDetail(null)}></div>
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-lg relative z-10 overflow-y-auto animate-scale-in">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="titular text-xl text-tinta">Detalle de Orden #{showHistoryDetail.id_orden}</h2>

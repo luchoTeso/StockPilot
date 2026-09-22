@@ -6,6 +6,7 @@ export const CHART = {
   primary: '#252C93',   // azul
   secondary: '#E08A00', // ámbar (solo relleno/trazo, nunca texto)
   positive: '#0B6B45',  // exito
+  line: '#0E9A5F',      // verde vivo para líneas sobre barras azules (3,5:1 sobre blanco); con halo blanco
   negative: '#B42A26',  // peligro
   soft: '#989DE2',      // indigo-300
   neutral: '#8F94B8',   // slate-400
@@ -16,8 +17,8 @@ export const CHART = {
   axis: '#4F5480',      // slate-600 (4,5:1 mínimo para texto de ejes)
 
   // Estructura sobre fondo oscuro (panel tinta)
-  ink: '#14173F',       // tinta
-  inkBorder: '#3A3F6E', // tinta-2
+  ink: '#2B3486',       // menu (mismo azul de la barra lateral)
+  inkBorder: '#4A54A8', // menu aclarado
   gridOnDark: 'rgba(255,255,255,0.09)',
   axisOnDark: 'rgba(255,255,255,0.65)',
   labelOnDark: '#C3C7DE', // slate-300

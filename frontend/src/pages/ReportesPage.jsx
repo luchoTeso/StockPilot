@@ -475,7 +475,7 @@ const ReportesPage = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[900px]">
                 <thead>
-                  <tr className="bg-tinta text-xs font-bold text-white whitespace-nowrap">
+                  <tr className="bg-menu text-xs font-bold text-white whitespace-nowrap">
                     <th className="p-6 pl-8">Nombre y Detalles</th>
                     <th className="p-6">Categoría</th>
                     <th className="p-6">Fecha</th>
@@ -538,7 +538,7 @@ const ReportesPage = () => {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4">
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden transform animate-scale-in border border-white">
             <div className={`p-8 text-center border-b ${modalConfig.type === 'danger' ? 'border-peligro-suave bg-rose-50' : 'border-aviso-suave bg-amber-50'}`}>
               <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg ${modalConfig.type === 'danger' ? 'bg-peligro-suave text-peligro' : 'bg-aviso-suave text-aviso'}`}>
