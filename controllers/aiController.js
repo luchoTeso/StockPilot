@@ -347,22 +347,31 @@ const aiController = {
       if (!tiendaId) return res.status(401).json({ error: "No autorizado" });
       const query = `
         WITH BaseData AS (
-          SELECT 
-            p.id_producto, 
+          SELECT
+            p.id_producto,
             p.nombre_producto,
             p.cantidad as stock_actual,
             p.precio,
+            p.costo_compra,
             p.id_proveedor,
+            pr.nombre_empresa as proveedor,
             p.categoria,
             p.stock_seguridad,
             p.lead_time,
             COALESCE(
-              (SELECT SUM(vp2.cantidad) 
-               FROM VentasProductos vp2 
-               JOIN Ventas v2 ON vp2.id_venta = v2.id_venta 
-               WHERE vp2.id_producto = p.id_producto
-              ), 0) / 30.0 as velocidad_venta
+              (SELECT SUM(vp2.cantidad)
+               FROM VentasProductos vp2
+               JOIN Ventas v2 ON vp2.id_venta = v2.id_venta
+               WHERE vp2.id_producto = p.id_producto AND v2.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
+              ), 0) / 30.0 as velocidad_venta,
+            COALESCE(
+              (SELECT SUM(vp3.cantidad)
+               FROM VentasProductos vp3
+               JOIN Ventas v3 ON vp3.id_venta = v3.id_venta
+               WHERE vp3.id_producto = p.id_producto AND v3.fecha_salida >= CURRENT_DATE - INTERVAL '7 days'
+              ), 0) / 7.0 as velocidad_venta_7d
           FROM Productos p
+          LEFT JOIN Proveedores pr ON pr.id_proveedor = p.id_proveedor
           WHERE p.id_tienda = ? AND p.estado = 'Disponible'
         ),
         MathData AS (
@@ -378,7 +387,7 @@ const aiController = {
           FROM MathData
         )
         SELECT *,
-          CASE 
+          CASE
             WHEN totalRevenue = 0 THEN 'A'
             WHEN (accum / totalRevenue) <= 0.8 THEN 'A'
             WHEN (accum / totalRevenue) <= 0.95 THEN 'B'
@@ -389,30 +398,42 @@ const aiController = {
       `;
 
       const rows = await db.allAsync(query, [tiendaId]);
-      
+
+      // Mismo motor que el Consejero y Proveedores (utils/reposicion.js): antes esta pantalla
+      // calculaba su propio "risk" (alto/medio/bajo) con una fórmula distinta a las demás,
+      // así que un producto podía verse "en riesgo" aquí y "sano" en el Consejero.
       const finalData = rows.map(item => {
-        let risk = 'low';
-        let ROP = (item.velocidad_venta * item.lead_time) + item.stock_seguridad;
+        const rep = calcularReposicion({
+          ventasDia7: item.velocidad_venta_7d,
+          ventasDia30: item.velocidad_venta,
+          claseABC: item.category,
+          stock: item.stock_actual,
+          stockSeguridad: item.stock_seguridad,
+          leadTime: item.lead_time,
+        });
+        const costo = costoUnitario({ costoCompra: item.costo_compra, precio: item.precio });
 
-        if (item.category === 'A' && item.days_to_exhaust <= 5) {
-          risk = 'high';
-        } else if (item.category === 'A' || item.stock_actual <= ROP) {
-          risk = 'medium';
-        }
-
-        return { 
+        return {
           id_producto: item.id_producto,
           id_proveedor: item.id_proveedor,
+          proveedor: item.proveedor,
           nombre: item.nombre_producto,
-          category: item.category, 
-          risk, 
+          category: item.category,
+          risk: rep.riesgo,
+          urgencia: rep.urgencia,
           precio: item.precio,
+          costo_unitario: costo.costo,
+          costo_estimado: costo.estimado,
+          cantidad_recomendada: rep.cantidadBase,
           velocity: item.velocidad_venta,
           stock_actual: item.stock_actual,
           stock_seguridad: item.stock_seguridad,
-          days_to_exhaust: item.days_to_exhaust === 999999 ? Infinity : item.days_to_exhaust,
+          lead_time: item.lead_time,
+          // Postgres devuelve la rama ROUND(...) del CASE como numeric y la 999999 como entero;
+          // node-postgres puede entregarlos con tipos distintos, así que se compara como número.
+          days_to_exhaust: Number(item.days_to_exhaust) >= 999999 ? Infinity : Number(item.days_to_exhaust),
           revenue: Math.round(item.revenue),
-          rop: Math.ceil(ROP)
+          rop: rep.rop
         };
       });
 

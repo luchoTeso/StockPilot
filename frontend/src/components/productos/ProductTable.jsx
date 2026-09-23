@@ -1,4 +1,4 @@
-import { DollarSign, Package, Barcode, Zap } from 'lucide-react';
+import { DollarSign, Package, Barcode, Zap, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ErrorState from '../common/ErrorState';
 
@@ -92,8 +92,16 @@ const ProductTable = ({
                     <td className="p-6 text-center">
                       <div className="flex items-center justify-center gap-2">
                          <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
-                         {isCritico && <button onClick={() => navigate('/analisis-detallado')} title="Riesgo de agotamiento inminente" className="bg-peligro-suave text-peligro text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 transition-colors transition-transform cursor-pointer">Agotado</button>}
-                         {isBajo && <button onClick={() => navigate('/analisis-detallado')} title="El stock ha bajado del nivel seguro para operar" className="bg-aviso-suave text-aviso text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-amber-200 hover:bg-amber-200 transition-colors transition-transform cursor-pointer">Pedir Más</button>}
+                         {isCritico && (
+                           <button onClick={() => navigate(`/analisis-detallado?producto=${p.id_producto}`)} title="Ver más información y qué se recomienda hacer" className="bg-peligro-suave text-peligro text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 transition-colors transition-transform cursor-pointer flex items-center gap-1">
+                             {p.cantidad === 0 ? 'Agotado' : 'Por agotarse'} <ArrowRight size={10} />
+                           </button>
+                         )}
+                         {isBajo && (
+                           <button onClick={() => navigate(`/analisis-detallado?producto=${p.id_producto}`)} title="Ver más información y qué se recomienda hacer" className="bg-aviso-suave text-aviso text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-amber-200 hover:bg-amber-200 transition-colors transition-transform cursor-pointer flex items-center gap-1">
+                             Pedir Más <ArrowRight size={10} />
+                           </button>
+                         )}
                          {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-exito text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-exito-suave">Suficiente</span>}
                       </div>
                       <p className="text-xs text-slate-500 font-bold mt-1">ud</p>

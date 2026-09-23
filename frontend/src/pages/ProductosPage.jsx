@@ -54,7 +54,7 @@ const ProductosPage = () => {
           onClick={() => navigate('/alertas')}
           className={`w-full text-left group relative flex flex-col md:flex-row items-center gap-6 p-8 rounded-lg mb-10 shadow-lg border animate-fade-in cursor-pointer transition-colors transition-transform transition-shadow transform outline-none focus:ring-4 focus:ring-azul/50 ${alert.isCritical ? 'bg-rose-50/80 border-peligro-suave text-rose-800' : 'bg-amber-50/80 border-aviso-suave text-amber-800'}`}
         >
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-peligro-suave border-white text-peligro animate-bounce' : 'bg-aviso-suave border-white text-aviso rotate-12'}`}>
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-peligro-suave border-white text-peligro' : 'bg-aviso-suave border-white text-aviso rotate-12'}`}>
             {alert.isCritical ? <AlertCircle size={32} /> : <AlertTriangle size={32} />}
           </div>
           <div className="flex-1 text-center md:text-left">
