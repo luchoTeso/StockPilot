@@ -7,9 +7,10 @@ import { useToast } from '../context/ToastContext';
 
 const chipRiesgo = (r) => (r === 'CRÍTICO' ? 'bg-rose-500' : r === 'MEDIO' ? 'bg-ambar' : 'bg-exito');
 const chipUrgencia = (u) => (u === 'Pide hoy' ? 'bg-peligro-suave text-peligro border-peligro/30' : u === 'Esta semana' ? 'bg-aviso-suave text-aviso border-aviso/30' : 'bg-slate-100 text-slate-600 border-slate-200');
-// Sin ventas que medir, el backend manda Infinity, que JSON convierte en null: se trata igual que "estable".
+// Sin ventas que medir, el backend manda Infinity, que JSON convierte en null: no es que "sea
+// estable", es que no hay con qué calcular cuánto durará (por eso el texto lo aclara).
 const esEstable = (d) => d === null || d === Infinity;
-const formatDias = (d) => (esEstable(d) ? 'Estable' : `${d} días`);
+const formatDias = (d) => (esEstable(d) ? 'Sin ventas recientes' : `${d} días`);
 
 const AnalisisDetalladoPage = () => {
   const [data, setData] = useState([]);
@@ -20,6 +21,12 @@ const AnalisisDetalladoPage = () => {
   const toast = useToast();
   const isAdmin = user?.rol === 'Administrador';
   const productoId = Number(searchParams.get('producto')) || null;
+
+  // React Router no sube el scroll al top al navegar; sin esto, si venías desplazado en Catálogo,
+  // llegabas aquí en la misma posición y la tarjeta (arriba del todo) quedaba fuera de vista.
+  useEffect(() => {
+    if (productoId) window.scrollTo({ top: 0 });
+  }, [productoId]);
 
   // Estado del pedido, solo para la tarjeta destacada (mismo flujo que el Consejero del Dashboard)
   const [borradores, setBorradores] = useState({});
@@ -111,18 +118,18 @@ const AnalisisDetalladoPage = () => {
       {/* Tarjeta destacada: se llega aquí desde el aviso "Por agotarse"/"Pedir Más" de un producto en concreto */}
       {productoId && (
         itemDestacado ? (
-          <div className="bg-white rounded-2xl border-4 border-azul shadow-lg p-8 relative animate-scale-in">
-            <button onClick={quitarFiltro} aria-label="Ver la lista completa" title="Ver la lista completa" className="absolute top-6 right-6 text-slate-400 hover:text-tinta transition-colors">
-              <X size={20} />
-            </button>
+          <div className="bg-white rounded-2xl border-4 border-azul shadow-lg p-8 animate-scale-in">
             <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
               <div>
                 <p className="text-xs font-bold text-azul uppercase tracking-wide mb-1">Producto seleccionado</p>
                 <h3 className="titular text-2xl text-tinta">{itemDestacado.nombre}</h3>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm ${chipRiesgo(itemDestacado.risk)}`}>{itemDestacado.risk}</span>
                 {itemDestacado.urgencia && <span className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${chipUrgencia(itemDestacado.urgencia)}`}>{itemDestacado.urgencia}</span>}
+                <button onClick={quitarFiltro} aria-label="Ver la lista completa" title="Ver la lista completa" className="text-slate-400 hover:text-tinta transition-colors shrink-0">
+                  <X size={20} />
+                </button>
               </div>
             </div>
 
@@ -231,7 +238,7 @@ const AnalisisDetalladoPage = () => {
                        <p className="text-xs text-slate-500 font-bold mt-1">Sugerido: {item.stock_seguridad}u</p>
                     </td>
                     <td className="p-6 text-center">
-                       <span className={`text-base font-bold ${esEstable(item.days_to_exhaust) || item.days_to_exhaust > 90 ? 'text-exito' : (item.days_to_exhaust < 5 ? 'text-peligro' : 'text-aviso')}`}>
+                       <span className={`text-base font-bold ${esEstable(item.days_to_exhaust) ? 'text-slate-500' : item.days_to_exhaust > 90 ? 'text-exito' : (item.days_to_exhaust < 5 ? 'text-peligro' : 'text-aviso')}`}>
                           {formatDias(item.days_to_exhaust)}
                        </span>
                     </td>

@@ -91,7 +91,10 @@ const ProductTable = ({
                     </td>
                     <td className="p-6 text-center">
                       <div className="flex items-center justify-center gap-2">
-                         <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
+                         <span className="flex flex-col items-center leading-tight">
+                           <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
+                           <span className="text-xs text-slate-500 font-bold">ud</span>
+                         </span>
                          {isCritico && (
                            <button onClick={() => navigate(`/analisis-detallado?producto=${p.id_producto}`)} title="Ver más información y qué se recomienda hacer" className="bg-peligro-suave text-peligro text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 transition-colors transition-transform cursor-pointer flex items-center gap-1">
                              {p.cantidad === 0 ? 'Agotado' : 'Por agotarse'} <ArrowRight size={10} />
@@ -104,7 +107,6 @@ const ProductTable = ({
                          )}
                          {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-exito text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-exito-suave">Suficiente</span>}
                       </div>
-                      <p className="text-xs text-slate-500 font-bold mt-1">ud</p>
                     </td>
                     <td className="hidden sm:table-cell p-6 text-center">
                       <span className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm ${isActive ? 'bg-emerald-50 text-exito border border-exito-suave' : 'bg-rose-50 text-peligro border border-peligro-suave'}`}>
