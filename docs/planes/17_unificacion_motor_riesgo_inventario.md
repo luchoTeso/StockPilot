@@ -1,7 +1,7 @@
 # Plan 17: Unificación del motor de riesgo de inventario
 
-**Estado:** Propuesta de diseño revisada y corregida (v2), sin implementar. Continúa el trabajo ya hecho en la sesión actual (Consejero IA, Proveedores y Detalle de Productos ya comparten `utils/reposicion.js`; el aviso de Catálogo ya lee `/api/alertas`). Ver sección 7 para lo que cambió respecto a la v1 y por qué.
-**Fecha:** 2026-09-23 (v1) · 2026-09-24 (v2, tras una segunda revisión externa verificada contra el código)
+**Estado:** Decisiones confirmadas por el usuario (v3), listo para implementar tras revisión final. El hallazgo E1 (bug de urgencia con `stock_seguridad=0`) ya se corrigió y subió a `main` (commit `c6ae00d`); el resto sigue sin implementar. Ver sección 8 para las decisiones finales y las fases actualizadas.
+**Fecha:** 2026-09-23 (v1) · 2026-09-24 (v2, segunda revisión externa verificada contra el código; v3, decisiones del usuario sobre las 6 preguntas abiertas, también verificadas)
 **Depende de / relacionado con:** plan 13 (`13_plan_consejero_ia_a_borrador_de_orden.md`) y plan 16 (`16_plan_consejero_ia_fase_e_cierre_del_ciclo.md`), que introdujeron `utils/reposicion.js` como motor único de reposición para el Consejero IA y Proveedores.
 
 ---
@@ -160,6 +160,8 @@ Como `Alert.generate` ya calcula `v30`/`v7` por su cuenta (`models/Alert.js:49-5
 
 ## 3. Preguntas abiertas para el usuario
 
+> **Resueltas.** El usuario respondió las 6 preguntas el 2026-09-24 — ver sección 8 para las decisiones finales y la sección 8.7 para las fases ya actualizadas con ellas. Esta sección 3 se conserva tal cual para el historial (así se ve qué se preguntó exactamente).
+
 1. **¿Cuántos niveles debe tener la etiqueta unificada de Catálogo?** Hoy `ProductTable.jsx` distingue 4 estados visuales ("Agotado" cuando `cantidad=0`, "Por agotarse", "Pedir Más", "Suficiente" — el primero y el segundo comparten el mismo `nivelStock='critico'` pero cambian el texto según `cantidad===0`). `calcularReposicion` solo tiene 3 (`CRÍTICO`/`MEDIO`/`BAJO`). ¿Se conserva la distinción "Agotado" (stock=0) vs "Por agotarse" (crítico pero >0) como una regla adicional sobre el `riesgo` de `utils/reposicion.js`, o se simplifica a 3 estados?
 2. **Cuando dos fórmulas den umbrales distintos hoy para el mismo producto, ¿cuál "gana" al unificar?** En concreto: la ventana `stock_bajo` de `Alert.js` hoy es `lead_time + frecuencia_compra_dias` (variable por producto), mientras que la urgencia "Esta semana" de `utils/reposicion.js` usa `lead_time + 7` (fijo). Para productos con `frecuencia_compra_dias` distinto de 7 (el default), estas dos reglas van a divergir. ¿Se parametriza `calcularReposicion`/su urgencia para aceptar `frecuencia_compra_dias`, o se acepta el default de 7 para todos y se homogeniza el dato en `Productos`?
 3. **¿Se deben re-generar/recalcular las alertas históricas ya resueltas, o solo las nuevas?** Al cambiar `determinarAlertaStock` en la Fase 4, las alertas ya marcadas `resuelta=1` con la fórmula vieja quedan en la tabla `Alertas` con `datos_json` que refleja el cálculo anterior. ¿Se dejan como registro histórico intacto (recomendado, no se toca nada retroactivo) o se necesita un script de recálculo?
@@ -295,3 +297,69 @@ Las seis preguntas de la sección 3 se mantienen; esto es lo que se recomienda r
 ### 7.8 Qué queda sin verificar
 
 Esta revisión se hizo por lectura y ejecución aislada de funciones puras (`utils/reposicion.js`), igual que la anterior; no se reprodujo en vivo la condición de carrera de O3 (haría falta forzar dos ventas simultáneas contra la tienda de prueba), no se revisaron las páginas de autenticación ni la landing, y no se ejecutó la suite completa de Playwright de sesiones anteriores para confirmar que ninguna pantalla ya verificada (Consejero, Proveedores, Detalle de Productos) cambió de comportamiento — no debería, porque estas correcciones se proponen para la Fase 0/1, antes de que esas pantallas se vuelvan a tocar, pero queda como parte del checklist de la Fase 0 cuando se implemente.
+
+---
+
+## 8. Decisiones del usuario (2026-09-24) — plan final antes de implementar
+
+El usuario respondió las 6 preguntas de la sección 3 (con los ajustes de la 7.7) de forma explícita y con detalle de implementación. Antes de dar el plan por cerrado se verificaron dos afirmaciones contra datos reales, como pidió.
+
+### 8.0 Verificaciones previas a estas decisiones
+
+- **`frecuencia_compra_dias` no es 7 para la mayoría de los productos.** `SELECT frecuencia_compra_dias, COUNT(*) FROM Productos GROUP BY 1` en la tienda de prueba:
+
+  | Valor (días) | Productos |
+  |---|---|
+  | 2 | 1 |
+  | 3 | 4 |
+  | 5 | 2 |
+  | 7 (default de la columna) | 8 |
+  | 14 | 2 |
+  | 30 | 1 |
+
+  Solo 8 de 18 productos están en el valor por defecto. Esto confirma que la ventana **no** se queda semanal al parametrizarla (dispara la condición de la decisión 2: hay que renombrar "Esta semana"). También se confirmó que `frontend/src/components/productos/ProductFormModal.jsx` no tiene ningún campo para `frecuencia_compra_dias` — los valores no-default de la tienda de prueba vienen de `database/seed_test_data.js`, no de que alguien los haya configurado desde la interfaz. Esto no bloquea el plan, pero se anota como una limitación real: hoy nadie puede ajustar ese número desde la app (ver 8.8).
+- **`stats/advanced` sigue sin ningún consumidor.** Se repitió la búsqueda en todo `frontend/src` (`grep -rn "stats/advanced|advancedStats|nivelServicio|getAdvancedStats"`): cero resultados. Confirmado otra vez, no cambió desde la v2.
+
+### 8.1 Decisión 1 — Cuatro niveles, nombres neutros, calculados en el backend
+
+**De acuerdo, sin reservas.** `agotado` (`stock <= 0`, sin importar ventas ni `cantidadBase`), `critico`, `reponer`, `ok`. La advertencia de no mapear el `BAJO` de `riesgo` (que en `utils/reposicion.js` significa "sano", lo opuesto de crítico) al `bajo` histórico de `ProductTable.jsx` (que hoy significa "Pedir Más") es exactamente el tipo de error que esta unificación debía evitar — gracias por marcarlo explícito, porque el nombre compartido ("bajo") es justo la clase de trampa que un merge apurado dejaría pasar. Los nombres `agotado`/`critico`/`reponer`/`ok` no chocan con ningún nombre ya usado en `riesgo` (`CRÍTICO`/`MEDIO`/`BAJO`) ni en `urgencia` (`Pide hoy`/`Esta semana`/`Puede esperar`), así que las tres capas de nomenclatura (riesgo interno, urgencia interna, nivel visible) quedan sin ambigüedad entre sí.
+
+**Mapeo con las etiquetas visibles de hoy** (no hace falta que el texto cambie, solo qué lo decide): `agotado` → "Agotado", `critico` → "Por agotarse", `reponer` → "Pedir Más", `ok` → "Suficiente".
+
+### 8.2 Decisión 2 — Ventana con `frecuencia_compra_dias`, revisión periódica T+L, Alert.js no cambia
+
+**De acuerdo.** Confirmado en 8.0 que la mayoría de los productos no está en 7 días, así que aplica la cláusula condicional: **"Esta semana" se renombra a "En esta compra"** en `utils/reposicion.js` (la constante `URGENCIA.SEMANA`) y en cualquier texto de UI que la muestre (`DashboardPage.jsx`, `AnalisisDetalladoPage.jsx` — buscar todas las apariciones literales de `'Esta semana'` antes de implementar). La fórmula de `calcularReposicion` pasa de `diasParaAgotar <= leadTime + 7` a `diasParaAgotar <= leadTime + frecuenciaCompraDias` (nuevo parámetro `frecuenciaCompraDias`, con default 7 para no romper las pantallas que todavía no lo pasen explícitamente). Como `Alert.js` ya usa `lead_time + frecuencia_compra_dias` para su ventana `stock_bajo`, **no se le cambia nada** — es el motor el que se ajusta a su fórmula, tal como se pidió, y esto reduce todavía más la divergencia entre Alert.js y `calcularReposicion` que describía el hallazgo O1 (v1/v2), sin tocar Alert.js en absoluto.
+
+### 8.3 Decisión 3 — No recalcular alertas resueltas; marca `"motor":"v2"` en las nuevas
+
+**De acuerdo, sin cambios respecto a lo ya propuesto en 7.7.** Las alertas con `resuelta = 1` de la fórmula vieja quedan como registro histórico; las activas se regeneran solas la primera vez que corra `Alert.generate` después del cambio (ya sea por una venta o por el botón manual de Monitor Alertas). Se agrega `"motor": "v2"` al `datos_json` de cada alerta nueva para poder filtrar en auditoría cuáles se generaron con la fórmula unificada.
+
+### 8.4 Decisión 4 — `stock_minimo` como piso solo de "reponer", nunca de "crítico" ni como sinónimo de `stock_seguridad`
+
+**De acuerdo, y esto cierra la pieza que quedó pendiente a propósito en el arreglo de E1** (commit `c6ae00d`): ese arreglo corrigió la *urgencia* de un producto agotado, pero dejó dicho explícitamente que hacía falta esta decisión para que además le sugiera una cantidad y aparezca en el Consejero. Con esta regla: el nivel `reponer` usa `umbral = max(rop, stock_minimo)`; el nivel `critico`/`agotado` **nunca** consultan `stock_minimo` (siguen dependiendo solo de `stock_seguridad`, que es lo que ya hace `riesgo` hoy); y para un producto sin historial de ventas, el piso de `cantidadBase` pasa a ser `max(stock_seguridad, stock_minimo) - stock` en vez de depender únicamente de `stock_seguridad`. Esto es exactamente lo que necesitaba el caso "producto nuevo, agotado, sin `stock_seguridad` configurado" para que además de decir "Pide hoy" (ya corregido) también sugiera una cantidad y aparezca en la lista del Consejero (que filtra por `cantidadBase > 0`). **Pendiente para la implementación:** actualizar el tooltip de `stock_seguridad` en `ProductFormModal.jsx:631` (hoy dice "Si baja de aquí, se activa alerta roja (Agotado)", que ya no sería exacto: la alerta roja depende de `stock_seguridad` para crítico, pero la cantidad sugerida ahora también mira `stock_minimo`).
+
+### 8.5 Decisión 5 — `stats/advanced`: eliminar (confirmado sin consumidores)
+
+Con la verificación de 8.0 (cero referencias en `frontend/src`), aplica la rama "si no, propón eliminarlo" de la decisión. **Propuesta concreta:** quitar la ruta `GET /api/dashboard/stats/advanced` (`routes/dashboardRoutes.js`), el método `getAdvancedStats` (`controllers/dashboardController.js:117-134`) y sus 4 pruebas en `dashboard_analytics.test.js:68-93` (o migrarlas a una prueba de que la ruta ya no existe, si se prefiere dejar constancia). Esto reemplaza a la Fase 5 tal como estaba planteada — deja de ser "unificar una fórmula" y pasa a ser "borrar código sin uso", más simple y de menor riesgo que lo que decía la v1/v2. Si en el futuro se quiere un KPI de este estilo, queda documentado aquí que debe ser "% de productos con nivel `ok` del motor unificado", con el nombre **"% de productos sin necesidad de reponer"** (evita el término "servicio", que no es un concepto que el resto de la app use).
+
+### 8.6 Decisión 6 — Promociones: una exclusión ahora, unificación de lectura después
+
+**De acuerdo.** `getPromotionSuggestions` (`controllers/aiController.js:455-511`) hoy no trae `stock_seguridad`, `lead_time` ni `frecuencia_compra_dias` en su consulta — hay que agregarlos para poder calcular el nivel de cada candidato y excluir los que salgan `agotado`, `critico` o `reponer` (línea 496-502, donde ya se arma el filtro `isLowTurnover || isNearExpiry || isOverstock`; se le suma `&& nivel === 'ok'`). No se cambia la lógica de "candidato a promoción" en sí (baja rotación, vencimiento próximo, sobrestock), solo se le agrega esta exclusión. La unificación completa de su lectura de velocidad (v7/v30 con muestra mínima, para no tener una octava consulta SQL distinta) queda para una fase futura, fuera de este plan, tal como se pidió.
+
+### 8.7 Fases finales (reemplaza las tablas de fases de las secciones 2 y 7.6)
+
+| Fase | Contenido final |
+|---|---|
+| **0** | `leerEntradasMotor(tiendaId, filtro)`: una sola consulta con `v7`, `v30`, `qty30`, ABC de toda la tienda y factor de aprendizaje (últimas 5 evaluaciones). La usan Consejero, Detalle de Productos y Proveedores (corrige E2 y E3). |
+| **1** | `calcularReposicion` gana el parámetro `frecuenciaCompraDias` (decisión 2) y el piso de `stock_minimo` (decisión 4); `urgencia.SEMANA` se renombra a "En esta compra". Nueva función `clasificarNivel()` → `'agotado' \| 'critico' \| 'reponer' \| 'ok'` (decisión 1), sin usar `stock_minimo` en `agotado`/`critico` (decisión 4). Tests con `stockSeguridad: 0`, `stock_minimo` variado, y `frecuenciaCompraDias` distinto de 7 en todos los casos límite. |
+| **2** | `GET /api/productos` (`ProductController.getProducts`, confirmado) expone `nivel_stock` y `urgencia` calculados con lo de la Fase 1. Suma `v7` a la consulta de `Product.findByStore` (hoy solo trae `v30`). |
+| **2b** | Diagnóstico de datos: cuántos productos tienen `stock_seguridad = 0`, y distribución de `frecuencia_compra_dias` (ya adelantado en 8.0) y `stock_minimo`, para anticipar cuántas etiquetas cambian en la Fase 3. |
+| **3** | `ProductTable.jsx` y el hook de ordenamiento leen `nivel_stock`/`urgencia` del backend en vez de recalcular. Actualiza el tooltip de `stock_seguridad` (decisión 4) y la columna "Alerta Mínima" del Excel. Verificación manual de Catálogo completo, antes/después. |
+| **4** | `Alert.js`, en 4 pasos: (a) *dry-run* comparando alertas nuevas vs. activas; (b) transacción + `pg_advisory_xact_lock` + *upsert* (corrige O3); (c) disparar `Alert.generate` también al recibir mercancía, crear/editar producto y en movimientos manuales (corrige O2); (d) `Alert.getStats` por `tipo` y `COUNT(DISTINCT id_producto)`, separando alertas de stock de las de vencimiento en el Dashboard y el banner de Catálogo (corrige O4). Marca `"motor":"v2"` en las alertas nuevas (decisión 3); no se recalculan las resueltas. |
+| **5** | Eliminar `stats/advanced` (decisión 5): ruta, controlador y sus tests actuales. |
+| **6** | Opcional: consolidar las 7 consultas de velocidad en una sola definición (además de darle a Promociones la exclusión de la decisión 6 como paso previo, más simple, dentro de esta misma fase o antes). |
+
+### 8.8 Notas para el usuario (no bloquean el plan, quedan para cuando se implemente)
+
+- **`frecuencia_compra_dias` no se puede editar desde la interfaz hoy** (8.0). Al pasar a depender de este campo para la ventana "En esta compra", cualquier producto nuevo (o ya existente sin haber sido tocado por el seed) se queda en el default de 7 sin que el administrador pueda ajustarlo. No es parte de este plan, pero conviene decidir en algún momento si se le agrega un campo en `ProductFormModal.jsx`.
+- **La exclusión de Promociones (decisión 6) necesita 3 columnas nuevas en la consulta de `getPromotionSuggestions`** (`stock_seguridad`, `lead_time`, `frecuencia_compra_dias`), que hoy no trae. Es un cambio menor, se deja anotado para no olvidarlo al implementar la Fase 6.
