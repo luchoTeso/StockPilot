@@ -2,7 +2,7 @@
 
 **Proyecto:** StockPilot — Sistema de Gestión de Inventario Inteligente
 **Versión:** 2026
-**Última Actualización:** 18 de Mayo de 2026 (Actualizado)
+**Última Actualización:** 23 de Septiembre de 2026 (revisión y corrección post unificación del motor de riesgo — plan 17/18)
 
 ---
 
@@ -29,7 +29,7 @@ Esta especificación de requisitos abarca todas las funcionalidades de StockPilo
 - Documento Base de Prácticas de Ingeniería de Sistemas.
 
 ### 1.6 Resumen
-El documento se divide en tres partes: una descripción general del sistema (Sección 2), la definición de las interfaces de operación (Sección 3.1), y finalmente el listado exhaustivo de los 70 Requisitos Funcionales y 18 Requisitos No Funcionales del producto.
+El documento se divide en tres partes: una descripción general del sistema (Sección 2), la definición de las interfaces de operación (Sección 3.1), y finalmente el listado exhaustivo de los 76 Requisitos Funcionales (2 de ellos retirados tras una revisión posterior, ver Módulos 6 y 9) y 18 Requisitos No Funcionales del producto.
 
 ---
 
@@ -89,11 +89,12 @@ El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de c
 | ID     | Descripción                                                                                                                                                              | Prioridad | Estado |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------ |
 | RF-007 | El sistema debe permitir CRUD completo de productos (crear, leer, actualizar, eliminar) previniendo duplicados; al registrar, debe buscar coincidencias y cambiar al flujo de "Recepción de Inventario" si el producto ya existe | Alta      | ✅     |
-| RF-008 | Cada producto debe registrar: código, nombre, categoría, subcategoría, precio, costo, cantidad, stock mínimo, stock máximo, fecha de vencimiento, frecuencia de compra, stock de seguridad y lead time | Alta | ✅ |
+| RF-008 | Cada producto debe registrar: código (SKU interno), código de barras (EAN/UPC), nombre, categoría, subcategoría, precio, costo, cantidad, stock mínimo, stock máximo, fecha de vencimiento, frecuencia de compra, stock de seguridad y lead time | Alta | ✅ |
 | RF-009 | El sistema debe calcular y almacenar la clasificación ABC (Pareto) de cada producto según su contribución a los ingresos: A (80%), B (95%), C (100%)                     | Alta      | ✅     |
 | RF-010 | El sistema debe registrar fechas de vencimiento y utilizarlas para generar alertas predictivas cruzadas con la velocidad de venta                                        | Alta      | ✅     |
 | RF-011 | El sistema debe mostrar gráficos visuales (barras Pareto con % acumulado y donut de distribución) de la clasificación ABC de los productos en el Centro Analítico        | Media     | ✅     |
 | RF-064 | El sistema debe consultar APIs externas (ej. Open Food Facts) al escanear un código de barras para autocompletar automáticamente el nombre y categoría de productos nuevos | Alta      | ✅     |
+| RF-076 | El Catálogo debe mostrar el nivel de stock de cada producto (agotado, crítico, por reponer o suficiente) calculado por el mismo motor de reposición que usan el Dashboard, el Consejero IA, Proveedores y el Centro Analítico, evitando que un mismo producto se vea sano en una pantalla y en riesgo en otra | Alta | ✅ |
 
 ---
 
@@ -177,9 +178,9 @@ El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de c
 | RF-038 | El Dashboard debe mostrar en tiempo real: total artículos, valor total del inventario, alertas activas (con semáforo de color rojo/amarillo/verde) y ventas acumuladas    | Alta      | ✅     |
 | RF-039 | El Dashboard debe mostrar las recomendaciones del Asistente Estratégico IA con producto, tendencia, ajuste sugerido y nivel de confianza                                 | Alta      | ✅     |
 | RF-040 | El Dashboard debe mostrar un gráfico de barras del ritmo de caja (ventas) de los últimos 7 días                                                                         | Media     | ✅     |
-| RF-041 | El Centro Analítico debe mostrar la proyección de agotamiento de los 10 productos más críticos y calcular la pérdida económica proyectada por productos próximos a vencer (cruzando stock, velocidad de venta y fecha de vencimiento) | Media | ✅ |
-| RF-042 | El sistema debe calcular y exponer el nivel de servicio estimado como el porcentaje de productos cuyo stock actual supera el Punto de Reorden (ROP)                      | Media     | ✅     |
-| RF-043 | El sistema debe calcular una comparativa de ventas entre los últimos 30 días y los 30 días previos, exponiendo montos y variación porcentual                             | Baja      | ✅     |
+| RF-041 | El Centro Analítico debe mostrar la proyección de agotamiento de los 10 productos más críticos, calculada por el mismo motor de reposición que usan Catálogo, Consejero IA y Proveedores | Media | ✅ |
+| RF-042 | ~~El sistema debe calcular y exponer el nivel de servicio estimado como el porcentaje de productos cuyo stock actual supera el Punto de Reorden (ROP)~~ — **Retirado.** El endpoint `GET /api/dashboard/stats/advanced` que lo exponía no tenía ningún consumidor en el frontend (verificado con búsqueda exhaustiva); se eliminó en la unificación del motor de riesgo (ver `docs/planes/17_unificacion_motor_riesgo_inventario.md`, Fase 5) en vez de mantener una fórmula sin pantalla que la mostrara | Media | ❌ Retirado |
+| RF-043 | ~~El sistema debe calcular una comparativa de ventas entre los últimos 30 días y los 30 días previos, exponiendo montos y variación porcentual~~ — **Retirado** por el mismo motivo que RF-042 (mismo endpoint sin consumidor) | Baja | ❌ Retirado |
 
 ---
 
@@ -218,7 +219,7 @@ El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de c
 
 | ID     | Descripción                                                                                                                                                              | Prioridad | Estado |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------ |
-| RF-052 | El sistema debe permitir al usuario ajustar el parámetro "días de cobertura deseada" mediante un slider (7-90 días) y visualizar en tiempo real las cantidades necesarias por producto con la fórmula MAX(0, (velocidad × días) - stock) | Alta | ✅ |
+| RF-052 | El sistema debe permitir al usuario ajustar el parámetro "días de cobertura deseada" mediante un slider (7-90 días) y visualizar las cantidades necesarias por producto, calculadas por el mismo motor de reposición que usan el Consejero IA y Proveedores (clasificación ABC, tendencia y piso de stock mínimo/seguridad para productos sin historial de ventas), reemplazando el días × velocidad − stock fijo con un objetivo de cobertura ajustable por el slider | Alta | ✅ |
 | RF-053 | El sistema debe permitir al usuario definir un presupuesto máximo y recalcular la lista mediante algoritmo greedy, priorizando productos Clase A y recortando desde Clase C cuando el costo total exceda el presupuesto | Alta | ✅ |
 | RF-054 | El sistema debe permitir convertir el resultado de una simulación aprobada en una orden de compra real, seleccionando el proveedor y generando la orden con estado Borrador | Media | ✅ |
 
@@ -321,8 +322,10 @@ El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de c
 
 ## 4. Resumen Estadístico
 
-| Categoría          | Total | Implementados | Planeados |
-| ------------------ | ----- | ------------- | --------- |
-| **Funcionales**    | 75    | 75 (100%)     | 0 (0%)    |
-| **No Funcionales** | 18    | 18 (100%)     | 0 (0%)    |
-| **Total**          | 93    | 93 (100%)     | 0 (0%)    |
+| Categoría          | Total | Implementados | Retirados | Planeados |
+| ------------------ | ----- | -------------- | --------- | --------- |
+| **Funcionales**    | 76    | 74 (97%)       | 2 (3%)    | 0 (0%)    |
+| **No Funcionales** | 18    | 18 (100%)      | 0 (0%)    | 0 (0%)    |
+| **Total**          | 94    | 92 (98%)       | 2 (2%)    | 0 (0%)    |
+
+*Nota:* RF-042 y RF-043 se retiraron tras la unificación del motor de riesgo (ver Módulo 9): el endpoint que exponían no tenía consumidor en el frontend. Se conservan sus IDs en este documento como registro histórico en vez de renumerar el resto de los requisitos.

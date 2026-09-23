@@ -17,6 +17,8 @@ erDiagram
     Tienda ||--o{ EgresosCaja : "registra"
     Tienda ||--o{ Clientes : "registra"
     Tienda ||--o{ Abonos : "registra"
+    Tienda ||--o{ Promociones_Manuales : "registra"
+    Tienda ||--o{ NotificacionesUsuario : "genera"
 
     Usuarios ||--o{ MovimientosStock : "hace"
     Usuarios ||--o{ Ventas : "vende"
@@ -24,6 +26,8 @@ erDiagram
     Usuarios ||--o{ SesionCaja : "abre"
     Usuarios ||--o{ EgresosCaja : "gestiona"
     Usuarios ||--o{ Abonos : "recibe"
+    Usuarios ||--o{ NotificacionesUsuario : "recibe"
+    Usuarios ||--o{ Tienda : "es propietario de"
 
     Proveedores ||--o{ Productos : "provee"
     Proveedores ||--o{ Ordenes_Compra : "recibe"
@@ -34,6 +38,7 @@ erDiagram
     Productos ||--o{ Alertas : "genera"
     Productos ||--o{ Feedback_IA : "evaluado_en"
     Productos ||--o{ Historial_Precios : "tiene"
+    Productos ||--o{ Promociones_Manuales : "tiene"
 
     Ventas ||--|{ VentasProductos : "contiene"
 
@@ -58,6 +63,8 @@ erDiagram
         varchar razon_social
         varchar celular
         varchar ciudad
+        int id_propietario FK
+        numeric limite_egreso_tendero
     }
 
     Usuarios {
@@ -76,6 +83,8 @@ erDiagram
         boolean cambio_clave_forzoso
         varchar reset_token
         varchar reset_expires
+        varchar two_factor_secret
+        boolean two_factor_enabled
     }
 
     Proveedores {
@@ -117,6 +126,7 @@ erDiagram
         varchar clasificacion_abc
         numeric precio_original
         date fecha_fin_promocion
+        varchar codigo_barras
     }
 
     MovimientosStock {
@@ -168,6 +178,7 @@ erDiagram
         varchar riesgo
         text notas
         text observaciones
+        varchar origen
     }
 
     Ordenes_Detalle {
@@ -178,6 +189,10 @@ erDiagram
         int cantidad_final
         numeric costo_unitario
         int sugerencia_ia
+        varchar urgencia
+        boolean costo_estimado
+        int cantidad_recibida
+        int solicitado_por FK
     }
 
     Alertas {
@@ -214,6 +229,10 @@ erDiagram
         int ventas_reales_periodo
         numeric factor_precision
         timestamp fecha_evaluacion
+        int dias_con_stock
+        numeric error_absoluto
+        numeric error_porcentual
+        numeric bias
     }
 
     Historial_Precios {
@@ -292,5 +311,29 @@ erDiagram
         varchar metodo_pago
         timestamp fecha_abono
         int id_usuario_recibe FK
+    }
+
+    Promociones_Manuales {
+        int id_promocion PK
+        int id_producto FK
+        int id_tienda FK
+        numeric descuento_porcentaje
+        numeric precio_anterior
+        numeric precio_nuevo
+        varchar motivo
+        timestamp fecha_creacion
+    }
+
+    NotificacionesUsuario {
+        int id_notificacion PK
+        int id_usuario FK
+        int id_tienda FK
+        varchar tipo
+        varchar titulo
+        text mensaje
+        text datos_json
+        int leida
+        timestamp fecha_lectura
+        timestamp fecha_creacion
     }
 ```

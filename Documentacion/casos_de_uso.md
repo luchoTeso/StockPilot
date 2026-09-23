@@ -2,7 +2,7 @@
 
 **Proyecto:** StockPilot — Sistema de Gestión de Inventario Inteligente  
 **Versión:** 2026  
-**Última Actualización:** 18 de Mayo de 2026
+**Última Actualización:** 23 de Septiembre de 2026 (revisión y corrección post unificación del motor de riesgo — plan 17/18)
 
 ---
 
@@ -149,12 +149,12 @@
 | ------------------ | ------------------------------------------------ |
 | **Actores**        | Administrador, Colaborador                       |
 | **Precondiciones** | Sesión activa; al menos una tienda registrada     |
-| **RF Relacionados**| RF-007, RF-008, RF-009, RF-010                   |
+| **RF Relacionados**| RF-007, RF-008, RF-009, RF-010, RF-076           |
 
 **Flujo Principal:**
 
 1. El usuario navega al módulo "Productos".
-2. Visualiza la tabla de productos con filtros por categoría y búsqueda.
+2. Visualiza la tabla de productos con filtros por categoría y búsqueda; cada fila muestra su nivel de stock (agotado, crítico, por reponer o suficiente) calculado por el motor de reposición único.
 3. Para **crear**: completa el formulario (código, nombre, categoría, subcategoría, precio, costo, cantidad, stock mínimo, stock máximo, fecha vencimiento, frecuencia compra, stock seguridad, lead time, proveedor) y presiona "Agregar".
    - *Nota:* Al ingresar el código de barras, el sistema realiza una consulta automática a bases de datos externas (ej. Open Food Facts) para autocompletar el nombre y categoría si el producto existe globalmente.
 4. Para **editar**: selecciona un producto → se precargan los datos → edita → "Guardar".
@@ -463,7 +463,7 @@
 | ------------------ | ------------------------------------------------ |
 | **Actores**        | Administrador, Colaborador                       |
 | **Precondiciones** | Sesión activa                                    |
-| **RF Relacionados**| RF-020, RF-023, RF-038, RF-039, RF-040, RF-041, RF-042, RF-043 |
+| **RF Relacionados**| RF-020, RF-023, RF-038, RF-039, RF-040, RF-041 |
 
 **Flujo Principal:**
 
@@ -472,9 +472,10 @@
 3. El sistema carga las recomendaciones del Asistente Estratégico IA (producto, tendencia, ajuste, confianza).
 4. Se muestra el gráfico de barras "Ritmo de Caja" (ventas últimos 7 días).
 5. El usuario puede navegar al Centro Analítico para ver: gráficos Pareto ABC, donut de distribución, mapa de riesgo logístico y proyección de agotamiento por producto (fecha estimada de agotamiento basada en stock actual y velocidad de venta).
-6. El endpoint getAdvancedStats expone adicionalmente: proyección de pérdidas por vencimiento, nivel de servicio estimado (% productos sobre ROP) y comparativa de ventas 30d actuales vs 30d previos con variación porcentual.
 
 **Postcondiciones:** Información analítica completa presentada para toma de decisiones.
+
+**Nota de versión:** el paso 6 original de este caso de uso (KPIs de `getAdvancedStats`: pérdidas proyectadas por vencimiento, nivel de servicio y comparativa de ventas) se retiró — ese endpoint no tenía ningún consumidor real en el frontend. Ver RF-042/RF-043 en `requerimientos_sistema.md` para el detalle.
 
 ---
 
@@ -488,19 +489,18 @@
 
 **Flujo Principal:**
 
-1. El usuario navega al "Centro de Alertas".
-2. Presiona "↻ Forzar Recálculo".
-3. El motor de reglas ejecuta las 5 reglas secuencialmente para cada producto:
-   - **R1:** ¿Días de inventario ≤ lead time? → Alerta Crítica de stock.
-   - **R2:** ¿Días de inventario ≤ lead time + frecuencia compra? → Advertencia.
+1. El motor de reglas se ejecuta automáticamente en segundo plano cada vez que cambia algo que puede afectar el stock: una venta, la creación o edición de un producto, recibir mercancía, o un movimiento manual (entrada/salida/ajuste). El usuario también puede navegar al "Centro de Alertas" y presionar "↻ Forzar Recálculo" para dispararlo manualmente.
+2. Para cada producto, el motor evalúa 5 reglas usando el mismo cálculo de reposición (`calcularReposicion`) que usan el Catálogo, el Consejero IA y Proveedores, así que un producto no puede verse sano en una pantalla y en riesgo en otra:
+   - **R1:** ¿La urgencia calculada es "Pide hoy" (sin stock, o quedan menos días de los que tarda el proveedor)? → Alerta Crítica de stock. Incluye el caso de un producto agotado sin ninguna venta registrada, que antes no generaba alerta.
+   - **R2:** ¿La urgencia es "En esta compra" (alcanza para menos días que el lead time + la frecuencia de compra habitual del producto)? → Advertencia.
    - **R3:** ¿Vence en ≤7 días y sobrarán unidades? → Vencimiento Crítico.
    - **R4:** ¿Vence en ≤30 días y sobrarán unidades? → Vencimiento Advertencia.
    - **R5:** ¿Stock > máximo, Clase C, y >60 días de inventario? → Sobrestock.
-4. Las alertas generadas se persisten en la base de datos.
-5. El usuario visualiza las alertas con filtros por severidad.
-6. Puede marcar alertas como resueltas.
+3. Las alertas se actualizan en su lugar si ya estaban activas (conservando desde cuándo llevan activas) o se crean si son nuevas; las que ya no aplican se marcan resueltas. Todo corre dentro de una transacción con bloqueo por tienda, para que dos disparos casi simultáneos (dos ventas seguidas) no dupliquen alertas.
+4. El usuario visualiza las alertas con filtros por severidad.
+5. Puede marcar alertas como resueltas manualmente.
 
-**Postcondiciones:** Alertas generadas y visibles; métricas de conteo actualizadas.
+**Postcondiciones:** Alertas generadas, actualizadas o resueltas según el estado real del inventario; métricas de conteo actualizadas (contando productos distintos, no filas de alerta, y separando alertas de stock de las de vencimiento/sobrestock).
 
 ---
 
@@ -614,10 +614,10 @@
 **Flujo Principal:**
 
 1. El usuario navega al módulo "Simulador de Escenarios".
-2. El sistema carga todos los productos de la tienda con su stock actual y velocidad de venta.
+2. El sistema carga todos los productos de la tienda con su stock actual, velocidad de venta y la cantidad recomendada por el motor de reposición para el objetivo de cobertura actual.
 3. El usuario ajusta el slider de "Días de cobertura" (7-90 días).
-4. El usuario ingresa el "Presupuesto máximo" de compra.
-5. La tabla se recalcula en tiempo real: comprar = MAX(0, (velocidad × días) - stock).
+4. El sistema vuelve a pedir la cantidad recomendada al backend (con un pequeño retraso para no saturar la consulta mientras se arrastra el slider), usando el mismo motor de reposición que Catálogo, Consejero IA y Proveedores con ese objetivo de cobertura — incluye el piso de stock mínimo/seguridad para productos sin ventas recientes, que antes siempre mostraban "Comprar: 0" aunque ya estuvieran marcados críticos.
+5. El usuario ingresa el "Presupuesto máximo" de compra.
 6. Si la suma excede el presupuesto, el algoritmo greedy prioriza Clase A y recorta desde Clase C.
 7. El usuario puede incluir/excluir productos manualmente mediante checkboxes.
 8. El usuario visualiza KPIs: costo total simulado, items incluidos, excluidos y % de uso del presupuesto.
@@ -625,7 +625,7 @@
 
 **Flujos Alternativos:**
 
-- **FA-1:** Todos los productos están abastecidos → Tabla muestra "Comprar: 0 ud" para todos.
+- **FA-1:** Todos los productos están genuinamente abastecidos (incluyendo los que no tienen ventas recientes) → Tabla muestra "Comprar: 0 ud" para todos.
 - **FA-2:** Sin productos del proveedor seleccionado en la simulación → Toast de advertencia.
 
 **Postcondiciones:** Simulación visualizada; opcionalmente convertida en orden de compra real.
@@ -815,7 +815,7 @@
 | CU-01.3     | RF-003                                           |
 | CU-01.4     | RF-005                                           |
 | CU-01.5     | RF-050, RF-051, RF-062                           |
-| CU-02.1     | RF-007, RF-008, RF-009, RF-010                   |
+| CU-02.1     | RF-007, RF-008, RF-009, RF-010, RF-076           |
 | CU-02.2     | RF-016, RF-017                                   |
 | CU-02.3     | RF-018, RF-019                                   |
 | CU-02.4     | RF-009, RF-011                                   |
@@ -826,7 +826,7 @@
 | CU-03.5     | RF-058                                           |
 | CU-03.6     | RF-066, RF-069                                   |
 | CU-03.7     | RF-067, RF-068                                   |
-| CU-04.1     | RF-020, RF-023, RF-038, RF-039, RF-040, RF-041, RF-042, RF-043 |
+| CU-04.1     | RF-020, RF-023, RF-038, RF-039, RF-040, RF-041   |
 | CU-04.2     | RF-033, RF-034, RF-035, RF-036, RF-037           |
 | CU-04.3     | RF-021, RF-022, RF-024, RF-025, RF-026           |
 | CU-05.1     | RF-048, RF-049                                   |
