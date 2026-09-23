@@ -114,15 +114,15 @@ const USUARIOS = [
 ];
 
 const FICHA = [
-  ['Metodología', 'Scrum, 5 sprints en 10 semanas'],
-  ['Requerimientos', '95: 75 funcionales y 20 no funcionales'],
+  ['Metodología', 'Scrum, 5 sprints/10 semanas (entrega académica) — desarrollo continuo después'],
+  ['Requerimientos', '94: 76 funcionales (2 retirados tras revisión) y 18 no funcionales'],
   ['Pruebas', '64 casos ejecutados al cierre'],
   ['Inteligencia artificial', 'GPT-4o-mini'],
   ['Datos', 'PostgreSQL'],
 ];
 
 const VERSION_4 = [
-  'Panel maestro multi-sucursal',
+  'Panel consolidado multi-sucursal (métricas cruzadas entre tiendas)',
   'Planes de suscripción',
   'API pública para integraciones',
   'App móvil nativa',
