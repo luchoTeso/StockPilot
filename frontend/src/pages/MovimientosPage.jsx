@@ -354,7 +354,7 @@ const MovimientosPage = () => {
             <button 
               type="button" 
               onClick={limpiarFiltros} 
-              className="bg-tinta hover:bg-tinta text-white p-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
+              className="bg-menu hover:bg-menu text-white p-4 rounded-lg text-xs font-bold shadow-lg transition-colors transition-shadow transition-transform active:scale-95"
             >
               Limpiar
             </button>
@@ -365,10 +365,10 @@ const MovimientosPage = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-tinta text-xs font-bold text-white whitespace-nowrap">
+                  <tr className="bg-menu text-xs font-bold text-white whitespace-nowrap">
                     <th className="p-6 pl-8">Fecha</th>
                     <th className="p-6">Tipo</th>
-                    <th className="p-6">Producto</th>
+                    <th className="p-6 min-w-[200px]">Producto</th>
                     <th className="p-6">Categoría</th>
                     <th className="p-6 text-center">Cantidad</th>
                     <th className="p-6">Observación</th>
@@ -401,7 +401,7 @@ const MovimientosPage = () => {
                               {m.tipo_movimiento}
                             </span>
                           </td>
-                          <td className="p-6 font-bold text-tinta">{m.nombre_producto}</td>
+                          <td className="p-6 font-bold text-tinta min-w-[200px] max-w-xs"><span className="line-clamp-2" title={m.nombre_producto}>{m.nombre_producto}</span></td>
                           <td className="p-6 text-slate-500 font-medium">{m.categoria || '-'}</td>
                           <td className={`p-6 text-center font-bold text-lg ${textColor}`}>{cantidadDisplay}</td>
                           <td className="p-6 text-slate-500 text-xs max-w-[200px] truncate" title={m.observacion}>{m.observacion || '-'}</td>
@@ -424,7 +424,7 @@ const MovimientosPage = () => {
 
       {/* Modal Educativo: ¿Cuándo y para qué usar Movimientos? */}
       {showHelpModal && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-lg animate-scale-in overflow-hidden border border-slate-100">
             <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-100 bg-slate-50">
               <div className="flex items-center gap-3">

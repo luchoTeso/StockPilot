@@ -21,7 +21,7 @@ const SmartOrderModal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={onClose}></div>
       
       <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-lg relative z-10 flex flex-col overflow-hidden animate-scale-in border border-slate-100">
         {/* Modal Header */}

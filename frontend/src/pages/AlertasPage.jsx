@@ -168,7 +168,7 @@ const AlertasPage = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   {(() => { const Icon = SeveridadIcon[alerta.severidad]; return <Icon size={20} />; })()}
-                  <h3 className="titular text-lg">{alerta.nombre_producto} <span className="text-xs bg-tinta text-white px-2 py-0.5 rounded ml-2 shadow-sm">{alerta.codigo}</span></h3>
+                  <h3 className="titular text-lg">{alerta.nombre_producto} <span className="text-xs bg-menu text-white px-2 py-0.5 rounded ml-2 shadow-sm">{alerta.codigo}</span></h3>
                 </div>
                 <p className="text-sm font-bold opacity-100 text-tinta leading-relaxed max-w-3xl">
                   {alerta.mensaje}

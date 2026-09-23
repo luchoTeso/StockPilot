@@ -18,26 +18,32 @@ class Notification {
     }
 
     /**
-     * Envía una notificación a todos los tenderos de una tienda
+     * Envía una notificación a todos los usuarios de una tienda con el rol dado.
+     * Por defecto, a los Tenderos (uso original de este método).
      */
-    static async broadcast({ id_tienda, tipo, titulo, mensaje, datos_json = null }) {
-        const tenderos = await db.allAsync(
+    static async broadcast({ id_tienda, tipo, titulo, mensaje, datos_json = null, rol = 'Tendero' }) {
+        const usuarios = await db.allAsync(
             'SELECT id_usuario FROM Usuarios WHERE id_tienda = ? AND rol = ?',
-            [id_tienda, 'Tendero']
+            [id_tienda, rol]
         );
         let count = 0;
-        for (const t of tenderos) {
-            await this.create({ 
-                id_usuario: t.id_usuario, 
-                id_tienda, 
-                tipo, 
-                titulo, 
-                mensaje, 
-                datos_json 
+        for (const u of usuarios) {
+            await this.create({
+                id_usuario: u.id_usuario,
+                id_tienda,
+                tipo,
+                titulo,
+                mensaje,
+                datos_json
             });
             count++;
         }
         return count;
+    }
+
+    /** Envía una notificación a todos los Administradores de una tienda (p. ej. una solicitud de un tendero). */
+    static async notifyAdmins(params) {
+        return this.broadcast({ ...params, rol: 'Administrador' });
     }
 
     /**

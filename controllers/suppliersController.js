@@ -1,3 +1,5 @@
+const { calcularReposicion, costoUnitario } = require('../utils/reposicion');
+const { totalOrden } = require('../utils/ordenesBorrador');
 const db = require('../config/database');
 const { OpenAI } = require('openai');
 const transporter = require('../config/mailer');
@@ -89,7 +91,11 @@ const suppliersController = {
       const query = `
         WITH BaseData AS (
           SELECT 
-            p.id_producto, p.nombre_producto, p.cantidad as stock_actual, p.precio, p.stock_seguridad, p.lead_time,
+            p.id_producto, p.nombre_producto, p.cantidad as stock_actual, p.precio, p.costo_compra, p.stock_seguridad, p.lead_time,
+            COALESCE(
+              (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
+               WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days'
+              ), 0) / 7.0 as velocity_7d,
             COALESCE(
               (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
                WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
@@ -129,13 +135,16 @@ const suppliersController = {
       const rows = await db.allAsync(query, [tiendaId, proveedorId]);
       
       const smartList = rows.map(item => {
-        let risk = 'low';
-        if (item.stock_actual <= item.stock_seguridad) risk = 'critical';
-        else if (item.stock_actual <= item.rop) risk = 'medium';
-        // Crítico/medio: cubrir hasta ROP. Stock suficiente: sugerir 1 semana de ventas (mínimo 1).
-        const qtyCritica = risk !== 'low' ? Math.max(0, item.rop - item.stock_actual) : 0;
-        // Fase 5: Aplicar factor_ia también a sugerencias preventivas (productos saludables)
-        const qtySugerida = qtyCritica > 0 ? qtyCritica : Math.max(1, Math.ceil(item.velocity_30d * 7 * item.factor_ia));
+        // Motor único de reposición (utils/reposicion.js): misma cantidad que el Consejero del Dashboard.
+        const rep = calcularReposicion({
+          ventasDia7: item.velocity_7d, ventasDia30: item.velocity_30d,
+          claseABC: item.clasificacion_abc, stock: item.stock_actual, stockSeguridad: item.stock_seguridad,
+          leadTime: item.lead_time, factorIA: item.factor_ia,
+        });
+        const risk = rep.riesgo === 'CRÍTICO' ? 'critical' : (rep.riesgo === 'MEDIO' ? 'medium' : 'low');
+        // Producto sano: se sugiere una semana de ventas (mínimo 1), como antes.
+        const qtySugerida = rep.cantidadBase > 0 ? rep.cantidadBase : Math.max(1, Math.ceil(item.velocity_30d * 7 * item.factor_ia));
+        const costo = costoUnitario({ costoCompra: item.costo_compra, precio: item.precio });
         return {
           id_producto: item.id_producto,
           nombre: item.nombre_producto,
@@ -145,7 +154,11 @@ const suppliersController = {
           dias_inventario: item.days_to_exhaust === 999999 ? Infinity : item.days_to_exhaust,
           factor_aprendizaje_ia: Number(item.factor_ia).toFixed(2),
           cantidad_sugerida: qtySugerida,
-          presupuesto_estimado: qtySugerida * item.precio
+          urgencia: rep.urgencia,
+          costo_unitario: costo.costo,
+          costo_estimado: costo.estimado,
+          // Se valora con el costo de compra (antes: precio de venta, que inflaba el total con el margen)
+          presupuesto_estimado: qtySugerida * costo.costo
         };
       });
       res.json({ success: true, proveedor_id: proveedorId, recomendaciones_matematicas: smartList, total_presupuesto_base: smartList.reduce((acc, curr) => acc + curr.presupuesto_estimado, 0) });
@@ -261,7 +274,7 @@ const suppliersController = {
     try {
       const tiendaId = req.session.tiendaId;
       const query = `
-        SELECT o.*, p.nombre_empresa as proveedor_nombre, u.nombres as usuario_nombre,
+        SELECT o.*, p.nombre_empresa as proveedor_nombre, p.email as proveedor_email, u.nombres as usuario_nombre,
                (SELECT COUNT(*) FROM Ordenes_Detalle WHERE id_orden = o.id_orden) as items_count,
                (o.presupuesto_total - o.monto_pagado) as saldo_pendiente
         FROM Ordenes_Compra o
@@ -280,7 +293,15 @@ const suppliersController = {
   getOrderDetail: async (req, res) => {
     try {
       const { ordenId } = req.params;
-      const rows = await db.allAsync("SELECT d.*, p.nombre_producto FROM Ordenes_Detalle d JOIN Productos p ON d.id_producto = p.id_producto WHERE d.id_orden = ?", [ordenId]);
+      const rows = await db.allAsync(
+        `SELECT d.*, p.nombre_producto, u.nombres as solicitado_por_nombre
+         FROM Ordenes_Detalle d
+         JOIN Productos p ON d.id_producto = p.id_producto
+         JOIN Ordenes_Compra o ON o.id_orden = d.id_orden
+         LEFT JOIN Usuarios u ON d.solicitado_por = u.id_usuario
+         WHERE d.id_orden = ? AND o.id_tienda = ?`,
+        [ordenId, req.session.tiendaId]
+      );
       res.json({ success: true, data: rows.map(r => ({ ...r, cantidad_final: Number(r.cantidad_final), costo_unitario: Number(r.costo_unitario) })) });
     } catch (e) {
       res.status(500).json({ success: false, error: e.message });
@@ -293,11 +314,109 @@ const suppliersController = {
       const { ordenId } = req.params;
       const tiendaId = req.session.tiendaId;
       const { estado, notas } = req.body;
-      const query = 'UPDATE Ordenes_Compra SET estado = ?, notas = COALESCE(?, notas) WHERE id_orden = ? AND id_tienda = ?';
+      // Completar una orden exige registrar lo que realmente llegó (ver completarRecepcion):
+      // por aquí no se toca el inventario, así que no se permite saltarse ese paso.
+      if (estado === 'Completada') {
+        return res.status(400).json({ success: false, error: 'Para completar una orden, confirma la recepción de mercancía (registra lo que realmente llegó).' });
+      }
+      // Al aprobar se guarda la fecha: de ella parte la evaluación diaria de precisión de la IA
+      // (feedbackController.evaluateOrderInternal), que hasta ahora dependía del respaldo por fecha de creación.
+      const query = estado === 'Aprobada'
+        ? 'UPDATE Ordenes_Compra SET estado = ?, notas = COALESCE(?, notas), fecha_aprobacion = CURRENT_TIMESTAMP WHERE id_orden = ? AND id_tienda = ?'
+        : 'UPDATE Ordenes_Compra SET estado = ?, notas = COALESCE(?, notas) WHERE id_orden = ? AND id_tienda = ?';
       await db.runAsync(query, [estado, notas || null, ordenId, tiendaId]);
       res.json({ success: true, message: `Orden #${ordenId} actualizada.` });
     } catch (e) {
       res.status(500).json({ success: false, error: e.message });
+    }
+  },
+
+  /**
+   * POST /api/ordenes/:ordenId/completar — Fase E del plan 13 (recepción de mercancía).
+   * Body: { items: [{ id_producto, cantidad_recibida }] }.
+   * Se puede completar desde 'Aprobada' o 'Enviada' (una orden puede pagarse/recogerse en persona
+   * sin pasar por el envío formal de correo). Cierre total y de una sola vez: lo que no llegó
+   * no se marca "pendiente", el Consejero lo volverá a sugerir si sigue haciendo falta.
+   * El total de la orden se recalcula con lo realmente recibido (no con lo pedido), para que el
+   * saldo pendiente de Pagos refleje la realidad.
+   */
+  completarRecepcion: async (req, res) => {
+    const client = await db.getClient();
+    try {
+      const { ordenId } = req.params;
+      const tiendaId = req.session.tiendaId;
+      const userId = req.session.userId;
+      const items = req.body && req.body.items;
+      if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ success: false, error: 'Indica la cantidad recibida de cada producto.' });
+      }
+      const limpios = [];
+      for (const it of items) {
+        const idProducto = Number(it && it.id_producto);
+        const cantidad = Number(it && it.cantidad_recibida);
+        if (!Number.isInteger(idProducto) || !Number.isInteger(cantidad) || cantidad < 0 || cantidad > 100000) {
+          return res.status(400).json({ success: false, error: 'Cada línea necesita un producto y una cantidad recibida entera (0 o más).' });
+        }
+        limpios.push({ id_producto: idProducto, cantidad_recibida: cantidad });
+      }
+
+      await client.query('BEGIN');
+      const { rows: ordenRows } = await client.query(
+        'SELECT estado FROM Ordenes_Compra WHERE id_orden = $1 AND id_tienda = $2 FOR UPDATE', [ordenId, tiendaId]
+      );
+      if (!ordenRows.length) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, error: 'Orden no encontrada.' }); }
+      if (!['Aprobada', 'Enviada'].includes(ordenRows[0].estado)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ success: false, error: 'Solo se puede recibir una orden Aprobada o Enviada.' });
+      }
+
+      const { rows: lineas } = await client.query('SELECT id_producto, costo_unitario FROM Ordenes_Detalle WHERE id_orden = $1', [ordenId]);
+      const costoPorProducto = new Map(lineas.map((l) => [l.id_producto, Number(l.costo_unitario) || 0]));
+      for (const it of limpios) {
+        if (!costoPorProducto.has(it.id_producto)) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ success: false, error: 'Uno de los productos no pertenece a esta orden.' });
+        }
+      }
+
+      const totalReal = totalOrden(limpios.map((it) => ({ cantidad: it.cantidad_recibida, costo_unitario: costoPorProducto.get(it.id_producto) })));
+      for (const it of limpios) {
+        await client.query('UPDATE Ordenes_Detalle SET cantidad_recibida = $1 WHERE id_orden = $2 AND id_producto = $3', [it.cantidad_recibida, ordenId, it.id_producto]);
+        if (it.cantidad_recibida > 0) {
+          const { rows: prodRows } = await client.query('SELECT cantidad FROM Productos WHERE id_producto = $1 AND id_tienda = $2 FOR UPDATE', [it.id_producto, tiendaId]);
+          if (!prodRows.length) continue; // producto borrado mientras tanto: no hay dónde sumar el stock
+          const nuevoStock = Number(prodRows[0].cantidad) + it.cantidad_recibida;
+          await client.query('UPDATE Productos SET cantidad = $1 WHERE id_producto = $2', [nuevoStock, it.id_producto]);
+          await client.query(
+            `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, stock_final, fecha_movimiento, observacion, id_usuario, id_tienda)
+             VALUES ($1, 'Entrada', $2, $3, CURRENT_TIMESTAMP, $4, $5, $6)`,
+            [it.id_producto, it.cantidad_recibida, nuevoStock, `Orden de Compra #${ordenId}`, userId, tiendaId]
+          );
+        }
+      }
+
+      await client.query(
+        "UPDATE Ordenes_Compra SET estado = 'Completada', presupuesto_total = $1, total_estimado = $1 WHERE id_orden = $2",
+        [totalReal, ordenId]
+      );
+      await client.query('COMMIT');
+
+      try {
+        await db.runAsync(
+          'INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia, fecha_auditoria) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
+          [tiendaId, ordenId, 'Recepción de mercancía', JSON.stringify(lineas), JSON.stringify(limpios), `Orden #${ordenId} recibida — total real $${totalReal.toLocaleString('es-CO')}`, 'El administrador confirmó qué llegó realmente']
+        );
+      } catch (auditErr) {
+        console.error('⚠️ Auditoría de recepción omitida:', auditErr.message);
+      }
+
+      res.json({ success: true, presupuesto_total: totalReal });
+    } catch (e) {
+      await client.query('ROLLBACK').catch(() => {});
+      console.error('❌ completarRecepcion:', e.message);
+      res.status(500).json({ success: false, error: 'No se pudo confirmar la recepción.' });
+    } finally {
+      client.release();
     }
   },
 
@@ -341,7 +460,7 @@ const suppliersController = {
         subject: `Orden de Compra #${ordenId} — ${nombreTienda}`,
         html: `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #334155; max-width: 620px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="background-color: #4f46e5; padding: 28px 32px;">
+            <div style="background-color: #252C93; padding: 28px 32px;">
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td>
@@ -401,6 +520,81 @@ const suppliersController = {
       });
 
       res.json({ success: true });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+
+  /**
+   * Descarga la orden en PDF. Para proveedores sin correo (plan 13, Fase D): el administrador
+   * la envía por su cuenta (WhatsApp, impresa) y luego puede marcarla como enviada a mano.
+   */
+  downloadOrderPdf: async (req, res) => {
+    try {
+      const { ordenId } = req.params;
+      const tiendaId = req.session.tiendaId;
+      const orden = await db.getAsync(
+        `SELECT o.*, p.nombre_empresa, p.email as proveedor_email, p.telefono as proveedor_telefono
+         FROM Ordenes_Compra o JOIN Proveedores p ON o.id_proveedor = p.id_proveedor
+         WHERE o.id_orden = ? AND o.id_tienda = ?`,
+        [ordenId, tiendaId]
+      );
+      if (!orden) return res.status(404).json({ error: 'Orden no encontrada' });
+      const items = await db.allAsync(
+        'SELECT d.*, p.nombre_producto FROM Ordenes_Detalle d JOIN Productos p ON d.id_producto = p.id_producto WHERE d.id_orden = ?',
+        [ordenId]
+      );
+
+      const PDFDocument = require('pdfkit');
+      const doc = new PDFDocument({ margin: 40, size: 'A4' });
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=Orden_Compra_${ordenId}.pdf`);
+      doc.pipe(res);
+
+      const azul = '#252C93';
+      const tinta = '#14173F';
+      const gris = '#94a3b8';
+      const nombreTienda = req.session.nombreTienda || 'StockPilot';
+
+      doc.fillColor(azul).fontSize(24).text('StockPilot', { align: 'right' });
+      doc.fillColor(gris).fontSize(10).text('Control de Inventario Inteligente', { align: 'right' });
+      doc.moveDown(1.5);
+
+      doc.fillColor(tinta).fontSize(18).text(`ORDEN DE COMPRA #${ordenId}`, { align: 'left' });
+      doc.fontSize(10).fillColor(gris).text(`Emitida por ${nombreTienda} el ${new Date(orden.fecha_creacion).toLocaleDateString('es-CO')}`);
+      doc.moveDown();
+      doc.fontSize(11).fillColor(tinta).text(`Proveedor: ${orden.nombre_empresa}`);
+      if (orden.proveedor_telefono) doc.fontSize(10).fillColor(gris).text(`Teléfono: ${orden.proveedor_telefono}`);
+      doc.moveDown(1.5);
+
+      const tableTop = doc.y;
+      const cols = { item: 40, qty: 320, cost: 390, total: 470 };
+      doc.fontSize(10).fillColor(azul);
+      doc.text('Producto', cols.item, tableTop);
+      doc.text('Cant.', cols.qty, tableTop);
+      doc.text('Costo Un.', cols.cost, tableTop);
+      doc.text('Subtotal', cols.total, tableTop);
+      doc.moveTo(40, tableTop + 15).lineTo(555, tableTop + 15).strokeColor('#E5E7EB').stroke();
+
+      let y = tableTop + 24;
+      let total = 0;
+      doc.fontSize(9).fillColor(tinta);
+      items.forEach((it) => {
+        const cantidad = Number(it.cantidad_final) || 0;
+        const costo = Number(it.costo_unitario) || 0;
+        const subtotal = cantidad * costo;
+        total += subtotal;
+        doc.text(it.nombre_producto?.substring(0, 45) || 'Sin nombre', cols.item, y, { width: 270 });
+        doc.text(String(cantidad), cols.qty, y);
+        doc.text(`$${costo.toLocaleString('es-CO')}`, cols.cost, y);
+        doc.text(`$${subtotal.toLocaleString('es-CO')}`, cols.total, y);
+        y += 20;
+      });
+
+      doc.moveTo(40, y + 4).lineTo(555, y + 4).strokeColor('#E5E7EB').stroke();
+      doc.fontSize(11).fillColor(azul).text(`Total estimado: $${total.toLocaleString('es-CO')}`, cols.cost, y + 14);
+
+      doc.end();
     } catch (e) {
       res.status(500).json({ error: e.message });
     }

@@ -25,6 +25,14 @@ const ConfirmDialog = ({
   };
 
   const colors = {
+    azul: {
+      bg: 'bg-azul/10',
+      text: 'text-azul',
+      shadow: '',
+      border: 'border-azul/20',
+      btn: 'bg-azul hover:bg-azul-hondo',
+      highlightBg: 'bg-azul/10 text-azul border-azul/20'
+    },
     rose: {
       bg: 'bg-peligro-suave',
       text: 'text-peligro',
@@ -54,7 +62,7 @@ const ConfirmDialog = ({
   const theme = colors[highlightColor] || colors.rose;
 
   return (
-    <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className={`bg-white rounded-2xl w-full max-w-sm shadow-lg animate-scale-in p-8 text-center border-4 ${theme.border}`}>
          <div className={`w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-lg ${theme.bg} ${theme.text} ${theme.shadow}`}>
             {getIcon()}

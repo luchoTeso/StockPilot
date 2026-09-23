@@ -370,7 +370,7 @@ const SimuladorPage = () => {
       {/* MODAL: SELECCIONAR PROVEEDOR Y CONVERTIR */}
       {showConvertModal && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setShowConvertModal(false)}></div>
+          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" onClick={() => setShowConvertModal(false)}></div>
           
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-lg relative z-10 p-8 animate-scale-in border border-slate-100">
             <div className="flex justify-between items-center mb-8">

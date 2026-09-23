@@ -1,5 +1,13 @@
-import { ScrollText, Mail, Banknote, AlertTriangle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { ScrollText, Mail, Banknote, AlertTriangle, Loader2, Trash2, Copy, FileDown, Check, PackageCheck, User } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { useToast } from '../../context/ToastContext';
+
+/** Texto plano del pedido, para copiar y enviar por WhatsApp cuando el proveedor no tiene correo. */
+function textoPedido(orden, items) {
+  const lineas = items.map((d) => `- ${d.nombre_producto}: ${d.cantidad_final} ud`).join('\n');
+  return `Pedido #${orden.id_orden} — ${orden.proveedor_nombre}\n${lineas}\n\nTotal estimado: $${Number(orden.presupuesto_total || 0).toLocaleString('es-CO')}`;
+}
 
 const OrdenesHistory = ({
   ordenesHistory,
@@ -13,8 +21,43 @@ const OrdenesHistory = ({
   isSendingEmail,
   emailMessage,
   setEmailMessage,
-  onUpdateEstado
+  onUpdateEstado,
+  savingItem,
+  onEditItem,
+  onRemoveItem,
+  completandoOrden,
+  onCompletarRecepcion
 }) => {
+  const toast = useToast();
+  const [qtyDraft, setQtyDraft] = useState({});
+  const [mostrarRecepcion, setMostrarRecepcion] = useState(false);
+  const [recepcionDraft, setRecepcionDraft] = useState({});
+  const esBorrador = showHistoryDetail?.estado === 'Borrador';
+  const sePuedeRecibir = showHistoryDetail?.estado === 'Aprobada' || showHistoryDetail?.estado === 'Enviada';
+
+  const cerrarDetalle = () => {
+    setShowHistoryDetail(null);
+    setQtyDraft({});
+    setMostrarRecepcion(false);
+    setRecepcionDraft({});
+  };
+
+  const copiarPedido = async () => {
+    try {
+      await navigator.clipboard.writeText(textoPedido(showHistoryDetail, ordenDetail));
+      toast.success('Pedido copiado. Puedes pegarlo en WhatsApp o donde lo necesites.');
+    } catch {
+      toast.error('No se pudo copiar. Selecciona y copia el texto manualmente.');
+    }
+  };
+
+  const confirmarRecepcion = () => {
+    const items = ordenDetail.map((det) => ({
+      id_producto: det.id_producto,
+      cantidad_recibida: Number(recepcionDraft[det.id_producto] ?? det.cantidad_final),
+    }));
+    onCompletarRecepcion(showHistoryDetail.id_orden, items, () => { setMostrarRecepcion(false); setRecepcionDraft({}); });
+  };
   return (
     <div className="relative z-10 pt-10 border-t border-slate-100">
       <div className="flex items-center gap-2 mb-6">
@@ -105,11 +148,11 @@ const OrdenesHistory = ({
       {/* DETAIL MODAL */}
       {showHistoryDetail && createPortal(
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={() => setShowHistoryDetail(null)}></div>
+          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={cerrarDetalle}></div>
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-lg relative z-10 overflow-y-auto animate-scale-in">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="titular text-xl text-tinta">Detalle de Orden #{showHistoryDetail.id_orden}</h2>
-              <button onClick={() => setShowHistoryDetail(null)} aria-label="Cerrar detalle" className="text-2xl text-slate-500 hover:text-rose-500 transition-colors">×</button>
+              <button onClick={cerrarDetalle} aria-label="Cerrar detalle" className="text-2xl text-slate-500 hover:text-rose-500 transition-colors">×</button>
             </div>
 
             {/* Metadata de la orden */}
@@ -137,13 +180,62 @@ const OrdenesHistory = ({
                 {ordenDetail.map(det => (
                   <div key={det.id_detalle} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
-                      <p className="text-sm font-bold text-tinta">{det.nombre_producto}</p>
-                      <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_base} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>
+                      <p className="text-sm font-bold text-tinta flex items-center gap-2 flex-wrap">
+                        {det.nombre_producto}
+                        {det.solicitado_por_nombre && (
+                          <span className="text-xs font-bold text-azul bg-azul/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <User size={10} /> Solicitado por {det.solicitado_por_nombre}
+                          </span>
+                        )}
+                      </p>
+                      {!esBorrador && !mostrarRecepcion && <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_sugerida ?? det.cantidad_final} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>}
+                      {det.cantidad_recibida !== null && det.cantidad_recibida !== undefined && (
+                        <p className="text-xs font-bold text-slate-500">Recibido: <span className={Number(det.cantidad_recibida) < det.cantidad_final ? 'text-aviso' : 'text-exito'}>{det.cantidad_recibida} ud</span></p>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs font-bold text-slate-500">Ajuste IA</p>
-                      <p className="text-sm font-bold text-azul">{det.sugerencia_ia > 0 ? '+' : ''}{det.sugerencia_ia}%</p>
-                    </div>
+                    {mostrarRecepcion ? (
+                      <input
+                        type="number"
+                        min="0"
+                        aria-label={`Cantidad recibida de ${det.nombre_producto}`}
+                        value={recepcionDraft[det.id_producto] ?? det.cantidad_final}
+                        onChange={(e) => setRecepcionDraft((prev) => ({ ...prev, [det.id_producto]: e.target.value }))}
+                        className="w-20 p-2 text-sm font-bold text-tinta text-center bg-white border border-slate-200 rounded-lg outline-none focus:border-azul"
+                      />
+                    ) : esBorrador ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          aria-label={`Cantidad de ${det.nombre_producto}`}
+                          value={qtyDraft[det.id_producto] ?? det.cantidad_final}
+                          onChange={(e) => setQtyDraft((prev) => ({ ...prev, [det.id_producto]: e.target.value }))}
+                          className="w-20 p-2 text-sm font-bold text-tinta text-center bg-white border border-slate-200 rounded-lg outline-none focus:border-azul"
+                        />
+                        <button
+                          type="button"
+                          disabled={savingItem === det.id_producto || Number(qtyDraft[det.id_producto] ?? det.cantidad_final) === det.cantidad_final}
+                          onClick={() => onEditItem(showHistoryDetail.id_orden, det.id_producto, qtyDraft[det.id_producto])}
+                          className="text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-40 px-3 py-2 rounded-lg transition-colors"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Quitar ${det.nombre_producto} del pedido`}
+                          disabled={savingItem === det.id_producto}
+                          onClick={() => onRemoveItem(showHistoryDetail.id_orden, det.id_producto)}
+                          className="text-peligro hover:bg-rose-50 disabled:opacity-40 p-2 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-slate-500">Ajuste IA</p>
+                        <p className="text-sm font-bold text-azul">{Number(det.sugerencia_ia) ? `${det.sugerencia_ia > 0 ? '+' : ''}${det.sugerencia_ia}%` : 'Sin ajuste'}</p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -171,7 +263,7 @@ const OrdenesHistory = ({
             )}
 
             {/* Estado final (para órdenes ya aprobadas o rechazadas) */}
-            {showHistoryDetail.estado === 'Aprobada' && (
+            {showHistoryDetail.estado === 'Aprobada' && showHistoryDetail.proveedor_email && (
               <div className="p-5 border-t border-exito-suave bg-emerald-50 space-y-4">
                 <div className="text-center">
                   <span className="text-xs font-bold text-exito">✓ Orden aprobada — Lista para enviar</span>
@@ -199,6 +291,34 @@ const OrdenesHistory = ({
                 </div>
               </div>
             )}
+            {/* Proveedor sin correo: el administrador la envía por su cuenta y marca "Enviada" a mano */}
+            {showHistoryDetail.estado === 'Aprobada' && !showHistoryDetail.proveedor_email && (
+              <div className="p-5 border-t border-aviso-suave bg-amber-50 space-y-3">
+                <p className="text-xs font-bold text-aviso flex items-center gap-2">
+                  <AlertTriangle size={14} /> {showHistoryDetail.proveedor_nombre} no tiene correo registrado: envíala por tu cuenta (WhatsApp, impresa) y márcala como enviada.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={copiarPedido}
+                    className="flex-1 py-3 bg-white border border-aviso/30 text-aviso hover:bg-aviso hover:text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Copy size={14} /> Copiar como texto
+                  </button>
+                  <a
+                    href={`/api/ordenes/${showHistoryDetail.id_orden}/pdf`}
+                    className="flex-1 py-3 bg-white border border-aviso/30 text-aviso hover:bg-aviso hover:text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <FileDown size={14} /> Descargar PDF
+                  </a>
+                </div>
+                <button
+                  onClick={() => onUpdateEstado(showHistoryDetail.id_orden, 'Enviada')}
+                  className="w-full py-3 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <Check size={14} /> Ya la envié: marcar como enviada
+                </button>
+              </div>
+            )}
             {showHistoryDetail.estado === 'Enviada' && (
               <div className="p-4 border-t border-azul/30 bg-azul/10 text-center">
                 <span className="text-xs font-bold text-azul flex items-center justify-center gap-2"><Mail size={12} /> Orden enviada al proveedor por correo electrónico</span>
@@ -207,6 +327,41 @@ const OrdenesHistory = ({
             {showHistoryDetail.estado === 'Rechazada' && (
               <div className="p-4 border-t border-peligro-suave bg-rose-50 text-center">
                 <span className="text-xs font-bold text-peligro">✕ Orden rechazada</span>
+              </div>
+            )}
+
+            {/* Recepción de mercancía: cierra la orden y suma el stock recibido (plan 13, Fase E) */}
+            {sePuedeRecibir && !mostrarRecepcion && (
+              <div className="p-5 border-t border-slate-100 bg-slate-50">
+                <button
+                  onClick={() => setMostrarRecepcion(true)}
+                  className="w-full py-4 bg-tinta hover:bg-menu text-white rounded-lg text-xs font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <PackageCheck size={16} /> ¿Llegó el pedido? Registrar recepción
+                </button>
+              </div>
+            )}
+            {sePuedeRecibir && mostrarRecepcion && (
+              <div className="p-5 border-t border-slate-100 bg-slate-50 space-y-3">
+                <p className="text-xs font-bold text-tinta flex items-center gap-2">
+                  <PackageCheck size={14} /> Confirma cuánto llegó de cada producto (ya viene con la cantidad pedida).
+                </p>
+                <p className="text-xs text-slate-500">Si algo no llegó, pon 0 o la cantidad real: se sumará al inventario y lo que falte lo volverá a sugerir el Consejero.</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setMostrarRecepcion(false)}
+                    className="flex-1 py-3 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-500 hover:text-tinta transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={confirmarRecepcion}
+                    disabled={completandoOrden}
+                    className="flex-1 py-3 rounded-lg text-xs font-bold bg-exito text-white hover:bg-emerald-700 shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {completandoOrden ? (<><Loader2 size={14} className="animate-spin" /> Confirmando...</>) : (<><Check size={14} /> Confirmar recepción</>)}
+                  </button>
+                </div>
               </div>
             )}
           </div>

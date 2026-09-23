@@ -305,11 +305,78 @@ export const useProveedoresPage = () => {
       if (res.data.success) {
         if (nuevoEstado === 'Rechazada') toast.success('Orden rechazada correctamente.');
         else if (nuevoEstado === 'Aprobada') toast.success('¡Orden aprobada! Lista para enviar al proveedor.');
+        else if (nuevoEstado === 'Enviada') toast.success('Orden marcada como enviada.');
         setShowHistoryDetail(null);
         fetchHistory();
       }
     } catch (e) {
       toast.error(e.response?.data?.error || `Error al ${nuevoEstado === 'Rechazada' ? 'rechazar' : 'aprobar'}`);
+    }
+  };
+
+  const [savingItem, setSavingItem] = useState(null); // id_producto en edición/borrado
+
+  // Solo aplica a órdenes en Borrador (endpoints de la Fase B del plan 13)
+  const handleEditOrderItem = async (idOrden, idProducto, cantidad) => {
+    const qty = parseInt(cantidad, 10);
+    if (!Number.isInteger(qty) || qty <= 0) return toast.error('La cantidad debe ser un entero mayor a 0.');
+    setSavingItem(idProducto);
+    try {
+      const res = await axios.patch(`/api/ordenes/${idOrden}/items/${idProducto}`, { cantidad: qty });
+      if (res.data.success) {
+        setOrdenDetail(prev => prev.map(d => d.id_producto === idProducto ? { ...d, cantidad_final: qty } : d));
+        setOrdenesHistory(prev => prev.map(o => o.id_orden === idOrden ? { ...o, presupuesto_total: res.data.total } : o));
+        setShowHistoryDetail(prev => prev && prev.id_orden === idOrden ? { ...prev, presupuesto_total: res.data.total } : prev);
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'No se pudo actualizar la cantidad.');
+    } finally {
+      setSavingItem(null);
+    }
+  };
+
+  const handleRemoveOrderItem = async (idOrden, idProducto) => {
+    setSavingItem(idProducto);
+    try {
+      const res = await axios.delete(`/api/ordenes/${idOrden}/items/${idProducto}`);
+      if (res.data.success) {
+        setOrdenDetail(prev => prev.filter(d => d.id_producto !== idProducto));
+        if (res.data.eliminada) {
+          toast.success('El borrador quedó vacío y se eliminó.');
+          setShowHistoryDetail(null);
+          fetchHistory();
+        } else {
+          setOrdenesHistory(prev => prev.map(o => o.id_orden === idOrden ? { ...o, presupuesto_total: res.data.total } : o));
+          setShowHistoryDetail(prev => prev && prev.id_orden === idOrden ? { ...prev, presupuesto_total: res.data.total } : prev);
+        }
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'No se pudo quitar el producto.');
+    } finally {
+      setSavingItem(null);
+    }
+  };
+
+  const [completandoOrden, setCompletandoOrden] = useState(false);
+
+  /**
+   * Confirma la recepción de mercancía (plan 13, Fase E): cierra la orden y suma el stock recibido.
+   * `onDone` limpia el formulario de recepción del componente al terminar (con éxito o sin él).
+   */
+  const handleCompletarRecepcion = async (idOrden, items, onDone) => {
+    setCompletandoOrden(true);
+    try {
+      const res = await axios.post(`/api/ordenes/${idOrden}/completar`, { items });
+      if (res.data.success) {
+        toast.success('Recepción confirmada: el inventario ya se actualizó.');
+        setShowHistoryDetail(null);
+        fetchHistory();
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'No se pudo confirmar la recepción.');
+    } finally {
+      setCompletandoOrden(false);
+      onDone?.();
     }
   };
 
@@ -413,6 +480,11 @@ export const useProveedoresPage = () => {
     handleOpenSupplierModal,
     handleSaveSupplier,
     handleDeleteSupplier,
-    handleUpdateEstado
+    handleUpdateEstado,
+    savingItem,
+    handleEditOrderItem,
+    handleRemoveOrderItem,
+    completandoOrden,
+    handleCompletarRecepcion
   };
 };

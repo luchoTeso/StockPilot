@@ -233,7 +233,7 @@ const TiendasPage = () => {
                       {!isActiveSession && isStatusActive ? (
                         <button 
                           onClick={() => handleSwitchStore(t.id_tienda)}
-                          className="w-full sm:flex-1 py-3 rounded-lg bg-tinta text-white text-xs font-bold hover:bg-azul transition-colors flex items-center justify-center gap-2 shadow-sm"
+                          className="w-full sm:flex-1 py-3 rounded-lg bg-menu text-white text-xs font-bold hover:bg-azul transition-colors flex items-center justify-center gap-2 shadow-sm"
                         >
                           Gestionar aquí <ArrowRight size={14} />
                         </button>
@@ -403,7 +403,7 @@ const TiendasPage = () => {
                   </div>
                   <button
                     onClick={() => navigate('/registro-tendero')}
-                    className="flex items-center gap-2 px-5 py-3 rounded-lg bg-tinta hover:bg-azul text-white text-xs font-bold shadow-md transition-colors self-start sm:self-auto active:scale-95"
+                    className="flex items-center gap-2 px-5 py-3 rounded-lg bg-menu hover:bg-azul text-white text-xs font-bold shadow-md transition-colors self-start sm:self-auto active:scale-95"
                   >
                     Gestionar en Colaboradores <ArrowRight size={14} />
                   </button>
@@ -599,7 +599,7 @@ const TiendasPage = () => {
 
       {/* Modal Editar / Crear Tienda */}
       {(editModalOpen || createModalOpen) && (
-        <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-2xl w-full max-w-[700px] shadow-lg overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
             
             {/* Header Modal */}

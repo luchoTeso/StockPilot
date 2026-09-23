@@ -63,43 +63,41 @@ export const useProductosPage = () => {
     }
   }, []);
 
-  const verificarStock = useCallback((prodList) => {
-    let itemsAgotados = [];
-    let itemsPorPedir = [];
+  // Antes este banner calculaba su propio umbral (distinto al de Monitor Alertas, al del Consejero
+  // y al de la etiqueta de cada fila), así que podía mostrar un número distinto al de esas otras
+  // pantallas para la misma tienda. Ahora lee las alertas reales (las mismas de la campanita y de
+  // Monitor Alertas), para que el número siempre coincida en toda la app.
+  const verificarAlertas = useCallback(async (signal = null) => {
+    try {
+      const { data } = await axios.get('/api/alertas', { ...(signal && { signal }) });
+      if (signal && signal.aborted) return;
+      const alertas = data.alerts || data.data || [];
+      const nombresPorSeveridad = (severidad) =>
+        Array.from(new Set(alertas.filter(a => a.severidad === severidad).map(a => a.nombre_producto)));
 
-    prodList.forEach(p => {
-      const isActivo = p.estado === 'Disponible';
-      if (!isActivo) return;
+      const criticos = nombresPorSeveridad('critico');
+      const advertencias = nombresPorSeveridad('advertencia');
 
-      const velocity = p.velocity || 0;
-      const leadTime = p.lead_time || 3;
-      const stockSeguridad = p.stock_seguridad || 0;
-      const stockMinimo = p.stock_minimo || 5;
-
-      const rop = (velocity * leadTime) + stockSeguridad;
-      const umbralCritico = Math.max(stockSeguridad, Math.ceil(velocity * 2));
-      const umbralBajo = Math.max(rop, stockMinimo);
-
-      if (p.cantidad <= umbralCritico) itemsAgotados.push(p.nombre_producto);
-      else if (p.cantidad <= umbralBajo) itemsPorPedir.push(p.nombre_producto);
-    });
-
-    if (itemsAgotados.length > 0) {
-      setAlert({
-        show: true,
-        title: '¡Riesgo de Quiebre Inminente!',
-        message: `${itemsAgotados.length} producto(s) en nivel crítico (${itemsAgotados.slice(0,3).join(', ')}${itemsAgotados.length > 3 ? '...' : ''}).`,
-        isCritical: true
-      });
-    } else if (itemsPorPedir.length > 0) {
-      setAlert({
-        show: true,
-        title: 'Atención Sugerida',
-        message: `Es recomendable solicitar stock para ${itemsPorPedir.length} producto(s).`,
-        isCritical: false
-      });
-    } else {
-      setAlert({ show: false, title: '', message: '', isCritical: false });
+      if (criticos.length > 0) {
+        setAlert({
+          show: true,
+          title: '¡Riesgo de Quiebre Inminente!',
+          message: `${criticos.length} producto(s) en nivel crítico (${criticos.slice(0, 3).join(', ')}${criticos.length > 3 ? '...' : ''}).`,
+          isCritical: true
+        });
+      } else if (advertencias.length > 0) {
+        setAlert({
+          show: true,
+          title: 'Atención Sugerida',
+          message: `Es recomendable solicitar stock para ${advertencias.length} producto(s).`,
+          isCritical: false
+        });
+      } else {
+        setAlert({ show: false, title: '', message: '', isCritical: false });
+      }
+    } catch (e) {
+      if (axios.isCancel(e) || (signal && signal.aborted)) return;
+      console.error('Error cargando alertas para el banner:', e);
     }
   }, []);
 
@@ -113,7 +111,7 @@ export const useProductosPage = () => {
 
       const cats = Array.from(new Set(data.flatMap(p => p.categoria ? [p.categoria] : [])));
       setCategorias(cats);
-      verificarStock(data);
+      verificarAlertas(signal);
     } catch (error) {
       if (axios.isCancel(error) || (signal && signal.aborted)) return;
       setLoadError(true);
@@ -123,7 +121,7 @@ export const useProductosPage = () => {
         setLoading(false);
       }
     }
-  }, [toast, verificarStock]);
+  }, [toast, verificarAlertas]);
 
   useEffect(() => {
     const controller = new AbortController();

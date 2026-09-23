@@ -4,7 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { SYNC_EVENTS, subscribeToSync } from '../utils/stockSync';
-import { Bot, Rocket, AlertCircle, TrendingUp, DollarSign, Target, Clock, Zap, BarChart2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import { ShoppingCart, Check, Bot, Rocket, AlertCircle, TrendingUp, DollarSign, Target, Clock, Zap, BarChart2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -23,6 +24,19 @@ const DashboardPage = () => {
     margenPromedio: 0
   });
   const [recommendations, setRecommendations] = useState([]);
+  // Borradores de orden de compra armados desde el Consejero (solo administrador)
+  const [borradores, setBorradores] = useState({});
+  const [pedidoEnCurso, setPedidoEnCurso] = useState(null); // id_producto | 'todo' | 'calmas'
+  const [confirmarTodo, setConfirmarTodo] = useState(false);
+  const [ultimosPedidos, setUltimosPedidos] = useState([]);
+  // Proveedores para asignar a un producto que aún no tiene uno (Consejero → borrador)
+  const [proveedoresList, setProveedoresList] = useState([]);
+  const [eligiendoProveedor, setEligiendoProveedor] = useState(null); // id_producto en edición
+  const [proveedorElegido, setProveedorElegido] = useState('');
+  const [asignandoProveedor, setAsignandoProveedor] = useState(false);
+  // Solicitudes del tendero al administrador (plan 13, Fase E): solo se recuerdan en esta sesión
+  const [solicitudEnCurso, setSolicitudEnCurso] = useState(null); // id_producto
+  const [solicitados, setSolicitados] = useState(() => new Set());
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingPromos, setLoadingPromos] = useState(true);
@@ -78,6 +92,14 @@ const DashboardPage = () => {
       if (signal && signal.aborted) return;
 
       setRecommendations(aiRes.data.recommendations || []);
+      if (isAdmin) {
+        axios.get('/api/ordenes/borradores/resumen', { ...(signal && { signal }) })
+          .then((r) => { if (!(signal && signal.aborted)) setBorradores(r.data.data || {}); })
+          .catch(() => {});
+        axios.get('/api/proveedores', { ...(signal && { signal }) })
+          .then((r) => { if (!(signal && signal.aborted) && r.data.success) setProveedoresList(r.data.data || []); })
+          .catch(() => {});
+      }
       localStorage.setItem(`stockpilot_recs_${storeKey}`, JSON.stringify(aiRes.data.recommendations || []));
 
       setPromotions(promoRes.data.promotions || []);
@@ -90,7 +112,7 @@ const DashboardPage = () => {
         setLoadingPromos(false);
       }
     }
-  }, [storeKey]);
+  }, [storeKey, isAdmin]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -146,6 +168,186 @@ const DashboardPage = () => {
       setApplyingStrategy(false);
     }
   };
+
+  // Recomendaciones que se pueden llevar a un pedido: traen producto y proveedor y aún no están en un borrador
+  const esPedible = (rec) => rec.id_producto && rec.id_proveedor && Number.isFinite(Number(rec.final)) && Number(rec.final) > 0;
+  // "Puede esperar": el stock alcanza para varios días aunque esté bajo el mínimo; van aparte y no entran al pedido general
+  const urgentes = recommendations.filter((rec) => rec.urgencia !== 'Puede esperar').slice(0, 10);
+  const calmas = recommendations.filter((rec) => rec.urgencia === 'Puede esperar').slice(0, 10);
+  const calmasPedibles = calmas.filter((rec) => esPedible(rec) && !borradores[rec.id_producto]);
+  const pendientesDePedido = urgentes.filter((rec) => esPedible(rec) && !borradores[rec.id_producto]);
+  const resumenPedido = {
+    proveedores: new Set(pendientesDePedido.map((r) => r.id_proveedor)).size,
+    total: pendientesDePedido.reduce((acc, r) => acc + Number(r.final) * Number(r.costo_unitario || 0), 0),
+  };
+
+  const agregarAlPedido = async (lista, marca) => {
+    setPedidoEnCurso(marca);
+    try {
+      const { data } = await axios.post('/api/ordenes/borrador/desde-consejero', {
+        items: lista.map((r) => ({ id_producto: r.id_producto, cantidad: Number(r.final), base: Number(r.base), ajuste_ia: parseInt(String(r.adjustment ?? '0').replace(/[^0-9-]/g, ''), 10) || 0, urgencia: r.urgencia })),
+      });
+      const nuevos = {};
+      for (const b of data.borradores) {
+        for (const r of lista.filter((x) => x.id_proveedor === b.id_proveedor)) nuevos[r.id_producto] = { id_orden: b.id_orden, cantidad: Number(r.final), proveedor: b.proveedor };
+      }
+      setBorradores((prev) => ({ ...prev, ...nuevos }));
+      setUltimosPedidos(data.borradores);
+      if (data.sin_proveedor.length) toast.warning(`${data.sin_proveedor.length} producto(s) sin proveedor: asígnalo en Productos para poder pedirlo.`);
+      if (data.borradores.length) toast.success(data.borradores.length === 1 ? `Agregado al pedido #${data.borradores[0].id_orden} (borrador).` : `Se armaron ${data.borradores.length} pedidos en borrador.`);
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'No se pudo armar el pedido.');
+    } finally {
+      setPedidoEnCurso(null);
+      setConfirmarTodo(false);
+    }
+  };
+
+  // Producto sin proveedor: se asigna desde la propia tarjeta y de una vez se agrega al pedido
+  const asignarProveedorYPedir = async (rec) => {
+    if (!proveedorElegido) return toast.error('Elige un proveedor.');
+    setAsignandoProveedor(true);
+    try {
+      await axios.patch(`/api/productos/${rec.id_producto}/proveedor`, { id_proveedor: Number(proveedorElegido) });
+      const proveedor = proveedoresList.find((p) => p.id_proveedor === Number(proveedorElegido));
+      const recConProveedor = { ...rec, id_proveedor: Number(proveedorElegido), proveedor: proveedor?.nombre_empresa };
+      setRecommendations((prev) => prev.map((r) => r.id_producto === rec.id_producto ? recConProveedor : r));
+      setEligiendoProveedor(null);
+      setProveedorElegido('');
+      await agregarAlPedido([recConProveedor], rec.id_producto);
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'No se pudo asignar el proveedor.');
+    } finally {
+      setAsignandoProveedor(false);
+    }
+  };
+
+  // El tendero no decide cantidades: pide la que ya calculó el Consejero y el administrador la revisa
+  const solicitarAlAdmin = async (rec) => {
+    setSolicitudEnCurso(rec.id_producto);
+    try {
+      await axios.post('/api/ordenes/borrador/solicitar', { id_producto: rec.id_producto, cantidad: Number(rec.final), urgencia: rec.urgencia });
+      setSolicitados((prev) => new Set(prev).add(rec.id_producto));
+      toast.success('Se avisó al administrador. Lo verá en Proveedores.');
+    } catch (e) {
+      if (e.response?.status === 409) {
+        setSolicitados((prev) => new Set(prev).add(rec.id_producto));
+        toast.info('Ya estaba pedido; el administrador lo revisará en Proveedores.');
+      } else {
+        toast.error(e.response?.data?.error || 'No se pudo enviar la solicitud.');
+      }
+    } finally {
+      setSolicitudEnCurso(null);
+    }
+  };
+
+  const chipUrgencia = (u) => (u === 'Pide hoy' ? 'bg-peligro-suave text-peligro border-peligro/30' : u === 'Esta semana' ? 'bg-aviso-suave text-aviso border-aviso/30' : 'bg-slate-100 text-slate-600 border-slate-200');
+
+  const renderTarjeta = (rec) => (
+                    <div key={rec.id || rec.product} className="bg-slate-50/70 border-4 border-azul p-5 rounded-2xl hover:border-azul-hondo hover:bg-azul/10 hover:shadow-md transition-all duration-200 group flex flex-col">
+                      <div className="flex justify-between items-start mb-3 gap-2">
+                        <span className="text-tinta font-bold text-sm leading-tight flex-1">{rec.product}</span>
+                        <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : rec.trend === 'bajista' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                          {rec.trend === 'alcista' ? 'ALTA DEMANDA' : rec.trend === 'bajista' ? 'BAJA ROTACIÓN' : 'DEMANDA ESTABLE'}
+                        </span>
+                      </div>
+                      {rec.urgencia && (
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${chipUrgencia(rec.urgencia)}`}>{rec.urgencia}</span>
+                          {rec.dias_para_agotar !== null && rec.dias_para_agotar !== undefined && (
+                            <span className="text-xs font-bold text-slate-500">{rec.dias_para_agotar <= 0 ? 'Sin stock para hoy' : `Stock para ~${rec.dias_para_agotar} día(s)`}</span>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-600 mt-2 font-medium leading-relaxed">"{rec.reason}"</p>
+                      <div className="mt-auto pt-4 border-t border-azul/30">
+                        <div className="flex justify-between text-xs mb-2 font-bold">
+                          <span className="text-slate-500">Sugerido: <b className="text-tinta text-base font-bold">+{rec.final}u</b></span>
+                          <span className={getConfidenceColor(rec.confidence)}>Confianza: {rec.confidence}%</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full opacity-90 transition-colors duration-1000 ${rec.confidence >= 90 ? 'bg-exito' : 'bg-ambar'}`}
+                            style={{ width: `${rec.confidence}%` }}
+                          ></div>
+                        </div>
+                        {!isAdmin && rec.id_producto && (
+                          solicitados.has(rec.id_producto) ? (
+                            <p className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-exito bg-exito-suave border border-exito/20 rounded-lg px-3 py-2">
+                              <Check size={14} /> Solicitado: el administrador lo verá en Proveedores
+                            </p>
+                          ) : rec.id_proveedor ? (
+                            <button
+                              type="button"
+                              disabled={solicitudEnCurso !== null || !esPedible(rec)}
+                              onClick={() => solicitarAlAdmin(rec)}
+                              className="mt-3 w-full flex items-center justify-center gap-2 text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-50 rounded-lg px-3 py-2 transition-colors"
+                            >
+                              <ShoppingCart size={14} /> Solicitar al Administrador
+                            </button>
+                          ) : (
+                            <p className="mt-3 text-xs font-bold text-aviso">Sin proveedor asignado: pide al administrador que lo asigne.</p>
+                          )
+                        )}
+                        {isAdmin && rec.id_producto && (
+                          borradores[rec.id_producto] ? (
+                            <Link to={`/proveedores?orden=${borradores[rec.id_producto].id_orden}`} className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-exito bg-exito-suave border border-exito/20 rounded-lg px-3 py-2 hover:bg-exito hover:text-white transition-colors">
+                              <Check size={14} /> En borrador · Pedido #{borradores[rec.id_producto].id_orden}
+                            </Link>
+                          ) : rec.id_proveedor ? (
+                            <button
+                              type="button"
+                              disabled={pedidoEnCurso !== null || !esPedible(rec)}
+                              onClick={() => agregarAlPedido([rec], rec.id_producto)}
+                              className="mt-3 w-full flex items-center justify-center gap-2 text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-50 rounded-lg px-3 py-2 transition-colors"
+                            >
+                              <ShoppingCart size={14} /> Agregar al pedido de {rec.proveedor}
+                            </button>
+                          ) : eligiendoProveedor === rec.id_producto ? (
+                            <div className="mt-3 flex flex-col gap-2">
+                              <select
+                                autoFocus
+                                aria-label={`Proveedor para ${rec.product}`}
+                                value={proveedorElegido}
+                                onChange={(e) => setProveedorElegido(e.target.value)}
+                                className="w-full p-2 text-xs font-bold text-tinta bg-white border border-slate-200 rounded-lg outline-none focus:border-azul"
+                              >
+                                <option value="">Elige un proveedor…</option>
+                                {proveedoresList.map((p) => (
+                                  <option key={p.id_proveedor} value={p.id_proveedor}>{p.nombre_empresa}</option>
+                                ))}
+                              </select>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  disabled={asignandoProveedor || !proveedorElegido}
+                                  onClick={() => asignarProveedorYPedir(rec)}
+                                  className="flex-1 text-xs font-bold text-white bg-azul hover:bg-azul-hondo disabled:opacity-50 rounded-lg px-3 py-2 transition-colors"
+                                >
+                                  {asignandoProveedor ? 'Guardando…' : 'Asignar y pedir'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => { setEligiendoProveedor(null); setProveedorElegido(''); }}
+                                  className="text-xs font-bold text-slate-500 hover:text-tinta px-3 py-2"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => { setEligiendoProveedor(rec.id_producto); setProveedorElegido(''); }}
+                              className="mt-3 w-full text-xs font-bold text-aviso bg-aviso-suave hover:bg-aviso hover:text-white rounded-lg px-3 py-2 transition-colors"
+                            >
+                              Sin proveedor asignado: elegir uno
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+  );
 
   const getConfidenceColor = (score) => {
     if (score >= 90) return 'text-exito';
@@ -228,6 +430,32 @@ const DashboardPage = () => {
               )}
             </div>
 
+            {isAdmin && pendientesDePedido.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-azul/5 border border-azul/20 rounded-2xl px-4 py-3">
+                <p className="text-xs font-bold text-tinta">
+                  {pendientesDePedido.length} sugerencia(s) listas para pedir · {resumenPedido.proveedores} proveedor(es) · <span className="text-azul">${Math.round(resumenPedido.total).toLocaleString('es-CO')}</span>
+                </p>
+                <button
+                  type="button"
+                  disabled={pedidoEnCurso !== null}
+                  onClick={() => setConfirmarTodo(true)}
+                  className="flex items-center gap-2 text-xs font-bold text-white bg-azul hover:bg-azul-hondo disabled:opacity-50 px-4 py-2 rounded-lg transition-colors"
+                >
+                  <ShoppingCart size={14} /> Armar pedido con todo lo sugerido
+                </button>
+              </div>
+            )}
+            {ultimosPedidos.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 bg-exito-suave border border-exito/20 rounded-2xl px-4 py-3 text-xs font-bold text-exito" role="status">
+                <span>Borrador listo para revisar y enviar (no se envió nada al proveedor):</span>
+                {ultimosPedidos.map((b) => (
+                  <Link key={b.id_orden} to={`/proveedores?orden=${b.id_orden}`} className="underline underline-offset-2 hover:text-tinta">
+                    Ver pedido #{b.id_orden} · {b.proveedor} →
+                  </Link>
+                ))}
+              </div>
+            )}
+
             <div className="flex-grow max-h-[340px] overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {loading ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -235,31 +463,39 @@ const DashboardPage = () => {
                   <div className="h-24 bg-slate-100 rounded-2xl animate-pulse"></div>
                 </div>
               ) : recommendations.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {recommendations.slice(0, 10).map((rec) => (
-                    <div key={rec.id || rec.product} className="bg-slate-50/70 border-4 border-azul p-5 rounded-2xl hover:border-azul-hondo hover:bg-azul/10 hover:shadow-md transition-all duration-200 group flex flex-col">
-                      <div className="flex justify-between items-start mb-3 gap-2">
-                        <span className="text-tinta font-bold text-sm leading-tight flex-1">{rec.product}</span>
-                        <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded border ${rec.trend === 'alcista' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : rec.trend === 'bajista' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
-                          {rec.trend === 'alcista' ? 'ALTA DEMANDA' : rec.trend === 'bajista' ? 'BAJA ROTACIÓN' : 'DEMANDA ESTABLE'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 mt-2 font-medium leading-relaxed">"{rec.reason}"</p>
-                      <div className="mt-auto pt-4 border-t border-azul/30">
-                        <div className="flex justify-between text-xs mb-2 font-bold">
-                          <span className="text-slate-500">Sugerido: <b className="text-tinta text-base font-bold">+{rec.final}u</b></span>
-                          <span className={getConfidenceColor(rec.confidence)}>Confianza: {rec.confidence}%</span>
-                        </div>
-                        <div className="h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full opacity-90 transition-colors duration-1000 ${rec.confidence >= 90 ? 'bg-exito' : 'bg-ambar'}`}
-                            style={{ width: `${rec.confidence}%` }}
-                          ></div>
-                        </div>
-                      </div>
+                <>
+                  {urgentes.length > 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {urgentes.map(renderTarjeta)}
                     </div>
-                  ))}
-                </div>
+                  ) : (
+                    <div className="text-center py-6 bg-exito-suave rounded-2xl border border-exito/20">
+                      <p className="text-exito text-sm font-bold">Nada urgente por pedir hoy</p>
+                    </div>
+                  )}
+                  {calmas.length > 0 && (
+                    <details className="mt-4 group/calmas">
+                      <summary className="cursor-pointer select-none text-xs font-bold text-tinta bg-slate-100 hover:bg-slate-200 rounded-2xl px-4 py-3 transition-colors">
+                        Para reponer con calma ({calmas.length}) <span className="text-slate-500 font-medium">· están bajo tu stock de seguridad pero te alcanzan para varios días</span>
+                      </summary>
+                      {isAdmin && calmasPedibles.length > 0 && (
+                        <div className="mt-3 flex justify-end">
+                          <button
+                            type="button"
+                            disabled={pedidoEnCurso !== null}
+                            onClick={() => agregarAlPedido(calmasPedibles, 'calmas')}
+                            className="flex items-center gap-2 text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-50 px-4 py-2 rounded-lg transition-colors"
+                          >
+                            <ShoppingCart size={14} /> Agregar estas {calmasPedibles.length} a un pedido
+                          </button>
+                        </div>
+                      )}
+                      <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {calmas.map(renderTarjeta)}
+                      </div>
+                    </details>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                   <p className="text-slate-500 text-sm font-bold">Sistemas Estables</p>
@@ -268,6 +504,19 @@ const DashboardPage = () => {
             </div>
           </div>
         </section>
+
+        <ConfirmDialog
+          isOpen={confirmarTodo}
+          title="Armar pedido con todo lo sugerido"
+          message={<>Se creará un borrador por proveedor ({resumenPedido.proveedores}) con {pendientesDePedido.length} producto(s), por un total estimado de <b>${Math.round(resumenPedido.total).toLocaleString('es-CO')}</b>. No se envía nada al proveedor: lo revisas y apruebas en Proveedores.</>}
+          highlightColor="azul"
+          confirmText="Sí, armar borrador"
+          cancelText="Cancelar"
+          onConfirm={() => agregarAlPedido(pendientesDePedido, 'todo')}
+          onCancel={() => setConfirmarTodo(false)}
+          loading={pedidoEnCurso === 'todo'}
+          icon="check"
+        />
 
         {/* Estado del Inventario */}
         <section className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 self-start">
@@ -394,7 +643,7 @@ const DashboardPage = () => {
       {/* STRATEGY MODAL */}
       {showModal && selectedPromo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setShowModal(false)} role="presentation" aria-hidden="true"></div>
+          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" onClick={() => setShowModal(false)} role="presentation" aria-hidden="true"></div>
           <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-lg relative z-10 overflow-hidden animate-in zoom-in-95 duration-200 text-tinta">
             <div className="bg-azul p-8 text-white relative">
               <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={64} /></div>
@@ -477,7 +726,7 @@ const DashboardPage = () => {
             <p className="text-lg md:text-xl font-medium text-white/90 leading-relaxed mb-10">{welcomeAlert.message}</p>
             <button
               onClick={() => setWelcomeAlert(null)}
-              className="w-full py-5 bg-tinta hover:bg-slate-800 active:scale-95 text-white rounded-lg font-bold transition-all shadow-lg text-sm"
+              className="w-full py-5 bg-menu hover:bg-slate-800 active:scale-95 text-white rounded-lg font-bold transition-all shadow-lg text-sm"
             >
               Entendido
             </button>

@@ -54,7 +54,7 @@ const ProductosPage = () => {
           onClick={() => navigate('/alertas')}
           className={`w-full text-left group relative flex flex-col md:flex-row items-center gap-6 p-8 rounded-lg mb-10 shadow-lg border animate-fade-in cursor-pointer transition-colors transition-transform transition-shadow transform outline-none focus:ring-4 focus:ring-azul/50 ${alert.isCritical ? 'bg-rose-50/80 border-peligro-suave text-rose-800' : 'bg-amber-50/80 border-aviso-suave text-amber-800'}`}
         >
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-peligro-suave border-white text-peligro animate-bounce' : 'bg-aviso-suave border-white text-aviso rotate-12'}`}>
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 ${alert.isCritical ? 'bg-peligro-suave border-white text-peligro' : 'bg-aviso-suave border-white text-aviso rotate-12'}`}>
             {alert.isCritical ? <AlertCircle size={32} /> : <AlertTriangle size={32} />}
           </div>
           <div className="flex-1 text-center md:text-left">
@@ -161,7 +161,7 @@ const ProductosPage = () => {
       {/* Modal de Vinculación de Código de Barras */}
       {linkModalOpen && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setLinkModalOpen(false)}></div>
+          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" onClick={() => setLinkModalOpen(false)}></div>
           <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-lg relative z-10 animate-scale-in">
              <h3 className="titular text-2xl text-tinta mb-4">Código Escaneado</h3>
              <p className="text-slate-600 font-bold mb-6">Hemos detectado el código <span className="bg-slate-100 text-tinta px-2 py-1 rounded font-mono">{linkBarcodeCode}</span>, pero no está registrado.</p>

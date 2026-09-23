@@ -13,7 +13,7 @@ const ProveedorFormModal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={onClose}></div>
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-lg relative z-20 animate-scale-in border border-slate-100 overflow-hidden">
          <div className="p-8 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <h3 className="titular text-2xl text-tinta">

@@ -118,7 +118,7 @@ const AprendizajePage = () => {
             
             {/* ───── HEADER PREMIUM ───── */}
             <div className="p-4 lg:p-6">
-                <div data-surface="dark" className="relative bg-tinta rounded-2xl shadow-lg overflow-hidden">
+                <div data-surface="dark" className="relative bg-menu rounded-2xl shadow-lg overflow-hidden">
                     <div className="relative z-10 px-8 lg:px-12 py-10 lg:py-12 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                         <div className="flex-1 max-w-2xl">
                             <div className="flex items-center gap-3 mb-5">
@@ -139,14 +139,14 @@ const AprendizajePage = () => {
                             {/* Accuracy Card with glow */}
                             <div className="relative group">
                                 <div className="relative bg-slate-800/90 border border-white/10 p-6 rounded-2xl shadow-lg text-center">
-                                    <p className="text-xs font-bold text-slate-400 mb-3">Nivel de Acierto</p>
+                                    <p className="text-xs font-bold text-slate-200 mb-3">Nivel de Acierto</p>
                                     <div className="flex items-baseline justify-center gap-1">
                                         <span className="text-5xl font-bold text-white">
                                             {globalAccuracy}
                                         </span>
-                                        <span className="text-2xl font-bold text-slate-400">%</span>
+                                        <span className="text-2xl font-bold text-slate-200">%</span>
                                     </div>
-                                    <p className="text-xs text-slate-400 mt-3 font-medium">
+                                    <p className="text-xs text-slate-200 mt-3 font-medium">
                                         {metrics.global.totalEval === 0 
                                             ? 'Sin evaluaciones aún' 
                                             : `${metrics.global.totalEval} productos evaluados`}
@@ -284,7 +284,7 @@ const AprendizajePage = () => {
             {/* ───── MODAL DE EVALUACIÓN ───── */}
             {modalOpen && createPortal(
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setModalOpen(false)} role="presentation" aria-hidden="true"></div>
+                    <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" onClick={() => setModalOpen(false)} role="presentation" aria-hidden="true"></div>
                     <div className="bg-white rounded-2xl w-full max-w-lg shadow-lg animate-scale-in relative z-10 flex flex-col overflow-hidden max-h-[90vh]">
                         <div className="p-8 bg-azul text-white flex justify-between items-start">
                             <div>

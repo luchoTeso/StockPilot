@@ -194,7 +194,7 @@ const CarteraPage = () => {
 
       {/* Modal Nuevo Cliente */}
       {isClientModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-tinta/45 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
             <h3 className="titular text-xl mb-4">Registrar Nuevo Cliente</h3>
             <form onSubmit={handleCreateClient} className="space-y-4">
@@ -221,7 +221,7 @@ const CarteraPage = () => {
 
       {/* Modal Registrar Abono */}
       {isAbonoModalOpen && selectedClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-tinta/45 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg">
             <h3 className="titular text-xl mb-2">Registrar Abono</h3>
             <p className="text-slate-500 font-bold mb-4">Cliente: <span className="text-tinta">{selectedClient.nombre}</span></p>
@@ -248,7 +248,7 @@ const CarteraPage = () => {
 
       {/* Modal IA Riesgo */}
       {isAiModalOpen && selectedClient && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-tinta/45 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-lg border border-slate-100">
              <div className="flex justify-between items-center mb-6">
                 <h3 className="titular text-2xl text-tinta flex items-center gap-2">
@@ -298,7 +298,7 @@ const CarteraPage = () => {
              )}
              
              {!loadingAi && (
-                <button onClick={() => setIsAiModalOpen(false)} className="w-full mt-6 py-4 bg-tinta text-white rounded-lg font-bold hover:bg-slate-800">Cerrar</button>
+                <button onClick={() => setIsAiModalOpen(false)} className="w-full mt-6 py-4 bg-menu text-white rounded-lg font-bold hover:bg-slate-800">Cerrar</button>
              )}
           </div>
         </div>

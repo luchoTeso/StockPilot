@@ -3,6 +3,7 @@
 @theme {
   /* ── Marca ── */
   --color-tinta: #14173F;
+  --color-menu: #2B3486;      /* tinta aclarada: barra lateral */
   --color-tinta-2: #3A3F6E;          /* texto secundario */
   --color-azul: #252C93;             /* acción principal en superficies claras */
   --color-azul-hondo: #1C2277;       /* hover / active del azul */

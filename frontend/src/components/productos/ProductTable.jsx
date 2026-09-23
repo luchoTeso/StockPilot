@@ -1,4 +1,4 @@
-import { DollarSign, Package, Barcode, Zap } from 'lucide-react';
+import { DollarSign, Package, Barcode, Zap, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ErrorState from '../common/ErrorState';
 
@@ -35,7 +35,7 @@ const ProductTable = ({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-100 text-xs font-bold text-slate-500 bg-slate-50/50">
-              <th className="p-6">Producto / Identificación</th>
+              <th className="p-6 min-w-[220px]">Producto / Identificación</th>
               <th className="hidden lg:table-cell p-6">Categoría</th>
               <th className="p-6 text-center">Disponibilidad</th>
               <th className="hidden sm:table-cell p-6 text-center">Estado</th>
@@ -71,8 +71,8 @@ const ProductTable = ({
 
                 return (
                   <tr key={p.id_producto} className={`group transition-colors hover:bg-slate-50 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
-                    <td className="p-6">
-                       <p className="font-bold text-tinta text-sm">{p.nombre_producto}</p>
+                    <td className="p-6 min-w-[220px] max-w-xs">
+                       <p className="font-bold text-tinta text-sm line-clamp-2" title={p.nombre_producto}>{p.nombre_producto}</p>
                        <div className="flex flex-wrap items-center gap-2 mt-1">
                          {(p.codigo_barras || p.codigo) && (
                            <span className="text-xs font-bold text-azul font-mono bg-azul/10 px-2 py-0.5 rounded border border-azul/30 flex items-center gap-1">
@@ -91,12 +91,22 @@ const ProductTable = ({
                     </td>
                     <td className="p-6 text-center">
                       <div className="flex items-center justify-center gap-2">
-                         <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
-                         {isCritico && <button onClick={() => navigate('/analisis-detallado')} title="Riesgo de agotamiento inminente" className="bg-peligro-suave text-peligro text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 transition-colors transition-transform cursor-pointer">Agotado</button>}
-                         {isBajo && <button onClick={() => navigate('/analisis-detallado')} title="El stock ha bajado del nivel seguro para operar" className="bg-aviso-suave text-aviso text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-amber-200 hover:bg-amber-200 transition-colors transition-transform cursor-pointer">Pedir Más</button>}
+                         <span className="flex flex-col items-center leading-tight">
+                           <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
+                           <span className="text-xs text-slate-500 font-bold">ud</span>
+                         </span>
+                         {isCritico && (
+                           <button onClick={() => navigate(`/analisis-detallado?producto=${p.id_producto}`)} title="Ver más información y qué se recomienda hacer" className="bg-peligro-suave text-peligro text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 transition-colors transition-transform cursor-pointer flex items-center gap-1">
+                             {p.cantidad === 0 ? 'Agotado' : 'Por agotarse'} <ArrowRight size={10} />
+                           </button>
+                         )}
+                         {isBajo && (
+                           <button onClick={() => navigate(`/analisis-detallado?producto=${p.id_producto}`)} title="Ver más información y qué se recomienda hacer" className="bg-aviso-suave text-aviso text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-amber-200 hover:bg-amber-200 transition-colors transition-transform cursor-pointer flex items-center gap-1">
+                             Pedir Más <ArrowRight size={10} />
+                           </button>
+                         )}
                          {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-exito text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-exito-suave">Suficiente</span>}
                       </div>
-                      <p className="text-xs text-slate-500 font-bold mt-1">ud</p>
                     </td>
                     <td className="hidden sm:table-cell p-6 text-center">
                       <span className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm ${isActive ? 'bg-emerald-50 text-exito border border-exito-suave' : 'bg-rose-50 text-peligro border border-peligro-suave'}`}>

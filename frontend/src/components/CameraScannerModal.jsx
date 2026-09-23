@@ -227,7 +227,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-tinta/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+    <div className="fixed inset-0 bg-tinta/45 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200 border border-slate-100">
         
         {/* Header */}
@@ -267,7 +267,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScan }) => {
               <div className="text-peligro text-center font-bold p-4 text-sm bg-rose-50 border border-peligro-suave rounded-2xl shadow-lg">{error}</div>
             </div>
           )}
-          <div className="w-full min-h-[300px] rounded-2xl overflow-hidden border-2 border-dashed border-azul/30 bg-tinta relative">
+          <div className="w-full min-h-[300px] rounded-2xl overflow-hidden border-2 border-dashed border-azul/30 bg-menu relative">
             <video 
               ref={videoRef}
               className="w-full h-full object-cover absolute inset-0"

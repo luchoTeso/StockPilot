@@ -76,7 +76,7 @@ const PaymentModal = ({ isOpen, onClose, total, onConfirm, loading, user }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-tinta/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-tinta/45 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg overflow-hidden border border-slate-100">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
           <h3 className="titular text-2xl text-tinta">Completar Pago</h3>

@@ -126,7 +126,7 @@ const AuditoriaPage = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-tinta text-xs text-white font-bold">
+              <tr className="bg-menu text-xs text-white font-bold">
                 <th className="p-6 pl-8 rounded-tl-2xl text-left">Fecha y Hora</th>
                 <th className="p-6 text-left">Origen</th>
                 <th className="p-6 text-left">Productos</th>
@@ -223,7 +223,7 @@ const AuditoriaPage = () => {
     {/* Modal Detalle — portal directo a document.body para evitar stacking context del sidebar */}
     {detailModal && createPortal(
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-tinta/60 backdrop-blur-sm" onClick={() => setDetailModal(null)} role="presentation" aria-hidden="true"></div>
+          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" onClick={() => setDetailModal(null)} role="presentation" aria-hidden="true"></div>
           <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-lg animate-scale-in relative z-10" onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-azul/10 rounded-t-2xl">
@@ -303,7 +303,7 @@ const AuditoriaPage = () => {
                   <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
                     <table className="w-full text-left text-sm">
                       <thead>
-                    <tr className="bg-tinta text-xs text-white font-bold">
+                    <tr className="bg-menu text-xs text-white font-bold">
                       <th className="px-4 py-3">Producto</th>
                       <th className="px-4 py-3 text-center">Base</th>
                       <th className="px-4 py-3 text-center">Ajuste IA</th>

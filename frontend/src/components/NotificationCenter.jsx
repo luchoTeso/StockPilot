@@ -186,24 +186,42 @@ const NotificationCenter = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleMarkNotifRead = async (id) => {
-        try {
-            await axios.patch(`/api/notificaciones/${id}/read`);
-            setUserNotifs(prev => prev.filter(n => n.id_notificacion !== id));
-            setUserNotifCount(prev => Math.max(0, prev - 1));
-        } catch (err) {
-            console.error('Error marcando notificación como leída:', err);
-        }
+    // Se desliza hacia la derecha (el lado del panel, y el que apunta hacia afuera de la pantalla)
+    // y se desvanece; solo cuando termina la animación se marca leída de verdad y se quita de la lista.
+    const NOTIF_EXIT_MS = 280;
+    const [leavingIds, setLeavingIds] = useState(() => new Set());
+
+    const handleMarkNotifRead = (id) => {
+        if (leavingIds.has(id)) return;
+        setLeavingIds(prev => new Set(prev).add(id));
+        setTimeout(async () => {
+            try {
+                await axios.patch(`/api/notificaciones/${id}/read`);
+            } catch (err) {
+                console.error('Error marcando notificación como leída:', err);
+            } finally {
+                setUserNotifs(prev => prev.filter(n => n.id_notificacion !== id));
+                setUserNotifCount(prev => Math.max(0, prev - 1));
+                setLeavingIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+            }
+        }, NOTIF_EXIT_MS);
     };
 
-    const handleMarkAllRead = async () => {
-        try {
-            await axios.patch('/api/notificaciones/read-all');
-            setUserNotifs([]);
-            setUserNotifCount(0);
-        } catch (err) {
-            console.error('Error marcando todas como leídas:', err);
-        }
+    const handleMarkAllRead = () => {
+        const ids = userNotifs.map(n => n.id_notificacion);
+        if (ids.length === 0) return;
+        setLeavingIds(prev => { const next = new Set(prev); ids.forEach(id => next.add(id)); return next; });
+        setTimeout(async () => {
+            try {
+                await axios.patch('/api/notificaciones/read-all');
+            } catch (err) {
+                console.error('Error marcando todas como leídas:', err);
+            } finally {
+                setUserNotifs([]);
+                setUserNotifCount(0);
+                setLeavingIds(new Set());
+            }
+        }, NOTIF_EXIT_MS);
     };
 
     const totalBadge = stats.total + userNotifCount;
@@ -248,7 +266,7 @@ const NotificationCenter = () => {
                         </span>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto scrollbar-premium min-h-0">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-premium min-h-0">
                         {loading && alerts.length === 0 && userNotifs.length === 0 ? (
                             <div className="p-12 text-center">
                                 <div className="w-10 h-10 border-4 border-azul border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -275,7 +293,9 @@ const NotificationCenter = () => {
                                                 key={`notif-${notif.id_notificacion}`}
                                                 onClick={() => handleMarkNotifRead(notif.id_notificacion)}
                                                 type="button"
-                                                className="w-full text-left p-5 hover:bg-white hover:shadow-inner transition-colors transition-shadow cursor-pointer group border-l-4 border-transparent hover:border-azul"
+                                                className={`w-full text-left p-5 hover:bg-white hover:shadow-inner cursor-pointer group border-l-4 border-transparent hover:border-azul transition-all duration-300 ease-in ${
+                                                    leavingIds.has(notif.id_notificacion) ? 'translate-x-full opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'
+                                                }`}
                                             >
                                                 <div className="flex gap-4">
                                                     <div className={`shrink-0 w-10 h-10 rounded-lg border flex items-center justify-center shadow-sm ${getNotifStyles(notif.tipo, notif.datos_json)}`}>

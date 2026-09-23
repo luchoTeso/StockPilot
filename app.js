@@ -37,6 +37,7 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
+const ordenBorradorRoutes = require('./routes/ordenBorradorRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
@@ -181,6 +182,7 @@ app.use('/', tenderoRoutes);
 app.use('/', exportRoutes);
 app.use('/', seedRoutes);
 app.use('/', inventoryRoutes);
+app.use('/', ordenBorradorRoutes); // antes que supplierRoutes: /api/ordenes/borradores/resumen no debe caer en /api/ordenes/:ordenId
 app.use('/', supplierRoutes);
 app.use('/api/alertas', alertRoutes);
 app.use('/api/auditoria', auditRoutes);
