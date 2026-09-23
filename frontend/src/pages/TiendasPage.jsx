@@ -413,7 +413,7 @@ const TiendasPage = () => {
                   <div className="text-center py-8 px-4 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
                     <Users size={32} className="mx-auto text-slate-300 mb-2" />
                     <p className="text-slate-600 font-bold text-sm">No hay colaboradores vinculados directamente a esta sucursal</p>
-                    <p className="text-slate-500 text-xs mt-1">Puedes registrar cajeros y tenderos para esta sede desde el módulo de Colaboradores.</p>
+                    <p className="text-slate-500 text-xs mt-1">Puedes registrar colaboradores para esta sede desde el módulo de Colaboradores.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

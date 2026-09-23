@@ -252,7 +252,7 @@ El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de c
 | RF-072 | El sistema debe mantener un saldo pendiente general por cliente, calculado de forma dinámica como la suma de las compras fiadas menos la suma de los abonos pagados        | Alta | ✅ |
 | RF-073 | El sistema debe permitir registrar abonos (pagos parciales o totales) al saldo de un cliente y sumar el dinero recibido en efectivo a la caja activa del usuario         | Alta | ✅ |
 | RF-074 | El sistema debe contar con un motor de IA que evalúe el historial de pagos y compras fiadas del cliente para generar un nivel de riesgo, clasificación y sugerencia comercial | Alta | ✅ |
-| RF-075 | El sistema debe bloquear el acceso a la interfaz de Cartera y al método de pago "Fiado" para el rol de Tendero, siendo funcionalidad exclusiva del Administrador           | Alta | ✅ |
+| RF-075 | El sistema debe bloquear el acceso a la interfaz de Cartera y al método de pago "Fiado" para el rol de Colaborador, siendo funcionalidad exclusiva del Administrador           | Alta | ✅ |
 
 ---
 
@@ -297,7 +297,7 @@ El sistema centraliza las ventas (Caja Rápida), el inventario, los egresos de c
 | ID      | Descripción                                                                                                                                                             | Prioridad |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
 | RNF-011 | El sistema debe funcionar correctamente en Chrome, Edge y Firefox (últimas 2 versiones)                                                                                 | Alta      |
-| RNF-012 | El servidor debe reiniciarse automáticamente ante cambios en desarrollo (Nodemon) sin perder datos persistidos en SQLite                                                | Media     |
+| RNF-012 | El servidor debe reiniciarse automáticamente ante cambios en desarrollo (Nodemon) sin perder datos persistidos en la base de datos PostgreSQL                                                | Media     |
 
 ---
 

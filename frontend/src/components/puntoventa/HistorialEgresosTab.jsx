@@ -107,7 +107,7 @@ const HistorialEgresosTab = ({ isSessionActive, setIsCashRegisterOpen, user: pro
 
              <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
                <div className="flex flex-col">
-                 <label className="text-xs font-bold text-slate-500">Límite para Tenderos</label>
+                 <label className="text-xs font-bold text-slate-500">Límite para Colaboradores</label>
                  <div className="relative mt-1">
                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
                    <input 
