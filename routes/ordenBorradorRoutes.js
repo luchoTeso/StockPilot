@@ -10,4 +10,7 @@ router.patch('/api/ordenes/:ordenId/items/:idProducto', requireLogin, requireAdm
 router.delete('/api/ordenes/:ordenId/items/:idProducto', requireLogin, requireAdmin, ctrl.quitarLinea);
 router.patch('/api/productos/:id/proveedor', requireLogin, requireAdmin, ctrl.asignarProveedor);
 
+// Un tendero pide un producto al administrador (cualquier usuario con sesión, no solo administrador)
+router.post('/api/ordenes/borrador/solicitar', requireLogin, ctrl.solicitarProducto);
+
 module.exports = router;

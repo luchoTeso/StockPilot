@@ -223,7 +223,9 @@ CREATE TABLE IF NOT EXISTS Ordenes_Detalle (
     costo_unitario NUMERIC(15, 2),
     sugerencia_ia INTEGER,
     urgencia VARCHAR(20),
-    costo_estimado BOOLEAN DEFAULT FALSE
+    costo_estimado BOOLEAN DEFAULT FALSE,
+    cantidad_recibida INTEGER,
+    solicitado_por INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL
 );
 
 -- 10. TABLA ALERTAS

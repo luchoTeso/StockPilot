@@ -357,6 +357,29 @@ export const useProveedoresPage = () => {
     }
   };
 
+  const [completandoOrden, setCompletandoOrden] = useState(false);
+
+  /**
+   * Confirma la recepción de mercancía (plan 13, Fase E): cierra la orden y suma el stock recibido.
+   * `onDone` limpia el formulario de recepción del componente al terminar (con éxito o sin él).
+   */
+  const handleCompletarRecepcion = async (idOrden, items, onDone) => {
+    setCompletandoOrden(true);
+    try {
+      const res = await axios.post(`/api/ordenes/${idOrden}/completar`, { items });
+      if (res.data.success) {
+        toast.success('Recepción confirmada: el inventario ya se actualizó.');
+        setShowHistoryDetail(null);
+        fetchHistory();
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'No se pudo confirmar la recepción.');
+    } finally {
+      setCompletandoOrden(false);
+      onDone?.();
+    }
+  };
+
   const handleOpenSupplierModal = (supplier = null) => {
     if (supplier) {
       setIsEditingSupplier(true);
@@ -460,6 +483,8 @@ export const useProveedoresPage = () => {
     handleUpdateEstado,
     savingItem,
     handleEditOrderItem,
-    handleRemoveOrderItem
+    handleRemoveOrderItem,
+    completandoOrden,
+    handleCompletarRecepcion
   };
 };

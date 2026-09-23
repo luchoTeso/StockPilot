@@ -24,7 +24,7 @@ const ProveedoresPage = () => {
     fetchOrderDetail, submitFinalOrder, handleSendToSupplier,
     handleRegisterPayment, confirmPayment, handleOpenSupplierModal, handleSaveSupplier,
     handleDeleteSupplier, handleOpenForecast, requestCopilot, handleToggleItem, handleEditQty, handleUpdateEstado,
-    savingItem, handleEditOrderItem, handleRemoveOrderItem
+    savingItem, handleEditOrderItem, handleRemoveOrderItem, completandoOrden, handleCompletarRecepcion
   } = useProveedoresPage();
 
   // Desde el Consejero IA: /proveedores?orden=ID abre el detalle de ese borrador (una sola vez)
@@ -106,6 +106,8 @@ const ProveedoresPage = () => {
         savingItem={savingItem}
         onEditItem={handleEditOrderItem}
         onRemoveItem={handleRemoveOrderItem}
+        completandoOrden={completandoOrden}
+        onCompletarRecepcion={handleCompletarRecepcion}
       />
 
       <ProveedorFormModal

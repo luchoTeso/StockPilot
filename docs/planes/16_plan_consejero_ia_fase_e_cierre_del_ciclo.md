@@ -1,7 +1,7 @@
 # Plan 16: Fase E — Cierre del ciclo (recepción de mercancía y aprendizaje)
 
-**Estado:** Revisado, sin implementar. Documento original de `implementation_plan.md`, entregado por el usuario, movido aquí y anotado.
-**Fecha de revisión:** 2026-09-23
+**Estado:** Implementado en local (recepción de mercancía y solicitudes del tendero), sin subir. El punto 2 del documento original ("Aprendizaje de la IA") no se implementó — ver sección 1.
+**Fecha de revisión:** 2026-09-23 · **Fecha de implementación:** 2026-09-23
 **Depende de:** plan 13 (Fases A a D, ya implementadas en local).
 
 ---
@@ -67,9 +67,30 @@ Como ya se hizo en las Fases B y en el plan 15 (Fiados), el esquema vive en dos 
 - Prueba unitaria para el nuevo endpoint de recepción con los mismos casos que ya tiene `tests/business_logic/ordenesBorrador` (por ahora inline en `reposicion.test.js`): cantidad recibida igual, menor y mayor a la pedida; producto ya sin stock de seguridad tras recibir menos de lo esperado.
 - Actualizar `docs/planes/13_plan_consejero_ia_a_borrador_de_orden.md` (sección "Estado") cuando esta fase quede implementada, como se hizo con las Fases A-D.
 
-## 7. Siguiente paso
+## 7. Decisiones tomadas (2026-09-23) e implementación
 
-Falta tu respuesta a las preguntas de la sección 5 (sobre todo la 3 y la 4, que no estaban en el documento original) antes de escribir código. Con eso, la implementación seguiría el mismo patrón de las fases anteriores: rama local propia, sin subir a `main` hasta que lo indiques.
+El usuario pidió decidir las preguntas de la sección 5 con criterio de dueño de negocio: control total, mínima fricción para el tendero, el copiloto llevando el peso de las decisiones.
+
+1. **¿Desde qué estado se puede completar?** `Aprobada` o `Enviada`. Muchas compras se pagan y recogen en persona sin pasar nunca por el envío formal del correo; exigir "Enviada" habría sido un paso artificial. `Borrador`, `Pendiente` y `Rechazada` no se pueden completar (el control real está en que nada entra al inventario sin haber sido antes aprobado por el administrador).
+2. **¿El proveedor cobra por lo pedido o por lo recibido?** Por lo recibido. Al confirmar la recepción, `presupuesto_total` de la orden se recalcula con las cantidades reales (`cantidad_recibida × costo_unitario`), no con lo pedido. Así el saldo pendiente de Pagos siempre refleja lo que de verdad hay que pagar. Si el proveedor igual cobrara el pedido completo aunque falte mercancía, es un caso de negociación caso por caso: el administrador puede ajustar el pago manualmente en Pagos, como ya podía hacer antes.
+3. **¿La cantidad que pide el tendero es fija o editable?** Fija, la que ya calculó el Consejero. El tendero no decide números: aprieta un botón y el administrador revisa y ajusta al aprobar, igual que con las tarjetas que arma el propio administrador.
+
+**Recepción de mercancía** (`controllers/suppliersController.js` → `completarRecepcion`, `POST /api/ordenes/:ordenId/completar`, solo administrador): transacción única — bloquea la orden, valida que las líneas pertenezcan a ella, actualiza `Ordenes_Detalle.cantidad_recibida`, suma el stock recibido a `Productos.cantidad`, inserta un `MovimientosStock` tipo `Entrada` por cada línea con mercancía (`observacion = "Orden de Compra #N"`), recalcula `presupuesto_total`/`total_estimado` con lo recibido y pasa la orden a `Completada`. `PATCH /api/ordenes/:id/estado` ahora rechaza `estado: 'Completada'` (hay que usar este endpoint) y de paso guarda `fecha_aprobacion` al aprobar (el bug de la sección 2 del plan 13). En `OrdenesHistory.jsx`, una orden `Aprobada` o `Enviada` muestra "¿Llegó el pedido? Registrar recepción", que abre un formulario con la cantidad pedida precargada y editable por línea; el texto aclara que lo que falte lo volverá a sugerir el Consejero.
+
+**Solicitudes del tendero** (`controllers/ordenBorradorController.js` → `solicitarProducto`, `POST /api/ordenes/borrador/solicitar`, cualquier sesión — no solo administrador): un producto a la vez, con la cantidad que ya trae la recomendación (no la decide el llamante), se suma al borrador abierto del proveedor (o lo crea) marcado con `solicitado_por`; si el producto ya estaba en un borrador, responde 409 en vez de duplicar o pisar la cantidad. Avisa a los administradores de la tienda con `Notification.notifyAdmins` (nuevo, mismo mecanismo que ya usaba `broadcast` para avisar a los tenderos, ahora también hacia el otro lado). En el Dashboard, la tarjeta del Consejero para un tendero (`!isAdmin`) muestra "Solicitar al Administrador" en vez de "Agregar al pedido"; tras solicitar, muestra "Solicitado ✓" (solo dura la sesión del navegador: no hay un endpoint de resumen para tenderos, a propósito, para no exponerles el estado financiero del borrador). En `OrdenesHistory.jsx`, cualquier línea con `solicitado_por` se ve con la insignia "Solicitado por {nombre}" (`getOrderDetail` ahora hace `LEFT JOIN Usuarios`).
+
+**Esquema:** `Ordenes_Detalle` gana `cantidad_recibida INTEGER` y `solicitado_por INTEGER REFERENCES Usuarios`, en `config/database.js` (auto-migración) y en `database/init_pg.sql` (instalación nueva).
+
+**Verificación real (Playwright, sesión de administrador, sin tocar la BD a mano):**
+- `PATCH /estado` con `Completada` → 400 (hay que usar `/completar`).
+- Orden de prueba creada y aprobada → `fecha_aprobacion` quedó guardada.
+- Recepción parcial (se simuló que faltó 1 unidad de lo pedido): el stock del producto subió exactamente lo recibido, `cantidad_recibida` quedó guardada, la orden pasó a `Completada` y el `presupuesto_total` se ajustó a lo realmente recibido. No se puede volver a completarla.
+- `solicitarProducto`: creó la línea marcada `solicitado_por`, un segundo intento sobre el mismo producto respondió 409, llegó la notificación al administrador, y la insignia "Solicitado por" se ve en el detalle. La línea de prueba se quitó al terminar.
+- Lint y build del frontend en 0, 155 pruebas automatizadas en verde.
+- No se pudo probar en vivo que un tendero vea "Solicitar" y no "Agregar" (no hay credenciales de una cuenta Tendero en esta sesión); se verificó por revisión de código (la rama `!isAdmin`/`isAdmin` en `DashboardPage.jsx`).
+- Al probar se encontró un borrador #7 ya existente en la tienda de prueba (Distribuidora Global: Coca-Cola, Pan Tajado, Arroz Diana, Pasta Doria, ~$991.931) esperando aprobación — no se creó en esta sesión de trabajo; no se tocó salvo por la línea de prueba de la solicitud, que se agregó y se quitó de nuevo.
+
+**Pendiente, fuera de esta implementación:** el punto 2 original ("Aprendizaje de la IA") no se implementó, según lo explicado en la sección 1.
 
 ---
 

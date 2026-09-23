@@ -25,6 +25,9 @@ router.get('/api/ordenes/historial', requireLogin, requireAdmin, suppliersContro
 router.get('/api/ordenes/:ordenId', requireLogin, requireAdmin, suppliersController.getOrderDetail);
 router.patch('/api/ordenes/:ordenId/estado', requireLogin, requireAdmin, suppliersController.updateOrderStatus);
 
+// Recepción de mercancía: cierra la orden y suma el stock recibido (Fase E del plan 13)
+router.post('/api/ordenes/:ordenId/completar', requireLogin, requireAdmin, suppliersController.completarRecepcion);
+
 // Registro de Pagos (Abonos)
 router.post('/api/proveedores/ordenes/:ordenId/pay', requireLogin, requireAdmin, suppliersController.registerPayment);
 

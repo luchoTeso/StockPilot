@@ -34,6 +34,9 @@ const DashboardPage = () => {
   const [eligiendoProveedor, setEligiendoProveedor] = useState(null); // id_producto en edición
   const [proveedorElegido, setProveedorElegido] = useState('');
   const [asignandoProveedor, setAsignandoProveedor] = useState(false);
+  // Solicitudes del tendero al administrador (plan 13, Fase E): solo se recuerdan en esta sesión
+  const [solicitudEnCurso, setSolicitudEnCurso] = useState(null); // id_producto
+  const [solicitados, setSolicitados] = useState(() => new Set());
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingPromos, setLoadingPromos] = useState(true);
@@ -219,6 +222,25 @@ const DashboardPage = () => {
     }
   };
 
+  // El tendero no decide cantidades: pide la que ya calculó el Consejero y el administrador la revisa
+  const solicitarAlAdmin = async (rec) => {
+    setSolicitudEnCurso(rec.id_producto);
+    try {
+      await axios.post('/api/ordenes/borrador/solicitar', { id_producto: rec.id_producto, cantidad: Number(rec.final), urgencia: rec.urgencia });
+      setSolicitados((prev) => new Set(prev).add(rec.id_producto));
+      toast.success('Se avisó al administrador. Lo verá en Proveedores.');
+    } catch (e) {
+      if (e.response?.status === 409) {
+        setSolicitados((prev) => new Set(prev).add(rec.id_producto));
+        toast.info('Ya estaba pedido; el administrador lo revisará en Proveedores.');
+      } else {
+        toast.error(e.response?.data?.error || 'No se pudo enviar la solicitud.');
+      }
+    } finally {
+      setSolicitudEnCurso(null);
+    }
+  };
+
   const chipUrgencia = (u) => (u === 'Pide hoy' ? 'bg-peligro-suave text-peligro border-peligro/30' : u === 'Esta semana' ? 'bg-aviso-suave text-aviso border-aviso/30' : 'bg-slate-100 text-slate-600 border-slate-200');
 
   const renderTarjeta = (rec) => (
@@ -249,6 +271,24 @@ const DashboardPage = () => {
                             style={{ width: `${rec.confidence}%` }}
                           ></div>
                         </div>
+                        {!isAdmin && rec.id_producto && (
+                          solicitados.has(rec.id_producto) ? (
+                            <p className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-exito bg-exito-suave border border-exito/20 rounded-lg px-3 py-2">
+                              <Check size={14} /> Solicitado: el administrador lo verá en Proveedores
+                            </p>
+                          ) : rec.id_proveedor ? (
+                            <button
+                              type="button"
+                              disabled={solicitudEnCurso !== null || !esPedible(rec)}
+                              onClick={() => solicitarAlAdmin(rec)}
+                              className="mt-3 w-full flex items-center justify-center gap-2 text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-50 rounded-lg px-3 py-2 transition-colors"
+                            >
+                              <ShoppingCart size={14} /> Solicitar al Administrador
+                            </button>
+                          ) : (
+                            <p className="mt-3 text-xs font-bold text-aviso">Sin proveedor asignado: pide al administrador que lo asigne.</p>
+                          )
+                        )}
                         {isAdmin && rec.id_producto && (
                           borradores[rec.id_producto] ? (
                             <Link to={`/proveedores?orden=${borradores[rec.id_producto].id_orden}`} className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-exito bg-exito-suave border border-exito/20 rounded-lg px-3 py-2 hover:bg-exito hover:text-white transition-colors">

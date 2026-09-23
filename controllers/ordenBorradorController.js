@@ -9,6 +9,7 @@
 const db = require('../config/database');
 const { agruparPorProveedor } = require('../utils/ordenesBorrador');
 const { costoUnitario } = require('../utils/reposicion');
+const Notification = require('../models/Notification');
 
 const MAX_ITEMS = 50;
 const MAX_CANTIDAD = 100000;
@@ -205,6 +206,94 @@ const ordenBorradorController = {
       res.json({ success: true });
     } catch (e) {
       res.status(500).json({ success: false, error: 'No se pudo asignar el proveedor.' });
+    }
+  },
+
+  /**
+   * POST /api/ordenes/borrador/solicitar (cualquier usuario con sesión, no solo administrador)
+   * Plan 13, Fase E: un tendero pide un producto de su tarjeta del Consejero. La cantidad es la que
+   * ya calculó el Consejero (no la decide el tendero); se suma al borrador del proveedor (uno igual
+   * que si lo agregara el administrador) marcada con `solicitado_por`, y nunca duplica una línea:
+   * si el producto ya está en el borrador, se le pide que hable con el administrador en vez de crear
+   * una segunda línea o pisar la cantidad que el administrador ya pudo haber ajustado.
+   */
+  solicitarProducto: async (req, res) => {
+    const tiendaId = req.session.tiendaId;
+    const userId = req.session.userId;
+    const { id_producto, cantidad, urgencia } = req.body || {};
+    if (!esEntero(id_producto) || !esEntero(cantidad) || Number(cantidad) > MAX_CANTIDAD) {
+      return res.status(400).json({ success: false, error: 'Indica un producto y una cantidad válida.' });
+    }
+    const client = await db.getClient();
+    try {
+      const { rows: prodRows } = await client.query(
+        'SELECT id_proveedor, costo_compra, precio, nombre_producto FROM Productos WHERE id_producto = $1 AND id_tienda = $2',
+        [id_producto, tiendaId]
+      );
+      if (!prodRows.length) return res.status(404).json({ success: false, error: 'Producto no encontrado.' });
+      const producto = prodRows[0];
+      if (!producto.id_proveedor) {
+        return res.status(400).json({ success: false, error: 'Este producto no tiene proveedor asignado; pide al administrador que lo asigne primero.' });
+      }
+
+      await client.query('BEGIN');
+      // Mismo bloqueo que usa el administrador: evita dos borradores del mismo proveedor a la vez
+      await client.query('SELECT pg_advisory_xact_lock($1, $2)', [tiendaId, producto.id_proveedor]);
+      const { rows: prov } = await client.query(
+        'SELECT nombre_empresa FROM Proveedores WHERE id_proveedor = $1 AND id_tienda = $2', [producto.id_proveedor, tiendaId]
+      );
+      if (!prov.length) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, error: 'Proveedor no encontrado.' }); }
+
+      const { rows: existente } = await client.query(
+        "SELECT id_orden FROM Ordenes_Compra WHERE id_tienda = $1 AND id_proveedor = $2 AND estado = 'Borrador' ORDER BY id_orden LIMIT 1",
+        [tiendaId, producto.id_proveedor]
+      );
+      let idOrden;
+      if (existente.length) {
+        idOrden = existente[0].id_orden;
+        const { rows: linea } = await client.query('SELECT 1 FROM Ordenes_Detalle WHERE id_orden = $1 AND id_producto = $2', [idOrden, id_producto]);
+        if (linea.length) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ success: false, error: 'Ese producto ya está en un pedido en borrador; pide al administrador que revise las cantidades en Proveedores.' });
+        }
+      } else {
+        const ins = await client.query(
+          "INSERT INTO Ordenes_Compra (id_tienda, id_proveedor, id_usuario, estado, origen, notas) VALUES ($1, $2, $3, 'Borrador', 'consejero', 'Incluye solicitudes de empleados') RETURNING id_orden",
+          [tiendaId, producto.id_proveedor, userId]
+        );
+        idOrden = ins.rows[0].id_orden;
+      }
+
+      const costo = costoUnitario({ costoCompra: producto.costo_compra, precio: producto.precio });
+      await client.query(
+        'INSERT INTO Ordenes_Detalle (id_orden, id_producto, cantidad_sugerida, sugerencia_ia, cantidad_final, costo_unitario, urgencia, costo_estimado, solicitado_por) VALUES ($1, $2, $3, 0, $3, $4, $5, $6, $7)',
+        [idOrden, id_producto, cantidad, costo.costo, typeof urgencia === 'string' ? urgencia.slice(0, 20) : null, costo.estimado, userId]
+      );
+      const { rows: totalRows } = await client.query(
+        'SELECT COALESCE(SUM(cantidad_final * costo_unitario), 0) AS total FROM Ordenes_Detalle WHERE id_orden = $1', [idOrden]
+      );
+      await client.query('UPDATE Ordenes_Compra SET presupuesto_total = $1, total_estimado = $1 WHERE id_orden = $2', [totalRows[0].total, idOrden]);
+      await client.query('COMMIT');
+
+      try {
+        await Notification.notifyAdmins({
+          id_tienda: tiendaId,
+          tipo: 'solicitud_producto',
+          titulo: '🙋 Solicitud de reabastecimiento',
+          mensaje: `${req.session.nombres || 'Un tendero'} solicitó ${cantidad} u. de ${producto.nombre_producto} (${prov[0].nombre_empresa}).`,
+          datos_json: { id_orden: idOrden, id_producto },
+        });
+      } catch (notifErr) {
+        console.error('⚠️ Aviso de solicitud omitido:', notifErr.message);
+      }
+
+      res.json({ success: true, id_orden: idOrden, proveedor: prov[0].nombre_empresa });
+    } catch (e) {
+      await client.query('ROLLBACK').catch(() => {});
+      console.error('❌ solicitarProducto:', e.message);
+      res.status(500).json({ success: false, error: 'No se pudo enviar la solicitud.' });
+    } finally {
+      client.release();
     }
   },
 };

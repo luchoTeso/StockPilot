@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollText, Mail, Banknote, AlertTriangle, Loader2, Trash2, Copy, FileDown, Check } from 'lucide-react';
+import { ScrollText, Mail, Banknote, AlertTriangle, Loader2, Trash2, Copy, FileDown, Check, PackageCheck, User } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useToast } from '../../context/ToastContext';
 
@@ -24,11 +24,23 @@ const OrdenesHistory = ({
   onUpdateEstado,
   savingItem,
   onEditItem,
-  onRemoveItem
+  onRemoveItem,
+  completandoOrden,
+  onCompletarRecepcion
 }) => {
   const toast = useToast();
   const [qtyDraft, setQtyDraft] = useState({});
+  const [mostrarRecepcion, setMostrarRecepcion] = useState(false);
+  const [recepcionDraft, setRecepcionDraft] = useState({});
   const esBorrador = showHistoryDetail?.estado === 'Borrador';
+  const sePuedeRecibir = showHistoryDetail?.estado === 'Aprobada' || showHistoryDetail?.estado === 'Enviada';
+
+  const cerrarDetalle = () => {
+    setShowHistoryDetail(null);
+    setQtyDraft({});
+    setMostrarRecepcion(false);
+    setRecepcionDraft({});
+  };
 
   const copiarPedido = async () => {
     try {
@@ -37,6 +49,14 @@ const OrdenesHistory = ({
     } catch {
       toast.error('No se pudo copiar. Selecciona y copia el texto manualmente.');
     }
+  };
+
+  const confirmarRecepcion = () => {
+    const items = ordenDetail.map((det) => ({
+      id_producto: det.id_producto,
+      cantidad_recibida: Number(recepcionDraft[det.id_producto] ?? det.cantidad_final),
+    }));
+    onCompletarRecepcion(showHistoryDetail.id_orden, items, () => { setMostrarRecepcion(false); setRecepcionDraft({}); });
   };
   return (
     <div className="relative z-10 pt-10 border-t border-slate-100">
@@ -128,11 +148,11 @@ const OrdenesHistory = ({
       {/* DETAIL MODAL */}
       {showHistoryDetail && createPortal(
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={() => setShowHistoryDetail(null)}></div>
+          <div className="absolute inset-0 bg-tinta/45 backdrop-blur-sm" role="presentation" aria-hidden="true" onClick={cerrarDetalle}></div>
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-lg relative z-10 overflow-y-auto animate-scale-in">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="titular text-xl text-tinta">Detalle de Orden #{showHistoryDetail.id_orden}</h2>
-              <button onClick={() => setShowHistoryDetail(null)} aria-label="Cerrar detalle" className="text-2xl text-slate-500 hover:text-rose-500 transition-colors">×</button>
+              <button onClick={cerrarDetalle} aria-label="Cerrar detalle" className="text-2xl text-slate-500 hover:text-rose-500 transition-colors">×</button>
             </div>
 
             {/* Metadata de la orden */}
@@ -160,10 +180,29 @@ const OrdenesHistory = ({
                 {ordenDetail.map(det => (
                   <div key={det.id_detalle} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
-                      <p className="text-sm font-bold text-tinta">{det.nombre_producto}</p>
-                      {!esBorrador && <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_sugerida ?? det.cantidad_final} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>}
+                      <p className="text-sm font-bold text-tinta flex items-center gap-2 flex-wrap">
+                        {det.nombre_producto}
+                        {det.solicitado_por_nombre && (
+                          <span className="text-xs font-bold text-azul bg-azul/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <User size={10} /> Solicitado por {det.solicitado_por_nombre}
+                          </span>
+                        )}
+                      </p>
+                      {!esBorrador && !mostrarRecepcion && <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_sugerida ?? det.cantidad_final} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>}
+                      {det.cantidad_recibida !== null && det.cantidad_recibida !== undefined && (
+                        <p className="text-xs font-bold text-slate-500">Recibido: <span className={Number(det.cantidad_recibida) < det.cantidad_final ? 'text-aviso' : 'text-exito'}>{det.cantidad_recibida} ud</span></p>
+                      )}
                     </div>
-                    {esBorrador ? (
+                    {mostrarRecepcion ? (
+                      <input
+                        type="number"
+                        min="0"
+                        aria-label={`Cantidad recibida de ${det.nombre_producto}`}
+                        value={recepcionDraft[det.id_producto] ?? det.cantidad_final}
+                        onChange={(e) => setRecepcionDraft((prev) => ({ ...prev, [det.id_producto]: e.target.value }))}
+                        className="w-20 p-2 text-sm font-bold text-tinta text-center bg-white border border-slate-200 rounded-lg outline-none focus:border-azul"
+                      />
+                    ) : esBorrador ? (
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
@@ -288,6 +327,41 @@ const OrdenesHistory = ({
             {showHistoryDetail.estado === 'Rechazada' && (
               <div className="p-4 border-t border-peligro-suave bg-rose-50 text-center">
                 <span className="text-xs font-bold text-peligro">✕ Orden rechazada</span>
+              </div>
+            )}
+
+            {/* Recepción de mercancía: cierra la orden y suma el stock recibido (plan 13, Fase E) */}
+            {sePuedeRecibir && !mostrarRecepcion && (
+              <div className="p-5 border-t border-slate-100 bg-slate-50">
+                <button
+                  onClick={() => setMostrarRecepcion(true)}
+                  className="w-full py-4 bg-tinta hover:bg-menu text-white rounded-lg text-xs font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <PackageCheck size={16} /> ¿Llegó el pedido? Registrar recepción
+                </button>
+              </div>
+            )}
+            {sePuedeRecibir && mostrarRecepcion && (
+              <div className="p-5 border-t border-slate-100 bg-slate-50 space-y-3">
+                <p className="text-xs font-bold text-tinta flex items-center gap-2">
+                  <PackageCheck size={14} /> Confirma cuánto llegó de cada producto (ya viene con la cantidad pedida).
+                </p>
+                <p className="text-xs text-slate-500">Si algo no llegó, pon 0 o la cantidad real: se sumará al inventario y lo que falte lo volverá a sugerir el Consejero.</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setMostrarRecepcion(false)}
+                    className="flex-1 py-3 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-500 hover:text-tinta transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={confirmarRecepcion}
+                    disabled={completandoOrden}
+                    className="flex-1 py-3 rounded-lg text-xs font-bold bg-exito text-white hover:bg-emerald-700 shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {completandoOrden ? (<><Loader2 size={14} className="animate-spin" /> Confirmando...</>) : (<><Check size={14} /> Confirmar recepción</>)}
+                  </button>
+                </div>
               </div>
             )}
           </div>

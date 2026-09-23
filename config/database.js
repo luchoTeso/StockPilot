@@ -299,6 +299,8 @@ const db = {
                 ALTER TABLE Ordenes_Compra ADD COLUMN IF NOT EXISTS origen VARCHAR(30) DEFAULT 'manual';
                 ALTER TABLE Ordenes_Detalle ADD COLUMN IF NOT EXISTS urgencia VARCHAR(20);
                 ALTER TABLE Ordenes_Detalle ADD COLUMN IF NOT EXISTS costo_estimado BOOLEAN DEFAULT FALSE;
+                ALTER TABLE Ordenes_Detalle ADD COLUMN IF NOT EXISTS cantidad_recibida INTEGER;
+                ALTER TABLE Ordenes_Detalle ADD COLUMN IF NOT EXISTS solicitado_por INTEGER REFERENCES Usuarios(id_usuario) ON DELETE SET NULL;
                 CREATE INDEX IF NOT EXISTS idx_ordenes_tienda ON Ordenes_Compra(id_tienda);
                 CREATE INDEX IF NOT EXISTS idx_ordenes_detalle_orden ON Ordenes_Detalle(id_orden);
                 CREATE INDEX IF NOT EXISTS idx_ordenes_borrador ON Ordenes_Compra(id_tienda, id_proveedor) WHERE estado = 'Borrador';

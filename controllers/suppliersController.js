@@ -1,4 +1,5 @@
 const { calcularReposicion, costoUnitario } = require('../utils/reposicion');
+const { totalOrden } = require('../utils/ordenesBorrador');
 const db = require('../config/database');
 const { OpenAI } = require('openai');
 const transporter = require('../config/mailer');
@@ -292,7 +293,15 @@ const suppliersController = {
   getOrderDetail: async (req, res) => {
     try {
       const { ordenId } = req.params;
-      const rows = await db.allAsync("SELECT d.*, p.nombre_producto FROM Ordenes_Detalle d JOIN Productos p ON d.id_producto = p.id_producto JOIN Ordenes_Compra o ON o.id_orden = d.id_orden WHERE d.id_orden = ? AND o.id_tienda = ?", [ordenId, req.session.tiendaId]);
+      const rows = await db.allAsync(
+        `SELECT d.*, p.nombre_producto, u.nombres as solicitado_por_nombre
+         FROM Ordenes_Detalle d
+         JOIN Productos p ON d.id_producto = p.id_producto
+         JOIN Ordenes_Compra o ON o.id_orden = d.id_orden
+         LEFT JOIN Usuarios u ON d.solicitado_por = u.id_usuario
+         WHERE d.id_orden = ? AND o.id_tienda = ?`,
+        [ordenId, req.session.tiendaId]
+      );
       res.json({ success: true, data: rows.map(r => ({ ...r, cantidad_final: Number(r.cantidad_final), costo_unitario: Number(r.costo_unitario) })) });
     } catch (e) {
       res.status(500).json({ success: false, error: e.message });
@@ -305,11 +314,109 @@ const suppliersController = {
       const { ordenId } = req.params;
       const tiendaId = req.session.tiendaId;
       const { estado, notas } = req.body;
-      const query = 'UPDATE Ordenes_Compra SET estado = ?, notas = COALESCE(?, notas) WHERE id_orden = ? AND id_tienda = ?';
+      // Completar una orden exige registrar lo que realmente llegó (ver completarRecepcion):
+      // por aquí no se toca el inventario, así que no se permite saltarse ese paso.
+      if (estado === 'Completada') {
+        return res.status(400).json({ success: false, error: 'Para completar una orden, confirma la recepción de mercancía (registra lo que realmente llegó).' });
+      }
+      // Al aprobar se guarda la fecha: de ella parte la evaluación diaria de precisión de la IA
+      // (feedbackController.evaluateOrderInternal), que hasta ahora dependía del respaldo por fecha de creación.
+      const query = estado === 'Aprobada'
+        ? 'UPDATE Ordenes_Compra SET estado = ?, notas = COALESCE(?, notas), fecha_aprobacion = CURRENT_TIMESTAMP WHERE id_orden = ? AND id_tienda = ?'
+        : 'UPDATE Ordenes_Compra SET estado = ?, notas = COALESCE(?, notas) WHERE id_orden = ? AND id_tienda = ?';
       await db.runAsync(query, [estado, notas || null, ordenId, tiendaId]);
       res.json({ success: true, message: `Orden #${ordenId} actualizada.` });
     } catch (e) {
       res.status(500).json({ success: false, error: e.message });
+    }
+  },
+
+  /**
+   * POST /api/ordenes/:ordenId/completar — Fase E del plan 13 (recepción de mercancía).
+   * Body: { items: [{ id_producto, cantidad_recibida }] }.
+   * Se puede completar desde 'Aprobada' o 'Enviada' (una orden puede pagarse/recogerse en persona
+   * sin pasar por el envío formal de correo). Cierre total y de una sola vez: lo que no llegó
+   * no se marca "pendiente", el Consejero lo volverá a sugerir si sigue haciendo falta.
+   * El total de la orden se recalcula con lo realmente recibido (no con lo pedido), para que el
+   * saldo pendiente de Pagos refleje la realidad.
+   */
+  completarRecepcion: async (req, res) => {
+    const client = await db.getClient();
+    try {
+      const { ordenId } = req.params;
+      const tiendaId = req.session.tiendaId;
+      const userId = req.session.userId;
+      const items = req.body && req.body.items;
+      if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ success: false, error: 'Indica la cantidad recibida de cada producto.' });
+      }
+      const limpios = [];
+      for (const it of items) {
+        const idProducto = Number(it && it.id_producto);
+        const cantidad = Number(it && it.cantidad_recibida);
+        if (!Number.isInteger(idProducto) || !Number.isInteger(cantidad) || cantidad < 0 || cantidad > 100000) {
+          return res.status(400).json({ success: false, error: 'Cada línea necesita un producto y una cantidad recibida entera (0 o más).' });
+        }
+        limpios.push({ id_producto: idProducto, cantidad_recibida: cantidad });
+      }
+
+      await client.query('BEGIN');
+      const { rows: ordenRows } = await client.query(
+        'SELECT estado FROM Ordenes_Compra WHERE id_orden = $1 AND id_tienda = $2 FOR UPDATE', [ordenId, tiendaId]
+      );
+      if (!ordenRows.length) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, error: 'Orden no encontrada.' }); }
+      if (!['Aprobada', 'Enviada'].includes(ordenRows[0].estado)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ success: false, error: 'Solo se puede recibir una orden Aprobada o Enviada.' });
+      }
+
+      const { rows: lineas } = await client.query('SELECT id_producto, costo_unitario FROM Ordenes_Detalle WHERE id_orden = $1', [ordenId]);
+      const costoPorProducto = new Map(lineas.map((l) => [l.id_producto, Number(l.costo_unitario) || 0]));
+      for (const it of limpios) {
+        if (!costoPorProducto.has(it.id_producto)) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ success: false, error: 'Uno de los productos no pertenece a esta orden.' });
+        }
+      }
+
+      const totalReal = totalOrden(limpios.map((it) => ({ cantidad: it.cantidad_recibida, costo_unitario: costoPorProducto.get(it.id_producto) })));
+      for (const it of limpios) {
+        await client.query('UPDATE Ordenes_Detalle SET cantidad_recibida = $1 WHERE id_orden = $2 AND id_producto = $3', [it.cantidad_recibida, ordenId, it.id_producto]);
+        if (it.cantidad_recibida > 0) {
+          const { rows: prodRows } = await client.query('SELECT cantidad FROM Productos WHERE id_producto = $1 AND id_tienda = $2 FOR UPDATE', [it.id_producto, tiendaId]);
+          if (!prodRows.length) continue; // producto borrado mientras tanto: no hay dónde sumar el stock
+          const nuevoStock = Number(prodRows[0].cantidad) + it.cantidad_recibida;
+          await client.query('UPDATE Productos SET cantidad = $1 WHERE id_producto = $2', [nuevoStock, it.id_producto]);
+          await client.query(
+            `INSERT INTO MovimientosStock (id_producto, tipo_movimiento, cantidad, stock_final, fecha_movimiento, observacion, id_usuario, id_tienda)
+             VALUES ($1, 'Entrada', $2, $3, CURRENT_TIMESTAMP, $4, $5, $6)`,
+            [it.id_producto, it.cantidad_recibida, nuevoStock, `Orden de Compra #${ordenId}`, userId, tiendaId]
+          );
+        }
+      }
+
+      await client.query(
+        "UPDATE Ordenes_Compra SET estado = 'Completada', presupuesto_total = $1, total_estimado = $1 WHERE id_orden = $2",
+        [totalReal, ordenId]
+      );
+      await client.query('COMMIT');
+
+      try {
+        await db.runAsync(
+          'INSERT INTO Auditoria_IA (id_tienda, id_orden, prompt_utilizado, datos_base_json, sugerencia_ia_json, impacto_decision, razon_ia, fecha_auditoria) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
+          [tiendaId, ordenId, 'Recepción de mercancía', JSON.stringify(lineas), JSON.stringify(limpios), `Orden #${ordenId} recibida — total real $${totalReal.toLocaleString('es-CO')}`, 'El administrador confirmó qué llegó realmente']
+        );
+      } catch (auditErr) {
+        console.error('⚠️ Auditoría de recepción omitida:', auditErr.message);
+      }
+
+      res.json({ success: true, presupuesto_total: totalReal });
+    } catch (e) {
+      await client.query('ROLLBACK').catch(() => {});
+      console.error('❌ completarRecepcion:', e.message);
+      res.status(500).json({ success: false, error: 'No se pudo confirmar la recepción.' });
+    } finally {
+      client.release();
     }
   },
 

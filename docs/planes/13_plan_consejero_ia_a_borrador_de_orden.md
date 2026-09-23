@@ -1,6 +1,6 @@
 ﻿# Plan 13: Del Consejero IA al borrador de orden de compra
 
-**Estado:** Fases A a D implementadas en local, sin subir. Fase E pendiente.
+**Estado:** Fases A a E implementadas en local, sin subir. La Fase E (recepción de mercancía y solicitudes del tendero) se detalla y verifica en `docs/planes/16_plan_consejero_ia_fase_e_cierre_del_ciclo.md`, junto con la revisión del punto de "Aprendizaje de la IA" del plan original (no se implementó tal como se propuso: duplicaba un mecanismo que ya existe).
 **Fecha:** 2026-09-20
 **Depende de:** plan 11 (`fix/consejero-ia-sugerido-cero`): el Consejero ya solo recomienda productos con `base_load > 0`.
 **Objetivo:** que una recomendación del Consejero IA se convierta, con un clic, en un **borrador de orden de compra** que el administrador revisa, aprueba y envía al proveedor, sin reescribir nada a mano.
