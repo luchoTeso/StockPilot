@@ -26,9 +26,14 @@ const DashboardPage = () => {
   const [recommendations, setRecommendations] = useState([]);
   // Borradores de orden de compra armados desde el Consejero (solo administrador)
   const [borradores, setBorradores] = useState({});
-  const [pedidoEnCurso, setPedidoEnCurso] = useState(null); // id_producto | 'todo'
+  const [pedidoEnCurso, setPedidoEnCurso] = useState(null); // id_producto | 'todo' | 'calmas'
   const [confirmarTodo, setConfirmarTodo] = useState(false);
   const [ultimosPedidos, setUltimosPedidos] = useState([]);
+  // Proveedores para asignar a un producto que aún no tiene uno (Consejero → borrador)
+  const [proveedoresList, setProveedoresList] = useState([]);
+  const [eligiendoProveedor, setEligiendoProveedor] = useState(null); // id_producto en edición
+  const [proveedorElegido, setProveedorElegido] = useState('');
+  const [asignandoProveedor, setAsignandoProveedor] = useState(false);
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingPromos, setLoadingPromos] = useState(true);
@@ -87,6 +92,9 @@ const DashboardPage = () => {
       if (isAdmin) {
         axios.get('/api/ordenes/borradores/resumen', { ...(signal && { signal }) })
           .then((r) => { if (!(signal && signal.aborted)) setBorradores(r.data.data || {}); })
+          .catch(() => {});
+        axios.get('/api/proveedores', { ...(signal && { signal }) })
+          .then((r) => { if (!(signal && signal.aborted) && r.data.success) setProveedoresList(r.data.data || []); })
           .catch(() => {});
       }
       localStorage.setItem(`stockpilot_recs_${storeKey}`, JSON.stringify(aiRes.data.recommendations || []));
@@ -192,6 +200,25 @@ const DashboardPage = () => {
     }
   };
 
+  // Producto sin proveedor: se asigna desde la propia tarjeta y de una vez se agrega al pedido
+  const asignarProveedorYPedir = async (rec) => {
+    if (!proveedorElegido) return toast.error('Elige un proveedor.');
+    setAsignandoProveedor(true);
+    try {
+      await axios.patch(`/api/productos/${rec.id_producto}/proveedor`, { id_proveedor: Number(proveedorElegido) });
+      const proveedor = proveedoresList.find((p) => p.id_proveedor === Number(proveedorElegido));
+      const recConProveedor = { ...rec, id_proveedor: Number(proveedorElegido), proveedor: proveedor?.nombre_empresa };
+      setRecommendations((prev) => prev.map((r) => r.id_producto === rec.id_producto ? recConProveedor : r));
+      setEligiendoProveedor(null);
+      setProveedorElegido('');
+      await agregarAlPedido([recConProveedor], rec.id_producto);
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'No se pudo asignar el proveedor.');
+    } finally {
+      setAsignandoProveedor(false);
+    }
+  };
+
   const chipUrgencia = (u) => (u === 'Pide hoy' ? 'bg-peligro-suave text-peligro border-peligro/30' : u === 'Esta semana' ? 'bg-aviso-suave text-aviso border-aviso/30' : 'bg-slate-100 text-slate-600 border-slate-200');
 
   const renderTarjeta = (rec) => (
@@ -236,8 +263,46 @@ const DashboardPage = () => {
                             >
                               <ShoppingCart size={14} /> Agregar al pedido de {rec.proveedor}
                             </button>
+                          ) : eligiendoProveedor === rec.id_producto ? (
+                            <div className="mt-3 flex flex-col gap-2">
+                              <select
+                                autoFocus
+                                aria-label={`Proveedor para ${rec.product}`}
+                                value={proveedorElegido}
+                                onChange={(e) => setProveedorElegido(e.target.value)}
+                                className="w-full p-2 text-xs font-bold text-tinta bg-white border border-slate-200 rounded-lg outline-none focus:border-azul"
+                              >
+                                <option value="">Elige un proveedor…</option>
+                                {proveedoresList.map((p) => (
+                                  <option key={p.id_proveedor} value={p.id_proveedor}>{p.nombre_empresa}</option>
+                                ))}
+                              </select>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  disabled={asignandoProveedor || !proveedorElegido}
+                                  onClick={() => asignarProveedorYPedir(rec)}
+                                  className="flex-1 text-xs font-bold text-white bg-azul hover:bg-azul-hondo disabled:opacity-50 rounded-lg px-3 py-2 transition-colors"
+                                >
+                                  {asignandoProveedor ? 'Guardando…' : 'Asignar y pedir'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => { setEligiendoProveedor(null); setProveedorElegido(''); }}
+                                  className="text-xs font-bold text-slate-500 hover:text-tinta px-3 py-2"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
                           ) : (
-                            <p className="mt-3 text-xs font-bold text-aviso">Sin proveedor asignado: asígnalo en Productos para poder pedirlo.</p>
+                            <button
+                              type="button"
+                              onClick={() => { setEligiendoProveedor(rec.id_producto); setProveedorElegido(''); }}
+                              className="mt-3 w-full text-xs font-bold text-aviso bg-aviso-suave hover:bg-aviso hover:text-white rounded-lg px-3 py-2 transition-colors"
+                            >
+                              Sin proveedor asignado: elegir uno
+                            </button>
                           )
                         )}
                       </div>

@@ -1,6 +1,6 @@
 ﻿# Plan 13: Del Consejero IA al borrador de orden de compra
 
-**Estado:** MVP (fases A + B + C) implementado en la rama local `feature/orden-desde-consejero`, sin subir. Fases D y E pendientes.
+**Estado:** Fases A a D implementadas en local, sin subir. Fase E pendiente.
 **Fecha:** 2026-09-20
 **Depende de:** plan 11 (`fix/consejero-ia-sugerido-cero`): el Consejero ya solo recomienda productos con `base_load > 0`.
 **Objetivo:** que una recomendación del Consejero IA se convierta, con un clic, en un **borrador de orden de compra** que el administrador revisa, aprueba y envía al proveedor, sin reescribir nada a mano.
@@ -212,3 +212,12 @@ Al contrastar el plan con el código actual se ajustó lo siguiente. Las decisio
 
 - **Ajuste IA en 0 % y "Base: ud" vacío en el detalle.** Dos causas. (1) El borrador guardaba la cantidad ya ajustada como base y "0" como ajuste; ahora el Consejero envía su base y su ajuste real y se guardan en cantidad_sugerida y sugerencia_ia (ejemplo verificado: base 11, ajuste +20 %, final 14). (2) El detalle leía det.cantidad_base, una columna que no existe (la real es cantidad_sugerida), por lo que "Base" salía vacío también en las órdenes antiguas; corregido. Sin ajuste se muestra "Sin ajuste" en lugar de 0 %. Los borradores creados antes de este cambio conservan el 0 % guardado.
 - **Sugerencias "Puede esperar" aparte.** La lista principal muestra solo "Pide hoy" y "Esta semana" (y "Armar pedido con todo lo sugerido" las usa solo a ellas). Las demás van en la sección plegada "Para reponer con calma", con su propio botón. Si no hay nada urgente se lee "Nada urgente por pedir hoy". Capturas: docs/planes/img/dashboard-calma-*.jpg y proveedores-detalle-ajuste.jpg.
+
+## 13. Fase D: revisar y enviar (2026-09-22)
+
+- **Editar cantidades y quitar líneas del borrador.** En `OrdenesHistory`, mientras la orden está en Borrador, cada línea muestra un campo de cantidad y un botón para quitarla (usan los endpoints de la Fase B, `PATCH`/`DELETE /api/ordenes/:id/items/:idProducto`). El presupuesto se recalcula al instante. Si se quita la última línea, el borrador se elimina.
+- **Producto sin proveedor.** La tarjeta del Consejero ahora tiene "Sin proveedor asignado: elegir uno", que despliega un selector con los proveedores de la tienda; al guardar, asigna el proveedor al producto (`PATCH /api/productos/:id/proveedor`, de la Fase B) y de una vez lo agrega al pedido. No se pudo probar en vivo porque los 18 productos de la tienda de prueba ya tienen proveedor asignado; se verificó por revisión de código y con el mismo patrón que el resto del flujo, ya probado.
+- **Proveedor sin correo.** Antes, enviar fallaba con "Falta email proveedor" (400). Ahora, si la orden está Aprobada y el proveedor no tiene correo, se muestra un aviso con tres opciones: **Copiar como texto** (para WhatsApp), **Descargar PDF** (nuevo endpoint `GET /api/ordenes/:id/pdf`, con `pdfkit`, ya usado en Reportes) y **Ya la envié: marcar como enviada** (pasa la orden a `Enviada` a mano). Se probó con la tienda de prueba real, cuyo único proveedor no tiene correo.
+- **Plantilla del correo.** El color de cabecera pasó del índigo anterior (`#4f46e5`) al azul de la paleta (`#252C93`).
+- **Verificación real (Playwright, sesión y datos de la tienda de prueba, sin tocar la BD a mano):** se editó una línea del borrador #6 (10→7 u), se quitó la otra línea, se aprobó, se copió el pedido al portapapeles ("Pedido #6 — Distribuidora Global…"), se descargó el PDF (200, `application/pdf`) y se marcó como enviada; el historial la muestra como "Enviada". De paso quedó corregida en los datos de prueba la orden con "Ajuste IA 0 %" que el usuario había visto (ahora "Sin ajuste"), porque se editó con el flujo real de la app. Capturas: `docs/planes/img/proveedores-sin-correo.jpg`, `proveedores-historial-final.jpg`.
+- **Fuera de alcance de esta fase:** máquina de estados formal para `PATCH /estado` (sigue aceptando cualquier texto) y recepción de mercancía (Fase E).

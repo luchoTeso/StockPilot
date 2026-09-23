@@ -31,4 +31,7 @@ router.post('/api/proveedores/ordenes/:ordenId/pay', requireLogin, requireAdmin,
 // Envío de Orden por Email
 router.post('/api/ordenes/:ordenId/enviar-proveedor', requireLogin, requireAdmin, suppliersController.sendOrderToSupplier);
 
+// PDF de la orden (proveedor sin correo: se envía por fuera de la app y se marca "Enviada" a mano)
+router.get('/api/ordenes/:ordenId/pdf', requireLogin, requireAdmin, suppliersController.downloadOrderPdf);
+
 module.exports = router;

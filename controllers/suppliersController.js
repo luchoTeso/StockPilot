@@ -273,7 +273,7 @@ const suppliersController = {
     try {
       const tiendaId = req.session.tiendaId;
       const query = `
-        SELECT o.*, p.nombre_empresa as proveedor_nombre, u.nombres as usuario_nombre,
+        SELECT o.*, p.nombre_empresa as proveedor_nombre, p.email as proveedor_email, u.nombres as usuario_nombre,
                (SELECT COUNT(*) FROM Ordenes_Detalle WHERE id_orden = o.id_orden) as items_count,
                (o.presupuesto_total - o.monto_pagado) as saldo_pendiente
         FROM Ordenes_Compra o
@@ -353,7 +353,7 @@ const suppliersController = {
         subject: `Orden de Compra #${ordenId} — ${nombreTienda}`,
         html: `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #334155; max-width: 620px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="background-color: #4f46e5; padding: 28px 32px;">
+            <div style="background-color: #252C93; padding: 28px 32px;">
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td>
@@ -413,6 +413,81 @@ const suppliersController = {
       });
 
       res.json({ success: true });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+
+  /**
+   * Descarga la orden en PDF. Para proveedores sin correo (plan 13, Fase D): el administrador
+   * la envía por su cuenta (WhatsApp, impresa) y luego puede marcarla como enviada a mano.
+   */
+  downloadOrderPdf: async (req, res) => {
+    try {
+      const { ordenId } = req.params;
+      const tiendaId = req.session.tiendaId;
+      const orden = await db.getAsync(
+        `SELECT o.*, p.nombre_empresa, p.email as proveedor_email, p.telefono as proveedor_telefono
+         FROM Ordenes_Compra o JOIN Proveedores p ON o.id_proveedor = p.id_proveedor
+         WHERE o.id_orden = ? AND o.id_tienda = ?`,
+        [ordenId, tiendaId]
+      );
+      if (!orden) return res.status(404).json({ error: 'Orden no encontrada' });
+      const items = await db.allAsync(
+        'SELECT d.*, p.nombre_producto FROM Ordenes_Detalle d JOIN Productos p ON d.id_producto = p.id_producto WHERE d.id_orden = ?',
+        [ordenId]
+      );
+
+      const PDFDocument = require('pdfkit');
+      const doc = new PDFDocument({ margin: 40, size: 'A4' });
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=Orden_Compra_${ordenId}.pdf`);
+      doc.pipe(res);
+
+      const azul = '#252C93';
+      const tinta = '#14173F';
+      const gris = '#94a3b8';
+      const nombreTienda = req.session.nombreTienda || 'StockPilot';
+
+      doc.fillColor(azul).fontSize(24).text('StockPilot', { align: 'right' });
+      doc.fillColor(gris).fontSize(10).text('Control de Inventario Inteligente', { align: 'right' });
+      doc.moveDown(1.5);
+
+      doc.fillColor(tinta).fontSize(18).text(`ORDEN DE COMPRA #${ordenId}`, { align: 'left' });
+      doc.fontSize(10).fillColor(gris).text(`Emitida por ${nombreTienda} el ${new Date(orden.fecha_creacion).toLocaleDateString('es-CO')}`);
+      doc.moveDown();
+      doc.fontSize(11).fillColor(tinta).text(`Proveedor: ${orden.nombre_empresa}`);
+      if (orden.proveedor_telefono) doc.fontSize(10).fillColor(gris).text(`Teléfono: ${orden.proveedor_telefono}`);
+      doc.moveDown(1.5);
+
+      const tableTop = doc.y;
+      const cols = { item: 40, qty: 320, cost: 390, total: 470 };
+      doc.fontSize(10).fillColor(azul);
+      doc.text('Producto', cols.item, tableTop);
+      doc.text('Cant.', cols.qty, tableTop);
+      doc.text('Costo Un.', cols.cost, tableTop);
+      doc.text('Subtotal', cols.total, tableTop);
+      doc.moveTo(40, tableTop + 15).lineTo(555, tableTop + 15).strokeColor('#E5E7EB').stroke();
+
+      let y = tableTop + 24;
+      let total = 0;
+      doc.fontSize(9).fillColor(tinta);
+      items.forEach((it) => {
+        const cantidad = Number(it.cantidad_final) || 0;
+        const costo = Number(it.costo_unitario) || 0;
+        const subtotal = cantidad * costo;
+        total += subtotal;
+        doc.text(it.nombre_producto?.substring(0, 45) || 'Sin nombre', cols.item, y, { width: 270 });
+        doc.text(String(cantidad), cols.qty, y);
+        doc.text(`$${costo.toLocaleString('es-CO')}`, cols.cost, y);
+        doc.text(`$${subtotal.toLocaleString('es-CO')}`, cols.total, y);
+        y += 20;
+      });
+
+      doc.moveTo(40, y + 4).lineTo(555, y + 4).strokeColor('#E5E7EB').stroke();
+      doc.fontSize(11).fillColor(azul).text(`Total estimado: $${total.toLocaleString('es-CO')}`, cols.cost, y + 14);
+
+      doc.end();
     } catch (e) {
       res.status(500).json({ error: e.message });
     }

@@ -1,5 +1,13 @@
-import { ScrollText, Mail, Banknote, AlertTriangle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { ScrollText, Mail, Banknote, AlertTriangle, Loader2, Trash2, Copy, FileDown, Check } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { useToast } from '../../context/ToastContext';
+
+/** Texto plano del pedido, para copiar y enviar por WhatsApp cuando el proveedor no tiene correo. */
+function textoPedido(orden, items) {
+  const lineas = items.map((d) => `- ${d.nombre_producto}: ${d.cantidad_final} ud`).join('\n');
+  return `Pedido #${orden.id_orden} — ${orden.proveedor_nombre}\n${lineas}\n\nTotal estimado: $${Number(orden.presupuesto_total || 0).toLocaleString('es-CO')}`;
+}
 
 const OrdenesHistory = ({
   ordenesHistory,
@@ -13,8 +21,23 @@ const OrdenesHistory = ({
   isSendingEmail,
   emailMessage,
   setEmailMessage,
-  onUpdateEstado
+  onUpdateEstado,
+  savingItem,
+  onEditItem,
+  onRemoveItem
 }) => {
+  const toast = useToast();
+  const [qtyDraft, setQtyDraft] = useState({});
+  const esBorrador = showHistoryDetail?.estado === 'Borrador';
+
+  const copiarPedido = async () => {
+    try {
+      await navigator.clipboard.writeText(textoPedido(showHistoryDetail, ordenDetail));
+      toast.success('Pedido copiado. Puedes pegarlo en WhatsApp o donde lo necesites.');
+    } catch {
+      toast.error('No se pudo copiar. Selecciona y copia el texto manualmente.');
+    }
+  };
   return (
     <div className="relative z-10 pt-10 border-t border-slate-100">
       <div className="flex items-center gap-2 mb-6">
@@ -138,12 +161,42 @@ const OrdenesHistory = ({
                   <div key={det.id_detalle} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
                       <p className="text-sm font-bold text-tinta">{det.nombre_producto}</p>
-                      <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_sugerida ?? det.cantidad_final} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>
+                      {!esBorrador && <p className="text-xs font-bold text-slate-500">Base: {det.cantidad_sugerida ?? det.cantidad_final} ud → Final: <span className="text-exito">{det.cantidad_final} ud</span></p>}
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs font-bold text-slate-500">Ajuste IA</p>
-                      <p className="text-sm font-bold text-azul">{Number(det.sugerencia_ia) ? `${det.sugerencia_ia > 0 ? '+' : ''}${det.sugerencia_ia}%` : 'Sin ajuste'}</p>
-                    </div>
+                    {esBorrador ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          aria-label={`Cantidad de ${det.nombre_producto}`}
+                          value={qtyDraft[det.id_producto] ?? det.cantidad_final}
+                          onChange={(e) => setQtyDraft((prev) => ({ ...prev, [det.id_producto]: e.target.value }))}
+                          className="w-20 p-2 text-sm font-bold text-tinta text-center bg-white border border-slate-200 rounded-lg outline-none focus:border-azul"
+                        />
+                        <button
+                          type="button"
+                          disabled={savingItem === det.id_producto || Number(qtyDraft[det.id_producto] ?? det.cantidad_final) === det.cantidad_final}
+                          onClick={() => onEditItem(showHistoryDetail.id_orden, det.id_producto, qtyDraft[det.id_producto])}
+                          className="text-xs font-bold text-azul bg-azul/10 hover:bg-azul hover:text-white disabled:opacity-40 px-3 py-2 rounded-lg transition-colors"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Quitar ${det.nombre_producto} del pedido`}
+                          disabled={savingItem === det.id_producto}
+                          onClick={() => onRemoveItem(showHistoryDetail.id_orden, det.id_producto)}
+                          className="text-peligro hover:bg-rose-50 disabled:opacity-40 p-2 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-slate-500">Ajuste IA</p>
+                        <p className="text-sm font-bold text-azul">{Number(det.sugerencia_ia) ? `${det.sugerencia_ia > 0 ? '+' : ''}${det.sugerencia_ia}%` : 'Sin ajuste'}</p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -171,7 +224,7 @@ const OrdenesHistory = ({
             )}
 
             {/* Estado final (para órdenes ya aprobadas o rechazadas) */}
-            {showHistoryDetail.estado === 'Aprobada' && (
+            {showHistoryDetail.estado === 'Aprobada' && showHistoryDetail.proveedor_email && (
               <div className="p-5 border-t border-exito-suave bg-emerald-50 space-y-4">
                 <div className="text-center">
                   <span className="text-xs font-bold text-exito">✓ Orden aprobada — Lista para enviar</span>
@@ -197,6 +250,34 @@ const OrdenesHistory = ({
                     )}
                   </button>
                 </div>
+              </div>
+            )}
+            {/* Proveedor sin correo: el administrador la envía por su cuenta y marca "Enviada" a mano */}
+            {showHistoryDetail.estado === 'Aprobada' && !showHistoryDetail.proveedor_email && (
+              <div className="p-5 border-t border-aviso-suave bg-amber-50 space-y-3">
+                <p className="text-xs font-bold text-aviso flex items-center gap-2">
+                  <AlertTriangle size={14} /> {showHistoryDetail.proveedor_nombre} no tiene correo registrado: envíala por tu cuenta (WhatsApp, impresa) y márcala como enviada.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={copiarPedido}
+                    className="flex-1 py-3 bg-white border border-aviso/30 text-aviso hover:bg-aviso hover:text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Copy size={14} /> Copiar como texto
+                  </button>
+                  <a
+                    href={`/api/ordenes/${showHistoryDetail.id_orden}/pdf`}
+                    className="flex-1 py-3 bg-white border border-aviso/30 text-aviso hover:bg-aviso hover:text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <FileDown size={14} /> Descargar PDF
+                  </a>
+                </div>
+                <button
+                  onClick={() => onUpdateEstado(showHistoryDetail.id_orden, 'Enviada')}
+                  className="w-full py-3 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <Check size={14} /> Ya la envié: marcar como enviada
+                </button>
               </div>
             )}
             {showHistoryDetail.estado === 'Enviada' && (
