@@ -217,6 +217,8 @@ El usuario pidió una segunda opinión sobre este plan antes de implementarlo. C
 
 ### 7.1 E1 — Bug activo, ya en producción (el más urgente de todo el plan)
 
+> **Corregido el 2026-09-24** (commit en `main`): `urgencia = "Pide hoy"` ahora se decide antes que nada por `stock <= 0`, fuera del `if (cantidadBase > 0)`. Test nuevo en `tests/business_logic/reposicion.test.js` que reproduce exactamente este caso (`stock: 0, stockSeguridad: 0`, sin ventas) — 156 pruebas en verde. **Lo que queda sin resolver a propósito:** con `cantidadBase` en 0, el producto sigue sin aparecer en la lista del Consejero (que filtra por `base_load > 0`) ni sugiere cuánto pedir. Cerrar eso del todo requiere el piso de reposición con `stock_minimo` que describe la corrección más abajo, y eso depende de la pregunta 4 del plan (qué rol cumple `stock_minimo` tras la unificación) — se dejó pendiente de la revisión del plan, como se pidió.
+
 **Esto no es un defecto del plan: es un bug real en código que ya está en `main`.** La v1 (§1.2) afirmaba que `calcularReposicion` con stock 0 y sin ventas da `CRÍTICO + "Pide hoy"`. Verificado que es falso en el caso más común (`stock_seguridad = 0`, el valor por defecto del esquema):
 
 ```

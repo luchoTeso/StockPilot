@@ -60,12 +60,17 @@ function calcularReposicion(p) {
 
   const diasParaAgotar = v30 > 0.01 ? Math.floor(stock / v30) : null;
   let urgencia = URGENCIA.ESPERAR;
-  if (cantidadBase > 0) {
+  if (stock <= 0) {
+    // Sin stock es "Pide hoy" siempre, incluso si stockSeguridad es 0 (el valor por defecto) y por
+    // lo tanto cantidadBase también sale en 0: antes esto quedaba fuera del `if` de abajo y un
+    // producto agotado sin historial de ventas se veía "Puede esperar" (plan 17, hallazgo E1).
+    urgencia = URGENCIA.HOY;
+  } else if (cantidadBase > 0) {
     // Sin ventas registradas no hay días para agotar que calcular; si además el riesgo ya es CRÍTICO
     // (stock por debajo del mínimo de seguridad), es urgente igual, no hay que esperar a que se venda.
     // Con ventas registradas manda el cálculo real de días (así Papas Margarita, con 330 días de stock
     // aunque esté bajo su mínimo, no se trata igual que Leche Alquería, que no tiene ventas que medir).
-    if (stock <= 0 || (diasParaAgotar === null && riesgo === 'CRÍTICO') || (diasParaAgotar !== null && diasParaAgotar <= leadTime)) urgencia = URGENCIA.HOY;
+    if ((diasParaAgotar === null && riesgo === 'CRÍTICO') || (diasParaAgotar !== null && diasParaAgotar <= leadTime)) urgencia = URGENCIA.HOY;
     else if (diasParaAgotar !== null && diasParaAgotar <= leadTime + 7) urgencia = URGENCIA.SEMANA;
   }
 

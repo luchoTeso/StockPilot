@@ -43,6 +43,14 @@ describe('calcularReposicion', () => {
   it('sin stock y con demanda → Pide hoy', () => {
     expect(calcularReposicion({ ...base, stock: 0 }).urgencia).toBe('Pide hoy');
   });
+  it('sin stock, sin ventas y stockSeguridad en 0 (el valor por defecto) → Pide hoy igual (plan 17, hallazgo E1)', () => {
+    // Antes cantidadBase salía en 0 en este caso exacto y la urgencia se quedaba en "Puede esperar":
+    // un producto nuevo, agotado y sin stock de seguridad configurado no se veía urgente.
+    const r = calcularReposicion({ ventasDia7: 0, ventasDia30: 0, ventas30Total: 0, claseABC: 'C', stock: 0, stockSeguridad: 0, leadTime: 3 });
+    expect(r.cantidadBase).toBe(0);
+    expect(r.riesgo).toBe('CRÍTICO');
+    expect(r.urgencia).toBe('Pide hoy');
+  });
   it('stock objetivo por clase ABC (A=15, B=30, C=45 días)', () => {
     expect(calcularReposicion({ ...base, stock: 0, claseABC: 'A' }).stockObjetivo).toBe(2 * 15 + 4);
     expect(calcularReposicion({ ...base, stock: 0, claseABC: 'C' }).stockObjetivo).toBe(2 * 45 + 4);
