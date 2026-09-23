@@ -84,6 +84,19 @@ describe('calcularReposicion', () => {
   it('lead_time por defecto (3 días) si falta', () => {
     expect(calcularReposicion({ ...base, leadTime: undefined }).rop).toBe(Math.ceil(2 * 3 + 4));
   });
+  it('diasCoberturaOverride reemplaza el DIAS_COBERTURA fijo por ABC (plan 18, Simulador)', () => {
+    const sinOverride = calcularReposicion({ ...base, stock: 0 });
+    expect(sinOverride.stockObjetivo).toBe(2 * 15 + 4); // claseABC A → 15 días
+    const conOverride = calcularReposicion({ ...base, stock: 0 }, { diasCoberturaOverride: 90 });
+    expect(conOverride.stockObjetivo).toBe(2 * 90 + 4);
+    expect(conOverride.cantidadBase).toBeGreaterThan(sinOverride.cantidadBase);
+  });
+  it('diasCoberturaOverride no afecta el piso de un producto sin ventas (plan 18)', () => {
+    const p = { ventasDia7: 0, ventasDia30: 0, ventas30Total: 0, claseABC: 'C', stock: 0, stockSeguridad: 0, stockMinimo: 5, leadTime: 3 };
+    expect(calcularReposicion(p).cantidadBase).toBe(5);
+    expect(calcularReposicion(p, { diasCoberturaOverride: 7 }).cantidadBase).toBe(5);
+    expect(calcularReposicion(p, { diasCoberturaOverride: 90 }).cantidadBase).toBe(5);
+  });
 });
 
 describe('calcularTendencia', () => {

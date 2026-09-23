@@ -17,7 +17,7 @@
  * @param {import('../config/database')} database - El mismo objeto `db` del resto del proyecto.
  * @param {number} tiendaId
  * @returns {Promise<Array<{
- *   id_producto:number, nombre_producto:string, stock_actual:number, precio:number, costo_compra:number,
+ *   id_producto:number, nombre_producto:string, categoria:string, stock_actual:number, precio:number, costo_compra:number,
  *   id_proveedor:(number|null), proveedor:(string|null), stock_seguridad:number, stock_minimo:number,
  *   lead_time:number, frecuencia_compra_dias:number,
  *   velocity_7d:number, velocity_30d:number, qty_30d_total:number, factor_ia:number,
@@ -48,7 +48,7 @@ async function leerEntradasMotor(database, tiendaId) {
     ),
     BaseData AS (
       SELECT
-        p.id_producto, p.nombre_producto, p.cantidad as stock_actual, p.precio, p.costo_compra,
+        p.id_producto, p.nombre_producto, p.categoria, p.cantidad as stock_actual, p.precio, p.costo_compra,
         p.id_proveedor, prov.nombre_empresa as proveedor,
         p.stock_seguridad, p.stock_minimo, p.lead_time, p.frecuencia_compra_dias,
         COALESCE(vr.qty_7d, 0) / 7.0 as velocity_7d,
@@ -82,6 +82,7 @@ async function leerEntradasMotor(database, tiendaId) {
   return rows.map((r) => ({
     id_producto: r.id_producto,
     nombre_producto: r.nombre_producto,
+    categoria: r.categoria,
     stock_actual: Number(r.stock_actual),
     precio: Number(r.precio),
     costo_compra: Number(r.costo_compra) || 0,

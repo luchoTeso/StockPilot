@@ -52,10 +52,14 @@ function calcularTendencia(ventasDia7, ventasDia30, ventas30Total) {
  * @param {number} p.leadTime - Días que tarda el proveedor en entregar.
  * @param {number} [p.frecuenciaCompraDias=7] - Cada cuántos días se suele comprar este producto.
  * @param {number} [p.factorIA=1] - Factor de aprendizaje (Feedback_IA); solo afecta el punto de reorden.
+ * @param {Object} [opciones]
+ * @param {number} [opciones.diasCoberturaOverride] - Reemplaza el `DIAS_COBERTURA` fijo por ABC (plan 18,
+ *   Simulador de Escenarios). No afecta el piso de `stock_minimo`/`stock_seguridad` de abajo: un producto
+ *   sin ventas sigue mostrando ese piso sin importar este valor.
  * @returns {{cantidadBase:number, stockObjetivo:number, rop:number, tendencia:number,
  *   diasParaAgotar:(number|null), riesgo:string, urgencia:string, nivel:string}}
  */
-function calcularReposicion(p) {
+function calcularReposicion(p, opciones = {}) {
   const v30 = num(p.ventasDia30);
   const stock = num(p.stock);
   const seguridad = num(p.stockSeguridad);
@@ -65,7 +69,8 @@ function calcularReposicion(p) {
   const factorIA = num(p.factorIA, 1) || 1;
 
   const tendencia = calcularTendencia(p.ventasDia7, v30, p.ventas30Total);
-  const dias = DIAS_COBERTURA[p.claseABC] ?? DIAS_COBERTURA.C;
+  const diasOverride = num(opciones.diasCoberturaOverride, null);
+  const dias = diasOverride ?? (DIAS_COBERTURA[p.claseABC] ?? DIAS_COBERTURA.C);
   const stockObjetivo = v30 * tendencia * dias + seguridad;
   let cantidadBase = Math.max(0, Math.ceil(stockObjetivo - stock));
 

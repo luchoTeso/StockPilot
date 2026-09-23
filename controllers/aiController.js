@@ -288,6 +288,12 @@ const aiController = {
       const tiendaId = req.session.tiendaId;
       if (!tiendaId) return res.status(401).json({ error: "No autorizado" });
 
+      // Plan 18 (Simulador de Escenarios): permite pedir el análisis con un objetivo de cobertura
+      // distinto al fijo por ABC (15/30/45 días). Sin `dias` (Detalle de Productos no lo manda),
+      // cada producto sigue usando su DIAS_COBERTURA normal — comportamiento idéntico a antes.
+      const diasQuery = parseInt(req.query.dias, 10);
+      const diasCoberturaOverride = Number.isFinite(diasQuery) && diasQuery >= 7 && diasQuery <= 90 ? diasQuery : undefined;
+
       // Mismo motor que el Consejero y Proveedores (plan 17, Fase 0): antes esta pantalla calculaba
       // su propio "risk" con una fórmula distinta a las demás, así que un producto podía verse "en
       // riesgo" aquí y "sano" en el Consejero (y su velocidad sumaba TODO el historial en vez de los
@@ -306,7 +312,7 @@ const aiController = {
           leadTime: item.lead_time,
           frecuenciaCompraDias: item.frecuencia_compra_dias,
           factorIA: item.factor_ia,
-        });
+        }, { diasCoberturaOverride });
         const costo = costoUnitario({ costoCompra: item.costo_compra, precio: item.precio });
 
         return {
@@ -314,6 +320,7 @@ const aiController = {
           id_proveedor: item.id_proveedor,
           proveedor: item.proveedor,
           nombre: item.nombre_producto,
+          categoria: item.categoria,
           category: item.claseABC,
           risk: rep.riesgo,
           urgencia: rep.urgencia,

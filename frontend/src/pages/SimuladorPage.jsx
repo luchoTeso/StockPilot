@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
@@ -22,51 +22,46 @@ const SimuladorPage = () => {
   const toast = useToast();
   const navigate = useNavigate();
 
-  const fetchInitialData = useCallback(async (signal = null) => {
-    try {
-      setLoading(true);
-      const [prodRes, provRes] = await Promise.all([
-        axios.get('/api/ia/snapshot', { ...(signal && { signal }) }),
-        axios.get('/api/proveedores', { ...(signal && { signal }) })
-      ]);
-      if (signal && signal.aborted) return;
-      
-      if (prodRes.data.success) setProducts(prodRes.data.data);
-      if (provRes.data.success) setProveedores(provRes.data.data);
-    } catch (e) {
-      if (axios.isCancel(e) || (signal && signal.aborted)) return;
-      toast.error('Error cargando datos del simulador');
-    } finally {
-      if (!signal || !signal.aborted) {
-        setLoading(false);
-      }
-    }
-  }, [toast]);
-
+  // Proveedores: se traen una sola vez, no dependen del slider de días.
   useEffect(() => {
     const controller = new AbortController();
-    fetchInitialData(controller.signal);
+    axios.get('/api/proveedores', { signal: controller.signal })
+      .then(res => { if (res.data.success) setProveedores(res.data.data); })
+      .catch(e => { if (!axios.isCancel(e)) toast.error('Error cargando proveedores'); });
     return () => controller.abort();
-  }, [fetchInitialData]);
+  }, [toast]);
+
+  // Productos: el motor único (utils/reposicion.js, plan 17/18) recalcula `cantidad_recomendada`
+  // según el objetivo de cobertura del slider (`dias`), incluyendo el piso de stock_minimo/
+  // stock_seguridad para productos sin ventas — por eso se vuelve a pedir al backend en vez de
+  // recalcular en el navegador. Con debounce para no disparar una consulta por cada pixel arrastrado.
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(prev => (products.length === 0 ? true : prev));
+    const timer = setTimeout(() => {
+      axios.get('/api/ia/snapshot', { params: { dias: days }, signal: controller.signal })
+        .then(res => { if (res.data.success) setProducts(res.data.data); })
+        .catch(e => { if (!axios.isCancel(e)) toast.error('Error cargando datos del simulador'); })
+        .finally(() => setLoading(false));
+    }, 250);
+    return () => { clearTimeout(timer); controller.abort(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days]);
 
   // Lógica de Simulación Reactiva
   const simulatedData = useMemo(() => {
-    // 1. Calcular cantidades necesarias base
-    let items = products.map(p => {
-      const unitPrice = Number(p.precio) || 1000; // Fallback si no hay precio
-      const needed = Math.max(0, Math.ceil((p.velocity * days) - p.stock_actual));
-      const cost = needed * (unitPrice / 1.3); // Estimamos costo como 70% del precio
-      return {
-        ...p,
-        // Plan 17: el motor ahora devuelve `null` (no `Infinity`) cuando no hay ventas para medir
-        // días de agotamiento. Se normaliza aquí para no romper el orden ni los umbrales de abajo,
-        // que ya asumían Infinity para "nunca se agota".
-        days_to_exhaust: p.days_to_exhaust === null || p.days_to_exhaust === undefined ? Infinity : p.days_to_exhaust,
-        needed,
-        simulatedCost: Math.round(cost),
-        isExcludedManual: excludedIds.has(p.id_producto)
-      };
-    });
+    // 1. Normalizar lo que ya calculó el backend con el motor único (cantidad y costo)
+    let items = products.map(p => ({
+      ...p,
+      // Plan 17: el motor devuelve `null` (no `Infinity`) cuando no hay ventas para medir días de
+      // agotamiento. Se normaliza aquí para no romper el orden ni los umbrales de abajo, que ya
+      // asumían Infinity para "nunca se agota". `days_to_exhaust` es informativo (cuánto dura el
+      // stock actual); no es el objetivo del slider, que ya viene aplicado en `cantidad_recomendada`.
+      days_to_exhaust: p.days_to_exhaust === null || p.days_to_exhaust === undefined ? Infinity : p.days_to_exhaust,
+      needed: p.cantidad_recomendada || 0,
+      simulatedCost: Math.round((p.cantidad_recomendada || 0) * (Number(p.costo_unitario) || 0)),
+      isExcludedManual: excludedIds.has(p.id_producto)
+    }));
 
     // 2. Ordenar por Prioridad para la ASIGNACIÓN de presupuesto (A > B > C)
     items.sort((a, b) => {
@@ -102,7 +97,7 @@ const SimuladorPage = () => {
       activeCount,
       excludedCount
     };
-  }, [products, days, budget, excludedIds]);
+  }, [products, budget, excludedIds]);
 
   const toggleManualExclusion = (id) => {
     const newExcluded = new Set(excludedIds);
