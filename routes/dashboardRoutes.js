@@ -5,7 +5,6 @@ const DashboardController = require('../controllers/dashboardController');
 const { requireLogin } = require('../middleware/auth');
 
 router.get('/stats', requireLogin, DashboardController.getStats);
-router.get('/stats/advanced', requireLogin, DashboardController.getAdvancedStats);
 
 
 module.exports = router;

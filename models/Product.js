@@ -5,17 +5,24 @@ class Product {
     static async findByStore(storeId) {
         // Mejorado: Ahora incluye la velocidad de venta de los últimos 30 días
         const query = `
-            SELECT 
+            SELECT
                 p.*,
                 COALESCE(
-                  (SELECT SUM(vp2.cantidad) 
-                   FROM VentasProductos vp2 
-                   JOIN Ventas v2 ON vp2.id_venta = v2.id_venta 
-                   WHERE vp2.id_producto = p.id_producto 
+                  (SELECT SUM(vp2.cantidad)
+                   FROM VentasProductos vp2
+                   JOIN Ventas v2 ON vp2.id_venta = v2.id_venta
+                   WHERE vp2.id_producto = p.id_producto
                    AND v2.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
-                  ), 0) / 30.0 as velocity
-            FROM Productos p 
-            WHERE p.id_tienda = ? 
+                  ), 0) / 30.0 as velocity,
+                COALESCE(
+                  (SELECT SUM(vp3.cantidad)
+                   FROM VentasProductos vp3
+                   JOIN Ventas v3 ON vp3.id_venta = v3.id_venta
+                   WHERE vp3.id_producto = p.id_producto
+                   AND v3.fecha_salida >= CURRENT_DATE - INTERVAL '7 days'
+                  ), 0) / 7.0 as velocity_7d
+            FROM Productos p
+            WHERE p.id_tienda = ?
             ORDER BY nombre_producto
         `;
         return await db.allAsync(query, [storeId]);

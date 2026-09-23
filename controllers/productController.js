@@ -5,6 +5,8 @@ const ExcelJS = require('exceljs');
 const stream = require('stream');
 const Notification = require('../models/Notification');
 const db = require('../config/database');
+const { calcularReposicion } = require('../utils/reposicion');
+const { leerEntradasMotor } = require('../utils/entradasMotor');
 
 class ProductController {
     static async bulkUpload(req, res) {
@@ -135,8 +137,30 @@ class ProductController {
     static async getProducts(req, res) {
         try {
             const tiendaId = req.session.tiendaId;
-            const productos = await Product.findByStore(tiendaId);
-            res.json(productos);
+            const [productos, entradasMotor] = await Promise.all([
+                Product.findByStore(tiendaId),
+                leerEntradasMotor(db, tiendaId), // clase ABC de toda la tienda (solo productos 'Disponible')
+            ]);
+            const claseABCPorProducto = new Map(entradasMotor.map((e) => [e.id_producto, e.claseABC]));
+
+            // Plan 17, Fase 2: el backend decide el nivel de stock (antes cada componente del
+            // frontend lo recalculaba a su manera, con resultados distintos entre sí). No se quita
+            // ningún campo viejo, solo se agregan nivel_stock/urgencia.
+            const productosConNivel = productos.map((p) => {
+                const rep = calcularReposicion({
+                    ventasDia7: p.velocity_7d,
+                    ventasDia30: p.velocity,
+                    claseABC: claseABCPorProducto.get(p.id_producto) || 'C', // pausados: sin ranking de ingresos, se asume el default de la columna
+                    stock: p.cantidad,
+                    stockSeguridad: p.stock_seguridad,
+                    stockMinimo: p.stock_minimo,
+                    leadTime: p.lead_time,
+                    frecuenciaCompraDias: p.frecuencia_compra_dias,
+                });
+                return { ...p, nivel_stock: rep.nivel, urgencia: rep.urgencia };
+            });
+
+            res.json(productosConNivel);
         } catch (error) {
             console.error('Error obteniendo productos:', error);
             res.status(500).json({ success: false, error: 'Error al obtener productos' });

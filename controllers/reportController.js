@@ -180,7 +180,7 @@ class ReportController {
                     { header: 'Precio Público', key: 'precio', width: 18 },
                     { header: 'Ganancia Bruta', key: 'margen', width: 18 },
                     { header: 'Cantidad Disponible', key: 'cantidad', width: 20 },
-                    { header: 'Alerta Mínima', key: 'stock_minimo', width: 15 },
+                    { header: 'Piso de Reposición', key: 'stock_minimo', width: 18 },
                     { header: 'Tope Máximo', key: 'stock_maximo', width: 15 },
                     { header: 'Días de Envío', key: 'lead_time', width: 15 },
                     { header: 'Vencimiento', key: 'fecha_vencimiento', width: 20 },

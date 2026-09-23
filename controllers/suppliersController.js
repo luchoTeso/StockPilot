@@ -1,5 +1,6 @@
 const { calcularReposicion, costoUnitario } = require('../utils/reposicion');
 const { totalOrden } = require('../utils/ordenesBorrador');
+const { leerEntradasMotor } = require('../utils/entradasMotor');
 const db = require('../config/database');
 const { OpenAI } = require('openai');
 const transporter = require('../config/mailer');
@@ -88,71 +89,35 @@ const suppliersController = {
     try {
       const tiendaId = req.session.tiendaId;
       const { proveedorId } = req.params;
-      const query = `
-        WITH BaseData AS (
-          SELECT 
-            p.id_producto, p.nombre_producto, p.cantidad as stock_actual, p.precio, p.costo_compra, p.stock_seguridad, p.lead_time,
-            COALESCE(
-              (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
-               WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days'
-              ), 0) / 7.0 as velocity_7d,
-            COALESCE(
-              (SELECT SUM(vp.cantidad) FROM VentasProductos vp JOIN Ventas v ON vp.id_venta = v.id_venta 
-               WHERE vp.id_producto = p.id_producto AND v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
-              ), 0) / 30.0 as velocity_30d,
-            COALESCE(
-              (SELECT AVG(factor_precision) FROM (
-                SELECT factor_precision FROM Feedback_IA f 
-                WHERE f.id_producto = p.id_producto 
-                ORDER BY fecha_evaluacion DESC LIMIT 5
-              ) as sub), 1.0) as factor_ia
-          FROM Productos p
-          WHERE p.id_tienda = ? AND p.id_proveedor = ? AND p.estado = 'Disponible'
-        ),
-        MathData AS (
-          SELECT *, 
-            (velocity_30d * 30 * precio) as revenue,
-            CEIL(((velocity_30d * lead_time) + stock_seguridad) * factor_ia) as rop,
-            CASE WHEN velocity_30d > 0.01 THEN ROUND(stock_actual / velocity_30d) ELSE 999999 END as days_to_exhaust
-          FROM BaseData
-        ),
-        AccumData AS (
-          SELECT *,
-            SUM(revenue) OVER () as totalRevenue,
-            SUM(revenue) OVER (ORDER BY revenue DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as accum
-          FROM MathData
-        )
-        SELECT *,
-          CASE 
-            WHEN totalRevenue = 0 THEN 'A'
-            WHEN (accum / totalRevenue) <= 0.8 THEN 'A'
-            WHEN (accum / totalRevenue) <= 0.95 THEN 'B'
-            ELSE 'C'
-          END as clasificacion_abc
-        FROM AccumData
-        ORDER BY revenue DESC;
-      `;
-      const rows = await db.allAsync(query, [tiendaId, proveedorId]);
-      
+      // Plan 17, Fase 0: la clase ABC se calcula siempre sobre toda la tienda (mismo ranking de
+      // ingresos que usan el Consejero y Detalle de Productos) y luego se filtra por proveedor aquí,
+      // no al revés. Antes se calculaba el ABC solo entre los productos de este proveedor, así que
+      // un mismo producto podía salir clase A en el Consejero y clase C aquí, y pedir cantidades muy
+      // distintas para lo mismo (hallazgo E2).
+      const todasLasEntradas = await leerEntradasMotor(db, tiendaId);
+      const rows = todasLasEntradas.filter((item) => String(item.id_proveedor) === String(proveedorId));
+
       const smartList = rows.map(item => {
         // Motor único de reposición (utils/reposicion.js): misma cantidad que el Consejero del Dashboard.
         const rep = calcularReposicion({
-          ventasDia7: item.velocity_7d, ventasDia30: item.velocity_30d,
-          claseABC: item.clasificacion_abc, stock: item.stock_actual, stockSeguridad: item.stock_seguridad,
-          leadTime: item.lead_time, factorIA: item.factor_ia,
+          ventasDia7: item.velocity_7d, ventasDia30: item.velocity_30d, ventas30Total: item.qty_30d_total,
+          claseABC: item.claseABC, stock: item.stock_actual, stockSeguridad: item.stock_seguridad,
+          stockMinimo: item.stock_minimo, leadTime: item.lead_time,
+          frecuenciaCompraDias: item.frecuencia_compra_dias, factorIA: item.factor_ia,
         });
         const risk = rep.riesgo === 'CRÍTICO' ? 'critical' : (rep.riesgo === 'MEDIO' ? 'medium' : 'low');
         // Producto sano: se sugiere una semana de ventas (mínimo 1), como antes.
-        const qtySugerida = rep.cantidadBase > 0 ? rep.cantidadBase : Math.max(1, Math.ceil(item.velocity_30d * 7 * item.factor_ia));
+        const qtySugerida = rep.cantidadBase > 0 ? rep.cantidadBase : Math.max(1, Math.ceil(item.velocity_30d * 7 * (item.factor_ia ?? 1)));
         const costo = costoUnitario({ costoCompra: item.costo_compra, precio: item.precio });
         return {
           id_producto: item.id_producto,
           nombre: item.nombre_producto,
-          clasificacion_abc: item.clasificacion_abc,
+          clasificacion_abc: item.claseABC,
           nivel_riesgo: risk,
+          nivel: rep.nivel,
           stock: item.stock_actual,
-          dias_inventario: item.days_to_exhaust === 999999 ? Infinity : item.days_to_exhaust,
-          factor_aprendizaje_ia: Number(item.factor_ia).toFixed(2),
+          dias_inventario: rep.diasParaAgotar,
+          factor_aprendizaje_ia: (item.factor_ia ?? 1).toFixed(2),
           cantidad_sugerida: qtySugerida,
           urgencia: rep.urgencia,
           costo_unitario: costo.costo,

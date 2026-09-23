@@ -18,9 +18,15 @@ describe('calcularReposicion', () => {
     expect(r.urgencia).toBe('Pide hoy');
     expect(r.cantidadBase).toBeGreaterThan(0);
   });
-  it('alcanza para lead_time+7 días → Esta semana', () => {
+  it('alcanza para lead_time + frecuencia_compra_dias (default 7) → En esta compra', () => {
     const r = calcularReposicion({ ...base, stock: 16 }); // 8 días, lead 3 → ≤ 10
-    expect(r.urgencia).toBe('Esta semana');
+    expect(r.urgencia).toBe('En esta compra');
+  });
+  it('frecuenciaCompraDias distinto de 7 mueve la ventana (plan 17, decisión 2)', () => {
+    // 8 días de stock, lead 3: con frecuencia 7 (default) ya no alcanza (8 > 3+7=10... sí alcanza); probamos el borde real
+    const r16dias = { ...base, stock: 32 }; // 16 días de stock, lead 3
+    expect(calcularReposicion({ ...r16dias, frecuenciaCompraDias: 7 }).urgencia).toBe('Puede esperar'); // 16 > 3+7=10
+    expect(calcularReposicion({ ...r16dias, frecuenciaCompraDias: 14 }).urgencia).toBe('En esta compra'); // 16 <= 3+14=17
   });
   it('sin ventas y stock crítico → Pide hoy aunque no haya días para agotar que calcular (caso Leche Alquería)', () => {
     const r = calcularReposicion({ ...base, ventasDia7: 0, ventasDia30: 0, ventas30Total: 0, stock: 1 }); // stock 1 < seguridad 4
@@ -50,6 +56,26 @@ describe('calcularReposicion', () => {
     expect(r.cantidadBase).toBe(0);
     expect(r.riesgo).toBe('CRÍTICO');
     expect(r.urgencia).toBe('Pide hoy');
+  });
+  it('stockMinimo es piso de cantidad para un producto sin historial (plan 17, decisión 4)', () => {
+    const r = calcularReposicion({ ventasDia7: 0, ventasDia30: 0, ventas30Total: 0, claseABC: 'C', stock: 0, stockSeguridad: 0, stockMinimo: 5, leadTime: 3 });
+    expect(r.cantidadBase).toBe(5); // antes salía en 0 (hallazgo E1) aunque la urgencia ya dijera "Pide hoy"
+    expect(r.urgencia).toBe('Pide hoy');
+    expect(r.nivel).toBe('agotado');
+  });
+  it('stockMinimo nunca decide "agotado" ni "crítico", solo el piso de "reponer" (plan 17, decisión 4)', () => {
+    // Stock sano según riesgo (BAJO) y sin ventas: stockMinimo alto solo debe empujarlo a "reponer", no a "critico"
+    const r = calcularReposicion({ ventasDia7: 0, ventasDia30: 0, ventas30Total: 0, claseABC: 'C', stock: 30, stockSeguridad: 4, stockMinimo: 40, leadTime: 3 });
+    expect(r.riesgo).toBe('BAJO'); // 30 > stockSeguridad(4) y > rop
+    expect(r.nivel).toBe('reponer'); // 30 <= max(rop, stockMinimo=40)
+    expect(r.nivel).not.toBe('critico');
+    expect(r.nivel).not.toBe('agotado');
+  });
+  it('nivel: agotado > crítico > reponer > ok, en ese orden', () => {
+    expect(calcularReposicion({ ...base, stock: 0 }).nivel).toBe('agotado');
+    expect(calcularReposicion({ ...base, stock: 4 }).nivel).toBe('critico'); // urgencia "Pide hoy"
+    expect(calcularReposicion({ ...base, stock: 16 }).nivel).toBe('reponer'); // urgencia "En esta compra"
+    expect(calcularReposicion({ ...base, stock: 500 }).nivel).toBe('ok');
   });
   it('stock objetivo por clase ABC (A=15, B=30, C=45 días)', () => {
     expect(calcularReposicion({ ...base, stock: 0, claseABC: 'A' }).stockObjetivo).toBe(2 * 15 + 4);

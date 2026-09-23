@@ -15,6 +15,7 @@ const path = require('path');
 const { safeError } = require('../utils/securityUtils');
 const { seleccionarCandidatosReabastecimiento, esRecomendacionAccionable } = require('../utils/recomendacionesDashboard');
 const { calcularReposicion, costoUnitario } = require('../utils/reposicion');
+const { leerEntradasMotor } = require('../utils/entradasMotor');
 
 // Inicializar cliente OpenAI con la clave del entorno o una clave falsa para evitar crasheos al arrancar sin la variable
 const openai = new OpenAI({
@@ -97,72 +98,10 @@ const aiController = {
         return res.status(500).json({ error: "La API Key de OpenAI no está configurada correctamente en el archivo .env." });
       }
 
-      // 1. Obtener datos crudos con SQL optimizado (CTE + Window Functions para ABC y Sort)
-      const snapshotQuery = `
-        WITH VentasRecientes AS (
-          SELECT vp.id_producto,
-            SUM(CASE WHEN v.fecha_salida >= (CURRENT_DATE - INTERVAL '7 days') THEN vp.cantidad ELSE 0 END) as qty_7d,
-            SUM(CASE WHEN v.fecha_salida >= (CURRENT_DATE - INTERVAL '30 days') THEN vp.cantidad ELSE 0 END) as qty_30d,
-            SUM(CASE WHEN v.fecha_salida >= (CURRENT_DATE - INTERVAL '60 days') THEN vp.cantidad ELSE 0 END) as qty_60d,
-            SUM(CASE WHEN v.fecha_salida >= (CURRENT_DATE - INTERVAL '90 days') THEN vp.cantidad ELSE 0 END) as qty_90d
-          FROM Ventas v
-          JOIN VentasProductos vp ON v.id_venta = vp.id_venta
-          WHERE v.id_tienda = ?
-          GROUP BY vp.id_producto
-        ),
-        PrecisionIA AS (
-          SELECT id_producto, AVG(factor_precision) as avg_precision
-          FROM Feedback_IA
-          GROUP BY id_producto
-        ),
-        MathData AS (
-          SELECT 
-            p.id_producto as id, 
-            p.nombre_producto as nombre, 
-            p.cantidad as stock_actual, 
-            p.precio, 
-            p.categoria, 
-            p.stock_seguridad, 
-            p.lead_time,
-            p.id_proveedor,
-            p.costo_compra,
-            prov.nombre_empresa as proveedor_nombre,
-            COALESCE(vr.qty_30d, 0) as qty_30d_total,
-            COALESCE(vr.qty_7d, 0) / 7.0 as velocity_7d,
-            COALESCE(vr.qty_30d, 0) / 30.0 as velocity_30d,
-            COALESCE(vr.qty_60d, 0) / 60.0 as velocity_60d,
-            COALESCE(vr.qty_90d, 0) / 90.0 as velocity_90d,
-            pia.avg_precision,
-            (COALESCE(vr.qty_30d, 0) / 30.0) * 30 * p.precio as revenue
-          FROM Productos p
-          LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
-          LEFT JOIN PrecisionIA pia ON p.id_producto = pia.id_producto
-          LEFT JOIN Proveedores prov ON prov.id_proveedor = p.id_proveedor
-          WHERE p.id_tienda = ? AND p.estado = 'Disponible'
-        ),
-        AccumData AS (
-          SELECT *,
-            SUM(revenue) OVER () as totalRevenue,
-            SUM(revenue) OVER (ORDER BY revenue DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as accum
-          FROM MathData
-        )
-        SELECT *,
-          CASE 
-            WHEN totalRevenue = 0 THEN 'A'
-            WHEN (accum / totalRevenue) <= 0.8 THEN 'A'
-            WHEN (accum / totalRevenue) <= 0.95 THEN 'B'
-            ELSE 'C'
-          END as category,
-          CASE 
-            WHEN velocity_30d > 0.01 THEN (velocity_7d / velocity_30d) 
-            ELSE 1 
-          END as trend
-        FROM AccumData
-        ORDER BY revenue DESC
-      `;
-      // Pasamos dos veces el tiendaId: uno para VentasRecientes y otro para Productos
-      const rows = await db.allAsync(snapshotQuery, [tiendaId, tiendaId]);
-      
+      // 1. Entradas del motor único (plan 17, Fase 0): mismo v7/v30, clase ABC (de toda la tienda,
+      // no solo de un proveedor) y factor de aprendizaje que usan Proveedores y Detalle de Productos.
+      const rows = await leerEntradasMotor(db, tiendaId);
+
       // 2. Cálculo de Hash para Caché Inteligente (Usando MD5 para mantener compatibilidad con Cache_IA VARCHAR(32))
       const dataString = JSON.stringify(rows);
       const currentHash = crypto.createHash('md5').update(dataString).digest('hex');
@@ -183,38 +122,41 @@ const aiController = {
 
       // 3. Procesamiento Analítico (Tendencia y Variabilidad) mapeado directo
       const contextItemsFull = rows.map(item => {
-        // Motor único de reposición (utils/reposicion.js): misma fórmula que Proveedores.
+        // Motor único de reposición (utils/reposicion.js): misma fórmula que Proveedores y Detalle.
         const rep = calcularReposicion({
           ventasDia7: item.velocity_7d,
           ventasDia30: item.velocity_30d,
           ventas30Total: item.qty_30d_total,
-          claseABC: item.category,
+          claseABC: item.claseABC,
           stock: item.stock_actual,
           stockSeguridad: item.stock_seguridad,
+          stockMinimo: item.stock_minimo,
           leadTime: item.lead_time,
+          frecuenciaCompraDias: item.frecuencia_compra_dias,
+          factorIA: item.factor_ia,
         });
         const costo = costoUnitario({ costoCompra: item.costo_compra, precio: item.precio });
 
         return {
-          id: item.id,
-          nombre: item.nombre,
+          id: item.id_producto,
+          nombre: item.nombre_producto,
           stock: item.stock_actual,
           base_load: rep.cantidadBase,
-          abc: item.category,
+          abc: item.claseABC,
           trend_val: rep.tendencia,
           trend_label: rep.tendencia > 1.2 ? 'alcista' : (rep.tendencia < 0.8 ? 'bajista' : 'estable'),
           urgencia: rep.urgencia,
+          nivel: rep.nivel,
           dias_para_agotar: rep.diasParaAgotar,
           id_proveedor: item.id_proveedor,
-          proveedor: item.proveedor_nombre,
+          proveedor: item.proveedor,
           costo_unitario: costo.costo,
           costo_estimado: costo.estimado,
-          velocity_long: { 
-              d60: parseFloat(Number(item.velocity_60d || 0).toFixed(2)), 
-              d90: parseFloat(Number(item.velocity_90d || 0).toFixed(2)) 
-          },
           risk: rep.riesgo,
-          avg_precision: item.avg_precision // Pasamos la precisión promedio para usarla luego
+          // Misma definición de "confianza" que ya usaba Proveedores para el ROP (últimas 5
+          // evaluaciones); antes el Consejero mostraba el promedio de todo el historial y nunca
+          // se lo pasaba al motor (plan 17, hallazgo E3). Sin evaluaciones, null (no un optimista 100%).
+          avg_precision: item.factor_ia
         };
       });
 
@@ -345,71 +287,25 @@ const aiController = {
     try {
       const tiendaId = req.session.tiendaId;
       if (!tiendaId) return res.status(401).json({ error: "No autorizado" });
-      const query = `
-        WITH BaseData AS (
-          SELECT
-            p.id_producto,
-            p.nombre_producto,
-            p.cantidad as stock_actual,
-            p.precio,
-            p.costo_compra,
-            p.id_proveedor,
-            pr.nombre_empresa as proveedor,
-            p.categoria,
-            p.stock_seguridad,
-            p.lead_time,
-            COALESCE(
-              (SELECT SUM(vp2.cantidad)
-               FROM VentasProductos vp2
-               JOIN Ventas v2 ON vp2.id_venta = v2.id_venta
-               WHERE vp2.id_producto = p.id_producto AND v2.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
-              ), 0) / 30.0 as velocidad_venta,
-            COALESCE(
-              (SELECT SUM(vp3.cantidad)
-               FROM VentasProductos vp3
-               JOIN Ventas v3 ON vp3.id_venta = v3.id_venta
-               WHERE vp3.id_producto = p.id_producto AND v3.fecha_salida >= CURRENT_DATE - INTERVAL '7 days'
-              ), 0) / 7.0 as velocidad_venta_7d
-          FROM Productos p
-          LEFT JOIN Proveedores pr ON pr.id_proveedor = p.id_proveedor
-          WHERE p.id_tienda = ? AND p.estado = 'Disponible'
-        ),
-        MathData AS (
-          SELECT *,
-            (velocidad_venta * 30 * precio) as revenue,
-            CASE WHEN velocidad_venta > 0.01 THEN ROUND(stock_actual / velocidad_venta) ELSE 999999 END as days_to_exhaust
-          FROM BaseData
-        ),
-        AccumData AS (
-          SELECT *,
-            SUM(revenue) OVER () as totalRevenue,
-            SUM(revenue) OVER (ORDER BY revenue DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as accum
-          FROM MathData
-        )
-        SELECT *,
-          CASE
-            WHEN totalRevenue = 0 THEN 'A'
-            WHEN (accum / totalRevenue) <= 0.8 THEN 'A'
-            WHEN (accum / totalRevenue) <= 0.95 THEN 'B'
-            ELSE 'C'
-          END as category
-        FROM AccumData
-        ORDER BY revenue DESC
-      `;
 
-      const rows = await db.allAsync(query, [tiendaId]);
+      // Mismo motor que el Consejero y Proveedores (plan 17, Fase 0): antes esta pantalla calculaba
+      // su propio "risk" con una fórmula distinta a las demás, así que un producto podía verse "en
+      // riesgo" aquí y "sano" en el Consejero (y su velocidad sumaba TODO el historial en vez de los
+      // últimos 30 días, hallazgo ya corregido antes de esta unificación).
+      const rows = await leerEntradasMotor(db, tiendaId);
 
-      // Mismo motor que el Consejero y Proveedores (utils/reposicion.js): antes esta pantalla
-      // calculaba su propio "risk" (alto/medio/bajo) con una fórmula distinta a las demás,
-      // así que un producto podía verse "en riesgo" aquí y "sano" en el Consejero.
       const finalData = rows.map(item => {
         const rep = calcularReposicion({
-          ventasDia7: item.velocidad_venta_7d,
-          ventasDia30: item.velocidad_venta,
-          claseABC: item.category,
+          ventasDia7: item.velocity_7d,
+          ventasDia30: item.velocity_30d,
+          ventas30Total: item.qty_30d_total,
+          claseABC: item.claseABC,
           stock: item.stock_actual,
           stockSeguridad: item.stock_seguridad,
+          stockMinimo: item.stock_minimo,
           leadTime: item.lead_time,
+          frecuenciaCompraDias: item.frecuencia_compra_dias,
+          factorIA: item.factor_ia,
         });
         const costo = costoUnitario({ costoCompra: item.costo_compra, precio: item.precio });
 
@@ -418,20 +314,20 @@ const aiController = {
           id_proveedor: item.id_proveedor,
           proveedor: item.proveedor,
           nombre: item.nombre_producto,
-          category: item.category,
+          category: item.claseABC,
           risk: rep.riesgo,
           urgencia: rep.urgencia,
+          nivel: rep.nivel,
           precio: item.precio,
           costo_unitario: costo.costo,
           costo_estimado: costo.estimado,
           cantidad_recomendada: rep.cantidadBase,
-          velocity: item.velocidad_venta,
+          velocity: item.velocity_30d,
           stock_actual: item.stock_actual,
           stock_seguridad: item.stock_seguridad,
           lead_time: item.lead_time,
-          // Postgres devuelve la rama ROUND(...) del CASE como numeric y la 999999 como entero;
-          // node-postgres puede entregarlos con tipos distintos, así que se compara como número.
-          days_to_exhaust: Number(item.days_to_exhaust) >= 999999 ? Infinity : Number(item.days_to_exhaust),
+          // null sin ventas que medir; el frontend ya trata null igual que "Estable"/sin días que contar.
+          days_to_exhaust: rep.diasParaAgotar,
           revenue: Math.round(item.revenue),
           rop: rep.rop
         };
@@ -469,20 +365,24 @@ const aiController = {
           WHERE v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
           GROUP BY vp.id_producto
         )
-        SELECT 
-          p.id_producto as id, 
-          p.nombre_producto as nombre, 
-          p.cantidad as stock, 
-          p.precio, 
-          p.categoria, 
+        SELECT
+          p.id_producto as id,
+          p.nombre_producto as nombre,
+          p.cantidad as stock,
+          p.precio,
+          p.categoria,
           p.fecha_vencimiento,
           p.precio_original,
           p.fecha_fin_promocion,
+          p.stock_seguridad,
+          p.stock_minimo,
+          p.lead_time,
+          p.frecuencia_compra_dias,
           COALESCE(vr.qty_30d, 0) / 30.0 as velocity_30d,
           COALESCE(vr.qty_7d, 0) / 7.0 as velocity_7d
         FROM Productos p
         LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
-        WHERE p.id_tienda = ? 
+        WHERE p.id_tienda = ?
           AND p.estado = 'Disponible'
           AND (p.fecha_fin_promocion IS NULL OR p.fecha_fin_promocion < CURRENT_DATE)
           AND p.precio_original IS NULL
@@ -499,7 +399,16 @@ const aiController = {
           : null;
         const isNearExpiry = diasParaVencer !== null && diasParaVencer < 30;
         const isOverstock = r.stock > 50 && r.velocity_30d < 1;
-        return isLowTurnover || isNearExpiry || isOverstock;
+        if (!(isLowTurnover || isNearExpiry || isOverstock)) return false;
+
+        // Plan 17, decisión 6: nunca promocionar algo que además hace falta reponer — sugerirle un
+        // descuento a un producto agotado/crítico/por reponer sería contradictorio.
+        const { nivel } = calcularReposicion({
+          ventasDia7: r.velocity_7d, ventasDia30: r.velocity_30d,
+          stock: r.stock, stockSeguridad: r.stock_seguridad, stockMinimo: r.stock_minimo,
+          leadTime: r.lead_time, frecuenciaCompraDias: r.frecuencia_compra_dias,
+        });
+        return nivel === 'ok';
       }).sort((a, b) => {
         // Productos con vencimiento próximo primero (más urgente arriba)
         // Los que no tienen fecha de vencimiento van al final

@@ -30,6 +30,7 @@ const ProductFormModal = ({
     stock_minimo: '5',
     stock_seguridad: '0',
     lead_time: '3',
+    frecuencia_compra_dias: '7',
     fecha_vencimiento: '',
     id_proveedor: ''
   };
@@ -91,6 +92,7 @@ const ProductFormModal = ({
       stock_minimo: prod.stock_minimo?.toString() || '5',
       stock_seguridad: prod.stock_seguridad?.toString() || '0',
       lead_time: prod.lead_time?.toString() || '3',
+      frecuencia_compra_dias: prod.frecuencia_compra_dias?.toString() || '7',
       fecha_vencimiento: formattedDate,
       id_proveedor: prod.id_proveedor || ''
     });
@@ -604,11 +606,11 @@ const ProductFormModal = ({
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <label htmlFor="input_stock_minimo" className="text-xs font-semibold text-slate-600 ml-1 flex items-center gap-1">
                         Stock Mínimo
-                        <Tooltip text="Cantidad mínima antes de activar alerta amarilla (Pedir más)">
+                        <Tooltip text="Piso para sugerir 'Pedir Más', además del punto de reorden que ya calcula el sistema. No decide la alerta roja de crítico/agotado.">
                           <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow" >i</span>
                         </Tooltip>
                       </label>
@@ -628,7 +630,7 @@ const ProductFormModal = ({
                     <div className="space-y-2">
                       <label htmlFor="input_stock_seguridad" className="text-xs font-semibold text-slate-600 ml-1 flex items-center gap-1">
                         Stock Seguridad
-                        <Tooltip text="Colchón de emergencia. Si baja de aquí, se activa alerta roja (Agotado)">
+                        <Tooltip text="Colchón de emergencia: si el stock baja de aquí (o llega a 0), se marca crítico/agotado y aparece en el Consejero.">
                           <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow" >i</span>
                         </Tooltip>
                       </label>
@@ -664,6 +666,23 @@ const ProductFormModal = ({
                         className={`w-full p-3 border rounded-lg text-sm font-bold outline-none text-center transition-all duration-500 ${updatedFields.includes('lead_time') ? 'bg-azul/10 border-azul/30 ring-2 ring-azul/30 text-azul' : 'bg-white border-azul/30 text-azul focus:border-azul'}`}
                       />
                       <p className="text-xs text-slate-500 font-bold text-center">Días de entrega</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="input_frecuencia_compra_dias" className="text-xs font-semibold text-slate-600 ml-1 flex items-center gap-1">
+                        Frecuencia de Compra
+                        <Tooltip text="Cada cuántos días sueles pedir este producto. Define hasta cuándo se avisa 'Pedir en esta compra' antes de que se agote." align="right">
+                          <span className="text-slate-400/80 hover:text-azul font-normal normal-case tracking-normal cursor-help transition-colors text-xs border border-slate-200 rounded-full w-4 h-4 flex items-center justify-center bg-white shadow-sm hover:shadow" >i</span>
+                        </Tooltip>
+                      </label>
+                      <input
+                        type="number"
+                        id="input_frecuencia_compra_dias"
+                        min="1"
+                        value={formData.frecuencia_compra_dias}
+                        onChange={e => setFormData({ ...formData, frecuencia_compra_dias: e.target.value })}
+                        className="w-full p-3 border rounded-lg text-sm font-bold outline-none text-center transition-colors bg-white border-slate-200 text-tinta focus:border-azul"
+                      />
+                      <p className="text-xs text-slate-500 font-bold text-center">Días entre compras</p>
                     </div>
                   </div>
                 </div>

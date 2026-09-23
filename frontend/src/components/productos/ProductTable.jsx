@@ -23,12 +23,6 @@ const ProductTable = ({
 }) => {
   const navigate = useNavigate();
 
-  const calcNivelStock = (prod) => {
-    if (prod.cantidad <= prod.stock_minimo) return 'critico';
-    if (prod.cantidad <= prod.stock_minimo * 1.5) return 'bajo';
-    return 'ok';
-  };
-
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -65,9 +59,12 @@ const ProductTable = ({
             ) : (
               productos.map(p => {
                 const isActive = p.estado === 'Disponible';
-                const nivelStock = calcNivelStock(p);
-                const isCritico = nivelStock === 'critico';
-                const isBajo = nivelStock === 'bajo';
+                // Nivel calculado en el backend (plan 17): agotado (stock 0) / critico / reponer / ok.
+                // Antes cada pantalla lo recalculaba a su manera y podían no coincidir entre sí.
+                const nivel = p.nivel_stock;
+                const isAgotado = nivel === 'agotado';
+                const isCritico = nivel === 'critico';
+                const isReponer = nivel === 'reponer';
 
                 return (
                   <tr key={p.id_producto} className={`group transition-colors hover:bg-slate-50 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
@@ -92,20 +89,20 @@ const ProductTable = ({
                     <td className="p-6 text-center">
                       <div className="flex items-center justify-center gap-2">
                          <span className="flex flex-col items-center leading-tight">
-                           <span className={`text-xl font-bold ${isCritico ? 'text-peligro' : isBajo ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
+                           <span className={`text-xl font-bold ${isAgotado || isCritico ? 'text-peligro' : isReponer ? 'text-aviso' : 'text-tinta'}`}>{p.cantidad}</span>
                            <span className="text-xs text-slate-500 font-bold">ud</span>
                          </span>
-                         {isCritico && (
+                         {(isAgotado || isCritico) && (
                            <button onClick={() => navigate(`/analisis-detallado?producto=${p.id_producto}`)} title="Ver más información y qué se recomienda hacer" className="bg-peligro-suave text-peligro text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-rose-200 shadow-sm animate-pulse hover:bg-rose-200 transition-colors transition-transform cursor-pointer flex items-center gap-1">
-                             {p.cantidad === 0 ? 'Agotado' : 'Por agotarse'} <ArrowRight size={10} />
+                             {isAgotado ? 'Agotado' : 'Por agotarse'} <ArrowRight size={10} />
                            </button>
                          )}
-                         {isBajo && (
+                         {isReponer && (
                            <button onClick={() => navigate(`/analisis-detallado?producto=${p.id_producto}`)} title="Ver más información y qué se recomienda hacer" className="bg-aviso-suave text-aviso text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-amber-200 hover:bg-amber-200 transition-colors transition-transform cursor-pointer flex items-center gap-1">
                              Pedir Más <ArrowRight size={10} />
                            </button>
                          )}
-                         {!isCritico && !isBajo && isActive && <span className="bg-emerald-50 text-exito text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-exito-suave">Suficiente</span>}
+                         {!isAgotado && !isCritico && !isReponer && isActive && <span className="bg-emerald-50 text-exito text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border border-exito-suave">Suficiente</span>}
                       </div>
                     </td>
                     <td className="hidden sm:table-cell p-6 text-center">

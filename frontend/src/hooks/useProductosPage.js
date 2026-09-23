@@ -144,20 +144,6 @@ export const useProductosPage = () => {
     };
   }, [cargarProductos, fetchProveedores]);
 
-  const calcNivelStock = useCallback((p) => {
-    const velocity = p.velocity || 0;
-    const leadTime = p.lead_time || 3;
-    const stockSeguridad = p.stock_seguridad || 0;
-    const stockMinimo = p.stock_minimo || 5;
-    const rop = (velocity * leadTime) + stockSeguridad;
-    const umbralCritico = Math.max(stockSeguridad, Math.ceil(velocity * 2));
-    const umbralBajo = Math.max(rop, stockMinimo);
-
-    if (p.cantidad <= umbralCritico) return 'critico';
-    if (p.cantidad <= umbralBajo) return 'bajo';
-    return 'ok';
-  }, []);
-
   const handleFileUpload = async (file) => {
     if (!file) return;
     const uploadFormData = new FormData();
@@ -355,16 +341,17 @@ export const useProductosPage = () => {
       if (a.estado !== b.estado) {
         return a.estado === 'Disponible' ? -1 : 1;
       }
-      const nivelA = calcNivelStock(a);
-      const nivelB = calcNivelStock(b);
-      const pesos = { 'critico': 1, 'bajo': 2, 'ok': 3 };
-      
-      if (pesos[nivelA] !== pesos[nivelB]) {
-        return pesos[nivelA] - pesos[nivelB];
+      // Nivel calculado en el backend (plan 17): agotado (stock 0) / critico / reponer / ok.
+      const pesos = { agotado: 1, critico: 2, reponer: 3, ok: 4 };
+      const pesoA = pesos[a.nivel_stock] ?? 4;
+      const pesoB = pesos[b.nivel_stock] ?? 4;
+
+      if (pesoA !== pesoB) {
+        return pesoA - pesoB;
       }
       return a.nombre_producto.localeCompare(b.nombre_producto);
     });
-  }, [productos, filtroTexto, filtroCategoria, filtroEstado, calcNivelStock]);
+  }, [productos, filtroTexto, filtroCategoria, filtroEstado]);
 
   return {
     isAdmin,
