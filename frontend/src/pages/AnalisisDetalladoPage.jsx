@@ -4,13 +4,10 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { ArrowLeft, Rocket, BarChart2, Clock, ShoppingCart, Check, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { esEstable, formatDias } from '../utils/diasCobertura';
 
 const chipRiesgo = (r) => (r === 'CRÍTICO' ? 'bg-rose-500' : r === 'MEDIO' ? 'bg-ambar' : 'bg-exito');
 const chipUrgencia = (u) => (u === 'Pide hoy' ? 'bg-peligro-suave text-peligro border-peligro/30' : u === 'En esta compra' ? 'bg-aviso-suave text-aviso border-aviso/30' : 'bg-slate-100 text-slate-600 border-slate-200');
-// Sin ventas que medir, el backend manda Infinity, que JSON convierte en null: no es que "sea
-// estable", es que no hay con qué calcular cuánto durará (por eso el texto lo aclara).
-const esEstable = (d) => d === null || d === Infinity;
-const formatDias = (d) => (esEstable(d) ? 'Sin ventas recientes' : `${d} días`);
 
 const AnalisisDetalladoPage = () => {
   const [data, setData] = useState([]);

@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../components/CustomSelect';
 import { FlaskConical, Package } from 'lucide-react';
+import { esEstable, formatDias } from '../utils/diasCobertura';
 
 const SimuladorPage = () => {
   const [products, setProducts] = useState([]);
@@ -333,17 +334,20 @@ const SimuladorPage = () => {
                   <td className="p-6 text-center">
                     <div className="flex flex-col items-center">
                       <span className={`text-sm font-bold ${
-                        p.days_to_exhaust < 7 ? 'text-peligro' : 
+                        esEstable(p.days_to_exhaust) ? 'text-slate-500' :
+                        p.days_to_exhaust < 7 ? 'text-peligro' :
                         p.days_to_exhaust < 15 ? 'text-aviso' : 'text-exito'
                       }`}>
-                        {p.days_to_exhaust === Infinity ? '∞' : p.days_to_exhaust} días
+                        {formatDias(p.days_to_exhaust)}
                       </span>
-                      <div className="w-12 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                        <div 
-                          className={`h-full ${p.days_to_exhaust < 15 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                          style={{ width: `${Math.min(100, (p.days_to_exhaust / 30) * 100)}%` }}
-                        ></div>
-                      </div>
+                      {!esEstable(p.days_to_exhaust) && (
+                        <div className="w-12 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                          <div
+                            className={`h-full ${p.days_to_exhaust < 15 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                            style={{ width: `${Math.min(100, (p.days_to_exhaust / 30) * 100)}%` }}
+                          ></div>
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="p-6 text-center">
