@@ -58,6 +58,10 @@ const SimuladorPage = () => {
       const cost = needed * (unitPrice / 1.3); // Estimamos costo como 70% del precio
       return {
         ...p,
+        // Plan 17: el motor ahora devuelve `null` (no `Infinity`) cuando no hay ventas para medir
+        // días de agotamiento. Se normaliza aquí para no romper el orden ni los umbrales de abajo,
+        // que ya asumían Infinity para "nunca se agota".
+        days_to_exhaust: p.days_to_exhaust === null || p.days_to_exhaust === undefined ? Infinity : p.days_to_exhaust,
         needed,
         simulatedCost: Math.round(cost),
         isExcludedManual: excludedIds.has(p.id_producto)
