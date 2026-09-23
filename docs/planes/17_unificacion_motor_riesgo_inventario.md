@@ -1,7 +1,7 @@
 # Plan 17: Unificación del motor de riesgo de inventario
 
-**Estado:** Propuesta de diseño, sin implementar. Continúa el trabajo ya hecho en la sesión actual (Consejero IA, Proveedores y Detalle de Productos ya comparten `utils/reposicion.js`; el aviso de Catálogo ya lee `/api/alertas`).
-**Fecha:** 2026-09-23
+**Estado:** Propuesta de diseño revisada y corregida (v2), sin implementar. Continúa el trabajo ya hecho en la sesión actual (Consejero IA, Proveedores y Detalle de Productos ya comparten `utils/reposicion.js`; el aviso de Catálogo ya lee `/api/alertas`). Ver sección 7 para lo que cambió respecto a la v1 y por qué.
+**Fecha:** 2026-09-23 (v1) · 2026-09-24 (v2, tras una segunda revisión externa verificada contra el código)
 **Depende de / relacionado con:** plan 13 (`13_plan_consejero_ia_a_borrador_de_orden.md`) y plan 16 (`16_plan_consejero_ia_fase_e_cierre_del_ciclo.md`), que introdujeron `utils/reposicion.js` como motor único de reposición para el Consejero IA y Proveedores.
 
 ---
@@ -208,3 +208,88 @@ Como `Alert.generate` ya calcula `v30`/`v7` por su cuenta (`models/Alert.js:49-5
 | 6. Consolidar las 7 consultas de velocidad | **Alta (opcional)** | Toca 7 archivos y potencialmente el esquema (vista SQL); alto riesgo de introducir de nuevo el tipo de bug que ya se corrigió si no se hace con cuidado; no bloquea el resto del plan |
 
 **Orden recomendado:** 1 → 2 → 3 → 4 → 5, dejando 6 como mejora técnica separada y opcional, a decidir después de ver el impacto real de las fases 1-5 en la tienda de prueba.
+
+---
+
+## 7. Segunda revisión (2026-09-24): errores encontrados en la v1 y correcciones aplicadas
+
+El usuario pidió una segunda opinión sobre este plan antes de implementarlo. Cada afirmación de esa revisión se comprobó de nuevo, directamente contra el código y ejecutando `utils/reposicion.js` con los mismos números — no se tomó nada por buena fe. **Las nueve afirmaciones técnicas (E1-E4, O2-O5) se confirmaron exactas al 100 %.** Esta sección reemplaza las partes de la v1 que quedaron mal.
+
+### 7.1 E1 — Bug activo, ya en producción (el más urgente de todo el plan)
+
+**Esto no es un defecto del plan: es un bug real en código que ya está en `main`.** La v1 (§1.2) afirmaba que `calcularReposicion` con stock 0 y sin ventas da `CRÍTICO + "Pide hoy"`. Verificado que es falso en el caso más común (`stock_seguridad = 0`, el valor por defecto del esquema):
+
+```
+calcularReposicion({ ventasDia7:0, ventasDia30:0, stock:0, stockSeguridad:0, leadTime:3, claseABC:'C' })
+→ { cantidadBase: 0, riesgo: 'CRÍTICO', urgencia: 'Puede esperar' }
+```
+
+Motivo: toda la lógica de `urgencia` en `utils/reposicion.js:63-70` vive dentro de `if (cantidadBase > 0)`. Con `stockSeguridad = 0`, el "stock objetivo" también es 0, así que `cantidadBase` es 0 y el `if` nunca se ejecuta — la urgencia se queda en su valor inicial, `"Puede esperar"`. El arreglo de esta misma sesión para "Leche Alquería" (commit `a288976`) no cubre este caso porque esa prueba usa `stockSeguridad: 4` (no 0).
+
+**Efecto real:** un producto nuevo, sin historial de ventas y sin `stock_seguridad` configurado (el caso más común para cualquier producto recién creado) se ve `CRÍTICO` pero "Puede esperar" en el Consejero y en Detalle de Productos, **y el Consejero ni lo muestra** porque filtra por `base_load > 0` (`utils/recomendacionesDashboard.js`). Es decir: el producto que más necesita atención (agotado, sin datos) es justo el que el Consejero calla.
+
+**Corrección para `utils/reposicion.js`:**
+- `stock <= 0` debe dar `"Pide hoy"` siempre, sin pasar por el `if (cantidadBase > 0)`.
+- Un producto sin historial de ventas necesita un piso de reposición aunque `stockObjetivo` salga en 0; usar `max(stockSeguridad, stockMinimo) - stock` como mínimo (ver también la pregunta 4 revisada, sección 7.5).
+
+**Esto cambia lo que ya muestran el Consejero y Proveedores para este caso específico** (hoy: nada; después: aparecería). Hay que declararlo así en el checklist de la Fase 1 y probarlo con un producto real de la tienda de prueba en ese estado exacto (`stock_seguridad` en 0, sin ventas, stock 0), antes de dar la fase por lista.
+
+### 7.2 E2 — El Consejero y Proveedores pueden pedir cantidades muy distintas del mismo producto, hoy mismo
+
+La v1 (§1.4) decía que ambos reutilizan `Productos.clasificacion_abc` persistida. Verificado que **ninguno la lee**: cada uno recalcula el ABC con su propia consulta SQL, y la de `suppliersController.getSupplierForecast` (`suppliersController.js:91-133`) lo hace **solo entre los productos de ese proveedor** (`WHERE p.id_proveedor = ?`), mientras que `aiController` (Consejero y Detalle) lo hace con **toda la tienda**. Reproducido con los números exactos de la revisión (`v=2/día`, `stock=10`, `seguridad=4`, `leadTime=3`):
+
+```
+claseABC='A' (15 días de cobertura) → cantidadBase = 24
+claseABC='C' (45 días de cobertura) → cantidadBase = 84
+```
+
+Un mismo producto puede clasificar A en el Consejero (top ventas de toda la tienda) y C en Proveedores (poco relevante dentro de ese proveedor en particular), y la cantidad a pedir sale 3,5 veces distinta. La promesa central de este plan y del plan 13 ("la misma cantidad en toda la app") **no se cumple hoy** para tiendas con más de un proveedor.
+
+**Corrección:** el ABC es una entrada del motor, no un detalle de cada pantalla. Definir una sola fuente — la columna `Productos.clasificacion_abc` que ya persiste `Alert.generate` sobre toda la tienda — y que los tres controladores la lean en vez de recalcularla cada uno a su manera.
+
+### 7.3 E3 — El factor de aprendizaje de la IA solo llega al motor desde una pantalla
+
+Verificado: `suppliersController.getSupplierForecast` pasa `factorIA: item.factor_ia` (promedio de las últimas 5 evaluaciones de `Feedback_IA`) a `calcularReposicion`. **`aiController.getDashboardRecommendations` no pasa `factorIA` en ningún punto de su llamada** (`aiController.js:187-195` — se confirmó con `grep -n "factorIA" controllers/aiController.js`, cero resultados), así que el Consejero y Detalle de Productos siempre usan el valor por defecto (`1`, sin ajuste), aunque el Consejero sí calcula por su cuenta un `avg_precision` (con otra definición: promedio de *todo* el historial, no las últimas 5) que usa solo para mostrar el "% de confianza" en la tarjeta, nunca para el cálculo del ROP.
+
+**Corrección:** decidir si el factor de aprendizaje debe aplicar en todas las pantallas o en ninguna, usar una sola definición (últimas 5 evaluaciones, como ya hace Proveedores), y pasarlo también en el Consejero. `Alert.generate` necesitaría este dato nuevo si también se unifica en la Fase 4.
+
+### 7.4 E4 — La Fase 5 original apuntaba a una pantalla que no existe
+
+Verificado con `grep` en todo `frontend/src`: nada llama a `/api/dashboard/stats/advanced` ni usa `nivelServicio`. Solo `/api/dashboard/stats` (la ruta básica, distinta) tiene consumidores reales (`Sidebar.jsx`, `AnalyticsDashboardPage.jsx`, `DashboardPage.jsx`). El "Nivel de Servicio Estimado" que describía la Fase 5 de la v1 es una respuesta de API sin nada en pantalla que la muestre.
+
+**Corrección:** la Fase 5 cambia de "unificar la fórmula" a "decidir si se conecta a alguna pantalla o se elimina" (ver sección 7.6, Fase 5 revisada). De paso se confirmó lo mismo para dos endpoints más (`GET /api/ia/alerts` y `Product.findBelowMinStock`, sección 7.5, pregunta 6 / hallazgo adicional) — código sin ningún punto de entrada en el frontend, candidato a eliminar en vez de unificar.
+
+### 7.5 Hallazgos adicionales verificados (no estaban en la v1)
+
+- **O2 — Las alertas de `Alert.js` solo se recalculan tras una venta.** Confirmado por `grep`: `Alert.generate` solo se llama desde `saleController.js:166,286` (fire-and-forget, sin `await`) y manualmente desde `AlertasPage.jsx`. **No se llama** desde `suppliersController.js` (ni siquiera desde el `completarRecepcion` de la Fase E de esta misma sesión — un producto que se recibe hoy no actualiza sus alertas hasta la próxima venta), ni desde `productController.js` (crear/editar producto, agregar stock), ni desde ningún endpoint de `inventoryController.js`. Si se unifica la Fase 4 sin corregir esto, Catálogo (en vivo) y Monitor Alertas/campanita (solo tras venta) van a seguir diciendo cosas distintas después de recibir mercancía.
+- **O3 — `Alert.generate` no es atómico.** Confirmado por lectura: no usa transacción ni bloqueo (`models/Alert.js:8-13`); resuelve *todas* las alertas activas de la tienda y las vuelve a insertar en cada llamada. Dos ventas casi simultáneas (común en el POS) pueden pisarse: alertas duplicadas, `fecha_creacion` reiniciada, conteos inflados. No se reprodujo la condición de carrera en vivo (haría falta forzar dos ventas al mismo milisegundo), pero el patrón de código (sin `pg_advisory_xact_lock`, sin *upsert*) es exactamente el que en esta sesión motivó usar ese candado en los endpoints nuevos de `ordenBorradorController.js`.
+- **O4 — "Productos Agotados" del Dashboard mezcla vencimiento con quiebre de stock, y cuenta alertas, no productos.** Confirmado: `Alert.getStats` (`models/Alert.js:157-164`) agrupa `COUNT(*)` por `severidad`, sin distinguir `tipo` ni usar `DISTINCT id_producto`. Ese número alimenta literalmente el texto `"{N} Productos Agotados"` / `"Requieren reabastecimiento urgente"` en `DashboardPage.jsx:536`. Un producto a punto de vencer (no de agotarse) hoy suma a esa cifra y su nombre aparece bajo un texto que no le corresponde. Esto es un bug de redacción/datos independiente de la unificación, ya activo en producción.
+- **O5 — Código muerto y valores por defecto que no coinciden.** Confirmado: `Product.findBelowMinStock` (`models/Product.js:137`) no tiene ningún llamador en todo el repositorio. `Product.findProAlerts`, en cambio, sí se usa (`aiController.js:692`, ruta `GET /api/ia/alerts`), pero **sin consumidor en el frontend** (verificado por `grep`), así que hoy no le llega a nadie. El endpoint de sugerencias de IA para el formulario de producto (`aiController.js:818-870`, `suggestStockAlerts`) sugiere `stock_seguridad: 2` como valor por defecto cuando no hay historial, mientras que el esquema (`database/init_pg.sql`) usa `0`. Y `clasificacion_abc` tiene el default `'C'` en el esquema (`init_pg.sql:97`) contra `'A'` cuando toda la tienda no ha vendido nada (`Alert.js:32`, el caso `totalRevenue = 0`).
+
+### 7.6 Fases revisadas
+
+Se ajustan las fases 0-5 de la sección 2 así (los números de fase se mantienen; donde se agrega una fase nueva se marca):
+
+- **Fase 0 (nueva, antes de la Fase 1):** resolver las preguntas 1, 2 y 4 (revisadas en 7.7) y construir una sola función `leerEntradasMotor(tiendaId, filtro)` — una consulta con `v7`, `v30`, `qty30`, ABC de toda la tienda y el factor de aprendizaje (últimas 5 evaluaciones) — que use el Consejero, Detalle de Productos y Proveedores. Esto corrige E2 y E3 antes de tocar ninguna pantalla.
+- **Fase 1:** además de lo ya descrito, corrige E1 (`stock <= 0` → siempre "Pide hoy"; piso de reposición para productos sin historial) y define el nivel de Catálogo con una **matriz explícita** en vez de derivarlo solo de `riesgo`: **agotado** = `stock <= 0`; **crítico** = `urgencia === "Pide hoy"`; **bajo** = días para agotarse ≤ `lead_time + frecuencia_compra_dias`, o `stock <= max(rop, stock_minimo)`; **ok** = el resto. (Motivo: `riesgo` depende solo del stock, `urgencia`/`Alert.js` dependen del tiempo; con `stock_seguridad = 0` — el caso más común — divergen todo el tiempo. Basar el nivel únicamente en `riesgo` haría que la Fase 4 le quitara al usuario la mayoría de las alertas `stock_bajo` que ve hoy.) Tests con `stockSeguridad: 0` en todos los casos límite, no solo con valores ya "configurados".
+- **Fase 2:** sin cambios de fondo, salvo que ya no hay que "verificar el nombre exacto del handler" — confirmado que es `ProductController.getProducts` (`productRoutes.js:47`). Hay que sumarle `v7` a la consulta (hoy `findByStore` solo trae `v30`) para que la matriz de la Fase 1 se pueda calcular completa.
+- **Fase 2b (nueva):** diagnóstico de datos antes de tocar Catálogo — cuántos productos de la tienda de prueba (y, cuando aplique, de tiendas reales) tienen `stock_seguridad = 0` o `lead_time`/`frecuencia_compra_dias` en su valor por defecto, para anticipar cuántas etiquetas van a cambiar en la Fase 3.
+- **Fase 3:** sin cambios de fondo, más O7: actualizar el tooltip de `stock_seguridad` en `ProductFormModal.jsx:631` (hoy promete algo que ninguna regla cumplía) y la columna "Alerta Mínima" del reporte Excel (`reportController.js:183`) para que reflejen la matriz final.
+- **Fase 4:** se reordena en cuatro pasos internos, del más seguro al más delicado: **(a)** modo *dry-run* — calcular las alertas nuevas sin insertarlas y comparar contra las activas de hoy, para toda la tienda de prueba, en vez de revisar a mano; **(b)** envolver `Alert.generate` en una transacción con `pg_advisory_xact_lock(id_tienda)` y pasar de "resolver todo y reinsertar todo" a un *upsert* (corrige O3); **(c)** disparar `Alert.generate` también al recibir una orden de proveedor, al editar/crear un producto y en los movimientos manuales de inventario, no solo tras una venta (corrige O2); **(d)** `Alert.getStats` agrupado por `tipo` y con `COUNT(DISTINCT id_producto)`, y que el Dashboard y el banner de Catálogo separen alertas de stock de las de vencimiento (corrige O4).
+- **Fase 5:** cambia de "unificar la fórmula de Nivel de Servicio" a **"decidir si `stats/advanced`, `GET /api/ia/alerts` y `Product.findBelowMinStock` se eliminan o se conectan a algo"** (corrige E4 y O5), ya que ninguno tiene consumidor real hoy. Si el usuario decide conservar el KPI de Nivel de Servicio, que sea "% de productos en nivel `ok`" del motor ya unificado, no una fórmula aparte.
+- **Fase 6:** sin cambios (opcional, consolidar las consultas SQL de velocidad).
+
+### 7.7 Preguntas abiertas: respuestas recomendadas (revisadas)
+
+Las seis preguntas de la sección 3 se mantienen; esto es lo que se recomienda responder, a confirmar por el usuario antes de la Fase 0:
+
+1. **Niveles de Catálogo:** cuatro (agotado/crítico/bajo/ok), con "agotado" (`stock <= 0`) como caso aparte porque es gratis de calcular y es el más accionable para un tendero.
+2. **Ventana "Esta semana": `+7` fijo o `frecuencia_compra_dias`:** usar `frecuencia_compra_dias`. El campo ya existe, ya lo usa `Alert.js`, y su valor por defecto es 7 — así que para los productos que nunca lo configuraron el resultado no cambia respecto a hoy, y las notificaciones actuales no se alteran de golpe.
+3. **Alertas históricas:** no se recalculan; se agrega un campo `motor: "v2"` en el `datos_json` de las alertas nuevas, para poder distinguir en auditoría cuáles se generaron con la fórmula unificada.
+4. **`stock_minimo`:** se conserva como piso del nivel "bajo" (`max(rop, stock_minimo)`), tal como ya hace el hook de ordenamiento hoy, y sirve además de respaldo para el piso de reposición de productos sin historial (E1).
+5. **Nivel de Servicio Estimado:** primero confirmar si el usuario quiere conservarlo en alguna pantalla (hoy no se muestra en ninguna, E4); si se conserva, que sea el % de productos en nivel `ok` del motor unificado, no una fórmula aparte que pueda contradecir las alertas reales.
+6. **Promociones (`getPromotionSuggestions`):** se mantiene como lógica separada (no es "riesgo de quiebre", es lo opuesto), pero debería consumir las mismas entradas de velocidad de la Fase 0 en vez de tener su propia consulta SQL — evita una octava copia de la misma consulta.
+
+### 7.8 Qué queda sin verificar
+
+Esta revisión se hizo por lectura y ejecución aislada de funciones puras (`utils/reposicion.js`), igual que la anterior; no se reprodujo en vivo la condición de carrera de O3 (haría falta forzar dos ventas simultáneas contra la tienda de prueba), no se revisaron las páginas de autenticación ni la landing, y no se ejecutó la suite completa de Playwright de sesiones anteriores para confirmar que ninguna pantalla ya verificada (Consejero, Proveedores, Detalle de Productos) cambió de comportamiento — no debería, porque estas correcciones se proponen para la Fase 0/1, antes de que esas pantallas se vuelvan a tocar, pero queda como parte del checklist de la Fase 0 cuando se implemente.
