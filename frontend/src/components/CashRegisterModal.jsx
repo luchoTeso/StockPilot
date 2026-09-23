@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { X, Lock, Unlock, Landmark, Calculator } from 'lucide-react';
+import ErrorState from './common/ErrorState';
 
 const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
   const [session, setSession] = useState(null);
+  // Sin esto, una consulta fallida (red, límite de peticiones) se veía igual que "no hay turno
+  // abierto" y el modal ofrecía "Abrir Turno" aunque en realidad sí hubiera uno en curso.
+  const [loadError, setLoadError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [montoApertura, setMontoApertura] = useState('');
   const [montoCierre, setMontoCierre] = useState('');
@@ -13,6 +17,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
   const fetchSession = async () => {
     try {
       setLoading(true);
+      setLoadError(false);
       const res = await axios.get('/api/caja/sesion');
       if (res.data.active) {
         setSession(res.data.session);
@@ -23,6 +28,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
       }
     } catch (error) {
       console.error('Error fetching session:', error);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -92,7 +98,7 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden border border-slate-100 relative">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
           <h3 className="titular text-2xl text-tinta">
-            {session ? 'Cerrar Caja (Arqueo)' : 'Abrir Caja'}
+            {loadError ? 'Caja' : session ? 'Cerrar Caja (Arqueo)' : 'Abrir Caja'}
           </h3>
           <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-rose-50 text-slate-500 hover:text-rose-500 transition-colors shadow-sm">
             <X size={20} />
@@ -104,6 +110,12 @@ const CashRegisterModal = ({ isOpen, onClose, onStatusChange }) => {
             <div className="flex justify-center p-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-azul"></div>
             </div>
+          ) : loadError ? (
+            <ErrorState
+              title="No pudimos consultar la caja"
+              message="No sabemos si ya tienes un turno abierto, así que por seguridad no se ofrece abrir uno nuevo. Vuelve a intentarlo."
+              onRetry={fetchSession}
+            />
           ) : session ? (
             <form onSubmit={handleCloseRegister} className="space-y-6">
               <div className="text-center mb-6">

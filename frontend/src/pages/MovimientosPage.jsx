@@ -368,7 +368,7 @@ const MovimientosPage = () => {
                   <tr className="bg-menu text-xs font-bold text-white whitespace-nowrap">
                     <th className="p-6 pl-8">Fecha</th>
                     <th className="p-6">Tipo</th>
-                    <th className="p-6">Producto</th>
+                    <th className="p-6 min-w-[200px]">Producto</th>
                     <th className="p-6">Categoría</th>
                     <th className="p-6 text-center">Cantidad</th>
                     <th className="p-6">Observación</th>
@@ -401,7 +401,7 @@ const MovimientosPage = () => {
                               {m.tipo_movimiento}
                             </span>
                           </td>
-                          <td className="p-6 font-bold text-tinta">{m.nombre_producto}</td>
+                          <td className="p-6 font-bold text-tinta min-w-[200px] max-w-xs"><span className="line-clamp-2" title={m.nombre_producto}>{m.nombre_producto}</span></td>
                           <td className="p-6 text-slate-500 font-medium">{m.categoria || '-'}</td>
                           <td className={`p-6 text-center font-bold text-lg ${textColor}`}>{cantidadDisplay}</td>
                           <td className="p-6 text-slate-500 text-xs max-w-[200px] truncate" title={m.observacion}>{m.observacion || '-'}</td>

@@ -35,7 +35,7 @@ const ProductTable = ({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-100 text-xs font-bold text-slate-500 bg-slate-50/50">
-              <th className="p-6">Producto / Identificación</th>
+              <th className="p-6 min-w-[220px]">Producto / Identificación</th>
               <th className="hidden lg:table-cell p-6">Categoría</th>
               <th className="p-6 text-center">Disponibilidad</th>
               <th className="hidden sm:table-cell p-6 text-center">Estado</th>
@@ -71,8 +71,8 @@ const ProductTable = ({
 
                 return (
                   <tr key={p.id_producto} className={`group transition-colors hover:bg-slate-50 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
-                    <td className="p-6">
-                       <p className="font-bold text-tinta text-sm">{p.nombre_producto}</p>
+                    <td className="p-6 min-w-[220px] max-w-xs">
+                       <p className="font-bold text-tinta text-sm line-clamp-2" title={p.nombre_producto}>{p.nombre_producto}</p>
                        <div className="flex flex-wrap items-center gap-2 mt-1">
                          {(p.codigo_barras || p.codigo) && (
                            <span className="text-xs font-bold text-azul font-mono bg-azul/10 px-2 py-0.5 rounded border border-azul/30 flex items-center gap-1">
