@@ -22,9 +22,22 @@ describe('calcularReposicion', () => {
     const r = calcularReposicion({ ...base, stock: 16 }); // 8 días, lead 3 → ≤ 10
     expect(r.urgencia).toBe('Esta semana');
   });
-  it('sin ventas no hay días para agotar ni urgencia', () => {
-    const r = calcularReposicion({ ...base, ventasDia7: 0, ventasDia30: 0, ventas30Total: 0, stock: 1 });
+  it('sin ventas y stock crítico → Pide hoy aunque no haya días para agotar que calcular (caso Leche Alquería)', () => {
+    const r = calcularReposicion({ ...base, ventasDia7: 0, ventasDia30: 0, ventas30Total: 0, stock: 1 }); // stock 1 < seguridad 4
     expect(r.diasParaAgotar).toBeNull();
+    expect(r.riesgo).toBe('CRÍTICO');
+    expect(r.urgencia).toBe('Pide hoy');
+  });
+  it('sin ventas pero con stock sano (no crítico) → Puede esperar', () => {
+    const r = calcularReposicion({ ...base, ventasDia7: 0, ventasDia30: 0, ventas30Total: 0, stock: 20 }); // stock 20 > seguridad 4
+    expect(r.diasParaAgotar).toBeNull();
+    expect(r.riesgo).toBe('BAJO');
+    expect(r.urgencia).toBe('Puede esperar');
+  });
+  it('crítico pero con ventas que dan muchos días de cobertura → manda el cálculo real, no el riesgo (caso Papas Margarita)', () => {
+    const r = calcularReposicion({ ...base, ventasDia7: 0.03, ventasDia30: 0.03, ventas30Total: 1, stock: 11, stockSeguridad: 20 });
+    expect(r.riesgo).toBe('CRÍTICO'); // 11 < 20
+    expect(r.diasParaAgotar).toBeGreaterThan(base.leadTime + 7);
     expect(r.urgencia).toBe('Puede esperar');
   });
   it('sin stock y con demanda → Pide hoy', () => {

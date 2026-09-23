@@ -173,7 +173,7 @@ const aiController = {
         return res.json({ cached: true, recommendations: tiendaCache.recommendations });
       }
       // 2. BD (sobrevive reinicios de Railway — evita llamada a OpenAI si los datos no cambiaron)
-      const dbCached = await dbCacheGet(`RECS_V3_${tiendaId}`, currentHash);
+      const dbCached = await dbCacheGet(`RECS_V4_${tiendaId}`, currentHash);
       if (dbCached) {
         aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: dbCached, timestamp: new Date() };
         return res.json({ cached: true, recommendations: dbCached });
@@ -225,7 +225,7 @@ const aiController = {
       // Sin productos por reponer no hay nada que sugerir: se responde vacío y se evita una llamada a OpenAI.
       if (contextItemsForAI.length === 0) {
         aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: [], timestamp: new Date() };
-        dbCacheSet(`RECS_V3_${tiendaId}`, currentHash, []);
+        dbCacheSet(`RECS_V4_${tiendaId}`, currentHash, []);
         return res.json({ cached: false, recommendations: [] });
       }
 
@@ -315,7 +315,7 @@ const aiController = {
 
       // 6. Guardar en memoria y en BD (persiste entre reinicios)
       aiCache_v3[tiendaId] = { dataHash: currentHash, recommendations: finalRecommendations, timestamp: new Date() };
-      dbCacheSet(`RECS_V3_${tiendaId}`, currentHash, finalRecommendations);
+      dbCacheSet(`RECS_V4_${tiendaId}`, currentHash, finalRecommendations);
 
       res.json({ cached: false, recommendations: finalRecommendations });
 
