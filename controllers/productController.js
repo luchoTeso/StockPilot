@@ -4,6 +4,7 @@ const { safeError, verifyProductOwnership } = require('../utils/securityUtils');
 const ExcelJS = require('exceljs');
 const stream = require('stream');
 const Notification = require('../models/Notification');
+const Alert = require('../models/Alert');
 const db = require('../config/database');
 const { calcularReposicion } = require('../utils/reposicion');
 const { leerEntradasMotor } = require('../utils/entradasMotor');
@@ -211,7 +212,13 @@ class ProductController {
 
             // Guardamos el registro limpio en la base de datos
             await Product.create(productInstance.toDBRecord());
-            
+
+            // Plan 17, Fase 4 (hallazgo O2): antes las alertas solo se regeneraban tras una venta, así
+            // que un producto creado ya crítico (o con stock_seguridad/frecuencia de compra que lo
+            // ponen así) no aparecía en Monitor Alertas hasta la primera venta. Fire-and-forget: no debe
+            // bloquear la respuesta ni fallar el registro si la regeneración tiene un problema.
+            Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas post-creación:', e));
+
             res.json({ success: true, message: "Producto registrado correctamente" });
         } catch (error) {
             console.error('Error creando producto:', error);
@@ -275,7 +282,12 @@ class ProductController {
                     });
                 }
             }
-            
+
+            // Plan 17, Fase 4 (hallazgo O2): editar stock_seguridad, stock_minimo, lead_time o
+            // frecuencia_compra_dias cambia si el producto debería estar en alerta, sin que medie
+            // ninguna venta. Fire-and-forget, igual que tras una venta.
+            Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas post-edición:', e));
+
             res.json({ success: true, message: "Producto actualizado correctamente" });
         } catch (error) {
             console.error('Error actualizando producto:', error);
@@ -352,6 +364,10 @@ class ProductController {
             if (!success) {
                 return res.status(404).json({ success: false, error: 'Producto no encontrado' });
             }
+
+            // Plan 17, Fase 4 (hallazgo O2): recibir mercancía por esta vía también cambia el nivel de
+            // stock. Fire-and-forget, igual que tras una venta.
+            Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas post-stock:', e));
 
             res.json({ success: true, message: "Stock agregado correctamente" });
         } catch (error) {

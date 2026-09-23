@@ -1,16 +1,14 @@
 import { describe, it, expect } from 'vitest';
 
 /**
- * Extracción directa de la lógica matemática pura del modelo Alert.js (líneas 27-103).
- * Probamos las fórmulas sin tocar la base de datos.
+ * Extracción directa de la lógica matemática pura del modelo Alert.js que sigue viviendo ahí
+ * (clasificación ABC, vencimiento y sobrestock). Probamos las fórmulas sin tocar la base de datos.
  */
 
 import Alert from '../../models/Alert.js';
 
 const {
   calcularClasificacionABC,
-  calcularDiasAgotamiento,
-  determinarAlertaStock,
   determinarAlertaVencimiento,
   determinarSobrestock
 } = Alert;
@@ -103,43 +101,12 @@ describe('Motor Matemático de Alertas (Alert.js)', () => {
     });
   });
 
-  describe('Días de Agotamiento', () => {
-    it('Debería calcular correctamente con velocidad normal', () => {
-      // 100 unidades, se venden 5/día → 20 días
-      expect(calcularDiasAgotamiento(100, 5)).toBe(20);
-    });
-
-    it('Debería retornar 999 si la velocidad es prácticamente 0', () => {
-      expect(calcularDiasAgotamiento(100, 0)).toBe(999);
-      expect(calcularDiasAgotamiento(100, 0.005)).toBe(999);
-    });
-
-    it('Debería usar Math.floor (redondeo hacia abajo)', () => {
-      // 10 / 3 = 3.33 → 3 días (conservador)
-      expect(calcularDiasAgotamiento(10, 3)).toBe(3);
-    });
-  });
-
-  describe('Alertas de Stock Logístico', () => {
-    it('Debería generar stock_critico si se agota antes de que llegue el proveedor', () => {
-      // 2 días de stock, proveedor tarda 4 → ¡Crítico!
-      expect(determinarAlertaStock(2, 4, 7)).toBe('stock_critico');
-    });
-
-    it('Debería generar stock_bajo si estamos en la ventana de reorden', () => {
-      // 8 días de stock, lead time 4, freq compra 7 → 8 <= (4+7) = 11 → Advertencia
-      expect(determinarAlertaStock(8, 4, 7)).toBe('stock_bajo');
-    });
-
-    it('No debería generar alerta si hay stock suficiente', () => {
-      // 30 días de stock, lead time 4, freq 7 → 30 > 11 → Sin alerta
-      expect(determinarAlertaStock(30, 4, 7)).toBeNull();
-    });
-
-    it('Debería ser critico cuando agotamiento = lead time exacto', () => {
-      expect(determinarAlertaStock(4, 4, 7)).toBe('stock_critico');
-    });
-  });
+  // "Días de Agotamiento" y "Alertas de Stock Logístico" (calcularDiasAgotamiento/determinarAlertaStock)
+  // se quitaron en el plan 17, Fase 4: Alert.js dejó de tener su propio cálculo de cuándo alertar por
+  // stock y ahora usa calcularReposicion (utils/reposicion.js), que ya tiene su propia batería de
+  // pruebas — incluyendo el caso que este archivo no cubría (producto agotado sin ventas registradas,
+  // que con la fórmula vieja nunca generaba alerta: ver "sin stock, sin ventas y stockSeguridad en 0"
+  // en reposicion.test.js). Reimplementar los mismos casos aquí sería probar la misma fórmula dos veces.
 
   describe('Alertas de Vencimiento (Cruce con Velocidad)', () => {
     it('Debería generar vencimiento_critico si vence en ≤7 días y quedarán sobrantes', () => {

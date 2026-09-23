@@ -1,6 +1,7 @@
 // controllers/inventoryController.js
 const InventoryMovement = require('../models/InventoryMovement');
 const Product = require('../models/Product');
+const Alert = require('../models/Alert');
 const { safeError, verifyProductOwnership } = require('../utils/securityUtils');
 
 class InventoryController {
@@ -30,6 +31,10 @@ class InventoryController {
                 id_usuario: req.session.userId,
                 id_tienda: tiendaId,
             });
+
+            // Plan 17, Fase 4 (hallazgo O2): recibir mercancía cambia el nivel de stock sin que medie
+            // ninguna venta. Fire-and-forget, igual que tras una venta.
+            Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas post-entrada:', e));
 
             res.json({ success: true, message: 'Entrada registrada', data: result });
         } catch (error) {
@@ -65,6 +70,9 @@ class InventoryController {
                 id_tienda: tiendaId,
             });
 
+            // Plan 17, Fase 4 (hallazgo O2): una salida manual también cambia el nivel de stock.
+            Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas post-salida:', e));
+
             res.json({ success: true, message: 'Salida registrada', data: result });
         } catch (error) {
             console.error('Error registrando salida:', error);
@@ -98,6 +106,9 @@ class InventoryController {
                 id_usuario: req.session.userId,
                 id_tienda: tiendaId,
             });
+
+            // Plan 17, Fase 4 (hallazgo O2): un ajuste por conteo físico también cambia el nivel de stock.
+            Alert.generate(tiendaId).catch(e => console.error('Error regenerando alertas post-ajuste:', e));
 
             res.json({ success: true, message: 'Ajuste registrado', data: result });
         } catch (error) {
