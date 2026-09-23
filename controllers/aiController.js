@@ -360,42 +360,36 @@ const aiController = {
       const tiendaId = req.session.tiendaId;
       if (!tiendaId) return res.status(401).json({ error: "No autorizado" });
 
-      // 1. Obtener candidatos con SQL optimizado (CTE)
-      const query = `
-        WITH VentasRecientes AS (
-          SELECT 
-            vp.id_producto,
-            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days' THEN vp.cantidad ELSE 0 END) as qty_30d,
-            SUM(CASE WHEN v.fecha_salida >= CURRENT_DATE - INTERVAL '7 days' THEN vp.cantidad ELSE 0 END) as qty_7d
-          FROM VentasProductos vp
-          JOIN Ventas v ON vp.id_venta = v.id_venta
-          WHERE v.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
-          GROUP BY vp.id_producto
-        )
-        SELECT
-          p.id_producto as id,
-          p.nombre_producto as nombre,
-          p.cantidad as stock,
-          p.precio,
-          p.categoria,
-          p.fecha_vencimiento,
-          p.precio_original,
-          p.fecha_fin_promocion,
-          p.stock_seguridad,
-          p.stock_minimo,
-          p.lead_time,
-          p.frecuencia_compra_dias,
-          COALESCE(vr.qty_30d, 0) / 30.0 as velocity_30d,
-          COALESCE(vr.qty_7d, 0) / 7.0 as velocity_7d
-        FROM Productos p
-        LEFT JOIN VentasRecientes vr ON p.id_producto = vr.id_producto
-        WHERE p.id_tienda = ?
-          AND p.estado = 'Disponible'
-          AND (p.fecha_fin_promocion IS NULL OR p.fecha_fin_promocion < CURRENT_DATE)
-          AND p.precio_original IS NULL
-        ORDER BY p.cantidad DESC
-      `;
-      const rows = await db.allAsync(query, [tiendaId]);
+      // 1. Entradas del motor único (plan 17, Fase 0/6): misma velocidad 7d/30d que ya usan Consejero,
+      // Proveedores, Detalle, Simulador y Alertas, en vez de una octava copia de la misma consulta SQL.
+      // Promociones necesita además vencimiento y si el producto ya tiene una promo activa, campos que
+      // leerEntradasMotor no trae (son propios de esta pantalla), así que se buscan aparte y se cruzan.
+      const entradas = await leerEntradasMotor(db, tiendaId);
+      const elegibles = await db.allAsync(
+        `SELECT id_producto, fecha_vencimiento FROM Productos
+         WHERE id_tienda = ? AND estado = 'Disponible'
+           AND (fecha_fin_promocion IS NULL OR fecha_fin_promocion < CURRENT_DATE)
+           AND precio_original IS NULL`,
+        [tiendaId]
+      );
+      const fechaVencimientoPorProducto = new Map(elegibles.map(r => [r.id_producto, r.fecha_vencimiento]));
+
+      const rows = entradas
+        .filter(item => fechaVencimientoPorProducto.has(item.id_producto))
+        .map(item => ({
+          id: item.id_producto,
+          nombre: item.nombre_producto,
+          stock: item.stock_actual,
+          precio: item.precio,
+          categoria: item.categoria,
+          fecha_vencimiento: fechaVencimientoPorProducto.get(item.id_producto),
+          stock_seguridad: item.stock_seguridad,
+          stock_minimo: item.stock_minimo,
+          lead_time: item.lead_time,
+          frecuencia_compra_dias: item.frecuencia_compra_dias,
+          velocity_30d: item.velocity_30d,
+          velocity_7d: item.velocity_7d,
+        }));
 
       // 2. Filtrado Lógico (Candidatos: Tendencia baja, sobrestock o vencimiento)
       const candidates = rows.filter(r => {
@@ -589,27 +583,6 @@ const aiController = {
     } catch (error) {
       console.error('Error promotion suggestions:', error);
       res.status(500).json({ error: safeError(error, 'Error generando sugerencias de promoción') });
-    }
-  },
-
-  /**
-   * Obtiene alertas críticas basadas en reglas de negocio estrictas (Punto de Reorden).
-   * Cruza datos de stock actual contra el modelo de predicción de demanda.
-   * 
-   * @async
-   * @function getProAlerts
-   * @param {import('express').Request} req - Objeto de petición Express.
-   * @param {import('express').Response} res - Objeto de respuesta Express.
-   */
-  getProAlerts: async (req, res) => {
-    try {
-      const tiendaId = req.session.tiendaId;
-      const Product = require('../models/Product');
-      const alerts = await Product.findProAlerts(tiendaId);
-      
-      res.json({ success: true, alerts });
-    } catch (e) {
-      res.status(500).json({ error: safeError(e, 'Error obteniendo alertas') });
     }
   },
 

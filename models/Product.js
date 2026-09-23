@@ -139,18 +139,6 @@ class Product {
     }
 
     /**
-     * Productos con stock por debajo del mínimo
-     */
-    static async findBelowMinStock(storeId) {
-        const query = `
-            SELECT * FROM Productos 
-            WHERE id_tienda = ? AND cantidad < stock_minimo AND estado = 'Disponible'
-            ORDER BY (cantidad * 1.0 / stock_minimo) ASC
-        `;
-        return await db.allAsync(query, [storeId]);
-    }
-
-    /**
      * Productos próximos a vencer en N días
      */
     static async findExpiringByStore(storeId, days = 7) {
@@ -168,50 +156,6 @@ class Product {
         return await db.allAsync(query, [storeId, days]);
     }
 
-    /**
-     * Motor de Decisión (Fase 2 Pro):
-     * Encuentra alertas basadas en ROP (Reorder Point) y Stock de Seguridad
-     */
-    static async findProAlerts(storeId) {
-        const query = `
-            WITH VelocityData AS (
-                SELECT 
-                    p.id_producto,
-                    p.nombre_producto,
-                    p.cantidad as stock_actual,
-                    p.stock_seguridad,
-                    p.lead_time,
-                    COALESCE(
-                        (SELECT SUM(vp2.cantidad) 
-                         FROM VentasProductos vp2 
-                         JOIN Ventas v2 ON vp2.id_venta = v2.id_venta 
-                         WHERE vp2.id_producto = p.id_producto 
-                         AND v2.fecha_salida >= CURRENT_DATE - INTERVAL '30 days'
-                        ), 0) / 30.0 as velocity
-                FROM Productos p
-                WHERE p.id_tienda = ? AND p.estado = 'Disponible'
-            )
-            SELECT 
-                *,
-                (velocity * lead_time) + stock_seguridad as rop
-            FROM VelocityData
-            WHERE stock_actual <= (velocity * lead_time) + stock_seguridad
-            ORDER BY stock_actual ASC
-        `;
-        const rows = await db.allAsync(query, [storeId]);
-        
-        return rows.map(r => {
-            let nivel = 'warning'; // Reposición
-            let mensaje = `Punto de reorden alcanzado (${Math.round(r.rop)} u). Sugerido pedir pronto.`;
-
-            if (r.stock_actual <= r.stock_seguridad) {
-                nivel = 'critical';
-                mensaje = `STOCK CRÍTICO: Por debajo de reserva de seguridad (${r.stock_seguridad} u). ¡Riesgo de quiebre!`;
-            }
-
-            return { ...r, nivel, mensaje };
-        });
-    }
 }
 
 module.exports = Product;

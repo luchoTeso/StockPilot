@@ -18,9 +18,6 @@ router.get('/promotions', requireLogin, aiController.getPromotionSuggestions);
 router.post('/apply-strategy', requireLogin, aiController.applyPromotionStrategy);
 
 // --- AUDITORÍA Y TENDENCIAS ---
-// Alertas profesionales (Motor de Decisión Fase 2)
-router.get('/alerts', requireLogin, aiController.getProAlerts);
-
 // Sugerencia dinámica de stock mínimo y de seguridad (Asistente IA)
 router.get('/suggest-alerts', requireLogin, aiController.suggestStockAlerts);
 
