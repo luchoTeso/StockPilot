@@ -100,7 +100,7 @@ const Sidebar = () => {
           {/* Cerrar — solo móvil */}
           <button
             onClick={closeSidebar}
-            className="md:hidden absolute -right-2 top-0 bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform z-10"
+            className="md:hidden absolute right-2 top-2 bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform z-10"
           >
             <X size={14} />
           </button>
