@@ -19,6 +19,8 @@
 
 **Riesgo adicional no resuelto en esta ronda:** `pg_dump` debe estar disponible en la imagen del servicio de Render; algunos planes no incluyen el cliente de PostgreSQL. El código no falla el proceso si `pg_dump` no está (`try/catch` con log de error), pero conviene verificar manualmente en el entorno real que el binario existe antes de confiar en este mecanismo.
 
+**Por qué esto no es redundante con Neon (verificado en la documentación oficial, 2026-09-25):** Neon incluye su propio "Instant Restore" (point-in-time restore), pero en el **plan gratuito la ventana de historial es fija en 6 horas** (tope de 1 GB, sin costo) — ver `Settings → Postgres → History window` en la consola de Neon del proyecto. Planes de pago suben esa ventana a 1-30 días, pero el proyecto hoy corre en el plan gratuito. Es decir: si alguien borra datos por error y nadie lo nota en menos de 6 horas, Neon ya no puede recuperarlos por sí solo. El propio Neon recomienda `pg_dump` programado como estrategia complementaria para retención más larga (tienen una guía dedicada, "Automate pg_dump backups"), que es exactamente el enfoque ya implementado aquí. Conclusión: el `pg_dump` diario sigue siendo necesario aunque seguir usando Neon; no se reemplazan entre sí, se complementan (Neon cubre el "hace 10 minutos", `pg_dump` cubre "hace 2 semanas").
+
 ---
 
 ## 3.2 Política de Tratamiento de Datos (Ley 1581 de 2012) — implementado
