@@ -13,6 +13,19 @@ const alertController = {
     }
   },
 
+  // Plan 17, O8: simula lo que generate() escribiría, sin tocar la base de datos — para revisar el
+  // impacto de un cambio al motor antes de confiar en él, o auditar el estado actual a mano.
+  dryRun: async (req, res) => {
+    try {
+      const tiendaId = req.session.tiendaId;
+      const diff = await Alert.dryRun(tiendaId);
+      res.json({ success: true, ...diff });
+    } catch (e) {
+      console.error('Error en dry-run de alertas:', e);
+      res.status(500).json({ success: false, error: 'Error al simular el motor de reglas.' });
+    }
+  },
+
   // Obtiene la lista visible de alertas activas
   getActiveAlerts: async (req, res) => {
     try {

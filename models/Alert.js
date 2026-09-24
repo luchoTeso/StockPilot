@@ -9,6 +9,72 @@ const TIPOS_GESTIONADOS = ['stock_critico', 'stock_bajo', 'vencimiento_critico',
 
 class Alert {
   /**
+   * Evalúa un producto según el motor unificado (mismo cálculo que Catálogo/Consejero/Proveedores/
+   * Detalle) y devuelve las alertas de stock, vencimiento y sobrestock que le corresponden hoy.
+   * Función pura, sin acceso a BD (plan 17, hallazgo O8): es la única copia de las reglas — tanto
+   * `generate()` (que escribe) como `dryRun()` (que solo simula) llaman a esta misma función, así que
+   * no hay riesgo de que una segunda copia se desincronice de la primera con el tiempo.
+   *
+   * @param {object} item - una fila de `leerEntradasMotor` (id_producto, velocity_7d/30d, stock_actual, etc.)
+   * @param {{fecha_vencimiento?: string, stock_maximo?: number}} [extra] - del producto, fuera de `leerEntradasMotor`
+   * @param {Date} [hoy] - fecha de referencia; inyectable para que las pruebas sean deterministas
+   * @returns {Array<{tipo:string, severidad:string, mensaje:string, datos:object}>}
+   */
+  static evaluarProducto(item, extra = {}, hoy = new Date()) {
+    const alertas = [];
+    const leadTime = item.lead_time || 3;
+
+    const rep = calcularReposicion({
+      ventasDia7: item.velocity_7d,
+      ventasDia30: item.velocity_30d,
+      ventas30Total: item.qty_30d_total,
+      claseABC: item.claseABC,
+      stock: item.stock_actual,
+      stockSeguridad: item.stock_seguridad,
+      stockMinimo: item.stock_minimo,
+      leadTime,
+      frecuenciaCompraDias: item.frecuencia_compra_dias,
+      factorIA: item.factor_ia,
+    });
+
+    const datosBase = { velocity_30d: item.velocity_30d, dias_agotamiento: rep.diasParaAgotar, stock: item.stock_actual, lead_time: leadTime, class_abc: item.claseABC, vencimiento: extra.fecha_vencimiento };
+
+    // == STOCK (unificado con calcularReposicion; misma urgencia que ve el dueño en Catálogo/Consejero) ==
+    if (rep.urgencia === URGENCIA.HOY) {
+      const mensaje = rep.diasParaAgotar !== null
+        ? `Stock agónico. Quedan ${rep.diasParaAgotar} días de inventario y el proveedor tarda ${leadTime} días en entregar.`
+        : `Stock agónico. ${item.stock_actual <= 0 ? 'No queda stock' : 'No hay ventas recientes para calcular cuántos días quedan, pero el stock ya está en el mínimo de seguridad'}.`;
+      alertas.push({ tipo: 'stock_critico', severidad: 'critico', mensaje, datos: datosBase });
+    } else if (rep.urgencia === URGENCIA.SEMANA) {
+      alertas.push({ tipo: 'stock_bajo', severidad: 'advertencia', mensaje: `Ventana de pedido abierta. Te quedan ${rep.diasParaAgotar} días de stock; ideal reabastecer ahora para mantener el ciclo sano.`, datos: datosBase });
+    }
+
+    // == VENCIMIENTO (sin cambios: cruce con velocidad de 7 días) ==
+    if (extra.fecha_vencimiento) {
+      const fVenc = new Date(extra.fecha_vencimiento);
+      fVenc.setHours(0, 0, 0, 0);
+      const diasParaVencer = Math.floor((fVenc - hoy) / (1000 * 60 * 60 * 24));
+
+      const alertaVencimiento = Alert.determinarAlertaVencimiento(item.stock_actual, item.velocity_7d, diasParaVencer);
+      if (alertaVencimiento) {
+        const datos = { ...datosBase, dias_para_vencer: diasParaVencer, sobrantes: alertaVencimiento.sobrantes };
+        if (alertaVencimiento.tipo === 'vencimiento_critico') {
+          alertas.push({ tipo: 'vencimiento_critico', severidad: 'critico', mensaje: `Vence en ${diasParaVencer} días. Al ritmo actual, te sobrarán ~${alertaVencimiento.sobrantes} unidades invendibles.`, datos });
+        } else {
+          alertas.push({ tipo: 'vencimiento_proximo', severidad: 'advertencia', mensaje: `Vence en ${diasParaVencer} días. Podrían sobrarte ~${alertaVencimiento.sobrantes} unidades. Sugerencia: Aplicar promoción hoy.`, datos });
+        }
+      }
+    }
+
+    // == SOBRESTOCK (sin cambios; 999 conserva el sentido de "sin ventas para medir" que ya usaba) ==
+    if (Alert.determinarSobrestock(item.stock_actual, extra.stock_maximo, item.claseABC, rep.diasParaAgotar ?? 999)) {
+      alertas.push({ tipo: 'sobrestock', severidad: 'info', mensaje: `Capital estancado. Tienes ${item.stock_actual} unidades, históricamente es un producto Clase C y tienes inventario inmóvil para más de 2 meses.`, datos: datosBase });
+    }
+
+    return alertas;
+  }
+
+  /**
    * Ejecuta el motor de reglas y deja la tabla Alertas en el estado correcto para la tienda.
    *
    * Plan 17, Fase 4: antes esto marcaba TODO como resuelto y volvía a insertar cada alerta como si
@@ -26,6 +92,15 @@ class Alert {
    */
   /* v8 ignore start */
   static async generate(tiendaId) {
+    // Plan 17, O8: interruptor de emergencia. Pensado para un problema descubierto ya en producción
+    // (no para "volver" a la lógica vieja de determinarAlertaStock/calcularDiasAgotamiento, que tenía
+    // el hueco E1 y ya no existe en el código) — apaga generate() por completo, manual y automático,
+    // hasta que se investigue, sin necesidad de un nuevo despliegue.
+    if (process.env.DISABLE_ALERT_ENGINE === 'true') {
+      console.warn('⚠️ Alert.generate() omitido: DISABLE_ALERT_ENGINE=true');
+      return 0;
+    }
+
     // Lecturas: no necesitan estar dentro de la transacción/lock, son solo consulta.
     const entradas = await leerEntradasMotor(db, tiendaId);
     const extras = await db.allAsync(
@@ -53,21 +128,21 @@ class Alert {
       const activaPorClave = new Map(activasRes.rows.map((r) => [`${r.id_producto}:${r.tipo}`, r.id_alerta]));
       const clavesVigentes = new Set();
 
-      const upsert = async (idProducto, tipo, severidad, mensaje, datosExtra) => {
-        const clave = `${idProducto}:${tipo}`;
+      const upsert = async (idProducto, alerta) => {
+        const clave = `${idProducto}:${alerta.tipo}`;
         clavesVigentes.add(clave);
-        const datosJson = JSON.stringify({ motor: 'v2', ...datosExtra });
+        const datosJson = JSON.stringify({ motor: 'v2', ...alerta.datos });
         const idExistente = activaPorClave.get(clave);
         if (idExistente) {
           // Ya estaba activa: se actualiza en su lugar (no se toca fecha_creacion ni se duplica).
           await client.query(
             `UPDATE Alertas SET severidad = ?, mensaje = ?, datos_json = ? WHERE id_alerta = ?`,
-            [severidad, mensaje, datosJson, idExistente]
+            [alerta.severidad, alerta.mensaje, datosJson, idExistente]
           );
         } else {
           await client.query(
             `INSERT INTO Alertas (id_producto, id_tienda, tipo, severidad, mensaje, datos_json, resuelta) VALUES (?, ?, ?, ?, ?, ?, 0)`,
-            [idProducto, tiendaId, tipo, severidad, mensaje, datosJson]
+            [idProducto, tiendaId, alerta.tipo, alerta.severidad, alerta.mensaje, datosJson]
           );
           generadas++;
         }
@@ -75,53 +150,9 @@ class Alert {
 
       for (const item of entradas) {
         const extra = extraPorProducto.get(item.id_producto) || {};
-        const leadTime = item.lead_time || 3;
-
-        const rep = calcularReposicion({
-          ventasDia7: item.velocity_7d,
-          ventasDia30: item.velocity_30d,
-          ventas30Total: item.qty_30d_total,
-          claseABC: item.claseABC,
-          stock: item.stock_actual,
-          stockSeguridad: item.stock_seguridad,
-          stockMinimo: item.stock_minimo,
-          leadTime,
-          frecuenciaCompraDias: item.frecuencia_compra_dias,
-          factorIA: item.factor_ia,
-        });
-
-        const datosBase = { velocity_30d: item.velocity_30d, dias_agotamiento: rep.diasParaAgotar, stock: item.stock_actual, lead_time: leadTime, class_abc: item.claseABC, vencimiento: extra.fecha_vencimiento };
-
-        // == STOCK (unificado con calcularReposicion; misma urgencia que ve el dueño en Catálogo/Consejero) ==
-        if (rep.urgencia === URGENCIA.HOY) {
-          const mensaje = rep.diasParaAgotar !== null
-            ? `Stock agónico. Quedan ${rep.diasParaAgotar} días de inventario y el proveedor tarda ${leadTime} días en entregar.`
-            : `Stock agónico. ${item.stock_actual <= 0 ? 'No queda stock' : 'No hay ventas recientes para calcular cuántos días quedan, pero el stock ya está en el mínimo de seguridad'}.`;
-          await upsert(item.id_producto, 'stock_critico', 'critico', mensaje, datosBase);
-        } else if (rep.urgencia === URGENCIA.SEMANA) {
-          await upsert(item.id_producto, 'stock_bajo', 'advertencia', `Ventana de pedido abierta. Te quedan ${rep.diasParaAgotar} días de stock; ideal reabastecer ahora para mantener el ciclo sano.`, datosBase);
-        }
-
-        // == VENCIMIENTO (sin cambios: cruce con velocidad de 7 días) ==
-        if (extra.fecha_vencimiento) {
-          const fVenc = new Date(extra.fecha_vencimiento);
-          fVenc.setHours(0, 0, 0, 0);
-          const diasParaVencer = Math.floor((fVenc - hoy) / (1000 * 60 * 60 * 24));
-
-          const alertaVencimiento = Alert.determinarAlertaVencimiento(item.stock_actual, item.velocity_7d, diasParaVencer);
-          if (alertaVencimiento) {
-            const datos = { ...datosBase, dias_para_vencer: diasParaVencer, sobrantes: alertaVencimiento.sobrantes };
-            if (alertaVencimiento.tipo === 'vencimiento_critico') {
-              await upsert(item.id_producto, 'vencimiento_critico', 'critico', `Vence en ${diasParaVencer} días. Al ritmo actual, te sobrarán ~${alertaVencimiento.sobrantes} unidades invendibles.`, datos);
-            } else {
-              await upsert(item.id_producto, 'vencimiento_proximo', 'advertencia', `Vence en ${diasParaVencer} días. Podrían sobrarte ~${alertaVencimiento.sobrantes} unidades. Sugerencia: Aplicar promoción hoy.`, datos);
-            }
-          }
-        }
-
-        // == SOBRESTOCK (sin cambios; 999 conserva el sentido de "sin ventas para medir" que ya usaba) ==
-        if (Alert.determinarSobrestock(item.stock_actual, extra.stock_maximo, item.claseABC, rep.diasParaAgotar ?? 999)) {
-          await upsert(item.id_producto, 'sobrestock', 'info', `Capital estancado. Tienes ${item.stock_actual} unidades, históricamente es un producto Clase C y tienes inventario inmóvil para más de 2 meses.`, datosBase);
+        const alertas = Alert.evaluarProducto(item, extra, hoy);
+        for (const alerta of alertas) {
+          await upsert(item.id_producto, alerta);
         }
       }
 
@@ -142,6 +173,70 @@ class Alert {
     }
 
     return generadas;
+  }
+
+  /**
+   * Calcula qué alertas generaría `generate()` para la tienda AHORA MISMO y las compara contra las
+   * que ya están activas, sin escribir nada en la base de datos. Plan 17, O8: pensado para correr
+   * antes de confiar en un cambio al motor (o para auditar a mano), no es parte del flujo normal de
+   * la aplicación — expuesto en `GET /api/alertas/dry-run` (solo administradores).
+   *
+   * @returns {Promise<{nuevas:Array, actualizadas:Array, resueltas:Array, sinCambios:number}>}
+   */
+  static async dryRun(tiendaId) {
+    const entradas = await leerEntradasMotor(db, tiendaId);
+    const extras = await db.allAsync(
+      `SELECT id_producto, fecha_vencimiento, stock_maximo FROM Productos WHERE id_tienda = ?`,
+      [tiendaId]
+    );
+    const extraPorProducto = new Map(extras.map((r) => [r.id_producto, r]));
+
+    const activas = await db.allAsync(
+      `SELECT id_alerta, id_producto, tipo, severidad, mensaje FROM Alertas WHERE id_tienda = ? AND resuelta = 0 AND tipo = ANY(?)`,
+      [tiendaId, TIPOS_GESTIONADOS]
+    );
+    const activaPorClave = new Map(activas.map((r) => [`${r.id_producto}:${r.tipo}`, r]));
+    const clavesVigentes = new Set();
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const nuevas = [];
+    const actualizadas = [];
+    let sinCambios = 0;
+
+    for (const item of entradas) {
+      const extra = extraPorProducto.get(item.id_producto) || {};
+      const alertas = Alert.evaluarProducto(item, extra, hoy);
+      for (const alerta of alertas) {
+        const clave = `${item.id_producto}:${alerta.tipo}`;
+        clavesVigentes.add(clave);
+        const existente = activaPorClave.get(clave);
+        if (!existente) {
+          nuevas.push({ id_producto: item.id_producto, tipo: alerta.tipo, severidad: alerta.severidad, mensaje: alerta.mensaje });
+        } else if (existente.severidad !== alerta.severidad || existente.mensaje !== alerta.mensaje) {
+          actualizadas.push({
+            id_producto: item.id_producto,
+            tipo: alerta.tipo,
+            severidad_anterior: existente.severidad,
+            severidad_nueva: alerta.severidad,
+            mensaje_anterior: existente.mensaje,
+            mensaje_nuevo: alerta.mensaje,
+          });
+        } else {
+          sinCambios++;
+        }
+      }
+    }
+
+    const resueltas = [];
+    for (const [clave, row] of activaPorClave) {
+      if (!clavesVigentes.has(clave)) {
+        resueltas.push({ id_producto: row.id_producto, tipo: row.tipo, id_alerta: row.id_alerta });
+      }
+    }
+
+    return { nuevas, actualizadas, resueltas, sinCambios };
   }
 
   /**

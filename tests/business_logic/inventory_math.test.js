@@ -10,7 +10,8 @@ import Alert from '../../models/Alert.js';
 const {
   calcularClasificacionABC,
   determinarAlertaVencimiento,
-  determinarSobrestock
+  determinarSobrestock,
+  evaluarProducto
 } = Alert;
 
 // === PRUEBAS UNITARIAS ===
@@ -154,6 +155,96 @@ describe('Motor Matemático de Alertas (Alert.js)', () => {
 
     it('No debería marcar sobrestock si se agota en menos de 60 días', () => {
       expect(determinarSobrestock(200, 100, 'C', 30)).toBe(false);
+    });
+  });
+
+  // Plan 17, O8: `evaluarProducto` es la función pura que reemplaza la lógica que antes vivía inline
+  // dentro de `Alert.generate` — la usan tanto `generate()` (escribe en BD) como `dryRun()` (solo
+  // simula). Estas pruebas cubren la combinación de las tres reglas (stock/vencimiento/sobrestock) en
+  // un solo producto, algo que antes no se podía probar sin una base de datos real.
+  describe('evaluarProducto (motor unificado, plan 17 O8)', () => {
+    const hoy = new Date('2026-01-01T00:00:00');
+
+    it('Regresión E1: producto agotado, sin ventas y stockSeguridad en 0 SÍ genera stock_critico', () => {
+      const item = {
+        id_producto: 1, velocity_7d: 0, velocity_30d: 0, qty_30d_total: 0, claseABC: 'C',
+        stock_actual: 0, stock_seguridad: 0, stock_minimo: 0, lead_time: 3,
+        frecuencia_compra_dias: 7, factor_ia: 1,
+      };
+      const alertas = evaluarProducto(item, {}, hoy);
+      expect(alertas).toHaveLength(1);
+      expect(alertas[0]).toMatchObject({ tipo: 'stock_critico', severidad: 'critico' });
+      expect(alertas[0].mensaje).toBe('Stock agónico. No queda stock.');
+    });
+
+    it('Genera stock_bajo cuando el agotamiento cae dentro de la ventana de reorden', () => {
+      const item = {
+        id_producto: 2, velocity_7d: 1, velocity_30d: 1, qty_30d_total: 30, claseABC: 'C',
+        stock_actual: 10, stock_seguridad: 5, stock_minimo: 0, lead_time: 3,
+        frecuencia_compra_dias: 7, factor_ia: 1,
+      };
+      const alertas = evaluarProducto(item, {}, hoy);
+      expect(alertas).toHaveLength(1);
+      expect(alertas[0].tipo).toBe('stock_bajo');
+      expect(alertas[0].severidad).toBe('advertencia');
+      expect(alertas[0].mensaje).toContain('10 días de stock');
+    });
+
+    it('No genera ninguna alerta para un producto sano', () => {
+      const item = {
+        id_producto: 3, velocity_7d: 1, velocity_30d: 1, qty_30d_total: 30, claseABC: 'C',
+        stock_actual: 100, stock_seguridad: 5, stock_minimo: 0, lead_time: 3,
+        frecuencia_compra_dias: 7, factor_ia: 1,
+      };
+      const alertas = evaluarProducto(item, { stock_maximo: 500 }, hoy);
+      expect(alertas).toEqual([]);
+    });
+
+    it('Genera vencimiento_critico cuando aplica, incluso con el stock sano', () => {
+      const item = {
+        id_producto: 4, velocity_7d: 1, velocity_30d: 1, qty_30d_total: 30, claseABC: 'C',
+        stock_actual: 100, stock_seguridad: 5, stock_minimo: 0, lead_time: 3,
+        frecuencia_compra_dias: 7, factor_ia: 1,
+      };
+      const alertas = evaluarProducto(item, { fecha_vencimiento: '2026-01-06', stock_maximo: 500 }, hoy);
+      expect(alertas).toHaveLength(1);
+      expect(alertas[0]).toMatchObject({ tipo: 'vencimiento_critico', severidad: 'critico' });
+      expect(alertas[0].mensaje).toContain('~96 unidades');
+    });
+
+    it('Genera vencimiento_proximo (8-30 días) en vez de crítico', () => {
+      const item = {
+        id_producto: 7, velocity_7d: 1, velocity_30d: 1, qty_30d_total: 30, claseABC: 'C',
+        stock_actual: 100, stock_seguridad: 5, stock_minimo: 0, lead_time: 3,
+        frecuencia_compra_dias: 7, factor_ia: 1,
+      };
+      const alertas = evaluarProducto(item, { fecha_vencimiento: '2026-01-20', stock_maximo: 500 }, hoy);
+      expect(alertas).toHaveLength(1);
+      expect(alertas[0]).toMatchObject({ tipo: 'vencimiento_proximo', severidad: 'advertencia' });
+      expect(alertas[0].mensaje).toContain('Sugerencia: Aplicar promoción hoy.');
+    });
+
+    it('Genera sobrestock cuando aplica, sin ventas para medir agotamiento', () => {
+      const item = {
+        id_producto: 5, velocity_7d: 0, velocity_30d: 0, qty_30d_total: 0, claseABC: 'C',
+        stock_actual: 300, stock_seguridad: 5, stock_minimo: 0, lead_time: 3,
+        frecuencia_compra_dias: 7, factor_ia: 1,
+      };
+      const alertas = evaluarProducto(item, { stock_maximo: 100 }, hoy);
+      expect(alertas).toHaveLength(1);
+      expect(alertas[0].tipo).toBe('sobrestock');
+      expect(alertas[0].severidad).toBe('info');
+    });
+
+    it('Puede devolver más de una alerta a la vez para el mismo producto', () => {
+      const item = {
+        id_producto: 6, velocity_7d: 5, velocity_30d: 5, qty_30d_total: 150, claseABC: 'C',
+        stock_actual: 40, stock_seguridad: 5, stock_minimo: 0, lead_time: 3,
+        frecuencia_compra_dias: 7, factor_ia: 1,
+      };
+      const alertas = evaluarProducto(item, { fecha_vencimiento: '2026-01-07', stock_maximo: 1000 }, hoy);
+      const tipos = alertas.map((a) => a.tipo).sort();
+      expect(tipos).toEqual(['stock_bajo', 'vencimiento_critico']);
     });
   });
 });

@@ -4,9 +4,10 @@ const alertController = require('../controllers/alertController');
 
 // Todas estas rutas caen bajo el prefijo /api/alertas
 
-const { requireLogin } = require('../middleware/auth');
+const { requireLogin, requireAdmin } = require('../middleware/auth');
 
 router.post('/generate', requireLogin, alertController.generateAlerts);
+router.get('/dry-run', requireLogin, requireAdmin, alertController.dryRun);
 router.get('/', requireLogin, alertController.getActiveAlerts);
 router.get('/stats', requireLogin, alertController.getStats);
 router.patch('/:id/resolve', requireLogin, alertController.resolveAlert);
