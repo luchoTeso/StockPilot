@@ -5,6 +5,7 @@ const db = require('../config/database');
 const { OpenAI } = require('openai');
 const transporter = require('../config/mailer');
 const Notification = require('../models/Notification');
+const Alert = require('../models/Alert');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'dummy_key_to_prevent_crash_on_startup'
@@ -365,6 +366,12 @@ const suppliersController = {
         [totalReal, ordenId]
       );
       await client.query('COMMIT');
+
+      // Plan 17, hallazgo O2: recibir mercancía cambia `Productos.cantidad` directamente por fuera de
+      // InventoryMovement/productController, así que sin este disparador las alertas solo se
+      // actualizaban tras la próxima venta — Catálogo (en vivo) y Monitor Alertas podían decir cosas
+      // distintas justo después de recibir una orden.
+      Alert.generate(tiendaId).catch((e) => console.error('Error regenerando alertas post-recepción:', e));
 
       try {
         await db.runAsync(
