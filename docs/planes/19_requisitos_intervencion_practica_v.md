@@ -1,6 +1,6 @@
 # Plan 19: Requisitos de la intervención (Práctica V) antes de datos reales
 
-**Estado:** 3.1 y 3.2 implementadas y verificadas. 3.3 y 3.4 documentadas como diseño, sin implementar (a pedido explícito del usuario — "solo documentar por ahora").
+**Estado:** 3.1 y 3.2 implementadas y verificadas. 3.3, 3.4, 3.5 y 3.6 documentadas como diseño, sin implementar (a pedido explícito del usuario — "solo documentar por ahora").
 **Fecha:** 2026-09-25
 **Origen:** `docs/contexto_revision_cowork_2026-09-23.md`, sección 3 ("Decisiones y sugerencias de producto"), y el análisis de resultados de `Documentacion/StockPilot_Intervencion_y_Viabilidad.docx` (sección 2.6, "Antes de recibir datos de negocios reales se deben cumplir dos condiciones...").
 
@@ -176,3 +176,19 @@ El diseño original (ver historial de este documento) proponía 4 accesos: *Vend
 | C. "¿Qué pido?" | Medio | Pantalla nueva, pero reutiliza lógica ya probada (`leerEntradasMotor`, `ordenesBorrador`, `completarRecepcion`). |
 | D. Permisos de Colaborador | Medio-alto | Es el único punto que amplía lo que un Colaborador puede hacer sobre dinero/proveedores — requiere decisión explícita del dueño, no solo del equipo de desarrollo. |
 | E. Catálogo simplificado | Bajo-medio | Cambio de UI sobre una pantalla existente, sin tocar el backend. |
+
+---
+
+## 3.6 Descarga de recibo (PDF) y vista de factura individual — solo documentado, sin implementar
+
+Contexto (2026-09-24): hoy "Imprimir" en el Punto de Venta ([`CajaRapidaTab.jsx`](../../frontend/src/components/puntoventa/CajaRapidaTab.jsx)) usa `react-to-print`, que solo abre el diálogo nativo de impresión del navegador sobre el ticket renderizado en [`TicketPrinter.jsx`](../../frontend/src/components/TicketPrinter.jsx). Si el tendero no tiene impresora conectada (muy probable en la prueba gratuita, que se instala en PC/tablet/celular sin hardware POS), la única forma de conservar un comprobante es que sepa usar la opción "Guardar como PDF" del diálogo de su sistema operativo — confiable en Windows/Android, pero poco obvia en iPhone (hay que ampliar la vista previa y usar Compartir → Guardar en Archivos). Para el perfil objetivo (sin experiencia digital), es un punto de fricción real que puede leerse como "la función no sirve".
+
+**Importante — la venta nunca se pierde:** con o sin impresora, la venta ya queda guardada en `Ventas`/`VentasProductos` y siempre se puede consultar en la pestaña "Historial". Lo que falta no es persistencia de datos, es una forma de *presentarlos* como documento.
+
+**Diseño propuesto (no implementado):**
+1. **Botón "Descargar recibo (PDF)"**, alterno al de "Imprimir": genera el PDF en el servidor reutilizando `pdfkit` (ya es dependencia del proyecto, ya se usa en `reportController.generateMermaPDF`) a partir de los datos de la venta, y lo entrega como descarga directa (`Content-Disposition: attachment`) — sin pasar por el diálogo de impresión del navegador, así que funciona igual en Windows, Android e iPhone.
+2. **Ver factura individual desde el Historial:** un botón por fila que abre un modal con el mismo formato de recibo (reutilizando el layout de `TicketPrinter`), con las acciones "Reimprimir" y "Descargar PDF" del punto 1.
+
+**Por qué esto NO satura la base de datos (aclaración explícita, a pedido del usuario):** el diseño correcto es generar el PDF/la vista *al leer*, no guardarlo *al vender*. Ni el PDF ni ninguna vista de factura se almacenan — se arman en el momento a partir de `Ventas`/`VentasProductos`, exactamente como ya hace `TicketPrinter` hoy. No se agrega ninguna columna ni tabla nueva. Guardar un PDF por venta como archivo/blob sí sería un problema de crecimiento de almacenamiento — el mismo antipatrón que las fotos de perfil en Base64 señaladas en `Documentacion/hoja_de_ruta_escalabilidad.md` — y es precisamente lo que este diseño evita.
+
+**Por qué no se implementó:** ambas piezas comparten la misma base técnica (formatear una venta como documento), así que tiene sentido construirlas juntas en vez de por separado; queda para cuando el usuario decida priorizarlo.
