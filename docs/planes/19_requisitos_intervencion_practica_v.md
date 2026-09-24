@@ -74,6 +74,28 @@ LEFT JOIN VentasPrimeros7Dias vp ON vp.id_tienda = rn.id_tienda;
 
 ---
 
+## 3.5 Mensaje de la convocatoria pública y segmentación en el registro — solo documentado, sin implementar
+
+Contexto (2026-09-24): la muestra de la encuesta (F1) está sesgada hacia tenderos ya digitales (quien encuentra la convocatoria en redes ya es más digital que el promedio — 20% de la población no usa ningún dispositivo). La idea evaluada fue pedirle a quien vea el anuncio que lo recomiende a un tendero sin experiencia digital en vez de usarlo él mismo. Conclusión de la evaluación: **no restringir el uso ni pedirle a nadie que se abstenga** — el canal (redes, WhatsApp) ya está filtrado hacia gente digital sin importar el mensaje, y pedirle al usuario más probable que no se registre corta el embudo sin garantizar que el mensaje llegue al perfil objetivo. En su lugar: **segmentar en el registro** (para poder analizar por separado, no para filtrar entrada) y **agregar una llamada a compartir** como CTA adicional, no como advertencia.
+
+**1. Pregunta de calificación en el registro (`RegisterPage.jsx` / `authController.js`):**
+- Campo nuevo, opcional, no bloqueante: *"¿Actualmente usas alguna app o herramienta digital para administrar tu negocio (Excel, otra app, red social para vender)?"* → Sí / No.
+- Se guardaría como `Usuarios.experiencia_digital_previa` (booleano, nullable — nadie queda obligado a responder).
+- Uso: cruzar la métrica de activación (3.3) y la encuesta de satisfacción (punto 3 abajo) por este campo, para saber si el perfil sin experiencia digital previa activa/se queda igual, mejor o peor que el resto — el dato que la encuesta F1 no puede dar porque no se preguntó ahí.
+
+**2. Texto de la convocatoria (landing, grupos de Facebook/WhatsApp de comerciantes):**
+- CTA principal (sin cambios): invitar a probar la app gratis.
+- CTA secundaria, nueva: *"¿Conoces a un tendero que todavía lleva las cuentas en un cuaderno? Cuéntale de StockPilot — así llega a quien más lo necesita."* — con un botón/enlace para compartir, no un filtro de entrada. Coherente con el hallazgo de la propia intervención (sección 4.7 del docx) de que el boca a boca entre tenderos probablemente genera más confianza que un anuncio digital directo.
+
+**3. Encuesta de satisfacción y sugerencias:**
+- No es un instrumento nuevo independiente: extiende el cierre de piloto ya diseñado (Anexo A.2 del docx) con las dos preguntas de "sorpresa" acordadas en el chat del 2026-09-24: *"¿Hubo algo que el sistema hizo por usted sin que se lo pidiera, y que le pareció útil?"* y *"¿Qué le sorprendió, para bien o para mal, de usar la aplicación?"*
+- Corta a propósito (el 80% de la encuesta F1 dijo no tener tiempo para aprender algo nuevo — una encuesta larga después de probar tendrá la misma barrera).
+- Se dispara en un punto natural (a los 7 días de uso o tras cargar cierto número de productos), no en el registro, cuando todavía no hay nada que opinar.
+
+**Por qué no se implementó:** depende de que la convocatoria pública (Fase 5 de la intervención) esté lista para publicarse — construir el campo de segmentación y la encuesta antes tendría el mismo problema que la métrica de activación (3.3): instrumentación sin datos que instrumentar todavía.
+
+---
+
 ## 3.4 Modo básico (divulgación progresiva) — evaluación y plan detallado, sin implementar
 
 **Estado:** evaluación y plan completos a pedido del usuario (2026-09-24). Sigue sin implementarse — es un cambio de UX que toca la navegación principal, y la propia intervención (Fase 4, prueba de usabilidad con 5 tenderos) es el paso diseñado para validar esto antes de construirlo.
