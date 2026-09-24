@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-// En producción usa Resend (HTTPS, no SMTP — funciona en Railway/Heroku/etc.)
+// En producción usa Resend (HTTPS, no SMTP — funciona en Render/Heroku/etc.)
 // En desarrollo usa Gmail SMTP directamente
 const useResend = !!process.env.RESEND_API_KEY;
 

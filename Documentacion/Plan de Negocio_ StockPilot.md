@@ -318,7 +318,7 @@ A diferencia de las soluciones de contabilidad fiscal, StockPilot se enfoca en l
 | Concepto del negocio | Modelo SaaS para el canal tradicional que combina gestión operativa con inteligencia artificial predictiva. No existe un competidor en el segmento microempresas que integre un copiloto IA para decisiones de reabastecimiento con bucle de aprendizaje. | La competencia (Treinta, Alegra, Siigo) se enfoca en contabilidad fiscal, no en operación predictiva. StockPilot crea una nueva categoría: "gestión de inventario predictiva". |
 | Producto o servicio | **Motor de predicción de demanda** que calcula velocidad de venta ponderada (7, 30, 90 días), identifica tendencias, proyecta agotamiento y genera órdenes de compra sugeridas con ajustes IA. Incorpora **clasificación dinámica ABC** (Pareto) y **guardrails** por clase. | El uso de un LLM (GPT-4o-mini) para ajustar cantidades de compra en lenguaje natural, con guardrails matemáticos, es una aplicación novedosa en el segmento microempresas. La clasificación ABC dinámica y el cálculo de ROP se automatizan en tiempo real. |
 | Proceso | **Bucle de retroalimentación adaptativa** (Feedback IA): el sistema compara cantidades sugeridas con ventas reales posteriores, calcula un factor de precisión por producto (limitado entre 0.2 y 3.0) y lo aplica como multiplicador en futuras sugerencias. Este proceso de aprendizaje continuo no existe en soluciones actuales para el segmento. | Crea una barrera de entrada: mientras más tiempo usa el cliente, más precisa es la IA, generando fidelización y costos de cambio. Es un mecanismo de mejora continua basado en datos reales, no en intuición. |
-| Tecnología | Stack moderno con **Node.js/Express** (backend), **React 19** (frontend PWA), **PostgreSQL** (BD en la nube), **OpenAI GPT-4o-mini** (copiloto IA) con caché MD5, y **Playwright/Vitest** para pruebas automatizadas. | El uso de un LLM de bajo costo y alta capacidad (GPT-4o-mini) democratiza el acceso a IA predictiva. La arquitectura desacoplada permite escalabilidad y portabilidad. El **100%** de cobertura en pruebas de lógica de negocio garantiza confiabilidad. |
+| Tecnología | Stack moderno con **Node.js/Express** (backend), **React 19** (frontend, con manifiesto de PWA configurado), **PostgreSQL** (BD en la nube), **OpenAI GPT-4o-mini** (copiloto IA) con caché MD5, y **Playwright/Vitest** para pruebas automatizadas. | El uso de un LLM de bajo costo y alta capacidad (GPT-4o-mini) democratiza el acceso a IA predictiva. La arquitectura desacoplada permite escalabilidad y portabilidad. El **100%** de cobertura en pruebas de lógica de negocio garantiza confiabilidad. |
 | Automatización | Envío automático de resumen semanal por correo electrónico con estadísticas de alertas, alertas críticas y recomendaciones. Cron job con node-cron. | **Proactividad:** el sistema no solo responde a consultas, sino que contacta al cliente con información relevante sin que este lo solicite. |
 
 **5.4. Validación de Mercado (Metodología y Resultados)**
@@ -353,7 +353,7 @@ Las motivaciones identificadas durante la validación de mercado —entrevistas 
 | Área | Avance | Estado | Evidencia |
 | :---: | :---: | :---: | :---: |
 | Backend (API REST) | 100% desarrollado con Node.js/Express | Completado | Repositorio GitHub |
-| Frontend (PWA) | 100% desarrollado con React 19 \+ Vite \+ TailwindCSS | Completado  | Aplicación configurada como PWA |
+| Frontend | 100% desarrollado con React 19 \+ Vite \+ TailwindCSS | Completado  | Manifiesto de PWA configurado; falta el Service Worker para instalación y modo offline completos |
 | Base de datos | PostgreSQL 15 desplegado en Neon Cloud | Completado | Conexión activa y probada |
 | Pruebas unitarias | 50/50 pruebas aprobadas; 100% cobertura lógica de negocio | Completado | Reporte de pruebas |
 | Pruebas E2E  | Playwright para flujos críticos | Completado | Scripts de pruebas automatizadas |
@@ -393,7 +393,7 @@ Las motivaciones identificadas durante la validación de mercado —entrevistas 
 | Nombre comercial | StockPilot |
 | Unidad de medida | Suscripción mensual (por tienda) |
 | Descripción general | Plataforma web que permite gestionar inventarios, registrar ventas, administrar sesiones de caja y egresos, clasificar productos ABC, recibir alertas predictivas de desabastecimiento y vencimiento, generar órdenes de compra inteligentes con IA, y visualizar KPIs en dashboard interactivo |
-| Características técnicas | \- Acceso por navegador web (Chrome, Edge, Firefox) \- Interfaz responsive (adaptable a dispositivos móviles) \- Configurado como PWA (instalable en Android/iOS) \- Autenticación con usuario/contraseña y bcrypt \- Roles: Administrador y Colaborador \- Control de Caja Menor \- PostgreSQL en la nube \- Motor IA: GPT-4o-mini con guardrails y caché MD5 \- Exportación a Excel y PDF \- SLA 99.5% |
+| Características técnicas | \- Acceso por navegador web (Chrome, Edge, Firefox) \- Interfaz responsive (adaptable a dispositivos móviles) \- Manifiesto de PWA configurado (falta el Service Worker para instalación y modo offline completos) \- Autenticación con usuario/contraseña y bcrypt \- Roles: Administrador y Colaborador \- Control de Caja Menor \- PostgreSQL en la nube \- Motor IA: GPT-4o-mini con guardrails y caché MD5 \- Exportación a Excel y PDF \- SLA 99.5% |
 | Condiciones especiales | Requiere conexión a internet para operación completa. El sistema está diseñado para ser ligero y funcionar incluso con conexiones de baja velocidad (3G) |
 | Composición | SaaS (no aplica composición física). El sistema se compone de código fuente, base de datos y API de IA. |
 
@@ -541,7 +541,7 @@ StockPilot generará ingresos a través de un **modelo de suscripción SaaS B2B*
 **Stack Tecnológico:**
 
 * **Backend:** Node.js con Express, middleware de seguridad (Helmet, CORS, Rate-Limiting) y autenticación JWT con roles jerárquicos (RBAC).  
-* **Frontend:** Single Page Application (SPA) con React 19, Vite y TailwindCSS, configurada como PWA, optimizada para carga rápida y consumo eficiente en dispositivos móviles.  
+* **Frontend:** Single Page Application (SPA) con React 19, Vite y TailwindCSS, con manifiesto de PWA configurado (pendiente el Service Worker para instalación y modo offline completos), optimizada para carga rápida y consumo eficiente en dispositivos móviles.  
 * **Base de Datos:** PostgreSQL 15 en la nube (Neon Cloud), con modelos relacionales normalizados y aislamiento multi-tenant por tienda (tienda\_id).  
 * **Motor de IA:** Integración con OpenAL API (GPT-4o-mini), complementado con categorización analítica ABC y sistema de caché determinístico para optimización de consumo de tokens.
 
