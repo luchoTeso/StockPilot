@@ -288,7 +288,7 @@ El diseño del sistema aplica dos patrones formales documentados por Gamma et al
 
 * **Impacto de la operación del sistema:** 
 
-  El sistema es una aplicación web de bajo consumo energético. Al ejecutarse sobre Node.js con PostgreSQL como motor relacional desplegado en Railway, aprovecha la modalidad de pago por uso de la nube, lo que minimiza el consumo energético en reposo. El sistema de caché implementado evita llamadas redundantes a la API de OpenAI, reduciendo la huella computacional de las consultas repetidas con los mismos datos de entrada.
+  El sistema es una aplicación web de bajo consumo energético. Al ejecutarse sobre Node.js con PostgreSQL como motor relacional desplegado en Render (con base de datos gestionada en Neon), aprovecha la modalidad de pago por uso de la nube, lo que minimiza el consumo energético en reposo. El sistema de caché implementado evita llamadas redundantes a la API de OpenAI, reduciendo la huella computacional de las consultas repetidas con los mismos datos de entrada.
 
 8. # **Metodología** {#metodología}
 
@@ -416,7 +416,7 @@ Se documentaron los casos de uso del sistema incluyendo flujo principal, flujo a
 
 Por cada requerimiento funcional se redactó una historia de usuario siguiendo el formato estándar: *"Como \[rol\], quiero \[funcionalidad\], para \[beneficio de negocio\]"*. Este ejercicio permitió validar que cada requerimiento respondía a una necesidad real del propietario o colaborador de la microempresa, y sirvió como criterio de aceptación verificable durante las Sprint Reviews.
 
-**VER ANEXO 10 — HISTORIAS DE USUARIO**
+**VER ANEXO 9 — HISTORIAS DE USUARIO**
 
 ## **9.4 Diagramas UML** {#9.4-diagramas-uml}
 
@@ -430,7 +430,7 @@ Se desarrollaron los siguientes diagramas UML para guiar el diseño técnico y d
 
 ![][image8]
 
-**VER ANEXO 11**
+**VER ANEXO 10**
 
 **Diagramas de Actividades:** Representan los flujos lógicos de las operaciones más relevantes del sistema: creación de una venta con descuento automático de inventario, generación de una orden de compra inteligente, y ciclo de retroalimentación de la IA.
 
@@ -476,7 +476,7 @@ El patrón Factory Method se aplica en el módulo de productos a través de cinc
 **Tecnología:** Axios \+ CORS  
 **Justificación:** Cliente HTTP para consumo de la API REST con soporte de credenciales de sesión  
 Base de datos  
-**Tecnología:** PostgreSQL 15 (driver pg / node-postgres) — desplegado en Railway.  
+**Tecnología:** PostgreSQL 15 (driver pg / node-postgres) — desplegado en Render, con base de datos gestionada en Neon.  
 **Justificación:** Motor relacional robusto con soporte de concurrencia, transacciones ACID y despliegue gestionado en la nube.  
 **IA generativa**  
 **Tecnología:** OpenAI GPT-4o-mini API  
@@ -529,7 +529,7 @@ El plan de pruebas se diseñó para verificar el cumplimiento de los 83 requerim
 Las pruebas funcionales verificaron el comportamiento correcto de cada flujo de usuario definido en los requerimientos: creación, edición y eliminación de registros en todos los módulos CRUD; flujo completo de venta con descuento automático de inventario; generación de alertas ante condiciones de stock crítico, advertencia y vencimiento; generación de sugerencias de compra por la IA con validación de guardrails ABC; conversión de simulación a orden de compra; envío de orden de compra por correo al proveedor; y activación del resumen semanal automático y manual.  
 Las pruebas no funcionales verificaron: tiempos de carga del Dashboard inferiores a 3 segundos; tiempos de respuesta de operaciones CRUD inferiores a 500ms; correcto funcionamiento del sistema de caché MD5 sin llamadas redundantes a la API; hash bcrypt de contraseñas verificable en base de datos; bloqueo de sesión concurrente con retorno de SESSION\_ACTIVE, presentación del aviso de conflicto al segundo dispositivo, y notificación al dispositivo desplazado únicamente cuando el usuario confirma el forzado; visualización correcta en Chrome, Edge y Firefox; y adaptación responsive de la interfaz en pantallas de 375px, 768px y 1920px de ancho.  
 Al cierre del Sprint 5, el 100% de los casos de prueba ejecutados arrojó resultado satisfactorio, confirmando que el sistema cumple la totalidad de los requerimientos definidos en el backlog.  
-VER ANEXO 8 — REQUERIMIENTOS COMPLETOS DEL SISTEMA   
+VER ANEXO 7 — REQUERIMIENTOS COMPLETOS DEL SISTEMA   
 ![][image13]  
 ![][image14]  
 ![][image15]
@@ -550,19 +550,19 @@ VER ANEXO 8 — REQUERIMIENTOS COMPLETOS DEL SISTEMA
 
 1. Con base en los resultados obtenidos durante el desarrollo y las limitaciones identificadas en la etapa de pruebas, se formulan las siguientes recomendaciones para la evolución del sistema en versiones posteriores.
 
-2. **Implementación de backups funcionales en PostgreSQL.** El sistema incluye un mecanismo de respaldo basado en copia del archivo físico inventario.db, diseñado para SQLite. Al migrar a PostgreSQL desplegado en Railway, este mecanismo dejó de funcionar: la base de datos ya no es un archivo local sino un servidor externo, por lo que createBackup() no encuentra el archivo y no genera ningún respaldo en producción. Como trabajo futuro se recomienda reemplazarlo por un proceso basado en pg\_dump ejecutado mediante un cron job programado, que exporte un volcado completo de la base de datos PostgreSQL y lo almacene en un servicio de almacenamiento externo (AWS S3, Google Cloud Storage o similar), garantizando recuperabilidad ante fallos sin depender del sistema de archivos local del servidor.
+2. **Implementación de backups funcionales en PostgreSQL.** El sistema incluye un mecanismo de respaldo basado en copia del archivo físico inventario.db, diseñado para SQLite. Al migrar a PostgreSQL desplegado en Render, este mecanismo dejó de funcionar: la base de datos ya no es un archivo local sino un servidor externo, por lo que createBackup() no encuentra el archivo y no genera ningún respaldo en producción. Como trabajo futuro se recomienda reemplazarlo por un proceso basado en pg\_dump ejecutado mediante un cron job programado, que exporte un volcado completo de la base de datos PostgreSQL y lo almacene en un servicio de almacenamiento externo (AWS S3, Google Cloud Storage o similar), garantizando recuperabilidad ante fallos sin depender del sistema de archivos local del servidor.
 
 3. **Implementación de PWA (Progressive Web App).** Dado que el frontend ya es una SPA con React 19, se recomienda extenderla como PWA añadiendo un Service Worker y un manifiesto de aplicación. Esto permitiría a los propietarios de microempresas instalar StockPilot directamente desde el navegador en sus dispositivos móviles, acceder a funcionalidades básicas en modo offline y recibir notificaciones push de alertas críticas sin depender exclusivamente del resumen semanal por correo.
 
 4. **Desarrollo de aplicación móvil nativa.** Las microempresas gestionan su inventario frecuentemente desde dispositivos móviles en el punto de venta. Se recomienda desarrollar una aplicación móvil en React Native que consuma la API REST existente sin modificaciones en el backend, priorizando el registro rápido de ventas, la consulta de alertas en tiempo real y el registro de movimientos de inventario con escaneo de código de barras mediante la cámara del dispositivo.
 
-5. **Integración con lectores de código de barras y QR.** El registro manual de productos representa una fricción operativa para los colaboradores. Se recomienda integrar la captura de código de barras mediante la cámara del dispositivo o lectores físicos USB, asociando automáticamente el código escaneado con el producto en la base de datos, lo que reduciría errores de digitación y aceleraría los flujos de registro de ventas y movimientos de inventario.
+5. **Integración con lectores de código de barras y QR.** El registro manual de productos representa una fricción operativa para los colaboradores. El proyecto ya cuenta con un componente base de escaneo por cámara (detección nativa vía BarcodeDetector con respaldo ZXing), pero aún no está conectado a los formularios de registro de productos ni de ventas. Se recomienda como trabajo futuro integrar este componente en dichos flujos y extender el soporte a lectores físicos USB, asociando automáticamente el código escaneado con el producto en la base de datos.
 
 6. **Ampliación del motor predictivo con modelos de series de tiempo.** El motor de predicción de demanda actual utiliza velocidades de venta promedio ponderadas, lo que es efectivo para tendencias lineales. Se recomienda incorporar modelos estadísticos como Prophet o ARIMA para capturar estacionalidades, ciclos y eventos especiales como temporadas altas o fechas festivas, mejorando la precisión de las proyecciones de agotamiento y los puntos de reorden en negocios con demanda variable.
 
 7. **Implementación de un módulo de facturación electrónica.** En Colombia, la DIAN exige la facturación electrónica para un número creciente de contribuyentes. Se recomienda integrar StockPilot con un proveedor tecnológico habilitado por la DIAN para la generación y transmisión de facturas electrónicas directamente desde el módulo de ventas, aumentando el valor del sistema para microempresas en proceso de formalización tributaria.
 
-8. **Despliegue en la nube con arquitectura de contenedores.** Para eliminar la dependencia de un servidor local y garantizar disponibilidad continua, se recomienda desplegar StockPilot en un proveedor de nube como AWS, GCP o Azure utilizando contenedores Docker: el backend Express en un contenedor y el frontend React compilado servido mediante un CDN o un contenedor Nginx, lo que garantizaría escalabilidad, actualizaciones sin interrupciones y acceso multiusuario desde cualquier ubicación.
+8. **Contenerización del despliegue.** StockPilot ya opera en la nube (backend en Render, base de datos gestionada en Neon PostgreSQL), eliminando la dependencia de un servidor local. Como siguiente paso se recomienda contenerizar el backend Express y el frontend React compilado mediante Docker, lo que facilitaría la portabilidad entre proveedores de nube, la paridad entre entornos de desarrollo y producción, y una futura estrategia de escalamiento horizontal.
 
 9. **Evaluación formal de calidad bajo estándares ISO/IEC 25010\.** Como trabajo futuro en la Práctica V, se recomienda ejecutar una evaluación sistemática del sistema bajo el modelo de calidad ISO/IEC 25010, midiendo las características de funcionalidad, fiabilidad, usabilidad, eficiencia de desempeño, mantenibilidad y portabilidad mediante métricas cuantificables, con el fin de identificar brechas de calidad y sustentar la viabilidad comercial del producto ante potenciales inversores o aliados estratégicos.
 
@@ -576,13 +576,13 @@ De acuerdo a los principios expuestos en *Ingeniería de Software* de Ian Sommer
 
 * **Líneas de Código (KLOC \- Kilo Lines of Code):**  
   * *Propósito:* Medir el volumen del código fuente mantenido para calcular el esfuerzo y estimar la densidad de defectos.  
-  * *Estado actual:* El proyecto cuenta aproximadamente con **5.8 KLOC** (JavaScript, React JSX y SQL), excluyendo dependencias (node\_modules).  
+  * *Estado actual:* El proyecto cuenta aproximadamente con **26.5 KLOC** (JavaScript y React JSX), excluyendo dependencias (node\_modules). Esta cifra refleja el estado actual del repositorio, que ha seguido creciendo mediante desarrollo continuo tras el cierre formal del Sprint 5 de esta materia.  
 * **Densidad de Defectos (Defect Density):**  
   * *Propósito:* Medir la calidad del código mediante la fórmula: (Defectos Detectados / KLOC).  
   * *Estado actual:* Tras la auditoría OWASP Top 10, se detectaron 6 vulnerabilidades críticas mitigadas, arrojando una densidad de **\~1.03 defectos por KLOC**, un valor controlable que está disminuyendo tras el refactor de seguridad (implementación de criptografía segura e higienización de inputs).  
 * **Cobertura de Pruebas (Test Coverage):**  
   * *Propósito:* Porcentaje del código validado automáticamente.  
-  * *Estado actual:* Se cuenta con una suite de pruebas unitarias (tests/business\_logic) y pruebas End-to-End en Playwright, alcanzando un **100% de cobertura en la lógica de negocio del backend** (validaciones, auth y modelos matemáticos de inventario) y manteniendo un **\~70% a nivel global del proyecto** para evitar pruebas frágiles sobre componentes visuales triviales.
+  * *Estado actual:* Se cuenta con una suite de pruebas unitarias (Vitest) y pruebas End-to-End en Playwright. La cobertura se mide de forma deliberada sobre el subconjunto de módulos más críticos del backend (motor de alertas, modelos de producto, validación de entradas y autenticación) en lugar de sobre el proyecto completo, alcanzando en ese subconjunto **99.1% de sentencias y 100% de líneas** (142 pruebas), evitando así invertir esfuerzo en pruebas frágiles sobre componentes visuales triviales.
 
 **2\. Métricas de Rendimiento Operativo y Nube (Basado en Amazon CloudWatch)**
 
