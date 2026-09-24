@@ -472,24 +472,36 @@ El patrón Factory Method se aplica en el módulo de productos a través de cinc
 
 **Justificación:** Librería de visualización declarativa integrada nativamente con React
 
+**Enrutamiento (Frontend)**  
+**Tecnología:** React Router DOM 7  
+**Justificación:** Navegación declarativa por rutas protegidas según el rol de usuario  
+**Iconografía**  
+**Tecnología:** lucide-react  
+**Justificación:** Set de iconos SVG ligero y consistente con el sistema de diseño  
 **Comunicación**  
 **Tecnología:** Axios \+ CORS  
 **Justificación:** Cliente HTTP para consumo de la API REST con soporte de credenciales de sesión  
 Base de datos  
 **Tecnología:** PostgreSQL 15 (driver pg / node-postgres) — desplegado en Render, con base de datos gestionada en Neon.  
 **Justificación:** Motor relacional robusto con soporte de concurrencia, transacciones ACID y despliegue gestionado en la nube.  
+**Sesiones y caché**  
+**Tecnología:** express-session \+ connect-pg-simple (persistencia en PostgreSQL) \+ Redis (connect-redis y rate-limit-redis)  
+**Justificación:** Sesiones server-side que sobreviven reinicios del servidor, con una capa de Redis dedicada al limitado de peticiones para no penalizar la base de datos principal  
 **IA generativa**  
 **Tecnología:** OpenAI GPT-4o-mini API  
 **Justificación:** Capacidad de razonamiento contextual con costo por llamada accesible.  
 **Exportación**  
 **Tecnología:** ExcelJS (XLSX) \+ PDFKit (PDF)  
 **Justificación:** Librerías maduras para generación de reportes en formatos estándar  
-**Automatización**  
-**Tecnología:** node-cron \+ Nodemailer  
-**Justificación:** Cron jobs nativos en Node.js para envíos programados sin dependencias externas  
-**Seguridad HTTP**  
-**Tecnología:** Helmet \+ express-rate-limit  
-**Justificación:** Cabeceras de seguridad y protección contra abuso de endpoints (DDoS)  
+**Automatización y correo**  
+**Tecnología:** node-cron \+ Resend (producción, HTTPS) con Nodemailer/SMTP como respaldo en desarrollo  
+**Justificación:** Cron jobs nativos en Node.js para envíos programados, con un proveedor transaccional en producción y un canal simple para desarrollo local  
+**Seguridad**  
+**Tecnología:** bcrypt (hash de contraseñas) \+ Helmet \+ express-rate-limit \+ csrf-sync \+ otplib/qrcode (autenticación de dos factores)  
+**Justificación:** Cabeceras de seguridad, protección contra abuso de endpoints y CSRF, y verificación en dos pasos para cuentas administrativas  
+**Logging**  
+**Tecnología:** pino \+ pino-pretty  
+**Justificación:** Logging estructurado de bajo overhead para diagnóstico en producción  
 **Testing unitario**  
 Tecnología: Vitest  
 **Justificación:** Framework de pruebas nativo para proyectos Node.js con soporte de cobertura  
