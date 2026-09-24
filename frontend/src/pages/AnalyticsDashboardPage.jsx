@@ -19,10 +19,21 @@ const PALETTE = {
 const CustomTooltipPareto = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const fullName = payload[0]?.payload?.fullName || payload[0]?.payload?.name;
+  // El halo blanco decorativo detrás de la línea verde comparte dataKey ("cumulativePercent") con la
+  // línea real, pero no tiene `name` propio: recharts le pone por defecto el dataKey como nombre, y
+  // `legendType`/`tooltipType="none"` en el <Line> solo ocultan la Leyenda — no existe una prop de
+  // Recharts que excluya una serie del contenido custom del Tooltip. Nos quedamos con la última
+  // entrada de cada dataKey (la que sí trae `name`, porque se declara después en el ComposedChart).
+  const vistos = new Set();
+  const rows = [...payload].reverse().filter((entry) => {
+    if (vistos.has(entry.dataKey)) return false;
+    vistos.add(entry.dataKey);
+    return true;
+  }).reverse();
   return (
     <div className="bg-menu text-white px-5 py-4 rounded-2xl shadow-lg border border-white/20 min-w-[180px]">
       <p className="text-xs font-bold text-resaltador mb-2">{fullName}</p>
-      {payload.map((entry) => (
+      {rows.map((entry) => (
         <div key={entry.name} className="flex justify-between items-center gap-6 py-1">
           <span className="text-xs font-bold text-slate-200 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full ring-1 ring-white/70" style={{ backgroundColor: entry.color }}></span>
@@ -258,7 +269,8 @@ const AnalyticsDashboardPage = () => {
                     <Cell key={entry.name} fill={entry.category === 'A' ? CHART.primary : entry.category === 'B' ? CHART.secondary : CHART.neutral} fillOpacity={0.85} />
                   ))}
                 </Bar>
-                <Line yAxisId="right" type="monotone" dataKey="cumulativePercent" stroke="#fff" strokeWidth={7} dot={false} activeDot={false} legendType="none" tooltipType="none" isAnimationActive={false} />
+                {/* Halo blanco decorativo (contraste detrás de la línea verde) — no es una serie real, ver CustomTooltipPareto para cómo se excluye del tooltip */}
+                <Line yAxisId="right" type="monotone" dataKey="cumulativePercent" stroke="#fff" strokeWidth={7} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
                 <Line yAxisId="right" type="monotone" dataKey="cumulativePercent" name="% Acumulado" stroke={CHART.line} strokeWidth={3.5} dot={{ r: 5, fill: CHART.line, strokeWidth: 2, stroke: '#fff' }} />
               </ComposedChart>
             </ResponsiveContainer>
