@@ -357,6 +357,7 @@ const LandingPage = () => (
         <div className="sp-foot">
           <span>StockPilot v3.0</span>
           <span>Práctica de Ingeniería IV, Universidad Central, 2026</span>
+          <Link to="/politica-datos">Política de Tratamiento de Datos</Link>
         </div>
       </div>
     </footer>

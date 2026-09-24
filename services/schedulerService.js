@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const db = require('../config/database');
 const Alert = require('../models/Alert');
 const transporter = require('../config/mailer');
+const { createBackup } = require('../utils/backup');
 
 // Función reutilizable para enviar el resumen (usada por cron y por disparo manual)
 const runWeeklySummary = async (targetTiendaId = null) => {
@@ -212,10 +213,13 @@ const startScheduler = () => {
     // Evaluación de Inteligencia Artificial: Diario a las 03:00 AM
     cron.schedule('0 3 * * *', () => runDailyAIEvaluation());
 
+    // Respaldo de PostgreSQL (pg_dump): Diario a las 02:00 AM
+    cron.schedule('0 2 * * *', () => createBackup());
+
     // Ejecución inmediata al arranque para limpiar promociones que vencieron mientras el servidor estaba apagado
     runDailyPriceReversion();
 
     console.log('✅ [Scheduler] Servicio de automatización (Diario/Semanal) activado.');
 };
 
-module.exports = { startScheduler, runWeeklySummary, runDailyAIEvaluation };
+module.exports = { startScheduler, runWeeklySummary, runDailyAIEvaluation, createBackup };

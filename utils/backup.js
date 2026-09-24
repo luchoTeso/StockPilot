@@ -1,52 +1,68 @@
+const { execFile } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-/**
- * Realiza una copia de seguridad de la base de datos actual.
- * Guarda el archivo en la carpeta /backups con un nombre con fecha.
- */
-function createBackup() {
-    const dbPath = path.join(__dirname, '..', 'database', 'inventario.db');
-    const backupsDir = path.join(__dirname, '..', 'backups');
+const BACKUPS_DIR = path.join(__dirname, '..', 'backups');
+const MAX_BACKUPS = 14;
 
-    // Asegurar que la carpeta de backups exista
-    if (!fs.existsSync(backupsDir)) {
-        fs.mkdirSync(backupsDir, { recursive: true });
+function runPgDump(databaseUrl, outputPath) {
+    return new Promise((resolve, reject) => {
+        // Formato "custom" (-Fc): comprimido y restaurable con pg_restore, a diferencia de un volcado
+        // de texto plano.
+        execFile('pg_dump', [databaseUrl, '-F', 'c', '-f', outputPath], (error, stdout, stderr) => {
+            if (error) return reject(new Error(stderr || error.message));
+            resolve();
+        });
+    });
+}
+
+/**
+ * Respaldo lógico de PostgreSQL vía pg_dump. Reemplaza al respaldo por copia de archivo (utils/backup.js
+ * original, pensado para inventario.db de SQLite, dejó de funcionar al migrar a PostgreSQL en la nube).
+ *
+ * Limitación conocida: en Render (y la mayoría de PaaS) el sistema de archivos del servicio web es
+ * efímero — estos respaldos NO sobreviven un redeploy o un reinicio del contenedor. Sirven como
+ * respaldo de corto plazo entre despliegues, pero no reemplazan una copia en almacenamiento externo
+ * (S3, Backblaze, etc.). Subir automáticamente a ese almacenamiento queda pendiente de que el equipo
+ * provisione las credenciales correspondientes.
+ */
+async function createBackup() {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+        console.log('⚠️ No hay DATABASE_URL configurada; se omite el respaldo.');
+        return;
     }
 
-    // Generar nombre de archivo: backup_YYYY-MM-DD_HH-mm.db
+    if (!fs.existsSync(BACKUPS_DIR)) {
+        fs.mkdirSync(BACKUPS_DIR, { recursive: true });
+    }
+
     const now = new Date();
     // Ajustar a Bogotá (Manual -5h)
     const bogotaNow = new Date(now.getTime() - (5 * 60 * 60 * 1000));
     const timestamp = bogotaNow.toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-    const backupName = `backup_${timestamp}.db`;
-    const backupPath = path.join(backupsDir, backupName);
+    const backupName = `backup_${timestamp}.dump`;
+    const backupPath = path.join(BACKUPS_DIR, backupName);
 
     try {
-        // Verificar si la BD origen existe
-        if (!fs.existsSync(dbPath)) {
-            console.log('⚠️ No se encontró inventario.db para respaldar.');
-            return;
-        }
+        await runPgDump(databaseUrl, backupPath);
+        console.log(`📦 Respaldo de PostgreSQL creado: backups/${backupName}`);
 
-        // Copiar el archivo
-        fs.copyFileSync(dbPath, backupPath);
-        console.log(`📦 Respaldo creado exitosamente: backups/${backupName}`);
-
-        // Opcional: Limpiar backups viejos (mantener solo los últimos 10)
-        const files = fs.readdirSync(backupsDir)
-            .filter(f => f.startsWith('backup_'))
-            .map(f => ({ name: f, time: fs.statSync(path.join(backupsDir, f)).mtime.getTime() }))
+        const files = fs.readdirSync(BACKUPS_DIR)
+            .filter((f) => f.startsWith('backup_') && f.endsWith('.dump'))
+            .map((f) => ({ name: f, time: fs.statSync(path.join(BACKUPS_DIR, f)).mtime.getTime() }))
             .sort((a, b) => b.time - a.time);
 
-        if (files.length > 10) {
-            files.slice(10).forEach(f => {
-                fs.unlinkSync(path.join(backupsDir, f.name));
-                console.log(`🧹 Backup antiguo eliminado: ${f.name}`);
+        if (files.length > MAX_BACKUPS) {
+            files.slice(MAX_BACKUPS).forEach((f) => {
+                fs.unlinkSync(path.join(BACKUPS_DIR, f.name));
+                console.log(`🧹 Respaldo antiguo eliminado: ${f.name}`);
             });
         }
     } catch (error) {
-        console.error('❌ Error al crear el respaldo:', error.message);
+        // pg_dump puede no estar disponible en la imagen del servicio (algunos planes de Render no
+        // incluyen el cliente de PostgreSQL) — se registra el fallo en vez de tumbar el proceso.
+        console.error('❌ Error al crear el respaldo con pg_dump:', error.message);
     }
 }
 

@@ -52,7 +52,8 @@ CREATE TABLE IF NOT EXISTS Usuarios (
     reset_token VARCHAR(255),
     reset_expires VARCHAR(100),
     two_factor_secret VARCHAR(255),
-    two_factor_enabled BOOLEAN DEFAULT FALSE
+    two_factor_enabled BOOLEAN DEFAULT FALSE,
+    fecha_aceptacion_politica_datos TIMESTAMP WITH TIME ZONE
 );
 
 -- 3. TABLA PROVEEDORES

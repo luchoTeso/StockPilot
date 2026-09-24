@@ -33,9 +33,9 @@ class User {
 
         const query = `
             INSERT INTO Usuarios (
-                nombres, genero, correo, celular, 
-                usuario, contrasena, rol, id_tienda, cambio_clave_forzoso
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                nombres, genero, correo, celular,
+                usuario, contrasena, rol, id_tienda, cambio_clave_forzoso, fecha_aceptacion_politica_datos
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const result = await db.runAsync(query, [
             userData.nombres,
@@ -46,7 +46,10 @@ class User {
             hashedPassword,
             userData.rol,
             userData.id_tienda,
-            userData.cambio_clave_forzoso ? true : false
+            userData.cambio_clave_forzoso ? true : false,
+            // Solo se registra en el flujo de registro propio (Ley 1581): quien acepta es el dueño de
+            // la cuenta, no el administrador que da de alta a un colaborador desde tenderoController.
+            userData.aceptaPoliticaDatos ? new Date() : null
         ]);
         return result.lastID;
     }

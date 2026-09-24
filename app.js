@@ -20,7 +20,6 @@ const { csrfSynchronisedProtection, generateToken } = csrfSync({
   getTokenFromRequest: (req) => req.headers['x-csrf-token'] || req.headers['X-CSRF-Token']
 });
 const { logger, requestLogger } = require('./utils/logger');
-// const { createBackup } = require('./utils/backup'); (Obsoleto en Postgres)
 const { globalLimiter, authLimiter, aiLimiter, twoFactorLimiter } = require('./middleware/rateLimiter');
 
 // Importar rutas

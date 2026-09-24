@@ -202,13 +202,14 @@ const db = {
             
             // 4. Asegurar columnas de 2FA en Usuarios
             await pool.query(`
-                ALTER TABLE Usuarios 
+                ALTER TABLE Usuarios
                 ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255),
                 ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE,
                 ADD COLUMN IF NOT EXISTS foto_url TEXT,
                 ADD COLUMN IF NOT EXISTS cambio_clave_forzoso BOOLEAN DEFAULT FALSE,
                 ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255),
-                ADD COLUMN IF NOT EXISTS reset_expires VARCHAR(100);
+                ADD COLUMN IF NOT EXISTS reset_expires VARCHAR(100),
+                ADD COLUMN IF NOT EXISTS fecha_aceptacion_politica_datos TIMESTAMP WITH TIME ZONE;
             `);
 
             // 5. Asegurar esquema para Arqueo de Caja y Facturación POS (Fase 1 y 2)

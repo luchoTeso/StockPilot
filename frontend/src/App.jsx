@@ -16,6 +16,7 @@ import ComunicadosPage from './pages/ComunicadosPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import LandingPage from './pages/LandingPage';
 import RegisterPage from './pages/RegisterPage';
+import PoliticaDatosPage from './pages/PoliticaDatosPage';
 import ProveedoresPage from './pages/ProveedoresPage';
 import AlertasPage from './pages/AlertasPage';
 import AuditoriaPage from './pages/AuditoriaPage';
@@ -93,6 +94,9 @@ function App() {
               <RegisterPage />
             </PublicRoute>
           } />
+
+          {/* Pública sin importar sesión: enlazada desde el registro y desde el pie de la Landing */}
+          <Route path="/politica-datos" element={<PoliticaDatosPage />} />
 
           {/* Redirigir la raíz a la Landing Page (es pública, pero si hay sesión irá al Dashboard) */}
           <Route path="/" element={

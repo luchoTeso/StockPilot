@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
@@ -28,6 +28,7 @@ const RegisterPage = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [aceptaPolitica, setAceptaPolitica] = useState(false);
 
   const navigate = useNavigate();
   const toast = useToast();
@@ -41,6 +42,9 @@ const RegisterPage = () => {
     if (formData.contrasena.length < 8) {
       return toast.error('La contraseña debe tener al menos 8 caracteres');
     }
+    if (!aceptaPolitica) {
+      return toast.error('Debes aceptar la Política de Tratamiento de Datos para continuar');
+    }
 
     setIsLoading(true);
     try {
@@ -53,7 +57,8 @@ const RegisterPage = () => {
         store_name: formData.store_name,
         store_address: formData.store_address,
         gender: 'No especificado',
-        id: formData.celular
+        id: formData.celular,
+        acepta_politica_datos: aceptaPolitica
       });
 
       toast.success('¡Tienda y Cuenta creadas exitosamente! Bienvenido.');
@@ -232,9 +237,27 @@ const RegisterPage = () => {
               />
             </InputField>
 
+            <label htmlFor="acepta_politica" className="flex items-start gap-2.5 cursor-pointer select-none">
+              <input
+                id="acepta_politica"
+                type="checkbox"
+                checked={aceptaPolitica}
+                onChange={e => setAceptaPolitica(e.target.checked)}
+                required
+                className="mt-0.5 w-4 h-4 accent-azul cursor-pointer shrink-0"
+              />
+              <span className="text-xs text-slate-600 font-medium leading-relaxed">
+                Acepto la{' '}
+                <Link to="/politica-datos" target="_blank" className="text-azul font-bold hover:underline">
+                  Política de Tratamiento de Datos
+                </Link>{' '}
+                (Ley 1581 de 2012).
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !aceptaPolitica}
               className="w-full py-5 bg-azul hover:bg-azul-hondo text-white rounded-lg text-xs font-bold shadow-lg mt-6 active:scale-95 transition-colors transition-shadow transition-transform disabled:opacity-50"
             >
               {isLoading ? 'Registrando y encriptando...' : 'Crear mi Negocio'}

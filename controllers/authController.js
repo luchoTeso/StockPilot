@@ -122,13 +122,20 @@ class AuthController {
         try {
             const {
                 name, gender, email, phone,
-                store_name, store_address, username, password
+                store_name, store_address, username, password, acepta_politica_datos
             } = req.body;
 
             if (!name || !email || !username || !password || !store_name) {
-                return res.status(400).json({ 
-                    success: false, 
-                    error: 'Todos los campos son obligatorios' 
+                return res.status(400).json({
+                    success: false,
+                    error: 'Todos los campos son obligatorios'
+                });
+            }
+
+            if (!acepta_politica_datos) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Debes aceptar la Política de Tratamiento de Datos para registrarte'
                 });
             }
 
@@ -166,7 +173,8 @@ class AuthController {
                 usuario: username,
                 contrasena: password, // bcrypt se aplica dentro de User.create()
                 rol: 'Administrador',
-                id_tienda: storeId
+                id_tienda: storeId,
+                aceptaPoliticaDatos: true
             };
 
             const userId = await User.create(userData);
