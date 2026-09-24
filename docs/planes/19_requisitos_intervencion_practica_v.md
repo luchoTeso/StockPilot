@@ -74,14 +74,83 @@ LEFT JOIN VentasPrimeros7Dias vp ON vp.id_tienda = rn.id_tienda;
 
 ---
 
-## 3.4 Modo básico (divulgación progresiva) — solo documentado, sin implementar
+## 3.4 Modo básico (divulgación progresiva) — evaluación y plan detallado, sin implementar
 
-Del hallazgo H4 del docx ("La facilidad de uso decide la adopción") y la decisión 3.2 del contexto: los 15 módulos actuales son demasiados para una capacitación de 15 minutos.
+**Estado:** evaluación y plan completos a pedido del usuario (2026-09-24). Sigue sin implementarse — es un cambio de UX que toca la navegación principal, y la propia intervención (Fase 4, prueba de usabilidad con 5 tenderos) es el paso diseñado para validar esto antes de construirlo.
 
-**Diseño propuesto (no implementado):**
-- **Modo tienda (por defecto):** 4 accesos grandes en el home — *Vender*, *¿Qué pido?* (Consejero IA simplificado), *Alertas*, *Recibir mercancía*. Reutiliza pantallas ya existentes (`PuntoVentaPage`, una vista recortada del Consejero, `AlertasPage`, el flujo de recepción de `ProveedoresPage`), no páginas nuevas.
-- **Modo avanzado:** el resto de módulos (Simulador, Aprendizaje, Reportes, Promociones, Analítica, etc.), accesible con un toggle visible en el `Sidebar`.
-- **Persistencia de la preferencia:** por *usuario*, no por tienda — un campo nuevo `Usuarios.modo_interfaz` (`'basico' | 'avanzado'`, default `'basico'` para cuentas nuevas) es más simple que por tienda y evita que el administrador imponga el modo avanzado a un colaborador que apenas se está capacitando.
-- **Punto de decisión pendiente antes de implementar:** si el toggle debe estar disponible para el rol Colaborador o solo para Administrador — el hallazgo H4 habla de los "administradores de microempresas", que suelen ser los dueños, así que probablemente el colaborador debería quedar siempre en modo básico salvo que el administrador lo habilite explícitamente.
+### 3.4.1 Evaluación
 
-**Por qué no se implementó:** es un cambio de UX que toca la navegación principal de la aplicación; el propio contexto lo marca como "idea en evaluación... no implementar sin aprobación", y la intervención (fase 4, prueba de usabilidad con 5 tenderos) es precisamente el paso diseñado para validar si esto hace falta antes de construirlo.
+**A favor, con evidencia propia (no solo intuición):** el hallazgo H4 del docx es contundente — 80% de los encuestados no tiene tiempo para aprender una herramienta nueva, 40% condiciona su participación a la complejidad, y 87% considera la interfaz sencilla importante o muy importante. StockPilot tiene hoy 15-16 módulos en el Sidebar. Ningún tendero pidió "menos módulos" explícitamente en la encuesta (no era una pregunta), pero el patrón de respuestas apunta directo a eso: la funcionalidad más pedida (registro automatizado, 80%) es también la más simple de las que existen.
+
+**En contra / riesgos a tener en cuenta:**
+- **Costo de mantenimiento duplicado.** A partir de este cambio, cada nueva funcionalidad hay que decidir en qué modo vive, y el equipo (3 personas) tiene que probar dos superficies de navegación en vez de una. Es el tipo de deuda que se acumula silenciosamente.
+- **Riesgo de sentirse "encerrado".** Si el toggle para pasar a modo avanzado no es obvio y accesible en todo momento, un administrador que sí quiere ver Reportes o Analítica puede sentir que StockPilot "le escondió" algo, justo lo opuesto del efecto buscado. La mitigación (ver 3.4.3, Fase A) es que el switch nunca se esconda a su vez.
+- **No sustituye la prueba de usabilidad.** El diseño de abajo son hipótesis basadas en la encuesta (n=15, sin preguntas específicas de navegación) y en el conocimiento del sistema — no en observar a un tendero navegando. Construirlo completo antes de la Fase 4 de la intervención sería invertir sin el dato que precisamente está diseñado para producirlo.
+
+**Recomendación:** construir por fases (3.4.3), y usar el prototipo de las Fases A-C (las más baratas) como parte de lo que se le muestra a los 5 tenderos de la prueba de usabilidad, en vez de completar todo el plan a ciegas.
+
+### 3.4.2 Qué vistas son realmente necesarias (matriz)
+
+El diseño original (ver historial de este documento) proponía 4 accesos: *Vender*, *¿Qué pido?*, *Alertas*, *Recibir mercancía*. Al revisar contra la encuesta y el inventario real de pantallas, encontré que **falta una quinta**: sin poder dar de alta un producto nuevo, no hay nada que vender ni que recibir — y "registro automatizado" es la necesidad #1 de la encuesta (80%), no solo el registro de ventas.
+
+| Vista | Modo básico | Justificación |
+|---|---|---|
+| **Vender** (`/ventas`, existente) | ✅ Esencial | Registro de ventas — la acción más frecuente del día a día. |
+| **¿Qué pido?** (nueva, `/pedir`) | ✅ Esencial | Cubre "alertas de stock" (40%) y es el diferenciador de IA, pero mostrado como resultado, no como tecnología (hallazgo H3). |
+| **Alertas** (`/alertas`, existente) | ✅ Esencial | Cubre "alertas de caducidad" (53%) y "alertas de stock" (40%), las dos funcionalidades más pedidas después del registro. |
+| **Recibir mercancía** (dentro de "¿Qué pido?", no un menú aparte) | ✅ Esencial | Parte de "registro automatizado" (80%): sin esto, las entradas de inventario no quedan registradas. |
+| **Catálogo simplificado** (`/productos`, variante recortada) | ✅ Esencial (el 5.º que faltaba) | Alta de productos nuevos — condición previa para que Vender/Recibir tengan algo que mostrar. Oculta columnas avanzadas (ABC, velocidad, nivel_stock detallado), conserva nombre/stock/precio y el botón de alta. |
+| Vista general (`/dashboard`) | 🟡 Opcional | Se puede fusionar con "¿Qué pido?" (ambas son "qué necesito saber hoy") en vez de mantenerla aparte. |
+| Mi Tienda (`/tiendas`) | 🟡 Opcional | Solo necesaria para editar datos del negocio o si hay más de una sede — no es una tarea diaria. |
+| Colaboradores (`/registro-tendero`) | 🟡 Depende del negocio | Si el tendero ya tiene empleados, es tan esencial como Vender desde el día 1; si trabaja solo, no aplica. No se puede decidir en abstracto — mejor mostrarla si `COUNT(Usuarios) > 1` para esa tienda, sin importar el modo. |
+| Cartera (Fiados) (`/cartera`) | ⚪ Oculto | No todos los tenderos fían; la encuesta no lo midió como prioridad. |
+| Movimientos (`/movimientos`) | ⚪ Oculto | Ajustes manuales y mermas — uso ocasional, no diario; se puede promover a "básico" más adelante si se ve que hace falta. |
+| Comunicados (`/comunicados`) | ⚪ Oculto | Comunicación con clientes, no operación de inventario. |
+| Proveedores AI completo (`/proveedores`) | ⚪ Oculto | La edición manual de cantidades, simulación de presupuesto y panel de IA quedan en modo avanzado; la versión de uso diario vive en "¿Qué pido?". |
+| Analítica Visual (`/analitica-visual`) | ⚪ Oculto | Explícitamente fuera del alcance de alguien que recién empieza (hallazgo H4). |
+| Simulador AI (`/simulador`) | ⚪ Oculto | Herramienta de planeación, no de operación diaria. |
+| Generar Reportes (`/reportes`) | ⚪ Oculto | Útil pasado el primer mes, no en la primera semana; un resumen mínimo de "cuánto vendí hoy" puede vivir dentro de Vender en vez de un módulo aparte. |
+| Auditoría AI (`/auditoria`) | ⚪ Oculto | Transparencia técnica sobre las decisiones de la IA, no una acción. |
+| Aprendizaje AI (`/aprendizaje`) | ⚪ Oculto | Panel de métricas de la IA, no una acción. |
+
+**Conclusión:** el modo básico real son **5 vistas** (Vender, ¿Qué pido?/Recibir, Alertas, Catálogo simplificado, más el switch a modo avanzado siempre visible), no 4. El resto del sistema no desaparece — solo se deja de mostrar en el menú hasta que el usuario decida activarlo o hasta que el propio sistema detecte que ya lo necesita (ej. Colaboradores, cuando hay más de un usuario).
+
+### 3.4.3 Plan de implementación por fases
+
+**Fase A — Preferencia y toggle (riesgo bajo, sin tocar la navegación aún)**
+- Columna nueva `Usuarios.modo_interfaz VARCHAR(10) DEFAULT 'basico'` (mismo patrón de migración que `fecha_aceptacion_politica_datos`: `init_pg.sql` + `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` en `config/database.js`).
+- **Importante para no romper el hábito de quien ya usa el sistema:** el default `'basico'` solo debe aplicar a cuentas *nuevas*. Las cuentas existentes necesitan un backfill explícito a `'avanzado'` en la misma migración (`UPDATE Usuarios SET modo_interfaz = 'avanzado' WHERE modo_interfaz IS NULL AND fecha_registro < NOW()`, ejecutado una sola vez antes de que el default entre en vigor) — si no, todo administrador actual vería su Sidebar reducido de golpe el día del despliegue, un downgrade sorpresivo que iría en contra del propósito de este cambio.
+- Endpoint `PATCH /api/perfil/modo-interfaz` (el propio usuario cambia su preferencia; un Administrador podría cambiarla para un Colaborador, a definir en la Fase B).
+- Frontend: `AuthContext` expone `user.modoInterfaz`; un switch pequeño y **siempre visible** (no escondido en un submenú) en el Sidebar y en `/perfil` — mitiga el riesgo de "sentirse encerrado" de la evaluación.
+
+**Fase B — Sidebar condicional (riesgo bajo)**
+- `Sidebar.jsx` filtra el arreglo `links` según `modoInterfaz`, mostrando solo las 5 vistas esenciales de la matriz (más el switch y "Mi Perfil") cuando es `'basico'`.
+- **Decisión de diseño: ocultar del menú, no bloquear el acceso.** Ninguna ruta se protege de más; si un Colaborador en modo básico llega a `/reportes` por un enlace directo (ej. desde una notificación), la ve igual — solo desaparece del menú. Esto evita romper flujos existentes que ya enlazan a esas rutas y evita construir una segunda capa de permisos sobre la que ya existe (`AdminRoute`).
+- Punto de decisión pendiente: ¿el Colaborador puede cambiar su propio modo, o solo el Administrador se lo asigna? Recomiendo que el Colaborador sí pueda subirse a avanzado por su cuenta (es su propia curva de aprendizaje), pero que el Administrador vea en qué modo está cada uno desde Colaboradores.
+
+**Fase C — Pantalla nueva "¿Qué pido?" (riesgo medio; la única pantalla verdaderamente nueva)**
+- Ruta `/pedir`, accesible a Administrador **y** Colaborador (hoy el equivalente, Proveedores AI, es `AdminRoute` — este es el cambio de alcance más importante del plan).
+- Contenido: lista agrupada por proveedor, solo productos en nivel `critico`/`reponer` (reutiliza `leerEntradasMotor` + `calcularReposicion`, ya existentes — sin SQL nuevo), con la cantidad sugerida y un botón "Armar pedido" que reutiliza `ordenesBorrador`/`suppliersController` para crear el borrador. No expone edición manual de cantidades, simulación de presupuesto ni el panel de IA — eso se queda en Proveedores AI para modo avanzado.
+- Incluye la sección "Recibir mercancía": lista de `Ordenes_Compra` en estado `Aprobada`/`Enviada`, con un botón para marcarlas recibidas (reutiliza `completarRecepcion` tal cual, ya transaccional y ya dispara `Alert.generate` desde el cierre de plan 17).
+
+**Fase D — Permisos de Colaborador sobre órdenes (riesgo medio-alto: es el cambio que más toca seguridad)**
+- Hoy ningún Colaborador puede tocar `Ordenes_Compra` — todo el módulo de Proveedores es `AdminRoute`/`requireAdmin` en el backend. Exponer "¿Qué pido?"/"Recibir mercancía" a Colaborador significa decidir con precisión qué puede hacer:
+  - **Recomendado:** el Colaborador puede *ver* órdenes pendientes y *marcarlas recibidas*, igual que ya puede *registrar* un egreso de caja sin poder aprobarlo — mismo patrón que `EgresosCaja` (registra, el Administrador aprueba/rechaza).
+  - **Recomendado:** el Colaborador puede *generar* un borrador de orden desde "¿Qué pido?", pero no *aprobarla* ni *enviarla* al proveedor (eso sigue siendo del Administrador) — evita que alguien sin autoridad comprometa dinero del negocio.
+  - **Punto de decisión pendiente:** si el Colaborador debe ver los montos/costos de la orden o solo las cantidades. Ninguna evidencia de la encuesta obliga una respuesta; es una decisión de confianza del dueño del negocio hacia su empleado, más que una decisión técnica.
+
+**Fase E — Catálogo simplificado (riesgo bajo-medio)**
+- Reutiliza `ProductosPage`/`ProductTable` con una variante que oculta columnas avanzadas (ABC, velocidad, nivel_stock detallado) y deja nombre, stock, precio y el botón "+ Nuevo producto". El formulario de alta (`ProductFormModal`) no cambia — ya es el mismo para todos los roles.
+
+**Fase F — Validación (se apoya en la Fase 4 de la intervención, no es trabajo nuevo)**
+- Antes de construir D y E (las más costosas), llevar el prototipo de A+B+C a la prueba de usabilidad con los 5 tenderos ya diseñada en la intervención. Si el SUS o la tasa de éxito en tareas no mejora frente al Sidebar completo, no tiene sentido completar el resto del plan.
+
+### 3.4.4 Resumen de riesgos por fase
+
+| Fase | Riesgo | Por qué |
+|---|---|---|
+| A. Preferencia y toggle | Bajo | Columna nueva + endpoint; sin cambios visibles si se hace bien el backfill. |
+| B. Sidebar condicional | Bajo | Solo filtra un arreglo ya existente; ninguna ruta cambia de protección. |
+| C. "¿Qué pido?" | Medio | Pantalla nueva, pero reutiliza lógica ya probada (`leerEntradasMotor`, `ordenesBorrador`, `completarRecepcion`). |
+| D. Permisos de Colaborador | Medio-alto | Es el único punto que amplía lo que un Colaborador puede hacer sobre dinero/proveedores — requiere decisión explícita del dueño, no solo del equipo de desarrollo. |
+| E. Catálogo simplificado | Bajo-medio | Cambio de UI sobre una pantalla existente, sin tocar el backend. |
