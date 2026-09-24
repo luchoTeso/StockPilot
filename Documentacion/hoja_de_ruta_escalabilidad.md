@@ -10,16 +10,17 @@ StockPilot cuenta con una base arquitectónica moderna y desacoplada:
 - **Frontend:** Single Page Application (SPA) en React + Vite, completamente independiente.
 - **Backend:** API REST en Node.js / Express.
 - **Base de Datos:** PostgreSQL con consultas analíticas optimizadas en base de datos (CTEs, Window Functions).
-- **Autenticación:** Sesiones con estado persistidas en PostgreSQL (`connect-pg-simple`), cookies `httpOnly`, `SameSite: strict`, regeneración de ID de sesión y validación anti-concurrencia.
+- **Autenticación:** Sesiones con estado, cookies `httpOnly`, `SameSite: strict`, regeneración de ID de sesión y validación anti-concurrencia. El store es PostgreSQL (`connect-pg-simple`) por defecto, con soporte ya integrado para Redis (`connect-redis`) activable con la variable `REDIS_URL` (degradación elegante si no está definida).
+- **Rate Limiting:** `express-rate-limit` con el mismo patrón de degradación elegante — usa `rate-limit-redis` si hay `REDIS_URL`, o `MemoryStore` local si no la hay.
 
 ```
        [ Navegador Web ]
               │
               ▼
    [ Node.js / Express (Instancia Única) ]
-        ├── express-session (connect-pg-simple)
-        ├── express-rate-limit (MemoryStore)
-        └── node-cron (Scheduler en proceso)
+        ├── express-session (connect-pg-simple, o Redis si REDIS_URL está definida)
+        ├── express-rate-limit (MemoryStore, o Redis si REDIS_URL está definida)
+        └── node-cron (Scheduler en proceso, sin cerrojo distribuido)
               │
               ▼
        [ PostgreSQL DB ] (Pool max: 25)
@@ -33,10 +34,10 @@ StockPilot cuenta con una base arquitectónica moderna y desacoplada:
 
 | Componente | Archivo Actual | Comportamiento Actual | Problema al tener 2 o más servidores |
 | :--- | :--- | :--- | :--- |
-| **Rate Limiter** | `middleware/rateLimiter.js` | Guarda contadores en memoria RAM local (`MemoryStore`). | Los contadores no se comparten. Un usuario puede hacer el doble o triple de peticiones según la cantidad de servidores. |
-| **Cron Jobs** | `services/schedulerService.js` | Ejecuta tareas con `node-cron` dentro del mismo proceso. | Todas las réplicas ejecutarán el cron al mismo segundo, enviando correos duplicados y creando colisiones en la BD. |
-| **Sesiones DB** | `app.js` (`connect-pg-simple`) | Con `rolling: true`, cada petición HTTP hace un `UPDATE` en la tabla `session`. | Con miles de usuarios concurrentes, genera saturación de escrituras y *table bloat* en PostgreSQL. |
-| **Pool de Conexiones** | `config/database.js` | `max: 25` conexiones por proceso. | Con 4 réplicas se abren hasta 100 conexiones simultáneas, pudiendo superar los límites del plan de base de datos. |
+| **Rate Limiter** | `middleware/rateLimiter.js`, `config/redis.js` | ✅ **Ya soporta Redis** (`rate-limit-redis`) con fallback automático a `MemoryStore` si `REDIS_URL` no está definida. | Solo persiste si se opera **sin** `REDIS_URL` configurada: ahí sí, los contadores no se comparten entre réplicas. |
+| **Cron Jobs** | `services/schedulerService.js` | Ejecuta tareas con `node-cron` dentro del mismo proceso, sin cerrojo distribuido. | Todas las réplicas ejecutarán el cron al mismo segundo, enviando correos duplicados y creando colisiones en la BD. **Sigue pendiente.** |
+| **Sesiones DB** | `app.js`, `config/redis.js` | ✅ **Ya soporta Redis** (`connect-redis`) con fallback automático a `connect-pg-simple` (PostgreSQL) si `REDIS_URL` no está definida. | Solo persiste si se opera **sin** `REDIS_URL` configurada: ahí sí, con `rolling: true` cada petición HTTP hace un `UPDATE` en la tabla `session`, generando saturación de escrituras y *table bloat*. |
+| **Pool de Conexiones** | `config/database.js` | `max: 25` conexiones por proceso (configurable vía `DB_POOL_MAX`). | Con 4 réplicas se abren hasta 100 conexiones simultáneas, pudiendo superar los límites del plan de base de datos. **Sigue pendiente** (requiere PgBouncer, Fase 3). |
 
 ---
 
@@ -45,7 +46,7 @@ StockPilot cuenta con una base arquitectónica moderna y desacoplada:
 | Componente | Archivo Actual | Comportamiento Actual | Problema a largo plazo |
 | :--- | :--- | :--- | :--- |
 | **Fotos de Perfil** | `ProfilePage.jsx` / `Usuarios` | Almacenadas como cadenas Base64 en la columna `foto_url TEXT`. | Un usuario con foto suma ~1.3 MB directo a la tabla. Mil usuarios inflan la base de datos en gigabytes de texto ineficiente. |
-| **Índices Multi-tienda** | `database/init_pg.sql` | Índices básicos por clave primaria y foránea. | Consultas con `WHERE id_tienda = ? AND fecha_venta BETWEEN ...` realizarán escaneos secuenciales lentos al superar millones de registros. |
+| **Índices Multi-tienda** | `database/init_pg.sql` | ✅ Ya existen índices compuestos en los campos más consultados: `Ventas(id_tienda, fecha_salida)`, `Productos(id_tienda, estado)`, `MovimientosStock(id_tienda, fecha_movimiento)`, `Alertas(id_tienda, resuelta)`. | Falta un índice compuesto `Productos(id_tienda, cantidad)` para acelerar los filtros de stock bajo/crítico al superar millones de registros. |
 | **Procesamiento de IA** | `controllers/aiController.js` | Ejecución en el ciclo de vida síncrono de la petición HTTP. | Consultas complejas bloquean el hilo de eventos de Node.js si la concurrencia es alta. |
 
 ---
@@ -61,11 +62,9 @@ flowchart TD
     end
 
     subgraph FASE 2 ["Fase 2: Crecimiento Medio (50 - 500 Tiendas)"]
-        F2A["Incorporar Redis en la infraestructura"]
-        F2B["Migrar sesiones: connect-redis"]
-        F2C["Migrar rate limit: rate-limit-redis"]
-        F2D["Mudar fotos a Cloudinary / S3"]
-        F2E["Crear índices compuestos multi-tienda"]
+        F2A["Aprovisionar Redis y definir REDIS_URL en producción (código ya listo)"]
+        F2B["Mudar fotos a Cloudinary / S3"]
+        F2C["Crear índice compuesto Productos(id_tienda, cantidad)"]
     end
 
     subgraph FASE 3 ["Fase 3: Alta Escala (> 1,000 Tiendas / Múltiples Servidores)"]
@@ -93,49 +92,21 @@ flowchart TD
 
 ### Fase 2: Crecimiento Medio (50 - 500 Tiendas)
 
-#### 1. Mover Sesiones y Rate Limiting a Redis
-Instalar dependencias:
+#### 1. Activar Redis para Sesiones y Rate Limiting (ya implementado en código)
+Este paso **no requiere escribir código nuevo**: `config/redis.js`, `app.js` y `middleware/rateLimiter.js` ya están preparados con degradación elegante (usan Redis si `REDIS_URL` está definida, y caen a PostgreSQL/memoria si no lo está). Lo único pendiente para activarlo en producción es aprovisionar una instancia de Redis y definir la variable de entorno:
+
 ```bash
-npm install redis connect-redis rate-limit-redis
+REDIS_URL=redis://usuario:password@host:puerto
 ```
 
-Configuración de Redis para Sesiones (`app.js`):
+Configuración ya existente en `config/redis.js`:
 ```javascript
-const { createClient } = require('redis');
-const RedisStore = require('connect-redis').default;
-
-const redisClient = createClient({ url: process.env.REDIS_URL });
-redisClient.connect().catch(console.error);
-
-app.use(session({
-    store: new RedisStore({ client: redisClient, prefix: 'sess:' }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    rolling: true,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        maxAge: 1000 * 60 * 30, // 30 min
-        sameSite: 'strict'
-    }
-}));
+const redisClient = process.env.REDIS_URL
+    ? createClient({ url: process.env.REDIS_URL })
+    : null; // Fallback a PostgreSQL (sesiones) y MemoryStore (rate limit)
 ```
 
-Configuración de Rate Limiting con Redis (`middleware/rateLimiter.js`):
-```javascript
-const { RedisStore } = require('rate-limit-redis');
-
-const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 600,
-    store: new RedisStore({
-        sendCommand: (...args) => redisClient.sendCommand(args),
-    }),
-    keyGenerator: keyBySession,
-    // ...
-});
-```
+`app.js` y `middleware/rateLimiter.js` ya consumen ese mismo `redisClient` para elegir el store correspondiente.
 
 ---
 
@@ -160,25 +131,19 @@ await User.update(userId, { foto_url: uploadResult.secure_url });
 
 ---
 
-#### 3. Índices Compuestos Multi-tienda Esenciales
-Ejecutar en PostgreSQL para optimizar consultas de reportes, ventas e inventario:
+#### 3. Índices Compuestos Multi-tienda
+
+La mayoría de estos índices **ya existen** en `database/init_pg.sql` (verificado contra el esquema real, cuyas tablas/columnas son `Ventas.fecha_salida`, `VentasProductos` en vez de `DetalleVenta`, y `Productos.cantidad` en vez de `stock`):
 
 ```sql
--- Índice para filtrado de ventas por tienda y rango de fechas
-CREATE INDEX IF NOT EXISTS idx_ventas_tienda_fecha 
-ON Ventas (id_tienda, fecha_venta DESC);
+-- Ya existe: idx_ventas_tienda_fecha ON Ventas (id_tienda, fecha_salida DESC)
+-- Ya existe: idx_ventasprod_venta ON VentasProductos (id_venta)
+-- Ya existe: idx_ventasprod_producto ON VentasProductos (id_producto)
+-- Ya existe: idx_alertas_tienda_resuelta ON Alertas (id_tienda, resuelta)
 
--- Índice para detalle de ventas con producto
-CREATE INDEX IF NOT EXISTS idx_detalle_venta_producto 
-ON DetalleVenta (id_producto, id_venta);
-
--- Índice para inventario activo por tienda
-CREATE INDEX IF NOT EXISTS idx_productos_tienda_stock 
-ON Productos (id_tienda, stock);
-
--- Índice para alertas no resueltas por tienda
-CREATE INDEX IF NOT EXISTS idx_alertas_tienda_resuelta 
-ON Alertas (id_tienda, resuelta, fecha_creacion DESC);
+-- Único pendiente: acelerar el filtrado de stock bajo/crítico por tienda
+CREATE INDEX IF NOT EXISTS idx_productos_tienda_cantidad 
+ON Productos (id_tienda, cantidad);
 ```
 
 ---
@@ -283,8 +248,8 @@ Esto genera automáticamente gráficos de latencia (ej. "el endpoint `/ventas` t
 
 | Síntoma / Métrica | Causa | Acción Inmediata |
 | :--- | :--- | :--- |
-| **Uso de CPU en PostgreSQL > 70% sin muchas consultas pesadas.** | Escrituras constantes de la tabla `session` por `rolling: true`. | **Activar Fase 2:** Mover sesiones a Redis. |
-| **Tiempos de respuesta lentos en Dashboard/Reportes (> 1 seg).** | Tablas grandes sin índices compuestos multi-tienda. | **Activar Fase 2:** Crear índices compuestos en Postgres. |
+| **Uso de CPU en PostgreSQL > 70% sin muchas consultas pesadas.** | Escrituras constantes de la tabla `session` por `rolling: true` (solo ocurre si no hay `REDIS_URL` configurada). | **Activar Fase 2:** definir `REDIS_URL` en producción (el soporte ya está en el código). |
+| **Tiempos de respuesta lentos en Dashboard/Reportes (> 1 seg).** | Filtrado de stock por tienda sin el índice `Productos(id_tienda, cantidad)`. | **Activar Fase 2:** crear ese índice compuesto (el resto ya existen). |
 | **La base de datos aumenta de tamaño rápidamente (GBs en semanas).** | Almacenamiento de fotos en Base64 en Postgres. | **Activar Fase 2:** Mudar a Cloudinary o AWS S3. |
 | **Error `too many clients already` en logs de PostgreSQL.** | Pool saturado al desplegar más servidores o reiniciar réplicas. | **Activar Fase 3:** Configurar PgBouncer. |
 | **Usuarios reportan recibir 2 o más correos idénticos del cron.** | Múltiples instancias de Node.js corriendo el scheduler a la vez. | **Activar Fase 3:** Cerrojo distribuido con `pg_advisory_lock` o worker aislado. |
