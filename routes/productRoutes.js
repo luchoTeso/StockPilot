@@ -24,15 +24,25 @@ const upload = multer({
     }
 });
 
-const { fileTypeFromBuffer } = require('file-type');
+// file-type >=17 es ESM puro (sin build CommonJS) — este proyecto es CommonJS ("type": "commonjs"
+// en package.json), así que no se puede hacer `require('file-type')`. `import()` dinámico sí
+// funciona desde código CommonJS y es la forma soportada de consumir un paquete ESM-only.
+let fileTypeFromBufferPromise;
+const getFileTypeFromBuffer = () => {
+    if (!fileTypeFromBufferPromise) {
+        fileTypeFromBufferPromise = import('file-type').then((mod) => mod.fileTypeFromBuffer);
+    }
+    return fileTypeFromBufferPromise;
+};
 
 // Middleware para validar Magic Numbers (primeros bytes reales del archivo)
 const validateFileType = async (req, res, next) => {
     if (!req.file) return res.status(400).json({ error: 'Debe subir un archivo Excel o CSV válido.' });
-    
+
     // Si es un CSV, file-type a menudo no lo detecta porque CSV es texto plano.
     // Solo validaremos magic numbers estrictos para archivos binarios (Excel).
     if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || req.file.mimetype === 'application/vnd.ms-excel') {
+        const fileTypeFromBuffer = await getFileTypeFromBuffer();
         const type = await fileTypeFromBuffer(req.file.buffer);
         // xlsx suele detectarse como zip, xls como cfb. Pero fileType detecta xlsx como 'zip' u 'office' internamente.
         // Mientras no sea un ejecutable o formato peligroso, está bien, pero idealmente comprobamos que la extensión detectada sea zip/cfb/xlsx
